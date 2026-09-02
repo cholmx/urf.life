@@ -6,7 +6,6 @@ import type { Announcement, OutputTab } from '../../types';
 
 const StageTab      = lazy(() => import('../stage/StageTab').then(m => ({ default: m.StageTab })));
 const SlidesTab     = lazy(() => import('../slides/SlidesTab').then(m => ({ default: m.SlidesTab })));
-const HappeningsTab = lazy(() => import('../happenings/HappeningsTab').then(m => ({ default: m.HappeningsTab })));
 const MonthlyTab    = lazy(() => import('../monthly/MonthlyTab').then(m => ({ default: m.MonthlyTab })));
 const WeeklyTab     = lazy(() => import('../weekly/WeeklyTab').then(m => ({ default: m.WeeklyTab })));
 
@@ -74,7 +73,6 @@ export function OutputsTab({ announcements, today, onToggleSlideMade, onError }:
       <Suspense fallback={<SubFallback />}>
         {sub === 'stage' && <StageTab announcements={announcements} today={today} onError={onError} />}
         {sub === 'slides' && <SlidesTab announcements={announcements} today={today} onToggleSlideMade={onToggleSlideMade} />}
-        {sub === 'happenings' && <HappeningsTab announcements={announcements} today={today} />}
         {sub === 'monthly' && <MonthlyTab announcements={announcements} today={today} />}
         {sub === 'weekly' && <WeeklyTab announcements={announcements} today={today} />}
       </Suspense>

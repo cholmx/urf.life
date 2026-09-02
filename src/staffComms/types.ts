@@ -57,7 +57,7 @@ export interface Announcement {
   updated_at?: string;
 }
 
-export type OutputTab = 'stage' | 'slides' | 'happenings' | 'monthly' | 'weekly';
+export type OutputTab = 'stage' | 'slides' | 'monthly' | 'weekly';
 
 export const STATUS_OPTIONS = [
   { value: 'draft', label: 'Draft', desc: 'Still being written' },

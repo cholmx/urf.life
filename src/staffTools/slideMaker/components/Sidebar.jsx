@@ -6,8 +6,10 @@ import TemplatesTab from './tabs/TemplatesTab';
 import ContentTab from './tabs/ContentTab';
 import PhotosTab from './tabs/PhotosTab';
 import PresetsTab from './tabs/PresetsTab';
+import QueueTab from './tabs/QueueTab';
 
 const TABS = [
+  {key: "queue", label: "📋 Needs Making"},
   {key: "content", label: "✏️ Content"},
   {key: "templates", label: "⬜ Layout"},
   {key: "palettes", label: "🎨 Colors"},
@@ -31,7 +33,10 @@ export default function Sidebar(props) {
     blur, setBlur,
     canvasRef,
     onLoadPreset,
+    queueItems, onUseQueueItem, onToggleSlideMade,
   } = props;
+
+  const pendingCount = (queueItems || []).filter(a => !a.slide_made).length;
 
   return (
     <div style={{
@@ -75,6 +80,23 @@ export default function Sidebar(props) {
             }}
           >
             {t.label}
+            {t.key === "queue" && pendingCount > 0 && (
+              <span style={{
+                marginLeft: 5,
+                display: "inline-block",
+                minWidth: 15,
+                padding: "0 4px",
+                borderRadius: 999,
+                background: tab === t.key ? C.accentDark : C.textTer,
+                color: "#fff",
+                fontSize: 9,
+                fontWeight: 700,
+                lineHeight: "15px",
+                textAlign: "center",
+              }}>
+                {pendingCount}
+              </span>
+            )}
           </button>
         ))}
       </div>
@@ -88,6 +110,13 @@ export default function Sidebar(props) {
         scrollbarWidth: "thin",
         scrollbarColor: `${C.border} transparent`,
       }}>
+        {tab === "queue" && (
+          <QueueTab
+            items={queueItems || []}
+            onUseItem={onUseQueueItem}
+            onToggleSlideMade={onToggleSlideMade}
+          />
+        )}
         {tab === "content" && (
           <ContentTab tmplId={tmplId} data={data} ds={ds} brand={brand} setBrand={setBrand} />
         )}

@@ -5,9 +5,12 @@ import {useUndoHistory} from './hooks/useUndoHistory';
 import {FONT_COMBOS, COLOR_PALETTES, ASPECT_RATIOS} from './constants/data';
 import {C, ui} from './constants/styles';
 import {sharpenCanvas, checkContrast} from './utils/canvasUtils';
+import {isSlideActive, formatDateNice} from '../../staffComms/lib/helpers';
 import SlideCanvas from './components/SlideCanvas';
 import Sidebar from './components/Sidebar';
 import TopBar from './components/TopBar';
+
+const SCOPE_ORDER = {whole_church: 0, ministry: 1, informational: 2};
 
 const DEFAULT_DATA = {
   line1: "HEADLINE",
@@ -33,17 +36,27 @@ const DEFAULT_BRAND = (combo) => ({
   textShadow: true,
 });
 
-export default function SlideMaker() {
+export default function SlideMaker({announcements, today, onToggleSlideMade}) {
   return (
     <ToastProvider>
-      <SlideMakerInner />
+      <SlideMakerInner announcements={announcements} today={today} onToggleSlideMade={onToggleSlideMade} />
     </ToastProvider>
   );
 }
 
-function SlideMakerInner() {
+function SlideMakerInner({announcements, today, onToggleSlideMade}) {
   useGoogleFonts();
   const toast = useToast();
+
+  // What still needs a slide made, pulled straight from the Communication
+  // Organizer's happenings data - lets staff jump from "what needs making"
+  // straight into building it, without leaving the Slide Maker.
+  const queueItems = useMemo(() => {
+    if (!announcements || !today) return [];
+    return announcements
+      .filter(a => isSlideActive(a, today))
+      .sort((a, b) => (SCOPE_ORDER[a.scope] ?? 2) - (SCOPE_ORDER[b.scope] ?? 2));
+  }, [announcements, today]);
 
   const [tmplId, setTmplId] = useState("left_block");
   const [combo, setCombo] = useState(FONT_COMBOS[0]);
@@ -195,6 +208,22 @@ function SlideMakerInner() {
     setSidebarOpen(false);
   };
 
+  const useQueueItem = useCallback((a) => {
+    pushUndo();
+    const dates = (a.event_dates && a.event_dates.length > 0)
+      ? [...a.event_dates].filter(Boolean).sort()
+      : (a.event_date ? [a.event_date] : []);
+    const dateStr = dates.map(d => formatDateNice(d)).join(' · ');
+    setData(p => ({
+      ...p,
+      line1: a.title || '',
+      line2: a.slide_override || dateStr || '',
+      line3: a.slide_override ? [dateStr, a.event_location].filter(Boolean).join(' · ') : (a.event_location || ''),
+    }));
+    setTab("content");
+    setSidebarOpen(false);
+  }, [pushUndo]);
+
   const cornerR = aspectRatio.id === "16:10" ? 80 : 0;
   const slideProps = {tmplId, data, brand, bgImg: activePhoto, accentImg: accentPhoto, ov, blur, canvasW: aspectRatio.w, canvasH: aspectRatio.h, cornerR};
 
@@ -279,6 +308,9 @@ function SlideMakerInner() {
             slideProps={slideProps}
             canvasRef={canvasRef}
             onLoadPreset={loadPreset}
+            queueItems={queueItems}
+            onUseQueueItem={useQueueItem}
+            onToggleSlideMade={onToggleSlideMade}
           />
         </div>
       </div>
@@ -321,6 +353,9 @@ function SlideMakerInner() {
               slideProps={slideProps}
               canvasRef={canvasRef}
               onLoadPreset={loadPreset}
+              queueItems={queueItems}
+              onUseQueueItem={useQueueItem}
+              onToggleSlideMade={onToggleSlideMade}
             />
           </div>
         </>
