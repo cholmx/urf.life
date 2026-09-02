@@ -5,7 +5,7 @@ import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import supabase from '../lib/supabase';
 
-const {FiBell,FiPlay,FiMic,FiUsers,FiCreditCard,FiUserPlus,FiMail,FiCalendar,FiBookOpen,FiSettings,FiFacebook,FiInstagram,FiYoutube,FiGlobe,FiLogIn,FiExternalLink,FiFileText,FiHeadphones,FiTrendingUp,FiCheck,FiStar}=FiIcons;
+const {FiPlay,FiMic,FiUsers,FiCreditCard,FiUserPlus,FiMail,FiCalendar,FiBookOpen,FiSettings,FiFacebook,FiInstagram,FiYoutube,FiGlobe,FiLogIn,FiExternalLink,FiFileText,FiHeadphones,FiTrendingUp,FiCheck,FiStar}=FiIcons;
 
 const Home=()=> {
   const [hasEvents,setHasEvents]=useState(false);
@@ -54,7 +54,7 @@ const Home=()=> {
   ];
 
   const mainButtons=[
-    {title: 'Announcements',description: 'Latest church news',icon: FiBell,path: '/announcements',isInternal: true},
+    {title: 'The Happenings',description: 'This week’s update',icon: FiMail,path: '/announcements',isInternal: true},
     {title: 'Calendar',description: 'Everything coming up',icon: FiCalendar,path: '/calendar',isInternal: true},
     {title: 'Sermon Blog',description: 'Weekly sermons',icon: FiFileText,path: '/sermon-blog',isInternal: true},
     {title: 'Shine Podcast',description: 'Latest episodes',icon: FiMic,path: '/shine-podcast',isInternal: true},
