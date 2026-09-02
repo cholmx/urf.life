@@ -1,0 +1,239 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@400;500;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Caladea:ital,wght@0,400;1,400;1,700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-accent text-text-primary font-sans antialiased;
+    font-size: 18px;
+    font-weight: 500;
+    background-image: radial-gradient(ellipse at 50% 0%, rgba(131,166,130,0.07) 0%, transparent 70%);
+    background-attachment: fixed;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading text-text-primary;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  p {
+    @apply leading-normal;
+  }
+
+  a {
+    @apply text-primary transition-colors hover:text-primary/80;
+  }
+}
+
+/* Prose styles for rendered HTML content */
+.prose {
+  @apply text-text-primary text-base leading-normal;
+}
+.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+  @apply text-text-primary font-heading mt-4 mb-2;
+}
+.prose h1 {
+  @apply text-2xl font-bold;
+}
+.prose h2 {
+  @apply text-xl font-bold;
+}
+.prose h3 {
+  @apply text-lg font-bold;
+}
+.prose p {
+  @apply mb-0.5 leading-normal;
+}
+.prose strong {
+  @apply font-bold text-text-primary;
+}
+.prose em {
+  @apply italic;
+}
+.prose a {
+  @apply text-primary underline;
+}
+.prose ul {
+  @apply list-disc pl-6 mb-3;
+}
+.prose ol {
+  @apply list-decimal pl-6 mb-3;
+}
+.prose li {
+  @apply mb-0.5 leading-normal;
+}
+.prose hr {
+  @apply border-t border-accent-dark my-3;
+}
+.prose br {
+  display: block;
+  content: "";
+  margin-top: 0.25rem;
+}
+.prose ul > li::before {
+  @apply bg-primary;
+}
+.prose ol > li::before {
+  @apply text-text-primary;
+}
+
+/* Custom button component styles */
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center px-6 py-3 rounded-2xl font-extrabold font-heading uppercase tracking-wide transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-accent;
+  }
+  .btn-primary {
+    @apply bg-primary text-white shadow-modern hover:shadow-modern-lg hover:-translate-y-0.5;
+    background-image: linear-gradient(to right, theme('colors.primary'), theme('colors.primary/80'));
+    color: white;
+  }
+  .btn-secondary {
+    @apply bg-brand-blue text-white shadow-modern hover:shadow-modern-lg hover:-translate-y-0.5;
+    color: white;
+  }
+  .btn-outline {
+    @apply bg-transparent border-2 border-primary text-primary hover:bg-primary hover:text-white;
+  }
+  .btn-ghost {
+    @apply bg-transparent text-text-primary hover:bg-accent-dark;
+  }
+}
+
+/* Reusable modern card */
+.modern-card {
+  @apply bg-accent-light rounded-2xl shadow-modern transition-all duration-300 hover:shadow-modern-lg hover:-translate-y-1;
+}
+
+/* Specific overrides for rich text editor fields */
+.rendered-content *,
+.announcement-content * {
+  font-family: inherit !important;
+  font-size: inherit !important;
+  color: inherit !important;
+  letter-spacing: inherit !important;
+}
+.rendered-content strong,
+.announcement-content strong {
+  font-weight: bold !important;
+}
+.rendered-content em,
+.announcement-content em {
+  font-style: italic !important;
+}
+.rendered-content u,
+.announcement-content u {
+  text-decoration: underline !important;
+}
+.rendered-content [style],
+.announcement-content [style] {
+  all: unset !important;
+}
+
+.font-fraunces {
+  @apply font-sans;
+}
+
+.page-subtitle {
+  @apply font-sans font-normal text-base -mt-2;
+}
+
+.font-inter {
+  @apply font-sans;
+}
+
+/* Discussion questions background */
+.discussion-questions-section {
+  @apply bg-accent-dark;
+}
+
+/* Rich text editor formatting */
+.rich-text-editor strong {
+  font-weight: bold !important;
+}
+.rich-text-editor em {
+  font-style: italic !important;
+}
+.rich-text-editor u {
+  text-decoration: underline !important;
+}
+
+/* Admin dashboard: its own dark-gray-and-white look, Inter for body text
+   (headings already inherit Inter Tight Bold from the base h1-h6 rule
+   above), independent of the public site's green/cream/Liter styling. */
+.admin-shell {
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+@layer components {
+  .admin-input {
+    @apply w-full p-3 border border-neutral-200 rounded-xl bg-white text-neutral-900 placeholder-neutral-400 transition-all duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-neutral-900/15 focus:border-neutral-900;
+  }
+  .admin-label {
+    @apply block text-sm font-semibold text-neutral-900 mb-1.5;
+  }
+  .admin-card {
+    @apply bg-white rounded-2xl shadow-modern p-6 border border-neutral-100;
+  }
+  .admin-btn-primary {
+    @apply bg-neutral-900 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-neutral-700 active:scale-95 transition-all duration-200 inline-flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .admin-btn-secondary {
+    @apply bg-neutral-100 text-neutral-900 px-5 py-2.5 rounded-xl font-semibold hover:bg-neutral-200 active:scale-95 transition-all duration-200 inline-flex items-center space-x-2;
+  }
+  .admin-btn-danger {
+    @apply p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors;
+  }
+  .admin-btn-edit {
+    @apply p-2 text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors;
+  }
+}
+
+/* The individual admin panels (AdminAnnouncements, AdminEvents, etc.) still
+   use the public site's green `primary`/cream `accent` Tailwind utilities
+   directly in dozens of places. Rather than hand-editing every file (and
+   risking missing spots), override those utilities' effect wherever they
+   render inside the admin shell, so the whole area reads as dark gray and
+   white without touching the public site's own green/cream branding. */
+.admin-shell .text-primary { color: #1E1E21 !important; }
+.admin-shell .bg-primary { background-color: #1E1E21 !important; }
+.admin-shell .border-primary { border-color: #1E1E21 !important; }
+.admin-shell .ring-primary { --tw-ring-color: #1E1E21 !important; }
+.admin-shell .hover\:bg-primary:hover { background-color: #1E1E21 !important; }
+.admin-shell .hover\:border-primary:hover { border-color: #1E1E21 !important; }
+.admin-shell .hover\:text-primary:hover { color: #1E1E21 !important; }
+.admin-shell .group:hover .group-hover\:text-primary { color: #1E1E21 !important; }
+.admin-shell .focus\:ring-primary:focus { --tw-ring-color: #1E1E21 !important; }
+.admin-shell .focus\:border-primary:focus { border-color: #1E1E21 !important; }
+
+.admin-shell .bg-accent { background-color: #F5F5F5 !important; }
+.admin-shell .bg-accent\/50 { background-color: rgba(245,245,245,0.5) !important; }
+.admin-shell .hover\:bg-accent\/50:hover { background-color: rgba(245,245,245,0.5) !important; }
+.admin-shell .border-accent { border-color: #E2E2E2 !important; }
+.admin-shell .border-accent-dark { border-color: #D0D0D0 !important; }
+
+/* Global input focus ring */
+input:focus, textarea:focus, select:focus {
+  @apply outline-none ring-2 ring-primary/40 border-primary;
+}
+
+@layer components {
+  .form-input {
+    @apply w-full p-3 border border-accent-dark rounded-xl bg-white text-text-primary placeholder-text-light transition-all duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary;
+  }
+  .form-label {
+    @apply block text-sm font-semibold text-text-primary mb-1.5;
+  }
+  .form-section {
+    @apply bg-accent/50 rounded-2xl p-5 space-y-4 border border-accent-dark/30;
+  }
+  .form-section-title {
+    @apply text-xs font-bold uppercase tracking-widest text-primary mb-0;
+  }
+}
