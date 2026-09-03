@@ -139,7 +139,6 @@ const Admin=()=> {
               onPreviewDateChange={happenings.setToday}
               onSave={happenings.handleSave}
               onDelete={happenings.handleDelete}
-              onApprove={happenings.handleApprove}
               onTogglePublish={happenings.handleTogglePublish}
               editing={happenings.editing}
               setEditing={happenings.setEditing}

@@ -6,20 +6,11 @@ import { AnnouncementForm } from './AnnouncementForm';
 import { isSlideActive } from '../../lib/helpers';
 import type { Announcement } from '../../types';
 
-const STATUS_FILTERS = [
-  { value: 'all',      label: 'All' },
-  { value: 'draft',    label: 'Drafts' },
-  { value: 'approved', label: 'Approved' },
-] as const;
-
-type StatusFilter = typeof STATUS_FILTERS[number]['value'];
-
 interface ManageTabProps {
   announcements: Announcement[];
   today: string;
   onSave: (a: Omit<Announcement, 'id' | 'created_at' | 'updated_at'> & { id?: string }) => Promise<Announcement | null>;
   onDelete: (id: string) => Promise<void>;
-  onApprove: (id: string) => Promise<void>;
   onTogglePublish: (a: Announcement) => Promise<void>;
   editing: Announcement | 'new' | null;
   setEditing: (v: Announcement | 'new' | null) => void;
@@ -31,32 +22,26 @@ interface ManageTabProps {
   onNavigateTab?: (tab: string) => void;
 }
 
-export function ManageTab({ announcements, today, onSave, onDelete, onApprove, onTogglePublish, editing, setEditing, copySource, setCopySource, loading, onError, onOpenSignupSheet, onNavigateTab }: ManageTabProps) {
+export function ManageTab({ announcements, today, onSave, onDelete, onTogglePublish, editing, setEditing, copySource, setCopySource, loading, onError, onOpenSignupSheet, onNavigateTab }: ManageTabProps) {
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [justSaved, setJustSaved] = useState<Announcement | null>(null);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return announcements.filter(a => {
-      if (statusFilter !== 'all' && a.status !== statusFilter) return false;
-      if (!q) return true;
-      return (
-        a.title.toLowerCase().includes(q) ||
-        (a.body || '').toLowerCase().includes(q) ||
-        (a.description || '').toLowerCase().includes(q) ||
-        (a.assigned_to || '').toLowerCase().includes(q) ||
-        a.category.toLowerCase().includes(q)
-      );
-    });
-  }, [announcements, search, statusFilter]);
+    if (!q) return announcements;
+    return announcements.filter(a =>
+      a.title.toLowerCase().includes(q) ||
+      (a.body || '').toLowerCase().includes(q) ||
+      (a.description || '').toLowerCase().includes(q) ||
+      (a.assigned_to || '').toLowerCase().includes(q) ||
+      a.category.toLowerCase().includes(q)
+    );
+  }, [announcements, search]);
 
   const slidesPending = useMemo(
     () => announcements.filter(a => isSlideActive(a, today) && !a.slide_made),
     [announcements, today],
   );
-  const draftCount = announcements.filter(a => a.status === 'draft').length;
-  const approvedCount = announcements.filter(a => a.status === 'approved').length;
 
   if (editing) {
     return (
@@ -113,22 +98,19 @@ export function ManageTab({ announcements, today, onSave, onDelete, onApprove, o
       {!loading && announcements.length > 0 && (
         <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
           <DashboardStat label="Slides Due" value={slidesPending.length} accent={slidesPending.length > 0 ? '#B45309' : '#15803D'} sub={slidesPending.length > 0 ? 'Need making' : 'All caught up'} />
-          <DashboardStat label="Drafts" value={draftCount} accent="#64748B" sub="In progress" />
-          <DashboardStat label="Approved" value={approvedCount} accent="#15803D" sub="Cleared for use" />
         </div>
       )}
 
-      {/* Search and filter bar */}
+      {/* Search bar */}
       {!loading && announcements.length > 0 && (
-        <div style={{ display: 'flex', gap: 10, marginBottom: 16, alignItems: 'center', flexWrap: 'wrap' }}>
+        <div style={{ marginBottom: 16 }}>
           <input
             type="text"
             placeholder="Search by title, text, assignee, category..."
             value={search}
             onChange={e => setSearch(e.target.value)}
             style={{
-              flex: '1 1 220px',
-              minWidth: 180,
+              width: '100%',
               padding: '7px 12px',
               border: `1px solid ${C.border}`,
               borderRadius: 6,
@@ -137,27 +119,9 @@ export function ManageTab({ announcements, today, onSave, onDelete, onApprove, o
               color: C.text,
               background: C.card,
               outline: 'none',
+              boxSizing: 'border-box',
             }}
           />
-          <div style={{ display: 'flex', gap: 4 }}>
-            {STATUS_FILTERS.map(f => (
-              <button
-                key={f.value}
-                onClick={() => setStatusFilter(f.value)}
-                style={{
-                  ...btnGhost,
-                  fontSize: 11,
-                  padding: '6px 12px',
-                  fontWeight: 600,
-                  letterSpacing: '0.03em',
-                  textTransform: 'uppercase',
-                  ...(statusFilter === f.value ? { background: C.accent, color: '#fff', borderColor: C.accent } : {}),
-                }}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
         </div>
       )}
 
@@ -192,7 +156,6 @@ export function ManageTab({ announcements, today, onSave, onDelete, onApprove, o
             today={today}
             onEdit={() => setEditing(a)}
             onDelete={onDelete}
-            onApprove={onApprove}
             onTogglePublish={onTogglePublish}
           />
         ))}

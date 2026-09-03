@@ -19,7 +19,6 @@ interface ManagePageProps {
   onPreviewDateChange: (date: string) => void;
   onSave: (a: Omit<Announcement, 'id' | 'created_at' | 'updated_at'> & { id?: string }) => Promise<Announcement | null>;
   onDelete: (id: string) => Promise<void>;
-  onApprove: (id: string) => Promise<void>;
   onTogglePublish: (a: Announcement) => Promise<void>;
   editing: Announcement | 'new' | null;
   setEditing: (v: Announcement | 'new' | null) => void;

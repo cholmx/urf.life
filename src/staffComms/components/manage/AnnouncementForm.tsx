@@ -11,7 +11,6 @@ import {
 } from '../../lib/helpers';
 import { AIWriteButton } from './AIWriteButton';
 import { useAnnouncementAI } from '../../hooks/useAnnouncementAI';
-import { STATUS_OPTIONS } from '../../types';
 import type { Announcement, RecurrenceType } from '../../types';
 
 const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -96,7 +95,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
     () => announcement?.ministry != null && !MINISTRY_OPTIONS.includes(announcement.ministry as typeof MINISTRY_OPTIONS[number])
   );
   const [showAdvanced, setShowAdvanced] = useState(
-    () => !!(announcement?.status === 'approved' || announcement?.assigned_to)
+    () => !!announcement?.assigned_to
   );
   const [timingExpanded, setTimingExpanded] = useState(
     () => !!(announcement?.event_date || (announcement?.recurrence_type && announcement.recurrence_type !== 'one_time'))
@@ -318,21 +317,13 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
             onClick={() => setShowAdvanced(v => !v)}
             style={{ fontFamily: font.display, fontSize: 10, fontWeight: 700, color: C.textMuted, background: 'none', border: 'none', padding: 0, cursor: 'pointer', letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: isScheduledType ? 12 : 8 }}
           >
-            {showAdvanced ? '– Hide status & assignee' : '+ Status & assignee'}
+            {showAdvanced ? '– Hide assignee' : '+ Assignee'}
           </button>
 
           {showAdvanced && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 10 }}>
-              <div>
-                <label style={labelBase}>Status</label>
-                <select style={inputBase} value={f.status} onChange={e => set('status', e.target.value as Announcement['status'])}>
-                  {STATUS_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label} ({o.desc})</option>)}
-                </select>
-              </div>
-              <div>
-                <label style={labelBase}>Assigned To</label>
-                <input style={inputBase} value={f.assigned_to} onChange={e => set('assigned_to', e.target.value)} placeholder="Who's responsible" />
-              </div>
+            <div style={{ marginTop: 10 }}>
+              <label style={labelBase}>Assigned To</label>
+              <input style={inputBase} value={f.assigned_to} onChange={e => set('assigned_to', e.target.value)} placeholder="Who's responsible" />
             </div>
           )}
         </Section>

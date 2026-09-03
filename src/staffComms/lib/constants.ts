@@ -78,7 +78,7 @@ export const DEFAULT_ANNOUNCEMENT = {
   is_published: false,
   published_at: null as string | null,
   slide_made: false,
-  status: 'draft' as const,
+  status: 'approved' as const,
   assigned_to: '',
   ministry: '',
   recurrence_type: 'one_time' as const,

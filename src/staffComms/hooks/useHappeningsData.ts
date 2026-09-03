@@ -73,7 +73,7 @@ export function useHappeningsData(enabled: boolean, onNavigateToManage?: () => v
       event_location: f.event_location,
       event_dates: f.event_dates,
       slide_made: f.slide_made,
-      status: f.status,
+      status: 'approved',
       assigned_to: f.assigned_to,
       ministry: f.scope === 'ministry' ? (f.ministry || '') : '',
       recurrence_type: f.recurrence_type || 'one_time',
@@ -118,7 +118,6 @@ export function useHappeningsData(enabled: boolean, onNavigateToManage?: () => v
       happenings_start_date: null,
       happenings_end_date: null,
       slide_made: false,
-      status: 'draft',
     });
     setEditing('new');
     onNavigateToManage?.();
@@ -136,15 +135,6 @@ export function useHappeningsData(enabled: boolean, onNavigateToManage?: () => v
     if (error) {
       showError('Failed to update slide status.');
       setAnnouncements(prev => prev.map(a => a.id === id ? { ...a, slide_made: !value } : a));
-    }
-  };
-
-  const handleApprove = async (id: string) => {
-    setAnnouncements(prev => prev.map(a => a.id === id ? { ...a, status: 'approved' } : a));
-    const { error } = await supabase.from('staff_announcements_portal123').update({ status: 'approved' }).eq('id', id);
-    if (error) {
-      showError('Failed to approve announcement.');
-      setAnnouncements(prev => prev.map(a => a.id === id ? { ...a, status: 'draft' } : a));
     }
   };
 
@@ -175,7 +165,7 @@ export function useHappeningsData(enabled: boolean, onNavigateToManage?: () => v
     announcements, activeAnnouncements, archivedAnnouncements, loading,
     today, setToday,
     editing, setEditing, copySource, setCopySource,
-    handleSave, handleDelete, handleApprove, handleTogglePublish, handleToggleSlideMade, handleCopyFromArchive,
+    handleSave, handleDelete, handleTogglePublish, handleToggleSlideMade, handleCopyFromArchive,
     toasts, showError, showSuccess, dismissToast,
   };
 }

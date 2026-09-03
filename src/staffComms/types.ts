@@ -58,8 +58,3 @@ export interface Announcement {
 }
 
 export type OutputTab = 'stage' | 'slides' | 'monthly' | 'weekly';
-
-export const STATUS_OPTIONS = [
-  { value: 'draft', label: 'Draft', desc: 'Still being written' },
-  { value: 'approved', label: 'Approved', desc: 'Cleared for use' },
-] as const;
