@@ -1,13 +1,11 @@
 import { useState, lazy, Suspense } from 'react';
 import { C, font } from '../../lib/theme';
-import { OUTPUT_TABS } from '../../lib/constants';
+import { PRINTABLES_TABS } from '../../lib/constants';
 import { btnGhost } from '../ui/inputs';
-import type { Announcement, OutputTab } from '../../types';
+import type { Announcement, PrintablesTab as PrintablesTabKey } from '../../types';
 
-const StageTab      = lazy(() => import('../stage/StageTab').then(m => ({ default: m.StageTab })));
-const SlidesTab     = lazy(() => import('../slides/SlidesTab').then(m => ({ default: m.SlidesTab })));
-const MonthlyTab    = lazy(() => import('../monthly/MonthlyTab').then(m => ({ default: m.MonthlyTab })));
-const WeeklyTab     = lazy(() => import('../weekly/WeeklyTab').then(m => ({ default: m.WeeklyTab })));
+const MonthlyTab = lazy(() => import('../monthly/MonthlyTab').then(m => ({ default: m.MonthlyTab })));
+const WeeklyTab  = lazy(() => import('../weekly/WeeklyTab').then(m => ({ default: m.WeeklyTab })));
 
 function SubFallback() {
   return (
@@ -17,15 +15,13 @@ function SubFallback() {
   );
 }
 
-interface OutputsTabProps {
+interface PrintablesTabProps {
   announcements: Announcement[];
   today: string;
-  onToggleSlideMade: (id: string, value: boolean) => Promise<void>;
-  onError: (msg: string) => void;
 }
 
-export function OutputsTab({ announcements, today, onToggleSlideMade, onError }: OutputsTabProps) {
-  const [sub, setSub] = useState<OutputTab>('stage');
+export function PrintablesTab({ announcements, today }: PrintablesTabProps) {
+  const [sub, setSub] = useState<PrintablesTabKey>('weekly');
 
   return (
     <div>
@@ -37,12 +33,12 @@ export function OutputsTab({ announcements, today, onToggleSlideMade, onError }:
         overflowX: 'auto',
         scrollbarWidth: 'none',
       }}>
-        {OUTPUT_TABS.map(t => {
+        {PRINTABLES_TABS.map(t => {
           const isActive = sub === t.key;
           return (
             <button
               key={t.key}
-              onClick={() => setSub(t.key as OutputTab)}
+              onClick={() => setSub(t.key as PrintablesTabKey)}
               style={{
                 ...btnGhost,
                 fontSize: 11,
@@ -71,10 +67,8 @@ export function OutputsTab({ announcements, today, onToggleSlideMade, onError }:
       </div>
 
       <Suspense fallback={<SubFallback />}>
-        {sub === 'stage' && <StageTab announcements={announcements} today={today} onError={onError} />}
-        {sub === 'slides' && <SlidesTab announcements={announcements} today={today} onToggleSlideMade={onToggleSlideMade} />}
-        {sub === 'monthly' && <MonthlyTab announcements={announcements} today={today} />}
         {sub === 'weekly' && <WeeklyTab announcements={announcements} today={today} />}
+        {sub === 'monthly' && <MonthlyTab announcements={announcements} today={today} />}
       </Suspense>
     </div>
   );

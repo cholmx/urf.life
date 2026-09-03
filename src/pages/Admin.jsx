@@ -19,13 +19,14 @@ import {ErrorToastContainer} from '../staffComms/components/ui/ErrorToast';
 import {useHappeningsData} from '../staffComms/hooks/useHappeningsData';
 import {ManagePage} from '../staffComms/components/manage/ManagePage';
 import {CalendarPage} from '../staffComms/components/calendar/CalendarPage';
-import {OutputsPage} from '../staffComms/components/outputs/OutputsPage';
+import {StageScriptPage} from '../staffComms/components/stage/StageScriptPage';
+import {PrintablesPage} from '../staffComms/components/printables/PrintablesPage';
 import {ArchivePage} from '../staffComms/components/archive/ArchivePage';
 import {HappeningsPage} from '../staffComms/components/happenings/HappeningsPage';
 import SlideMaker from '../staffTools/slideMaker/SlideMaker';
 import SignupSheetMaker from '../staffTools/signupSheet/SignupSheetMaker';
 
-const {FiPlay,FiBookOpen,FiHome,FiLock,FiStar,FiHeart,FiUsers,FiTrendingUp,FiMessageSquare,FiGrid,FiLogOut,FiInbox,FiRadio,FiCalendar,FiArchive,FiMail,FiImage,FiClipboard,FiMenu,FiX}=FiIcons;
+const {FiPlay,FiBookOpen,FiHome,FiLock,FiStar,FiHeart,FiUsers,FiTrendingUp,FiMessageSquare,FiGrid,FiLogOut,FiInbox,FiMic,FiPrinter,FiCalendar,FiArchive,FiMail,FiImage,FiClipboard,FiMenu,FiX}=FiIcons;
 
 const NAV_SECTIONS=[
   {
@@ -39,7 +40,8 @@ const NAV_SECTIONS=[
     items: [
       {id: 'calendar',label: 'Calendar',icon: FiCalendar},
       {id: 'happenings',label: 'The Happenings',icon: FiMail},
-      {id: 'outputs',label: 'Outputs',icon: FiRadio},
+      {id: 'stageScript',label: 'Stage Script',icon: FiMic},
+      {id: 'printables',label: 'Printables',icon: FiPrinter},
       {id: 'archive',label: 'Archive',icon: FiArchive},
     ],
   },
@@ -51,6 +53,11 @@ const NAV_SECTIONS=[
       {id: 'ministries',label: 'Ministries',icon: FiHeart},
       {id: 'staff',label: 'Staff Contacts',icon: FiUsers},
       {id: 'featured',label: 'Featured Buttons',icon: FiStar},
+    ],
+  },
+  {
+    label: 'Growth Campaign',
+    items: [
       {id: 'campaign',label: 'Growth Campaign',icon: FiTrendingUp},
       {id: 'comments',label: 'Comments',icon: FiMessageSquare},
     ],
@@ -77,8 +84,8 @@ const Admin=()=> {
   const [signupSheetTarget,setSignupSheetTarget]=useState(null);
 
   // Shared across the Dashboard's embedded Manage section, Calendar,
-  // Outputs, and Archive pages - one fetch, one preview date, one toast
-  // queue, no matter which of those pages is currently active.
+  // Stage Script, Printables, and Archive pages - one fetch, one preview
+  // date, one toast queue, no matter which of those pages is currently active.
   const happenings=useHappeningsData(isAuthenticated,()=> setActiveTab('overview'));
 
   useEffect(()=> {
@@ -175,14 +182,21 @@ const Admin=()=> {
             onPreviewDateChange={happenings.setToday}
           />
         );
-      case 'outputs':
+      case 'stageScript':
         return (
-          <OutputsPage
+          <StageScriptPage
             announcements={happenings.activeAnnouncements}
             today={happenings.today}
             onPreviewDateChange={happenings.setToday}
-            onToggleSlideMade={happenings.handleToggleSlideMade}
             onError={happenings.showError}
+          />
+        );
+      case 'printables':
+        return (
+          <PrintablesPage
+            announcements={happenings.activeAnnouncements}
+            today={happenings.today}
+            onPreviewDateChange={happenings.setToday}
           />
         );
       case 'archive':
@@ -315,13 +329,13 @@ const Admin=()=> {
               <button
                 key={tab.id}
                 onClick={()=> selectTab(tab.id)}
-                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-150 ${
+                className={`w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors duration-150 ${
                   activeTab===tab.id
                     ? 'bg-white/10 text-white'
                     : 'text-white/60 hover:text-white hover:bg-white/5'
                 }`}
               >
-                <SafeIcon icon={tab.icon} className="h-4 w-4 flex-shrink-0" />
+                <SafeIcon icon={tab.icon} className="h-3.5 w-3.5 flex-shrink-0" />
                 <span className="text-left leading-tight">{tab.label}</span>
               </button>
             ))}

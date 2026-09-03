@@ -41,12 +41,9 @@ export const C = {
   // Interaction tints
   high:        '#1E1E21',
   highBg:      '#EFEFEF',
-  // Dark panels (Stage, Slides)
+  // Dark panels
   stageBg:     '#1E1E21',
   stageText:   '#FFFFFF',
-  stageAccent: '#FFFFFF',
-  slideBg:     '#1E1E21',
-  slideText:   '#FFFFFF',
   // Nav
   navBg:       '#1E1E21',
   navText:     '#FFFFFF',

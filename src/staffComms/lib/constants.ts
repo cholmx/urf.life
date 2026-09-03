@@ -38,11 +38,9 @@ export const SIGNUP_MODE_OPTIONS = [
   { value: 'sheet', label: 'Printable sign-up sheet' },
 ] as const;
 
-export const OUTPUT_TABS = [
-  { key: 'stage', label: 'Stage Script' },
-  { key: 'slides', label: 'Sunday Slides' },
-  { key: 'monthly', label: 'Monthly Flyer' },
+export const PRINTABLES_TABS = [
   { key: 'weekly', label: 'Weekly Bulletin' },
+  { key: 'monthly', label: 'Monthly Flyer' },
 ] as const;
 
 export const DEFAULT_ANNOUNCEMENT = {

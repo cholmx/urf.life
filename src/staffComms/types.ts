@@ -61,4 +61,4 @@ export interface Announcement {
   updated_at?: string;
 }
 
-export type OutputTab = 'stage' | 'slides' | 'monthly' | 'weekly';
+export type PrintablesTab = 'weekly' | 'monthly';
