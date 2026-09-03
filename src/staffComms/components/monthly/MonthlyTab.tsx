@@ -16,6 +16,11 @@ const BATHROOM_NOTE_LINES = [
 
 const TEAL = '#003B36';
 const ORANGE = '#E98A15';
+// The flyer's own headings (month title, item titles, dates) use the
+// site's real heading font, not the admin's own Inter Tight (font.display) -
+// this is printed material representing the public site, independent of
+// the admin UI it's edited in.
+const FLYER_FONT = "'Google Sans Flex', Inter, sans-serif";
 
 function allEventDates(a: Announcement): string[] {
   const all = new Set<string>();
@@ -127,7 +132,7 @@ function buildFlyerHTML(items: Announcement[], today: string, bathroomVariant: b
         const barColor = isWC ? ORANGE : TEAL;
         const dateLabel = formatDateList(a);
         const dateSpan = dateLabel
-          ? `<span style="font-family:'Inter Tight',sans-serif;font-size:${s.dateFontSize}pt;font-weight:700;color:${ORANGE};letter-spacing:0.05em;white-space:nowrap;flex-shrink:0;">${dateLabel}</span>`
+          ? `<span style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:${s.dateFontSize}pt;font-weight:700;color:${ORANGE};letter-spacing:0.05em;white-space:nowrap;flex-shrink:0;">${dateLabel}</span>`
           : '';
         const ministryTag = a.ministry
           ? `<span style="font-family:'Inter',sans-serif;font-size:${Math.max(s.contactFontSize - 0.5, 7)}pt;font-weight:700;color:${TEAL};background:${isWC ? '#F0EBE0' : '#D5E8E2'};border-radius:999px;padding:1pt 7pt;letter-spacing:0.04em;white-space:nowrap;flex-shrink:0;">${a.ministry}</span>`
@@ -141,7 +146,7 @@ function buildFlyerHTML(items: Announcement[], today: string, bathroomVariant: b
             <div style="width:3pt;align-self:stretch;min-height:${s.barMinH}in;background:${barColor};border-radius:3pt;flex-shrink:0;"></div>
             <div style="flex:1;min-width:0;">
               <div style="margin-bottom:${s.titleMarginBottom}pt;">
-                <div style="font-family:'Inter Tight',sans-serif;font-size:${s.titleFontSize}pt;font-weight:900;color:${TEAL};letter-spacing:0.02em;line-height:1.1;">${a.title}</div>
+                <div style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:${s.titleFontSize}pt;font-weight:900;color:${TEAL};letter-spacing:0.02em;line-height:1.1;">${a.title}</div>
                 <div style="margin-top:1pt;line-height:1.1;display:flex;gap:4pt;align-items:center;flex-wrap:wrap;">
                   ${dateSpan}
                   ${ministryTag}
@@ -164,8 +169,8 @@ function buildFlyerHTML(items: Announcement[], today: string, bathroomVariant: b
     <div style="width:8.5in;min-height:11in;background:#fff;font-family:'Inter',sans-serif;display:flex;flex-direction:column;box-sizing:border-box;padding:0.5in;">
       <div style="padding:${s.headerPadV}in 0 ${s.headerPadV * 0.54}in;flex-shrink:0;text-align:center;border-bottom:3pt solid ${ORANGE};">
         <div style="font-family:'Inter',sans-serif;font-size:${s.orgFontSize}pt;font-weight:700;letter-spacing:0.28em;text-transform:uppercase;color:${TEAL};margin-bottom:8pt;">Upper Room Fellowship &nbsp;·&nbsp; urf.life</div>
-        <div style="font-family:'Inter Tight',sans-serif;font-size:${s.monthFontSize}pt;font-weight:900;color:${TEAL};text-transform:uppercase;letter-spacing:0.01em;line-height:0.95;margin-bottom:8pt;">${monthLabel}</div>
-        <div style="font-family:'Inter Tight',sans-serif;font-size:${s.subtitleFontSize}pt;font-weight:600;color:${ORANGE};text-transform:uppercase;letter-spacing:0.22em;">Events &amp; Announcements</div>
+        <div style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:${s.monthFontSize}pt;font-weight:900;color:${TEAL};text-transform:uppercase;letter-spacing:0.01em;line-height:0.95;margin-bottom:8pt;">${monthLabel}</div>
+        <div style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:${s.subtitleFontSize}pt;font-weight:600;color:${ORANGE};text-transform:uppercase;letter-spacing:0.22em;">Events &amp; Announcements</div>
       </div>
       <div style="flex:1;padding:${s.bodyPadV}in ${s.bodyPadH}in ${s.bodyPadV * 0.67}in;background:#fff;display:flex;flex-direction:column;">
         ${itemsHTML}
@@ -190,10 +195,10 @@ function FlyerPagePreview({ announcements, today, bathroomVariant }: {
         <div style={{ fontFamily: font.body, fontSize: `${s.orgFontSize}pt`, fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: TEAL, marginBottom: '8pt' }}>
           Upper Room Fellowship &nbsp;·&nbsp; urf.life
         </div>
-        <div style={{ fontFamily: font.display, fontSize: `${s.monthFontSize}pt`, fontWeight: 900, color: TEAL, textTransform: 'uppercase', letterSpacing: '0.01em', lineHeight: 0.95, marginBottom: '8pt' }}>
+        <div style={{ fontFamily: FLYER_FONT, fontSize: `${s.monthFontSize}pt`, fontWeight: 900, color: TEAL, textTransform: 'uppercase', letterSpacing: '0.01em', lineHeight: 0.95, marginBottom: '8pt' }}>
           {monthLabel}
         </div>
-        <div style={{ fontFamily: font.display, fontSize: `${s.subtitleFontSize}pt`, fontWeight: 600, color: ORANGE, textTransform: 'uppercase', letterSpacing: '0.22em' }}>
+        <div style={{ fontFamily: FLYER_FONT, fontSize: `${s.subtitleFontSize}pt`, fontWeight: 600, color: ORANGE, textTransform: 'uppercase', letterSpacing: '0.22em' }}>
           Events &amp; Announcements
         </div>
       </div>
@@ -213,13 +218,13 @@ function FlyerPagePreview({ announcements, today, bathroomVariant }: {
               <div style={{ width: '3pt', alignSelf: 'stretch', minHeight: `${s.barMinH}in`, background: barColor, borderRadius: '3pt', flexShrink: 0 }} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ marginBottom: `${s.titleMarginBottom}pt` }}>
-                  <div style={{ fontFamily: font.display, fontSize: `${s.titleFontSize}pt`, fontWeight: 900, color: TEAL, letterSpacing: '0.02em', lineHeight: 1.1 }}>
+                  <div style={{ fontFamily: FLYER_FONT, fontSize: `${s.titleFontSize}pt`, fontWeight: 900, color: TEAL, letterSpacing: '0.02em', lineHeight: 1.1 }}>
                     {a.title}
                   </div>
                   {(formatDateList(a) || a.ministry) && (
                     <div style={{ marginTop: '1pt', lineHeight: 1.1, display: 'flex', gap: '4pt', alignItems: 'center', flexWrap: 'wrap' }}>
                       {formatDateList(a) && (
-                        <span style={{ fontFamily: font.display, fontSize: `${s.dateFontSize}pt`, fontWeight: 700, color: ORANGE, letterSpacing: '0.05em' }}>
+                        <span style={{ fontFamily: FLYER_FONT, fontSize: `${s.dateFontSize}pt`, fontWeight: 700, color: ORANGE, letterSpacing: '0.05em' }}>
                           {formatDateList(a)}
                         </span>
                       )}
@@ -303,7 +308,7 @@ export function MonthlyTab({ announcements, today }: MonthlyTabProps) {
   <title>Monthly Flyer - ${monthLabel}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400&family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,700;1,14..32,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@400;500;700;900&family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,700;1,14..32,400&display=swap" rel="stylesheet">
   <style>
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #fff; }

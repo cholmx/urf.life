@@ -162,9 +162,9 @@
   text-decoration: underline !important;
 }
 
-/* The Happenings script - shared by the admin ScriptEditor (contentEditable,
-   dark panel) and the public /announcements rendering of the same HTML, so
-   staff formatting (bold, title) looks the same in both places. */
+/* The Happenings script - shared by the admin ScriptEditor (contentEditable)
+   and the public /announcements rendering of the same HTML, so staff
+   formatting (bold, title) looks the same in both places. */
 .happenings-script p {
   margin: 0 0 1.6em;
   line-height: 1.8;
@@ -174,10 +174,11 @@
 }
 .happenings-script h3 {
   font-family: "Google Sans Flex", Inter, sans-serif;
-  font-size: 1.2em;
-  font-weight: 700;
+  font-size: 1.15em;
+  font-weight: 800;
   line-height: 1.4;
-  text-transform: none;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
   color: inherit;
   margin: 0 0 0.6em;
 }

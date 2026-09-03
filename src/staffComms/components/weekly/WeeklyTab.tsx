@@ -8,6 +8,11 @@ const TEAL = '#000000';
 const TEAL_LIGHT = '#FFFFFF';
 const ORANGE = '#000000';
 const LOGO_URL = '/logonegtransblack.png';
+// The bulletin's own headings (org name, item titles, section titles) use
+// the site's real heading font, not the admin's own Inter Tight (font.display) -
+// this is printed material representing the public site, independent of
+// the admin UI it's edited in.
+const BULLETIN_FONT = "'Google Sans Flex', Inter, sans-serif";
 
 interface WeeklyTabProps {
   announcements: Announcement[];
@@ -181,10 +186,10 @@ function BulletinHeader({ size = 'full' }: { size?: 'full' | 'compact' }) {
     <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 12 }}>
       <img src={LOGO_URL} alt="URF" style={{ height: logoH, width: 'auto', flexShrink: 0 }} />
       <div>
-        <div style={{ fontFamily: font.display, fontSize: line1Size, fontWeight: 900, color: TEAL, lineHeight: 1, letterSpacing: '-0.01em' }}>
+        <div style={{ fontFamily: BULLETIN_FONT, fontSize: line1Size, fontWeight: 900, color: TEAL, lineHeight: 1, letterSpacing: '-0.01em' }}>
           Upper Room Fellowship
         </div>
-        <div style={{ fontFamily: font.display, fontSize: line2Size, fontWeight: 700, color: ORANGE, lineHeight: 1.1, marginTop: 2 }}>
+        <div style={{ fontFamily: BULLETIN_FONT, fontSize: line2Size, fontWeight: 700, color: ORANGE, lineHeight: 1.1, marginTop: 2 }}>
           Weekly Announcements
         </div>
       </div>
@@ -208,7 +213,7 @@ function FrontContent({ items, sundayDate }: { items: Announcement[]; sundayDate
   return (
     <>
       <BulletinHeader />
-      <div style={{ fontFamily: font.display, fontSize: 10, fontWeight: 600, color: ORANGE, letterSpacing: '0.1em', marginBottom: 2 }}>
+      <div style={{ fontFamily: BULLETIN_FONT, fontSize: 10, fontWeight: 600, color: ORANGE, letterSpacing: '0.1em', marginBottom: 2 }}>
         {sundayDate}
       </div>
       <div style={{ borderTop: `2.5pt solid ${ORANGE}`, marginTop: 8, marginBottom: 10, flexShrink: 0 }} />
@@ -243,8 +248,8 @@ function FrontAnnouncement({ a }: { a: Announcement }) {
       <div style={{ width: '4pt', alignSelf: 'stretch', minHeight: '0.35in', background: accent, borderRadius: '2pt', flexShrink: 0 }} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 2 }}>
-          <span style={{ fontFamily: font.display, fontSize: 13, fontWeight: 800, color: TEAL }}>{a.title}</span>
-          {dateLabel && <span style={{ fontFamily: font.display, fontSize: 10, fontWeight: 700, color: ORANGE }}>{dateLabel}</span>}
+          <span style={{ fontFamily: BULLETIN_FONT, fontSize: 13, fontWeight: 800, color: TEAL }}>{a.title}</span>
+          {dateLabel && <span style={{ fontFamily: BULLETIN_FONT, fontSize: 10, fontWeight: 700, color: ORANGE }}>{dateLabel}</span>}
           {a.ministry && <Pill>{a.ministry}</Pill>}
         </div>
         {text && <div style={{ fontFamily: font.body, fontSize: 10.5, color: '#1A1A1A', lineHeight: 1.3, marginBottom: 2 }}>{text}</div>}
@@ -308,7 +313,7 @@ function BackContent() {
 function BackSection({ title, color, body }: { title: string; color: string; body: string }) {
   return (
     <div>
-      <div style={{ fontFamily: font.display, fontSize: 10, fontWeight: 800, color, marginBottom: 2, lineHeight: 1, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+      <div style={{ fontFamily: BULLETIN_FONT, fontSize: 10, fontWeight: 800, color, marginBottom: 2, lineHeight: 1, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
         {title}
       </div>
       <div style={{ fontFamily: font.body, fontSize: 9, color: '#1A1A1A', lineHeight: 1.25 }}
@@ -331,8 +336,8 @@ function buildBulletinHTML(items: Announcement[], sundayDate: string): string {
           <div style="width:4pt;align-self:stretch;min-height:0.35in;background:${accent};border-radius:2pt;flex-shrink:0;"></div>
           <div style="flex:1;min-width:0;">
             <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:2px;">
-              <span style="font-family:'Inter Tight',sans-serif;font-size:13pt;font-weight:800;color:${TEAL};">${a.title}</span>
-              ${dateLabel ? `<span style="font-family:'Inter Tight',sans-serif;font-size:10pt;font-weight:700;color:${ORANGE};">${dateLabel}</span>` : ''}
+              <span style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:13pt;font-weight:800;color:${TEAL};">${a.title}</span>
+              ${dateLabel ? `<span style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:10pt;font-weight:700;color:${ORANGE};">${dateLabel}</span>` : ''}
               ${a.ministry ? `<span style="font-family:'Inter',sans-serif;font-size:7.5pt;font-weight:700;color:${TEAL};background:${TEAL_LIGHT};border-radius:999px;padding:2pt 7pt;">${a.ministry}</span>` : ''}
             </div>
             ${text ? `<div style="font-family:'Inter',sans-serif;font-size:10.5pt;color:#1A1A1A;line-height:1.3;margin-bottom:2px;">${text}</div>` : ''}
@@ -351,7 +356,7 @@ function buildBulletinHTML(items: Announcement[], sundayDate: string): string {
   <title>Upper Room Fellowship Weekly Announcements - ${sundayDate}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400&family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,700;1,14..32,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@400;500;700;900&family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,700;1,14..32,400&display=swap" rel="stylesheet">
   <style>
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #fff; }
@@ -385,11 +390,11 @@ function buildPrintFront(itemsHTML: string, sundayDate: string): string {
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;">
       <img src="${LOGO_URL}" alt="URF" style="height:52px;width:auto;flex-shrink:0;" />
       <div>
-        <div style="font-family:'Inter Tight',sans-serif;font-size:22pt;font-weight:900;color:${TEAL};line-height:1;letter-spacing:-0.01em;">Upper Room Fellowship</div>
-        <div style="font-family:'Inter Tight',sans-serif;font-size:16pt;font-weight:700;color:${ORANGE};line-height:1.1;margin-top:2px;">Weekly Announcements</div>
+        <div style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:22pt;font-weight:900;color:${TEAL};line-height:1;letter-spacing:-0.01em;">Upper Room Fellowship</div>
+        <div style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:16pt;font-weight:700;color:${ORANGE};line-height:1.1;margin-top:2px;">Weekly Announcements</div>
       </div>
     </div>
-    <div style="font-family:'Inter Tight',sans-serif;font-size:10pt;font-weight:600;color:${ORANGE};letter-spacing:0.1em;margin-bottom:2px;">${sundayDate}</div>
+    <div style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:10pt;font-weight:600;color:${ORANGE};letter-spacing:0.1em;margin-bottom:2px;">${sundayDate}</div>
     <div style="border-top:2.5pt solid ${ORANGE};margin-top:8px;margin-bottom:10px;flex-shrink:0;"></div>
     <div style="flex:1;overflow:hidden;">
       ${itemsHTML}
@@ -403,7 +408,7 @@ function buildPrintFront(itemsHTML: string, sundayDate: string): string {
 function buildPrintBack(): string {
   const sectionsHTML = BACK_SECTIONS.map(s =>
     `<div>
-      <div style="font-family:'Inter Tight',sans-serif;font-size:10pt;font-weight:800;color:${s.color};margin-bottom:2px;line-height:1;text-transform:uppercase;letter-spacing:0.06em;">${s.title}</div>
+      <div style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:10pt;font-weight:800;color:${s.color};margin-bottom:2px;line-height:1;text-transform:uppercase;letter-spacing:0.06em;">${s.title}</div>
       <div style="font-family:'Inter',sans-serif;font-size:9pt;color:#1A1A1A;line-height:1.25;">${s.body}</div>
     </div>`).join('');
 
@@ -411,8 +416,8 @@ function buildPrintBack(): string {
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;">
       <img src="${LOGO_URL}" alt="URF" style="height:40px;width:auto;flex-shrink:0;" />
       <div>
-        <div style="font-family:'Inter Tight',sans-serif;font-size:18pt;font-weight:900;color:${TEAL};line-height:1;letter-spacing:-0.01em;">Upper Room Fellowship</div>
-        <div style="font-family:'Inter Tight',sans-serif;font-size:13pt;font-weight:700;color:${ORANGE};line-height:1.1;margin-top:2px;">Weekly Announcements</div>
+        <div style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:18pt;font-weight:900;color:${TEAL};line-height:1;letter-spacing:-0.01em;">Upper Room Fellowship</div>
+        <div style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:13pt;font-weight:700;color:${ORANGE};line-height:1.1;margin-top:2px;">Weekly Announcements</div>
       </div>
     </div>
     <div style="border-top:2.5pt solid ${ORANGE};margin-top:6px;margin-bottom:12px;flex-shrink:0;"></div>
