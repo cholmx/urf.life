@@ -13,13 +13,26 @@ interface StageTabProps {
   onError: (msg: string) => void;
 }
 
+// The script is written for a specific Sunday, so it's cached under that
+// Sunday's date rather than whatever day it happens to be viewed on -
+// otherwise it looks "gone" (and staff have to regenerate it) every time
+// they open this tab on a different day within the same week.
+function getUpcomingSunday(dateStr: string): string {
+  const d = new Date(dateStr + 'T12:00:00');
+  const daysUntilSunday = d.getDay() === 0 ? 0 : 7 - d.getDay();
+  d.setDate(d.getDate() + daysUntilSunday);
+  return d.toISOString().split('T')[0];
+}
+
 export function StageTab({ announcements, today, onError }: StageTabProps) {
   const [generating, setGenerating] = useState(false);
   const [script, setScript] = useState('');
   const [loadingScript, setLoadingScript] = useState(true);
   const [useAI, setUseAI] = useState(false);
   const [copied, copy] = useCopyToClipboard();
+  const [justSaved, setJustSaved] = useState(false);
 
+  const sundayKey = getUpcomingSunday(today);
   const stageItems = announcements.filter(a => isStageActive(a, today));
 
   const buildRawNotes = useCallback(() => {
@@ -45,7 +58,7 @@ export function StageTab({ announcements, today, onError }: StageTabProps) {
       .from('staff_generated_scripts_portal123')
       .select('content')
       .eq('type', 'stage')
-      .eq('week_date', today)
+      .eq('week_date', sundayKey)
       .maybeSingle()
       .then(({ data }) => {
         if (data?.content) {
@@ -54,11 +67,11 @@ export function StageTab({ announcements, today, onError }: StageTabProps) {
         }
         setLoadingScript(false);
       });
-  }, [today]);
+  }, [sundayKey]);
 
   const saveScript = async (content: string) => {
     await supabase.from('staff_generated_scripts_portal123').upsert(
-      { type: 'stage', week_date: today, content },
+      { type: 'stage', week_date: sundayKey, content },
       { onConflict: 'type,week_date,user_id' },
     );
   };
@@ -81,7 +94,15 @@ export function StageTab({ announcements, today, onError }: StageTabProps) {
     }
   };
 
+  const handleScriptBlur = async () => {
+    if (!useAI) return;
+    await saveScript(script);
+    setJustSaved(true);
+    setTimeout(() => setJustSaved(false), 1500);
+  };
+
   const displayScript = useAI ? script : buildRawNotes();
+  const hasScript = script.trim().length > 0;
 
   return (
     <div>
@@ -93,7 +114,7 @@ export function StageTab({ announcements, today, onError }: StageTabProps) {
           {stageItems.length} whole-church · {formatDateLong(today)}
         </p>
         <p style={{ fontFamily: font.body, fontSize: 12, color: C.textTer, margin: 0 }}>
-          Only "Whole Church" scope announcements appear here. Use Raw Notes for reference, or Generate Script for a ready-to-read version.
+          Only "Whole Church" scope announcements appear here. Use Raw Notes for reference, or Generate Script for a ready-to-read version you can edit right here - it's saved automatically.
         </p>
       </div>
 
@@ -105,60 +126,121 @@ export function StageTab({ announcements, today, onError }: StageTabProps) {
           Raw Notes
         </button>
         <button
-          onClick={handleGenerateAI}
-          disabled={generating || stageItems.length === 0 || loadingScript}
+          onClick={() => { if (hasScript) setUseAI(true); else handleGenerateAI(); }}
+          disabled={generating || loadingScript || (!hasScript && stageItems.length === 0)}
           style={{
-            ...(useAI ? { ...btnPrimary, background: C.stageAccent, color: C.stageBg } : btnGhost),
+            ...(useAI ? btnPrimary : btnGhost),
             fontSize: 12,
             padding: '7px 16px',
-            opacity: (stageItems.length === 0 || loadingScript) ? 0.4 : 1,
+            opacity: (!hasScript && stageItems.length === 0) || loadingScript ? 0.4 : 1,
           }}
         >
-          {generating ? 'Writing...' : 'Generate Script'}
+          {generating ? 'Writing...' : hasScript ? 'Script' : 'Generate Script'}
         </button>
       </div>
 
       <div style={{
-        background: useAI ? C.stageBg : C.card,
-        border: `1px solid ${useAI ? 'transparent' : C.border}`,
+        background: C.card,
+        border: `1px solid ${C.border}`,
         borderRadius: 10,
         padding: '28px 28px',
         position: 'relative',
         minHeight: 120,
       }}>
-        <pre style={{
-          fontFamily: useAI ? font.body : 'monospace',
-          fontSize: useAI ? 15 : 13,
-          lineHeight: 1.7,
-          color: useAI ? C.stageText : C.text,
-          whiteSpace: 'pre-wrap',
-          wordBreak: 'break-word',
-          margin: 0,
-        }}>
-          {loadingScript ? '' : displayScript}
-        </pre>
-        <button
-          onClick={() => copy(displayScript)}
-          style={{
-            marginTop: 16,
-            padding: '7px 16px',
-            border: `1px solid ${useAI ? 'rgba(255,255,255,0.12)' : C.border}`,
-            borderRadius: 5,
-            background: useAI ? 'rgba(255,255,255,0.06)' : 'transparent',
-            color: copied
-              ? (useAI ? C.stageAccent : C.accent)
-              : (useAI ? 'rgba(255,255,255,0.5)' : C.textSec),
-            fontSize: 11,
-            fontWeight: 600,
-            fontFamily: font.body,
-            cursor: 'pointer',
-            letterSpacing: '0.04em',
-            textTransform: 'uppercase',
-            transition: 'color 0.2s',
-          }}
-        >
-          {copied ? 'Copied!' : 'Copy Script'}
-        </button>
+        {useAI ? (
+          <textarea
+            value={loadingScript ? '' : script}
+            onChange={e => setScript(e.target.value)}
+            onBlur={handleScriptBlur}
+            placeholder="Loading..."
+            style={{
+              width: '100%',
+              minHeight: 200,
+              fontFamily: font.body,
+              fontSize: 15,
+              lineHeight: 1.7,
+              color: C.text,
+              background: 'transparent',
+              border: 'none',
+              outline: 'none',
+              resize: 'vertical',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+              margin: 0,
+              padding: 0,
+              display: 'block',
+            }}
+          />
+        ) : (
+          <pre style={{
+            fontFamily: 'monospace',
+            fontSize: 13,
+            lineHeight: 1.7,
+            color: C.text,
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word',
+            margin: 0,
+          }}>
+            {loadingScript ? '' : displayScript}
+          </pre>
+        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16 }}>
+          <button
+            onClick={() => copy(displayScript)}
+            style={{
+              padding: '7px 16px',
+              border: `1px solid ${C.border}`,
+              borderRadius: 5,
+              background: 'transparent',
+              color: copied ? C.accent : C.textSec,
+              fontSize: 11,
+              fontWeight: 600,
+              fontFamily: font.body,
+              cursor: 'pointer',
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+              transition: 'color 0.2s',
+            }}
+          >
+            {copied ? 'Copied!' : 'Copy Script'}
+          </button>
+          {useAI && (
+            <button
+              onClick={handleGenerateAI}
+              disabled={generating || stageItems.length === 0}
+              title="Write a fresh script from scratch, replacing what's here"
+              style={{
+                padding: '7px 16px',
+                border: `1px solid ${C.border}`,
+                borderRadius: 5,
+                background: 'transparent',
+                color: C.textSec,
+                fontSize: 11,
+                fontWeight: 600,
+                fontFamily: font.body,
+                cursor: 'pointer',
+                letterSpacing: '0.04em',
+                textTransform: 'uppercase',
+                opacity: (generating || stageItems.length === 0) ? 0.4 : 1,
+              }}
+            >
+              {generating ? 'Writing...' : 'Regenerate'}
+            </button>
+          )}
+          {useAI && (
+            <span style={{
+              fontFamily: font.mono,
+              fontSize: 10,
+              color: C.textMuted,
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+              opacity: justSaved ? 1 : 0,
+              transition: 'opacity 0.3s',
+            }}>
+              Saved
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );
