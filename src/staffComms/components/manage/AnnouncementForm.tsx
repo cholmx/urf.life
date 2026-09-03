@@ -287,7 +287,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
               This is never published or printed anywhere on its own - it's only here to give the AI something to work from. Write it as rough notes. What actually gets used is whatever ends up in Full Description, Short Description, and Short Line below.
             </div>
             <textarea
-              style={{ ...inputBase, minHeight: 68, resize: 'vertical', fontSize: 13 }}
+              style={{ ...inputBase, minHeight: 68, resize: 'vertical', fontSize: 13, background: '#FFF8E7', border: '1px solid #E8C77D' }}
               value={f.description}
               onChange={e => set('description', e.target.value)}
               placeholder="Brief summary: what's happening, who it's for, why it matters."
