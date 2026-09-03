@@ -6,6 +6,7 @@ import SafeIcon from '../common/SafeIcon';
 import supabase from '../lib/supabase';
 import StandardButton from '../components/StandardButton';
 import {sanitizeHtml} from '../utils/sanitizeHtml';
+import {plainTextToHtml} from '../lib/textToHtml';
 import {formatDate,formatTime} from '../utils/dateFormat';
 import AddToCalendarButton from '../components/AddToCalendarButton';
 
@@ -21,10 +22,15 @@ const EventRegistration=()=> {
 
   const fetchEvents=async ()=> {
     try {
+      // Events are now managed in the Communication Organizer (Type: Event)
+      // rather than a dedicated admin panel - this reads the same unified,
+      // published-only table the Organizer and public Calendar use.
       const {data,error}=await supabase
-        .from('events_portal123')
+        .from('staff_announcements_portal123')
         .select('*')
-        .order('created_at',{ascending: false});
+        .eq('happening_type','event')
+        .eq('is_published',true)
+        .order('event_date',{ascending: true,nullsFirst: false});
 
       if (error) throw error;
       setEvents(data || []);
@@ -110,13 +116,13 @@ const EventRegistration=()=> {
                 {event.event_date && (
                   <p className="text-sm text-text-light mb-4">
                     {formatDate(event.event_date, {weekday: 'long',year: 'numeric',month: 'long',day: 'numeric'})}
-                    {event.start_time && ` at ${formatTime(event.start_time)}`}
-                    {event.location && ` · ${event.location}`}
+                    {event.event_time && ` at ${formatTime(event.event_time)}`}
+                    {event.event_location && ` · ${event.event_location}`}
                   </p>
                 )}
                 <div
                   className="text-text-primary mb-6 prose prose-sm max-w-none rendered-content"
-                  dangerouslySetInnerHTML={{__html: sanitizeHtml(event.details)}}
+                  dangerouslySetInnerHTML={{__html: sanitizeHtml(plainTextToHtml(event.body))}}
                 />
                 <div className="flex flex-wrap items-center gap-4">
                   {event.link && (
@@ -129,11 +135,11 @@ const EventRegistration=()=> {
                   )}
                   <AddToCalendarButton
                     title={event.title}
-                    description={event.details}
+                    description={event.body}
                     date={event.event_date}
-                    startTime={event.start_time}
+                    startTime={event.event_time}
                     endTime={event.end_time}
-                    location={event.location}
+                    location={event.event_location}
                   />
                 </div>
               </motion.div>

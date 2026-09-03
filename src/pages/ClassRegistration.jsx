@@ -6,6 +6,7 @@ import SafeIcon from '../common/SafeIcon';
 import supabase from '../lib/supabase';
 import StandardButton from '../components/StandardButton';
 import {sanitizeHtml} from '../utils/sanitizeHtml';
+import {plainTextToHtml} from '../lib/textToHtml';
 import {formatDate,formatTime} from '../utils/dateFormat';
 import AddToCalendarButton from '../components/AddToCalendarButton';
 
@@ -21,10 +22,15 @@ const ClassRegistration=()=> {
 
   const fetchClasses=async ()=> {
     try {
+      // Classes are now managed in the Communication Organizer (Type: Class)
+      // rather than a dedicated admin panel - this reads the same unified,
+      // published-only table the Organizer and public Calendar use.
       const {data,error}=await supabase
-        .from('classes_portal123')
+        .from('staff_announcements_portal123')
         .select('*')
-        .order('created_at',{ascending: false});
+        .eq('happening_type','class')
+        .eq('is_published',true)
+        .order('event_date',{ascending: true,nullsFirst: false});
 
       if (error) throw error;
       setClasses(data || []);
@@ -107,16 +113,16 @@ const ClassRegistration=()=> {
                 <h3 className="text-xl font-semibold text-text-primary mb-2">
                   {classItem.title}
                 </h3>
-                {classItem.start_date && (
+                {classItem.event_date && (
                   <p className="text-sm text-text-light mb-4">
-                    {formatDate(classItem.start_date, {weekday: 'long',year: 'numeric',month: 'long',day: 'numeric'})}
-                    {classItem.start_time && ` at ${formatTime(classItem.start_time)}`}
-                    {classItem.location && ` · ${classItem.location}`}
+                    {formatDate(classItem.event_date, {weekday: 'long',year: 'numeric',month: 'long',day: 'numeric'})}
+                    {classItem.event_time && ` at ${formatTime(classItem.event_time)}`}
+                    {classItem.event_location && ` · ${classItem.event_location}`}
                   </p>
                 )}
                 <div
                   className="text-text-primary mb-6 prose prose-sm max-w-none rendered-content"
-                  dangerouslySetInnerHTML={{__html: sanitizeHtml(classItem.details)}}
+                  dangerouslySetInnerHTML={{__html: sanitizeHtml(plainTextToHtml(classItem.body))}}
                 />
                 <div className="flex flex-wrap items-center gap-4">
                   {classItem.link && (
@@ -129,11 +135,11 @@ const ClassRegistration=()=> {
                   )}
                   <AddToCalendarButton
                     title={classItem.title}
-                    description={classItem.details}
-                    date={classItem.start_date}
-                    startTime={classItem.start_time}
+                    description={classItem.body}
+                    date={classItem.event_date}
+                    startTime={classItem.event_time}
                     endTime={classItem.end_time}
-                    location={classItem.location}
+                    location={classItem.event_location}
                   />
                 </div>
               </motion.div>

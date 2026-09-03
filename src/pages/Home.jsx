@@ -20,8 +20,8 @@ const Home=()=> {
 
   const checkAvailability=async ()=> {
     try {
-      const {data: events}=await supabase.from('events_portal123').select('id').limit(1);
-      const {data: classes}=await supabase.from('classes_portal123').select('id').limit(1);
+      const {data: events}=await supabase.from('staff_announcements_portal123').select('id').eq('happening_type','event').eq('is_published',true).limit(1);
+      const {data: classes}=await supabase.from('staff_announcements_portal123').select('id').eq('happening_type','class').eq('is_published',true).limit(1);
       const {data: resources}=await supabase.from('resources_portal123').select('id').limit(1);
       const {data: featuredButtons}=await supabase
         .from('featured_buttons_portal123')
