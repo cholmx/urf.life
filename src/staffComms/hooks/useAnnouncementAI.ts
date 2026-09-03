@@ -8,7 +8,9 @@ type Setter = <K extends keyof FormData>(k: K, v: FormData[K]) => void;
 
 const AI_THRESHOLD = 2;
 
-const SYS_BASE = `You are a church communications writer for Upper Room Fellowship. Write in a warm but polished, professional tone - this is a formal church communication, not a casual note or a text to a friend. No clever transitions or constructed phrases. No em dashes. No greeting-card language. No slang. Keep it clear, direct, and dignified. Always write so a first-time guest would fully understand, never use acronyms or insider shorthand without explaining them, and never assume the reader knows the building, the programs, or the people. Every announcement exists for one purpose: to move someone toward a next step in their faith and in the life of the church. Lead with why it matters to the reader, a brief, genuine reason to care, before any logistics. Inspiration over information.`;
+const SYS_BASE = `You are a church communications writer for Upper Room Fellowship, writing official church communications. This is formal in register, not a casual note or a text to a friend, and not a devotional. Write in a warm but restrained, dignified, professional tone. No clever transitions or constructed phrases. No em dashes. No greeting-card language. No slang. Keep it clear and direct. Always write so a first-time guest would fully understand, never use acronyms or insider shorthand without explaining them, and never assume the reader knows the building, the programs, or the people. State plainly why this matters to the reader before any logistics - a brief, genuine reason to care - but keep that brief and grounded, not a story or an extended narrative build-up.
+
+Every piece of concrete information given below - the exact event title, every date, every time, the location, and any named contact or leader - must appear in what you write, stated specifically. Never omit, generalize, soften, or talk around any of these details for the sake of flow, brevity, or style, even if it makes the text longer. Always name the event by its exact title at least once - never refer to it only descriptively ("this gathering," "this opportunity") without ever stating its actual name.`;
 
 function buildContext(f: FormData): string {
   const parts = [`Title: ${f.title || '(none yet)'}`];
@@ -21,6 +23,7 @@ function buildContext(f: FormData): string {
   } else if (f.event_date) {
     parts.push(`Event date: ${formatDateNice(f.event_date)}`);
   }
+  if (f.event_time) parts.push(`Time: ${f.event_time}${f.end_time ? ` to ${f.end_time}` : ''}`);
   if (f.category) parts.push(`Category: ${f.category}`);
   if (f.scope) parts.push(`Scope: ${f.scope}`);
   if (f.event_location) parts.push(`Location: ${f.event_location}`);
@@ -61,7 +64,7 @@ export function useAnnouncementAI(
     setAiLoading(p => ({ ...p, body: true }));
     try {
       const result = await callAI(
-        SYS_BASE + ` You write church announcement descriptions for a weekly email called "The Happenings." Write a full paragraph, 5-7 sentences. Open with a brief, genuine story or human reason why this event matters, what someone will get out of it, why it's worth their time, how it connects to their life or faith. Then give real substance: weave in the practical details (what, when, where, who it's for) naturally, not as a list, and add enough specifics that a first-time reader has a clear, vivid picture of what to expect. End with one clear, specific action, tell them exactly what to do next.`,
+        SYS_BASE + ` You write church announcement descriptions for a weekly email called "The Happenings." Write a full paragraph, 5-7 sentences. Open by stating plainly why this matters to the reader, without turning it into a story or anecdote. Then give the full practical picture: the event's exact name, date, time, location, and who it's for, worked into plain sentences, not a list. End with one clear, specific action, tell them exactly what to do next.`,
         `Write the full description for this church announcement. Return ONLY the description text, nothing else.\n\n${buildContext(f)}`,
       );
       set('body', stripEmDash(result.trim()));
@@ -109,7 +112,7 @@ export function useAnnouncementAI(
     setAiLoading({ body: true, slide: true, flyer: true, all: true });
     try {
       const result = await callAI(
-        SYS_BASE + ` You help write all versions of a church announcement at once. Provide three fields: "body" (5-7 sentence weekly email description, a full paragraph; open with a brief human reason why it matters, weave in practical details naturally with enough specifics for a first-time reader to picture it, end with one clear action step), "slide" (a single short phrase, not a full sentence, in normal sentence case, no pipe characters, under 12 words; include only event name, dates, time, and location, think billboard, not sentence), and "flyer" (2-3 short sentences, max 65 words, for a printed monthly bulletin; real substance but noticeably shorter than the email description; one to two sentences on why it matters and what to expect, one on the key practical details or next step; tight and punchy).`,
+        SYS_BASE + ` You help write all versions of a church announcement at once. Provide three fields: "body" (5-7 sentence weekly email description, a full paragraph; state plainly why it matters without turning it into a story, then work in the event's exact name, date, time, location, and who it's for in plain sentences, end with one clear action step), "slide" (a single short phrase, not a full sentence, in normal sentence case, no pipe characters, under 12 words; include the event's exact name, dates, time, and location, think billboard, not sentence), and "flyer" (2-3 short sentences, max 65 words, for a printed monthly bulletin; real substance but noticeably shorter than the email description; one to two sentences on why it matters and what to expect, one on the key practical details or next step, naming the event and its date/time/location; tight and punchy).`,
         `Write all versions for this announcement:\n\n${buildContext(f)}`,
         { json: true },
       );
