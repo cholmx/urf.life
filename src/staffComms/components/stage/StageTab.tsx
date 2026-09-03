@@ -108,7 +108,7 @@ export function StageTab({ announcements, today, onError }: StageTabProps) {
           onClick={handleGenerateAI}
           disabled={generating || stageItems.length === 0 || loadingScript}
           style={{
-            ...(useAI ? { ...btnPrimary, background: C.stageAccent } : btnGhost),
+            ...(useAI ? { ...btnPrimary, background: C.stageAccent, color: C.stageBg } : btnGhost),
             fontSize: 12,
             padding: '7px 16px',
             opacity: (stageItems.length === 0 || loadingScript) ? 0.4 : 1,
