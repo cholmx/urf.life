@@ -106,20 +106,43 @@ export function weeksUntil(eventDate: string | null | undefined, today: string):
   return Math.ceil(diff);
 }
 
+export function escapeHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 // The Happenings script used to be stored as plain text with the public
 // page rendering it via white-space: pre-wrap. It's now stored as HTML so
 // staff can bold/title-format it in ScriptEditor - this converts a legacy
 // (or freshly AI-generated, still-plain) block of text into paragraph HTML
 // on the same blank-line-separates-paragraphs rule the old renderer used.
 export function scriptTextToHtml(text: string): string {
-  const escape = (s: string) =>
-    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   return (text || '')
     .split(/\n{2,}/)
     .map(block => block.trim())
     .filter(Boolean)
-    .map(block => `<p>${escape(block).replace(/\n/g, '<br>')}</p>`)
+    .map(block => `<p>${escapeHtml(block).replace(/\n/g, '<br>')}</p>`)
     .join('');
+}
+
+// "HH:MM" (24h, from the time <select>) -> "7:00 PM". Falls back to the raw
+// string if it's already in some other format (e.g. hand-typed "7pm").
+export function formatTime12h(time: string): string {
+  if (!time) return '';
+  const match = time.match(/^(\d{1,2}):(\d{2})\s*(am|pm)?$/i);
+  if (!match) return time;
+  let hours = parseInt(match[1], 10);
+  const minutes = match[2];
+  const period = match[3]?.toLowerCase() as 'am' | 'pm' | undefined;
+  let suffix: 'AM' | 'PM';
+  if (period) {
+    suffix = period.toUpperCase() as 'AM' | 'PM';
+    if (period === 'am' && hours === 12) hours = 0;
+  } else {
+    suffix = hours >= 12 ? 'PM' : 'AM';
+    if (hours === 0) hours = 12;
+  }
+  if (hours > 12) hours -= 12;
+  return `${hours}:${minutes} ${suffix}`;
 }
 
 export function looksLikeHtml(content: string): boolean {

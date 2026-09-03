@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { C, font } from '../../lib/theme';
 import { btnGhost, btnPrimary } from '../ui/inputs';
-import { isHappeningsActive, formatDateNice, scriptTextToHtml, scriptHtmlToText, looksLikeHtml } from '../../lib/helpers';
+import { isHappeningsActive, formatDateNice, formatTime12h, escapeHtml, scriptTextToHtml, scriptHtmlToText, looksLikeHtml } from '../../lib/helpers';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
-import { callAI } from '../../lib/ai';
 import { supabase } from '../../lib/supabase';
 import { Radio } from 'lucide-react';
-import type { Announcement } from '../../types';
+import type { Announcement, RecurrenceType } from '../../types';
 import { ScriptEditor } from './ScriptEditor';
 
 interface HappeningsTabProps {
@@ -14,37 +13,51 @@ interface HappeningsTabProps {
   today: string;
 }
 
-function buildRawUpdateData(allItems: Announcement[], today: string): string {
-  let t = `Week of ${formatDateNice(today)}\n\n`;
-  allItems.forEach(a => {
-    const flyerText = (a.flyer_text || a.short_version || a.body || '').trim();
-    t += `Title: ${a.title}\n`;
-    if (flyerText) t += `Flyer Text: ${flyerText}\n`;
-    if (a.event_date) t += `Date: ${formatDateNice(a.event_date)}\n`;
-    if (a.event_time) t += `Time: ${a.event_time}\n`;
-    if (a.event_location) t += `Location: ${a.event_location}\n`;
-    if (a.contact_name || a.contact_info) {
-      t += `Leader/Contact: ${[a.contact_name, a.contact_info].filter(Boolean).join(' | ')}\n`;
-    }
-    t += '\n';
-  });
-  return t;
+const RECURRING_TYPES: RecurrenceType[] = ['weekly', 'biweekly', 'monthly', 'date_range'];
+
+// Mirrors the "when" label shown elsewhere (e.g. the printed weekly
+// bulletin) - prefer the human-written recurrence_label for anything that
+// repeats, otherwise fall back to the actual date(s).
+function whenLabel(a: Announcement): string {
+  if (RECURRING_TYPES.includes(a.recurrence_type) && a.recurrence_label) return a.recurrence_label;
+  if (a.event_date) return formatDateNice(a.event_date);
+  if (a.event_dates?.length) return a.event_dates.map(formatDateNice).join(', ');
+  return '';
 }
 
-const SYS_PROMPT = `You are assembling the weekly "Happenings" update for Upper Room Fellowship from flyer copy staff already wrote for each item. Do not rewrite, rephrase, condense, expand, or "improve" the wording of any item - use each item's flyer text essentially as written, word for word. Your only job is to stitch the items together into one flowing document: add a short transitional phrase or sentence between items, in the same warm but formal register as the source text, so the update reads naturally instead of like a list. You may adjust capitalization or punctuation right at the seam between two items if the join requires it. Do not add claims, details, or flourishes that aren't already in the source text.
+// Assembles this week's active items into the Happenings update HTML,
+// verbatim - each item's own Short Description (the same copy used on the
+// calendar, monthly flyer, and printed invite) becomes its body text
+// unchanged, with only the title (Title format) and when/where (Bold
+// format) added around it. No AI rewriting: what staff already wrote for
+// the item is what goes out.
+function buildAssembledScript(items: Announcement[]): string {
+  if (items.length === 0) {
+    return scriptTextToHtml(`Nothing officially scheduled this week, but we'd still love to see you. Check urf.life for anything that might come up.`);
+  }
+  const sections = items.map(a => {
+    const description = (a.flyer_text || a.short_version || a.body || '').trim();
+    const whenWhere = [
+      [whenLabel(a), a.event_time ? formatTime12h(a.event_time) : ''].filter(Boolean).join(' · '),
+      a.event_location || '',
+    ].filter(Boolean).join(' · ');
 
-The one exception: if an item's text uses a relative date ("this Saturday," "next week," "tomorrow"), replace it with the actual date (like "Saturday, July 12") since you don't know when this update will be read - change nothing else in that sentence.
-
-Every item must keep its name and every concrete detail given for it - date, time, location, and any named leader or contact - never omit, shorten away, or generalize these for the sake of flow. No bullet points. No lists. No em dashes. No colons. No headers. Plain sentences. Separate each item from the next with a blank line. End with a brief closer and point people to urf.life for the full list. Write ONLY the update body text. No subject line. No extra commentary.`;
+    let html = `<h3>${escapeHtml(a.title)}</h3>`;
+    if (whenWhere) html += `<p><strong>${escapeHtml(whenWhere)}</strong></p>`;
+    if (description) html += scriptTextToHtml(description);
+    return html;
+  });
+  return sections.join('') + `<p>For the full list of what's happening, visit urf.life.</p>`;
+}
 
 export function HappeningsTab({ announcements, today }: HappeningsTabProps) {
   const [script, setScript] = useState('');
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [confirmRegenerate, setConfirmRegenerate] = useState(false);
-  const [generating, setGenerating] = useState(false);
+  const [building, setBuilding] = useState(false);
   const [loadingScript, setLoadingScript] = useState(true);
-  const [aiError, setAiError] = useState('');
+  const [buildError, setBuildError] = useState('');
   const [copied, copy] = useCopyToClipboard();
 
   const active = announcements.filter(a => isHappeningsActive(a, today));
@@ -93,41 +106,29 @@ export function HappeningsTab({ announcements, today }: HappeningsTabProps) {
     }
   };
 
-  const runGenerate = async () => {
+  const runAssemble = async () => {
     const allItems = Object.values(grouped).flat();
-    setGenerating(true);
-    setAiError('');
+    setBuilding(true);
+    setBuildError('');
     setConfirmRegenerate(false);
     try {
-      if (allItems.length === 0) {
-        const fallback = scriptTextToHtml(`Nothing officially scheduled this week, but we'd still love to see you. Check urf.life for anything that might come up.`);
-        setScript(fallback);
-        setDirty(false);
-        await saveScript(fallback);
-        return;
-      }
-      const rawData = buildRawUpdateData(allItems, today);
-      const result = await callAI(
-        SYS_PROMPT,
-        `Here is this week's flyer copy for each item, written essentially as-is. Stitch it into the Happenings update:\n\n${rawData}`,
-      );
-      const html = scriptTextToHtml(result.trim() || 'Could not generate script.');
+      const html = buildAssembledScript(allItems);
       setScript(html);
       setDirty(false);
       await saveScript(html);
     } catch (e) {
-      setAiError(e instanceof Error ? e.message : 'AI generation failed');
+      setBuildError(e instanceof Error ? e.message : 'Failed to save');
     } finally {
-      setGenerating(false);
+      setBuilding(false);
     }
   };
 
-  const handleGenerateClick = () => {
+  const handleBuildClick = () => {
     if (dirty && script) {
       setConfirmRegenerate(true);
       return;
     }
-    runGenerate();
+    runAssemble();
   };
 
   return (
@@ -163,7 +164,7 @@ export function HappeningsTab({ announcements, today }: HappeningsTabProps) {
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-          {script && !generating && (
+          {script && !building && (
             <button
               onClick={() => copy(scriptHtmlToText(script))}
               style={{ ...btnGhost, fontSize: 12, padding: '7px 14px', color: copied ? C.accent : C.textSec }}
@@ -195,7 +196,7 @@ export function HappeningsTab({ announcements, today }: HappeningsTabProps) {
                 Cancel
               </button>
               <button
-                onClick={runGenerate}
+                onClick={runAssemble}
                 style={{ ...btnPrimary, fontSize: 12, padding: '7px 16px', background: C.warn }}
               >
                 Overwrite unsaved edits
@@ -203,25 +204,25 @@ export function HappeningsTab({ announcements, today }: HappeningsTabProps) {
             </>
           ) : (
             <button
-              onClick={handleGenerateClick}
-              disabled={generating}
+              onClick={handleBuildClick}
+              disabled={building}
               style={{
                 ...(script ? btnGhost : btnPrimary),
                 fontSize: 12,
                 padding: '7px 16px',
-                opacity: generating ? 0.7 : 1,
-                cursor: generating ? 'wait' : 'pointer',
+                opacity: building ? 0.7 : 1,
+                cursor: building ? 'wait' : 'pointer',
               }}
             >
-              {generating ? 'Writing...' : script ? 'Regenerate Script' : 'Generate Script'}
+              {building ? 'Building...' : script ? 'Rebuild Update' : 'Build Update'}
             </button>
           )}
         </div>
       </div>
 
-      {aiError && (
+      {buildError && (
         <p style={{ fontFamily: font.body, fontSize: 13, color: C.warn, marginBottom: 12 }}>
-          {aiError}
+          {buildError}
         </p>
       )}
 
@@ -236,15 +237,15 @@ export function HappeningsTab({ announcements, today }: HappeningsTabProps) {
           borderRadius: 10,
           padding: '32px 36px',
         }}>
-          {!script && !generating && (
+          {!script && !building && (
             <p style={{ fontFamily: font.body, fontSize: 13, color: C.textMuted, margin: '0 0 12px' }}>
-              No script yet for this week. Press "Generate Script" to assemble this week's flyer copy into a Happenings update, or start typing below.
+              No update yet for this week. Press "Build Update" to put this week's Short Descriptions together into a Happenings update, or start typing below.
             </p>
           )}
           <ScriptEditor
             value={script}
             onChange={html => { setScript(html); setDirty(true); setConfirmRegenerate(false); }}
-            disabled={generating}
+            disabled={building}
           />
         </div>
       )}
