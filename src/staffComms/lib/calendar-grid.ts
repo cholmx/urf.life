@@ -25,16 +25,34 @@ export function getMonthGrid(year: number, month: number): string[] {
 
 const WEEKDAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-// Weekly/date-range items only ever store their first session in event_date
-// (see AnnouncementForm's recurrence handling) - the actual calendar
-// occurrences have to be derived from recurrence_type/recurrence_day/
-// recurrence_end_date, not read off a literal date list.
 function daysBetween(a: string, b: string): number {
   const da = new Date(a + 'T12:00:00').getTime();
   const db = new Date(b + 'T12:00:00').getTime();
   return Math.round((db - da) / (1000 * 60 * 60 * 24));
 }
 
+// Day-of-month for the Nth (or last) occurrence of a weekday in a given
+// month, or null if that position doesn't exist (e.g. a "fifth Friday"
+// in a month with only four). position is 1-4 for first..fourth, or
+// 'last' for the final occurrence regardless of how many there are.
+function nthWeekdayOfMonth(year: number, month: number, weekdayIdx: number, position: 1 | 2 | 3 | 4 | 'last'): number | null {
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  if (position === 'last') {
+    for (let d = daysInMonth; d >= daysInMonth - 6; d--) {
+      if (new Date(year, month, d).getDay() === weekdayIdx) return d;
+    }
+    return null;
+  }
+  const firstWeekdayIdx = new Date(year, month, 1).getDay();
+  const offset = (weekdayIdx - firstWeekdayIdx + 7) % 7;
+  const day = 1 + offset + (position - 1) * 7;
+  return day <= daysInMonth ? day : null;
+}
+
+// Weekly/date-range items only ever store their first session in event_date
+// (see AnnouncementForm's recurrence handling) - the actual calendar
+// occurrences have to be derived from recurrence_type/recurrence_day/
+// recurrence_end_date, not read off a literal date list.
 function occursOn(a: Announcement, day: string): boolean {
   if (a.recurrence_type === 'weekly' && a.event_date) {
     if (day < a.event_date) return false;
@@ -52,8 +70,19 @@ function occursOn(a: Announcement, day: string): boolean {
   if (a.recurrence_type === 'monthly' && a.event_date) {
     if (day < a.event_date) return false;
     if (a.recurrence_end_date && day > a.recurrence_end_date) return false;
-    const targetDom = new Date(a.event_date + 'T12:00:00').getDate();
     const d = new Date(day + 'T12:00:00');
+    if (a.recurrence_week_of_month) {
+      const weekdayIdx = WEEKDAY_NAMES.indexOf(a.recurrence_day || WEEKDAY_NAMES[new Date(a.event_date + 'T12:00:00').getDay()]);
+      // Supports multiple positions per month (e.g. "first,third" for the
+      // 1st and 3rd Wednesday) - matches if the day is any of them.
+      const positions = a.recurrence_week_of_month.split(',').filter(Boolean);
+      return positions.some(p => {
+        const position = p === 'last' ? 'last' : (['first', 'second', 'third', 'fourth'].indexOf(p) + 1) as 1 | 2 | 3 | 4;
+        const targetDom = nthWeekdayOfMonth(d.getFullYear(), d.getMonth(), weekdayIdx, position);
+        return targetDom !== null && d.getDate() === targetDom;
+      });
+    }
+    const targetDom = new Date(a.event_date + 'T12:00:00').getDate();
     const lastDayOfMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
     return d.getDate() === Math.min(targetDom, lastDayOfMonth);
   }

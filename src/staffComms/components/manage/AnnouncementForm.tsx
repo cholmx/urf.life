@@ -13,6 +13,9 @@ import { AIWriteButton } from './AIWriteButton';
 import { useAnnouncementAI } from '../../hooks/useAnnouncementAI';
 import type { Announcement, RecurrenceType } from '../../types';
 
+type WeekPosition = 'first' | 'second' | 'third' | 'fourth' | 'last';
+const WEEK_POSITIONS: WeekPosition[] = ['first', 'second', 'third', 'fourth', 'last'];
+
 const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 const TIME_OPTIONS: { value: string; label: string }[] = (() => {
@@ -33,7 +36,7 @@ const RECURRENCE_OPTIONS: { value: RecurrenceType; label: string; desc: string }
   { value: 'date_range', label: 'Date Range', desc: 'Spans multiple consecutive days (e.g. a retreat)' },
   { value: 'weekly', label: 'Weekly', desc: 'Repeats every week on the same day' },
   { value: 'biweekly', label: 'Every 2 Weeks', desc: 'Repeats every other week on the same day' },
-  { value: 'monthly', label: 'Monthly', desc: 'Repeats every month on the same date' },
+  { value: 'monthly', label: 'Monthly', desc: 'Repeats every month - same date, or a weekday position like "first Sunday"' },
 ];
 
 function ordinal(n: number): string {
@@ -53,11 +56,25 @@ function weekdayOf(dateStr: string): string {
   return WEEKDAYS[d.getDay()] || '';
 }
 
+// Which week-of-month position a date falls on for its weekday, used to
+// seed a sensible default when switching a monthly item into weekday mode.
+function weekPositionOf(dateStr: string): WeekPosition {
+  if (!dateStr) return 'first';
+  const dom = new Date(dateStr + 'T12:00:00').getDate();
+  const idx = Math.ceil(dom / 7);
+  return idx >= 5 ? 'last' : (['first', 'second', 'third', 'fourth'] as const)[idx - 1];
+}
+
+const WEEK_POSITION_LABELS: Record<WeekPosition, string> = {
+  first: '1st', second: '2nd', third: '3rd', fourth: '4th', last: 'Last',
+};
+
 function computeRecurrenceLabel(
   type: RecurrenceType,
   eventDate: string | null,
   endDate: string | null,
   day: string,
+  weekOfMonth = '',
 ): string {
   if (type === 'one_time' || !eventDate) return '';
   if (type === 'date_range') {
@@ -81,6 +98,15 @@ function computeRecurrenceLabel(
     return `Every other ${wd}, ${s} – ${e}`;
   }
   if (type === 'monthly') {
+    if (weekOfMonth) {
+      const wd = day || weekdayOf(eventDate);
+      const positions = weekOfMonth.split(',').filter(Boolean) as WeekPosition[];
+      const posLabel = positions.map(p => WEEK_POSITION_LABELS[p]).join(' & ');
+      const prefix = `${posLabel} ${wd} of every month`;
+      if (!endDate) return prefix;
+      const e = new Date(endDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      return `${prefix}, through ${e}`;
+    }
     const dom = ordinal(new Date(eventDate + 'T12:00:00').getDate());
     if (!endDate) return `Monthly on the ${dom}`;
     const e = new Date(endDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -140,22 +166,36 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
     () => !!(announcement?.event_date || (announcement?.recurrence_type && announcement.recurrence_type !== 'one_time'))
   );
 
+  // The weekday name to feed computeRecurrenceLabel: weekly/biweekly always
+  // repeat on a weekday, monthly only does when in weekday-position mode.
+  const recurrenceDayParam = (next: typeof f) =>
+    (next.recurrence_type === 'weekly' || next.recurrence_type === 'biweekly' || (next.recurrence_type === 'monthly' && next.recurrence_week_of_month))
+      ? (next.recurrence_day || weekdayOf(next.event_date || ''))
+      : '';
+
+  const relabel = (next: typeof f) => ({
+    ...next,
+    recurrence_label: computeRecurrenceLabel(
+      next.recurrence_type,
+      next.event_date,
+      next.recurrence_end_date,
+      recurrenceDayParam(next),
+      next.recurrence_type === 'monthly' ? next.recurrence_week_of_month : '',
+    ),
+  });
+
   const set = <K extends keyof typeof f>(k: K, v: (typeof f)[K]) =>
     setF(p => {
-      const next = { ...p, [k]: v };
-      if (k === 'recurrence_type' || k === 'event_date' || k === 'recurrence_end_date' || k === 'recurrence_day') {
-        next.recurrence_label = computeRecurrenceLabel(
-          next.recurrence_type,
-          next.event_date,
-          next.recurrence_end_date,
-          (next.recurrence_type === 'weekly' || next.recurrence_type === 'biweekly') ? (next.recurrence_day || weekdayOf(next.event_date || '')) : '',
-        );
+      let next = { ...p, [k]: v };
+      if (k === 'recurrence_type' || k === 'event_date' || k === 'recurrence_end_date' || k === 'recurrence_day' || k === 'recurrence_week_of_month') {
         if (k === 'recurrence_type' && (v === 'weekly' || v === 'biweekly') && next.event_date && !next.recurrence_day) {
           next.recurrence_day = weekdayOf(next.event_date);
         }
         if (k === 'recurrence_type') {
           next.is_recurring = v !== 'one_time';
+          if (v !== 'monthly') next.recurrence_week_of_month = '';
         }
+        next = relabel(next);
       }
       if (k === 'happening_type' && (v === 'event' || v === 'class')) {
         next.signup_mode = 'none';
@@ -164,23 +204,33 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
     });
 
   // Recurring/ranged types' primary date field also feeds recurrence_label
-  // and (for weekly/biweekly) the default weekday - centralized here so
-  // every "Start Date"/"First Session" picker stays in sync with both.
+  // and (for weekly/biweekly, or monthly in weekday-position mode) the
+  // default weekday - centralized here so every "Start Date"/"First
+  // Session" picker stays in sync with both.
   const setPrimaryDate = (val: string | null, autoWeekday = false) =>
+    setF(p => relabel({
+      ...p,
+      event_date: val,
+      event_dates: val ? [val] : [],
+      recurrence_day: autoWeekday && val ? weekdayOf(val) : p.recurrence_day,
+    }));
+
+  // Switches a monthly item into weekday-position mode, seeding the
+  // weekday/position from the current First Session date if not already set.
+  const enableWeekdayMonthly = () =>
+    setF(p => relabel({
+      ...p,
+      recurrence_day: p.recurrence_day || weekdayOf(p.event_date || ''),
+      recurrence_week_of_month: p.recurrence_week_of_month || weekPositionOf(p.event_date || ''),
+    }));
+
+  const togglePosition = (pos: WeekPosition) =>
     setF(p => {
-      const next = {
-        ...p,
-        event_date: val,
-        event_dates: val ? [val] : [],
-        recurrence_day: autoWeekday && val ? weekdayOf(val) : p.recurrence_day,
-      };
-      next.recurrence_label = computeRecurrenceLabel(
-        next.recurrence_type,
-        next.event_date,
-        next.recurrence_end_date,
-        (next.recurrence_type === 'weekly' || next.recurrence_type === 'biweekly') ? (next.recurrence_day || weekdayOf(next.event_date || '')) : '',
-      );
-      return next;
+      const current = p.recurrence_week_of_month ? p.recurrence_week_of_month.split(',') as WeekPosition[] : [];
+      const has = current.includes(pos);
+      if (has && current.length === 1) return p; // keep at least one selected
+      const updated = has ? current.filter(x => x !== pos) : [...current, pos];
+      return relabel({ ...p, recurrence_week_of_month: WEEK_POSITIONS.filter(x => updated.includes(x)).join(',') });
     });
 
   const { aiLoading, hasEnoughForAI, generateBody, generateSlide, generateFlyer, generateAll } =
@@ -599,6 +649,37 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
 
           {f.recurrence_type === 'monthly' && (
             <>
+              <div style={fg}>
+                <label style={labelBase}>Repeats By</label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button
+                    type="button"
+                    onClick={() => set('recurrence_week_of_month', '')}
+                    style={{
+                      fontFamily: font.body, fontSize: 12, fontWeight: 600, padding: '8px 14px', borderRadius: 6,
+                      border: `1px solid ${!f.recurrence_week_of_month ? C.accent : C.borderMed}`,
+                      background: !f.recurrence_week_of_month ? C.accentBg : C.card,
+                      color: !f.recurrence_week_of_month ? C.accent : C.textSec,
+                      cursor: 'pointer', transition: 'all 0.15s ease',
+                    }}
+                  >
+                    Same Date
+                  </button>
+                  <button
+                    type="button"
+                    onClick={enableWeekdayMonthly}
+                    style={{
+                      fontFamily: font.body, fontSize: 12, fontWeight: 600, padding: '8px 14px', borderRadius: 6,
+                      border: `1px solid ${f.recurrence_week_of_month ? C.accent : C.borderMed}`,
+                      background: f.recurrence_week_of_month ? C.accentBg : C.card,
+                      color: f.recurrence_week_of_month ? C.accent : C.textSec,
+                      cursor: 'pointer', transition: 'all 0.15s ease',
+                    }}
+                  >
+                    Same Weekday
+                  </button>
+                </div>
+              </div>
               <div style={{ ...fg, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div>
                   <label style={labelBase}>First Session *</label>
@@ -606,7 +687,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
                     type="date"
                     style={{ ...inputBase, fontFamily: font.mono, fontSize: 12 }}
                     value={f.event_date || ''}
-                    onChange={e => setPrimaryDate(e.target.value || null)}
+                    onChange={e => setPrimaryDate(e.target.value || null, !!f.recurrence_week_of_month)}
                   />
                 </div>
                 <div>
@@ -619,10 +700,51 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
                   />
                 </div>
               </div>
-              {f.event_date && (
-                <div style={{ fontFamily: font.mono, fontSize: 11, color: C.textMuted, padding: '0 0 14px' }}>
-                  Repeats on the {ordinal(new Date(f.event_date + 'T12:00:00').getDate())} of every month. In shorter months it falls on the last day.
-                </div>
+
+              {f.recurrence_week_of_month ? (
+                <>
+                  <div style={fg}>
+                    <label style={labelBase}>Which Week(s)</label>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      {WEEK_POSITIONS.map(pos => {
+                        const active = f.recurrence_week_of_month.split(',').includes(pos);
+                        return (
+                          <button
+                            key={pos}
+                            type="button"
+                            onClick={() => togglePosition(pos)}
+                            style={{
+                              fontFamily: font.body, fontSize: 12, fontWeight: 600, padding: '6px 12px', borderRadius: 6,
+                              border: `1px solid ${active ? C.accent : C.borderMed}`,
+                              background: active ? C.accentBg : C.card,
+                              color: active ? C.accent : C.textSec,
+                              cursor: 'pointer', transition: 'all 0.15s ease',
+                            }}
+                          >
+                            {WEEK_POSITION_LABELS[pos]}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div style={fg}>
+                    <label style={labelBase}>Repeats On</label>
+                    <select
+                      style={inputBase}
+                      value={f.recurrence_day || weekdayOf(f.event_date || '') || ''}
+                      onChange={e => set('recurrence_day', e.target.value)}
+                    >
+                      <option value="">Select a day...</option>
+                      {WEEKDAYS.map(d => <option key={d} value={d}>{d}</option>)}
+                    </select>
+                  </div>
+                </>
+              ) : (
+                f.event_date && (
+                  <div style={{ fontFamily: font.mono, fontSize: 11, color: C.textMuted, padding: '0 0 14px' }}>
+                    Repeats on the {ordinal(new Date(f.event_date + 'T12:00:00').getDate())} of every month. In shorter months it falls on the last day.
+                  </div>
+                )
               )}
             </>
           )}

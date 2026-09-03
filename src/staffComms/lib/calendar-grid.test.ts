@@ -42,6 +42,7 @@ function makeAnnouncement(overrides: Partial<Announcement>): Announcement {
     ministry: '',
     recurrence_type: 'one_time',
     recurrence_day: '',
+    recurrence_week_of_month: '',
     recurrence_end_date: null,
     recurrence_label: '',
     ...overrides,
@@ -149,6 +150,77 @@ describe('getEventItems', () => {
     });
     expect(getEventItems('2026-02-15', [a])).toEqual([a]);
     expect(getEventItems('2026-03-15', [a])).toEqual([]);
+  });
+
+  it('expands a monthly weekday-position recurrence onto the Nth weekday each month', () => {
+    // September 2026 has 5 Wednesdays: 2, 9, 16, 23, 30
+    const a = makeAnnouncement({
+      recurrence_type: 'monthly',
+      recurrence_day: 'Wednesday',
+      recurrence_week_of_month: 'first',
+      event_date: '2026-09-01',
+      event_dates: ['2026-09-01'],
+    });
+    expect(getEventItems('2026-09-02', [a])).toEqual([a]); // first Wednesday
+    expect(getEventItems('2026-09-09', [a])).toEqual([]); // second Wednesday - not selected
+    expect(getEventItems('2026-10-07', [a])).toEqual([a]); // first Wednesday of October
+  });
+
+  it('distinguishes "fourth" from "last" in a month with a fifth occurrence', () => {
+    const fourth = makeAnnouncement({
+      recurrence_type: 'monthly', recurrence_day: 'Wednesday', recurrence_week_of_month: 'fourth',
+      event_date: '2026-09-01', event_dates: ['2026-09-01'],
+    });
+    const last = makeAnnouncement({
+      recurrence_type: 'monthly', recurrence_day: 'Wednesday', recurrence_week_of_month: 'last',
+      event_date: '2026-09-01', event_dates: ['2026-09-01'],
+    });
+    expect(getEventItems('2026-09-23', [fourth])).toEqual([fourth]); // 4th Wednesday
+    expect(getEventItems('2026-09-30', [fourth])).toEqual([]); // 5th, not 4th
+    expect(getEventItems('2026-09-30', [last])).toEqual([last]); // last Wednesday (the 5th)
+    expect(getEventItems('2026-09-23', [last])).toEqual([]); // not the last one
+  });
+
+  it('expands a monthly item with multiple week positions (e.g. 1st and 3rd)', () => {
+    const a = makeAnnouncement({
+      recurrence_type: 'monthly',
+      recurrence_day: 'Wednesday',
+      recurrence_week_of_month: 'first,third',
+      event_date: '2026-09-01',
+      event_dates: ['2026-09-01'],
+    });
+    expect(getEventItems('2026-09-02', [a])).toEqual([a]); // 1st Wednesday
+    expect(getEventItems('2026-09-09', [a])).toEqual([]); // 2nd - not selected
+    expect(getEventItems('2026-09-16', [a])).toEqual([a]); // 3rd Wednesday
+    expect(getEventItems('2026-09-23', [a])).toEqual([]); // 4th - not selected
+  });
+
+  it('expands a monthly item on the 2nd and 4th Tuesday', () => {
+    const a = makeAnnouncement({
+      recurrence_type: 'monthly',
+      recurrence_day: 'Tuesday',
+      recurrence_week_of_month: 'second,fourth',
+      event_date: '2026-09-01',
+      event_dates: ['2026-09-01'],
+    });
+    expect(getEventItems('2026-09-01', [a])).toEqual([]); // 1st Tuesday - not selected
+    expect(getEventItems('2026-09-08', [a])).toEqual([a]); // 2nd Tuesday
+    expect(getEventItems('2026-09-15', [a])).toEqual([]); // 3rd - not selected
+    expect(getEventItems('2026-09-22', [a])).toEqual([a]); // 4th Tuesday
+    expect(getEventItems('2026-09-29', [a])).toEqual([]); // 5th - not selected
+  });
+
+  it('stops a monthly weekday-position recurrence at recurrence_end_date', () => {
+    const a = makeAnnouncement({
+      recurrence_type: 'monthly',
+      recurrence_day: 'Wednesday',
+      recurrence_week_of_month: 'first',
+      event_date: '2026-09-01',
+      event_dates: ['2026-09-01'],
+      recurrence_end_date: '2026-09-30',
+    });
+    expect(getEventItems('2026-09-02', [a])).toEqual([a]);
+    expect(getEventItems('2026-10-07', [a])).toEqual([]);
   });
 
   it('expands a date_range item across every day in its span', () => {

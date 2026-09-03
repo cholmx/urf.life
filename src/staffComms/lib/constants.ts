@@ -83,6 +83,7 @@ export const DEFAULT_ANNOUNCEMENT = {
   ministry: '',
   recurrence_type: 'one_time' as const,
   recurrence_day: '',
+  recurrence_week_of_month: '',
   recurrence_end_date: null as string | null,
   recurrence_label: '',
 };

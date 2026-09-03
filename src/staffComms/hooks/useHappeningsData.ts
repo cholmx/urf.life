@@ -81,6 +81,7 @@ export function useHappeningsData(enabled: boolean, onNavigateToManage?: () => v
       ministry: f.scope === 'ministry' ? (f.ministry || '') : '',
       recurrence_type: f.recurrence_type || 'one_time',
       recurrence_day: f.recurrence_day || '',
+      recurrence_week_of_month: f.recurrence_week_of_month || '',
       recurrence_end_date: f.recurrence_end_date || null,
       recurrence_label: f.recurrence_label || '',
     };

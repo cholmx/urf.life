@@ -51,6 +51,10 @@ export interface Announcement {
   ministry: string;
   recurrence_type: RecurrenceType;
   recurrence_day: string;
+  // Comma-separated week positions for "monthly on a weekday position"
+  // recurrence, e.g. "first,third" for the 1st and 3rd Wednesday.
+  // Empty means date-based monthly (same day-of-month every month).
+  recurrence_week_of_month: string;
   recurrence_end_date: string | null;
   recurrence_label: string;
   created_at?: string;
