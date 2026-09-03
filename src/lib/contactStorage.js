@@ -69,6 +69,34 @@ export const submitRealmSignup = async (formData) => {
   }
 };
 
+export const submitHappeningRsvp = async (formData) => {
+  try {
+    const { data, error } = await supabase
+      .from('happening_rsvps_portal123')
+      .insert([{
+        happening_id: formData.happening_id,
+        name: formData.name,
+        email: formData.email || null,
+        phone: formData.phone || null,
+        party_size: formData.party_size || null,
+        notes: formData.notes || null
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    sendEmail(formData, 'rsvp').catch(err =>
+      console.error('RSVP notification email failed:', err)
+    );
+
+    return { data, error: null };
+  } catch (error) {
+    console.error('Error submitting happening RSVP:', error);
+    return { data: null, error: error.message };
+  }
+};
+
 export const submitTableGroupSignup = async (formData) => {
   try {
     const { data, error } = await supabase

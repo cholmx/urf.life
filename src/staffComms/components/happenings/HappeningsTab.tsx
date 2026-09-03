@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
 import { C, font } from '../../lib/theme';
 import { btnGhost, btnPrimary } from '../ui/inputs';
-import { isHappeningsActive, formatDateNice, scriptTextToHtml, scriptHtmlToText, looksLikeHtml } from '../../lib/helpers';
+import { isHappeningsActive, formatDateNice } from '../../lib/helpers';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { callAI } from '../../lib/ai';
 import { supabase } from '../../lib/supabase';
 import { Radio } from 'lucide-react';
 import type { Announcement } from '../../types';
-import { ScriptEditor } from './ScriptEditor';
 
 interface HappeningsTabProps {
   announcements: Announcement[];
@@ -21,21 +20,15 @@ function buildRawUpdateData(allItems: Announcement[], today: string): string {
     t += `Title: ${a.title}\n`;
     if (flyerText) t += `Flyer Text: ${flyerText}\n`;
     if (a.event_date) t += `Date: ${formatDateNice(a.event_date)}\n`;
-    if (a.event_time) t += `Time: ${a.event_time}\n`;
-    if (a.event_location) t += `Location: ${a.event_location}\n`;
     if (a.contact_name || a.contact_info) {
-      t += `Leader/Contact: ${[a.contact_name, a.contact_info].filter(Boolean).join(' | ')}\n`;
+      t += `Contact: ${[a.contact_name, a.contact_info].filter(Boolean).join(' | ')}\n`;
     }
     t += '\n';
   });
   return t;
 }
 
-const SYS_PROMPT = `You are assembling the weekly "Happenings" update for Upper Room Fellowship from flyer copy staff already wrote for each item. Do not rewrite, rephrase, condense, expand, or "improve" the wording of any item - use each item's flyer text essentially as written, word for word. Your only job is to stitch the items together into one flowing document: add a short transitional phrase or sentence between items, in the same warm but formal register as the source text, so the update reads naturally instead of like a list. You may adjust capitalization or punctuation right at the seam between two items if the join requires it. Do not add claims, details, or flourishes that aren't already in the source text.
-
-The one exception: if an item's text uses a relative date ("this Saturday," "next week," "tomorrow"), replace it with the actual date (like "Saturday, July 12") since you don't know when this update will be read - change nothing else in that sentence.
-
-Every item must keep its name and every concrete detail given for it - date, time, location, and any named leader or contact - never omit, shorten away, or generalize these for the sake of flow. No bullet points. No lists. No em dashes. No colons. No headers. Plain sentences. Separate each item from the next with a blank line. End with a brief closer and point people to urf.life for the full list. Write ONLY the update body text. No subject line. No extra commentary.`;
+const SYS_PROMPT = `You are assembling the weekly "Happenings" email for Upper Room Fellowship. Each item below already has finished flyer copy that staff wrote for it - your job is light editing, not rewriting. Combine the flyer texts into one flowing email, adding only brief transitions between items so it reads naturally, one thing moving into the next. Keep each item's own wording, details, and tone as close to the original as you can - do not rephrase sentences that are already fine, and do not add claims or details that aren't already in the source text. Never set up or pre-announce what you're about to say, just say it. When mentioning dates, always use the actual date (like "Saturday, July 12"). Never use relative terms like "tomorrow", "this weekend", "next week", or "in a few days", you do not know when this email will be read. No bullet points. No lists. No em dashes. No colons. No headers. Plain sentences. End with a brief closer and point people to urf.life for the full list. Write ONLY the email body text. No subject line. No extra commentary.`;
 
 export function HappeningsTab({ announcements, today }: HappeningsTabProps) {
   const [script, setScript] = useState('');
@@ -66,12 +59,7 @@ export function HappeningsTab({ announcements, today }: HappeningsTabProps) {
       .eq('week_date', today)
       .maybeSingle()
       .then(({ data }) => {
-        if (data?.content) {
-          // Scripts saved before the rich-text editor was added are plain
-          // text, not HTML - convert on the way in so they still render
-          // (and format) correctly in ScriptEditor.
-          setScript(looksLikeHtml(data.content) ? data.content : scriptTextToHtml(data.content));
-        }
+        if (data?.content) setScript(data.content);
         setLoadingScript(false);
       });
   }, [today]);
@@ -100,7 +88,7 @@ export function HappeningsTab({ announcements, today }: HappeningsTabProps) {
     setConfirmRegenerate(false);
     try {
       if (allItems.length === 0) {
-        const fallback = scriptTextToHtml(`Nothing officially scheduled this week, but we'd still love to see you. Check urf.life for anything that might come up.`);
+        const fallback = `Nothing officially scheduled this week, but we'd still love to see you. Check urf.life for anything that might come up.`;
         setScript(fallback);
         setDirty(false);
         await saveScript(fallback);
@@ -109,12 +97,12 @@ export function HappeningsTab({ announcements, today }: HappeningsTabProps) {
       const rawData = buildRawUpdateData(allItems, today);
       const result = await callAI(
         SYS_PROMPT,
-        `Here is this week's flyer copy for each item, written essentially as-is. Stitch it into the Happenings update:\n\n${rawData}`,
+        `Here is this week's flyer copy for each item. Assemble the Happenings email:\n\n${rawData}`,
       );
-      const html = scriptTextToHtml(result.trim() || 'Could not generate script.');
-      setScript(html);
+      const text = result.trim() || 'Could not generate script.';
+      setScript(text);
       setDirty(false);
-      await saveScript(html);
+      await saveScript(text);
     } catch (e) {
       setAiError(e instanceof Error ? e.message : 'AI generation failed');
     } finally {
@@ -165,7 +153,7 @@ export function HappeningsTab({ announcements, today }: HappeningsTabProps) {
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
           {script && !generating && (
             <button
-              onClick={() => copy(scriptHtmlToText(script))}
+              onClick={() => copy(script)}
               style={{ ...btnGhost, fontSize: 12, padding: '7px 14px', color: copied ? C.accent : C.textSec }}
             >
               {copied ? 'Copied!' : 'Copy Script'}
@@ -235,15 +223,24 @@ export function HappeningsTab({ announcements, today }: HappeningsTabProps) {
           borderRadius: 10,
           padding: '32px 36px',
         }}>
-          {!script && !generating && (
-            <p style={{ fontFamily: font.body, fontSize: 13, color: C.textMuted, margin: '0 0 12px' }}>
-              No script yet for this week. Press "Generate Script" to assemble this week's flyer copy into a Happenings update, or start typing below.
-            </p>
-          )}
-          <ScriptEditor
+          <textarea
             value={script}
-            onChange={html => { setScript(html); setDirty(true); setConfirmRegenerate(false); }}
+            onChange={e => { setScript(e.target.value); setDirty(true); setConfirmRegenerate(false); }}
+            placeholder={`No script yet for this week. Press "Generate Script" to assemble this week's flyer copy into a Happenings email, or start typing here.`}
             disabled={generating}
+            style={{
+              width: '100%',
+              minHeight: 360,
+              border: 'none',
+              outline: 'none',
+              resize: 'vertical',
+              background: 'transparent',
+              fontFamily: font.body,
+              fontSize: 15,
+              lineHeight: 1.8,
+              color: C.stageText,
+              boxSizing: 'border-box',
+            }}
           />
         </div>
       )}

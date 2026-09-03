@@ -32,11 +32,6 @@ function buildPostcardHTML(d: InviteData): string {
     ? d.recurrenceStr
     : d.dateStr;
 
-  const timeLocationParts = [];
-  if (d.timeStr) timeLocationParts.push(`@ ${d.timeStr}`);
-  if (d.location) timeLocationParts.push(d.location);
-  const timeLocationLine = timeLocationParts.join(' &middot; ');
-
   return `<div class="card" style="width:5.5in;height:4.25in;background:#fff;font-family:'Inter',sans-serif;display:flex;flex-direction:column;box-sizing:border-box;padding:0.65in 0.6in;overflow:hidden;">
     ${imageBlock}
     <div style="flex-shrink:0;text-align:left;padding-bottom:10pt;border-bottom:4pt solid ${ORANGE};">
@@ -52,7 +47,8 @@ function buildPostcardHTML(d: InviteData): string {
         ${dateLine}
       </div>
       ${recurrenceBlock}
-      ${timeLocationLine ? `<div style="font-family:'Caladea',Georgia,serif;font-style:italic;font-size:14pt;color:${ORANGE};margin-top:4pt;line-height:1.0;">${timeLocationLine}</div>` : ''}
+      ${d.timeStr ? `<div style="font-family:'Caladea',Georgia,serif;font-style:italic;font-size:14pt;color:${ORANGE};margin-top:4pt;line-height:1.0;">@ ${d.timeStr}</div>` : ''}
+      ${d.location ? `<div style="font-family:'Inter',sans-serif;font-size:11pt;font-weight:800;color:${TEAL};margin-top:6pt;line-height:1.0;">${d.location}</div>` : ''}
       ${d.address ? `<div style="font-family:'Inter',sans-serif;font-size:10pt;color:#666;margin-top:2pt;line-height:1.0;">${d.address}</div>` : ''}
       ${d.flyerText ? `<div style="font-family:'Inter',sans-serif;font-size:10pt;color:#222;line-height:1.08;margin-top:7pt;max-width:4.2in;white-space:pre-wrap;">${d.flyerText}</div>` : ''}
       ${d.inviteNote ? `<div style="font-family:'Caladea',Georgia,serif;font-style:italic;font-size:11pt;color:${ORANGE};margin-top:7pt;max-width:4.2in;line-height:1.0;">&ldquo;${d.inviteNote}&rdquo;</div>` : ''}

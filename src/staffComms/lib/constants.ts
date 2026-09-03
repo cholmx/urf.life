@@ -29,18 +29,26 @@ export const HAPPENING_TYPE_OPTIONS = [
   { value: 'general', label: 'General', desc: 'Anything else' },
 ] as const;
 
-// Events/Classes sign up externally (Realm, etc.) via the Link field, not
-// through this app - see AnnouncementForm. Online RSVP was removed
-// entirely (it was never actually wired up anywhere on the public site);
-// a printable sign-up sheet is the only built-in option left.
+// Online RSVP is built (happening_rsvps_portal123, the public RSVP modal,
+// the admin RSVP panel) but intentionally not offered as a choice right
+// now - 'online' and 'both' are left out of this list on purpose. See git
+// history around this line for how to bring the option back later.
 export const SIGNUP_MODE_OPTIONS = [
   { value: 'none', label: 'No sign-up needed' },
   { value: 'sheet', label: 'Printable sign-up sheet' },
 ] as const;
 
+export const TABS = [
+  { key: 'manage', label: 'Manage' },
+  { key: 'calendar', label: 'Calendar' },
+  { key: 'outputs', label: 'Outputs' },
+  { key: 'archive', label: 'Archive' },
+] as const;
+
 export const OUTPUT_TABS = [
   { key: 'stage', label: 'Stage Script' },
   { key: 'slides', label: 'Sunday Slides' },
+  { key: 'happenings', label: 'The Happenings' },
   { key: 'monthly', label: 'Monthly Flyer' },
   { key: 'weekly', label: 'Weekly Bulletin' },
 ] as const;
@@ -78,7 +86,7 @@ export const DEFAULT_ANNOUNCEMENT = {
   is_published: false,
   published_at: null as string | null,
   slide_made: false,
-  status: 'approved' as const,
+  status: 'draft' as const,
   assigned_to: '',
   ministry: '',
   recurrence_type: 'one_time' as const,

@@ -33,11 +33,11 @@ export function useHappeningsData(enabled: boolean, onNavigateToManage?: () => v
     if (enabled) fetchAnnouncements();
   }, [enabled, fetchAnnouncements]);
 
-  const handleSave = async (f: Omit<Announcement, 'id' | 'created_at' | 'updated_at'> & { id?: string }): Promise<Announcement | null> => {
+  const handleSave = async (f: Omit<Announcement, 'id' | 'created_at' | 'updated_at'> & { id?: string }) => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       showError('Session expired. Please sign back in.');
-      return null;
+      return;
     }
     const announcementLike = { ...f, id: f.id ?? '' } as Announcement;
     const payload = {
@@ -66,17 +66,14 @@ export function useHappeningsData(enabled: boolean, onNavigateToManage?: () => v
       flyer_text: f.flyer_text,
       stage_notes: f.stage_notes,
       needs_signup: f.needs_signup,
-      // Events and Classes sign up externally (Realm, etc.) via the Link
-      // field, not this app's built-in sign-up - enforced here too in case
-      // a row saved before this rule still has a stale mode set.
-      signup_mode: (f.happening_type === 'event' || f.happening_type === 'class') ? 'none' : (f.signup_mode || 'none'),
+      signup_mode: f.signup_mode || 'none',
       signup_sheet_config: f.signup_sheet_config ?? null,
       is_published: f.is_published,
       published_at: f.is_published ? (f.published_at || new Date().toISOString()) : f.published_at,
       event_location: f.event_location,
       event_dates: f.event_dates,
       slide_made: f.slide_made,
-      status: 'approved',
+      status: f.status,
       assigned_to: f.assigned_to,
       ministry: f.scope === 'ministry' ? (f.ministry || '') : '',
       recurrence_type: f.recurrence_type || 'one_time',
@@ -90,25 +87,16 @@ export function useHappeningsData(enabled: boolean, onNavigateToManage?: () => v
         .from('staff_announcements_portal123')
         .update(payload)
         .eq('id', f.id);
-      if (error) {
-        showError(`Failed to save announcement: ${error.message}`);
-        return null;
-      }
-      const merged = { ...announcementLike, ...payload, id: f.id } as Announcement;
-      setAnnouncements(prev => prev.map(a => a.id === f.id ? merged : a));
-      return merged;
+      if (error) showError(`Failed to save announcement: ${error.message}`);
+      else setAnnouncements(prev => prev.map(a => a.id === f.id ? { ...a, ...payload } : a));
     } else {
       const { data, error } = await supabase
         .from('staff_announcements_portal123')
         .insert(payload)
         .select()
         .single();
-      if (error) {
-        showError(`Failed to create announcement: ${error.message}`);
-        return null;
-      }
-      if (data) setAnnouncements(prev => [data as Announcement, ...prev]);
-      return data as Announcement;
+      if (error) showError(`Failed to create announcement: ${error.message}`);
+      else if (data) setAnnouncements(prev => [data as Announcement, ...prev]);
     }
   };
 
@@ -121,6 +109,7 @@ export function useHappeningsData(enabled: boolean, onNavigateToManage?: () => v
       happenings_start_date: null,
       happenings_end_date: null,
       slide_made: false,
+      status: 'draft',
     });
     setEditing('new');
     onNavigateToManage?.();
@@ -138,6 +127,15 @@ export function useHappeningsData(enabled: boolean, onNavigateToManage?: () => v
     if (error) {
       showError('Failed to update slide status.');
       setAnnouncements(prev => prev.map(a => a.id === id ? { ...a, slide_made: !value } : a));
+    }
+  };
+
+  const handleApprove = async (id: string) => {
+    setAnnouncements(prev => prev.map(a => a.id === id ? { ...a, status: 'approved' } : a));
+    const { error } = await supabase.from('staff_announcements_portal123').update({ status: 'approved' }).eq('id', id);
+    if (error) {
+      showError('Failed to approve announcement.');
+      setAnnouncements(prev => prev.map(a => a.id === id ? { ...a, status: 'draft' } : a));
     }
   };
 
@@ -168,7 +166,7 @@ export function useHappeningsData(enabled: boolean, onNavigateToManage?: () => v
     announcements, activeAnnouncements, archivedAnnouncements, loading,
     today, setToday,
     editing, setEditing, copySource, setCopySource,
-    handleSave, handleDelete, handleTogglePublish, handleToggleSlideMade, handleCopyFromArchive,
+    handleSave, handleDelete, handleApprove, handleTogglePublish, handleToggleSlideMade, handleCopyFromArchive,
     toasts, showError, showSuccess, dismissToast,
   };
 }

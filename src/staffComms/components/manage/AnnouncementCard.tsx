@@ -11,19 +11,27 @@ const DEST_LABELS = [
   { key: 'monthly_include' as const,   short: 'Flyer' },
 ];
 
+const STATUS_STYLES: Record<Announcement['status'], { bg: string; color: string; border: string; label: string }> = {
+  draft:     { bg: 'rgba(148,163,184,0.10)', color: '#64748B', border: 'rgba(148,163,184,0.30)', label: 'Draft' },
+  approved:  { bg: 'rgba(22,163,74,0.12)',   color: '#15803D', border: 'rgba(22,163,74,0.35)',   label: 'Approved' },
+};
+
 interface AnnouncementCardProps {
   a: Announcement;
   today: string;
   onEdit: (a: Announcement) => void;
   onDelete: (id: string) => void;
+  onApprove: (id: string) => void;
   onTogglePublish: (a: Announcement) => Promise<void>;
 }
 
 const SIGNUP_MODE_LABELS: Record<string, string> = {
+  online: 'Online RSVP',
   sheet: 'Sign-up Sheet',
+  both: 'RSVP + Sheet',
 };
 
-export function AnnouncementCard({ a, today, onEdit, onDelete, onTogglePublish }: AnnouncementCardProps) {
+export function AnnouncementCard({ a, today, onEdit, onDelete, onApprove, onTogglePublish }: AnnouncementCardProps) {
   const [hovered, setHovered] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [publishing, setPublishing] = useState(false);
@@ -38,6 +46,7 @@ export function AnnouncementCard({ a, today, onEdit, onDelete, onTogglePublish }
   };
   const wks = weeksUntil(a.event_date, today);
   const accentColor = scopeRangeColors[a.scope] || C.borderMed;
+  const st = STATUS_STYLES[a.status];
 
   const printInvite = () => {
     const html = buildInviteHTMLFromAnnouncement(a);
@@ -86,6 +95,18 @@ export function AnnouncementCard({ a, today, onEdit, onDelete, onTogglePublish }
           {a.scope === 'whole_church' && (
             <span style={{ fontFamily: font.display, fontSize: 9, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: C.accent }}>Stage</span>
           )}
+          <span style={{
+            fontFamily: font.display,
+            fontSize: 9,
+            fontWeight: 700,
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+            color: st.color,
+            background: st.bg,
+            border: `1px solid ${st.border}`,
+            borderRadius: 4,
+            padding: '2px 7px',
+          }}>{st.label}</span>
           {a.is_published && (
             <span style={{
               fontFamily: font.display,
@@ -149,6 +170,14 @@ export function AnnouncementCard({ a, today, onEdit, onDelete, onTogglePublish }
             >
               {SIGNUP_MODE_LABELS[a.signup_mode] || 'Sign-up'}
             </span>
+          )}
+          {a.status === 'draft' && (
+            <button
+              onClick={() => onApprove(a.id)}
+              style={{ fontFamily: font.display, fontSize: 10, fontWeight: 800, color: '#fff', background: '#15803D', border: `1px solid #15803D`, borderRadius: 5, padding: '4px 12px', cursor: 'pointer', letterSpacing: '0.04em', textTransform: 'uppercase', transition: 'background 0.15s' }}
+              onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#167C42'}
+              onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = '#15803D'}
+            >Approve</button>
           )}
           {confirmDelete ? (
             <>

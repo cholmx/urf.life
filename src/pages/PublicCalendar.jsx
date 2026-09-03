@@ -249,10 +249,6 @@ const PublicCalendar=()=> {
                           )}
                         </div>
 
-                        {a.flyer_text && (
-                          <p className="text-sm text-text-primary mb-3 leading-relaxed whitespace-pre-wrap">{a.flyer_text}</p>
-                        )}
-
                         <div className="flex flex-wrap items-center gap-4">
                           <AddToCalendarButton
                             title={a.title}
@@ -273,7 +269,7 @@ const PublicCalendar=()=> {
                               <SafeIcon icon={FiExternalLink} className="h-3.5 w-3.5" />
                             </a>
                           )}
-                          {a.signup_mode==='sheet' && (
+                          {(a.signup_mode==='sheet' || a.signup_mode==='both') && (
                             <span className="text-sm text-text-light italic">Sign up in person</span>
                           )}
                         </div>

@@ -11,6 +11,7 @@ import {
 } from '../../lib/helpers';
 import { AIWriteButton } from './AIWriteButton';
 import { useAnnouncementAI } from '../../hooks/useAnnouncementAI';
+import { STATUS_OPTIONS } from '../../types';
 import type { Announcement, RecurrenceType } from '../../types';
 
 const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -94,12 +95,6 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
   const [ministryOther, setMinistryOther] = useState(
     () => announcement?.ministry != null && !MINISTRY_OPTIONS.includes(announcement.ministry as typeof MINISTRY_OPTIONS[number])
   );
-  const [showAdvanced, setShowAdvanced] = useState(
-    () => !!announcement?.assigned_to
-  );
-  const [timingExpanded, setTimingExpanded] = useState(
-    () => !!(announcement?.event_date || (announcement?.recurrence_type && announcement.recurrence_type !== 'one_time'))
-  );
 
   const set = <K extends keyof typeof f>(k: K, v: (typeof f)[K]) =>
     setF(p => {
@@ -118,16 +113,11 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
           next.is_recurring = v !== 'one_time';
         }
       }
-      if (k === 'happening_type' && (v === 'event' || v === 'class')) {
-        next.signup_mode = 'none';
-      }
       return next;
     });
 
   const { aiLoading, hasEnoughForAI, generateBody, generateSlide, generateFlyer, generateAll } =
     useAnnouncementAI(f, set, onError);
-
-  const isScheduledType = f.happening_type === 'event' || f.happening_type === 'class';
 
   const slideStart = f.event_date ? getSlideStartDate(f as Announcement) : null;
   const slideEnd   = f.event_date ?? null;
@@ -224,6 +214,15 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
               placeholder="Announcement title"
             />
           </div>
+          <div style={fg}>
+            <label style={labelBase}>Short Description <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(helps AI generate better content)</span></label>
+            <textarea
+              style={{ ...inputBase, minHeight: 68, resize: 'vertical', fontSize: 13 }}
+              value={f.description}
+              onChange={e => set('description', e.target.value)}
+              placeholder="Brief summary: what's happening, who it's for, why it matters."
+            />
+          </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div>
               <label style={labelBase}>Category</label>
@@ -280,141 +279,40 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
           )}
         </Section>
 
-        <Section title="Description">
-          <div style={fg}>
-            <label style={labelBase}>Notes for AI <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(only feeds the drafts below)</span></label>
-            <div style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, marginBottom: 5, lineHeight: 1.5 }}>
-              This is never published or printed anywhere on its own - it's only here to give the AI something to work from. Write it as rough notes. What actually gets used is whatever ends up in Full Description, Short Description, and Short Line below.
-            </div>
-            <textarea
-              style={{ ...inputBase, minHeight: 68, resize: 'vertical', fontSize: 13, background: '#FFF8E7', border: '1px solid #E8C77D' }}
-              value={f.description}
-              onChange={e => set('description', e.target.value)}
-              placeholder="Brief summary: what's happening, who it's for, why it matters."
-            />
-          </div>
-
-          <div style={fg}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
-              <label style={labelBase}>Full Description <span style={{ fontWeight: 400, textTransform: 'none' }}>(The Happenings email)</span></label>
-              <AIWriteButton label="Draft" loading={aiLoading.body} onClick={generateBody} disabled={!hasEnoughForAI} />
-            </div>
-            <textarea
-              style={{ ...inputBase, minHeight: 80, resize: 'vertical' }}
-              value={f.body}
-              onChange={e => set('body', e.target.value)}
-              placeholder="Full email copy. AI can write this for you, or type your own - useful even if this isn't going anywhere yet, e.g. to print an invite."
-            />
-          </div>
-
-          <div style={fg}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
-              <div>
-                <label style={labelBase}>Short Description <span style={{ fontWeight: 400, textTransform: 'none' }}>(Monthly Flyer & printed Invite)</span></label>
-                <div style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, marginTop: 1 }}>max 50 words - also the body copy on the printed Invite (Invite button, back on the list)</div>
-              </div>
-              <AIWriteButton label="Draft" loading={aiLoading.flyer} onClick={generateFlyer} disabled={!hasEnoughForAI} />
-            </div>
-            <textarea
-              style={{ ...inputBase, minHeight: 60, resize: 'vertical' }}
-              value={f.flyer_text}
-              onChange={e => set('flyer_text', e.target.value)}
-              placeholder="Short copy for the printed monthly flyer and invite."
-            />
-          </div>
-
-          <div style={fg}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
-              <div>
-                <label style={labelBase}>Short Line <span style={{ fontWeight: 400, textTransform: 'none' }}>(Slides & Email one-liner)</span></label>
-                <div style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, marginTop: 1 }}>one sentence, pipe-delimited</div>
-              </div>
-              <AIWriteButton label="Draft" loading={aiLoading.slide} onClick={generateSlide} disabled={!hasEnoughForAI} />
-            </div>
-            <input
-              style={{ ...inputBase, fontFamily: font.mono, fontSize: 12 }}
-              value={f.slide_override}
-              onChange={e => { set('slide_override', e.target.value); set('short_version', e.target.value); }}
-              placeholder="Men's Bible Study | May 6 | 7 PM | Fellowship Hall"
-            />
-          </div>
-
-          <div>
-            <label style={labelBase}>Stage Notes <span style={{ fontWeight: 400, textTransform: 'none' }}>(optional)</span></label>
-            <div style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, marginTop: 1, marginBottom: 5 }}>
-              A short line of tone guidance for whoever reads the Stage Script live, and the quoted line printed on the Invite. Leave blank for neither.
-            </div>
-            <input
-              style={inputBase}
-              value={f.stage_notes}
-              onChange={e => set('stage_notes', e.target.value)}
-              placeholder={`e.g. "Come as you are."`}
-            />
-          </div>
-        </Section>
-
         <Section title="Details">
-          {isScheduledType ? (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
-              <div style={{ gridColumn: '1 / -1' }}>
-                <label style={labelBase}>Location</label>
-                <input style={inputBase} value={f.event_location} onChange={e => set('event_location', e.target.value)} placeholder="e.g. Fellowship Hall, Room 201" />
-              </div>
-              <div style={{ gridColumn: '1 / -1' }}>
-                <label style={labelBase}>Registration Link <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></label>
-                <input type="url" style={inputBase} value={f.link} onChange={e => set('link', e.target.value)} placeholder="https://example.com/register" />
-              </div>
-              <div>
-                <label style={labelBase}>Contact Name</label>
-                <input style={inputBase} value={f.contact_name} onChange={e => set('contact_name', e.target.value)} placeholder="Optional" />
-              </div>
-              <div>
-                <label style={labelBase}>Contact Info</label>
-                <input style={inputBase} value={f.contact_info} onChange={e => set('contact_info', e.target.value)} placeholder="Email or phone" />
-              </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+            <div style={{ gridColumn: '1 / -1' }}>
+              <label style={labelBase}>Location</label>
+              <input style={inputBase} value={f.event_location} onChange={e => set('event_location', e.target.value)} placeholder="e.g. Fellowship Hall, Room 201" />
             </div>
-          ) : (
-            <div style={{ fontFamily: font.mono, fontSize: 11, color: C.textMuted }}>
-              Location, registration link, and contact info apply to Events and Classes.
+            <div style={{ gridColumn: '1 / -1' }}>
+              <label style={labelBase}>Registration Link <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></label>
+              <input type="url" style={inputBase} value={f.link} onChange={e => set('link', e.target.value)} placeholder="https://example.com/register" />
             </div>
-          )}
-
-          <button
-            type="button"
-            onClick={() => setShowAdvanced(v => !v)}
-            style={{ fontFamily: font.display, fontSize: 10, fontWeight: 700, color: C.textMuted, background: 'none', border: 'none', padding: 0, cursor: 'pointer', letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: isScheduledType ? 12 : 8 }}
-          >
-            {showAdvanced ? '– Hide assignee' : '+ Assignee'}
-          </button>
-
-          {showAdvanced && (
-            <div style={{ marginTop: 10 }}>
+            <div>
+              <label style={labelBase}>Contact Name</label>
+              <input style={inputBase} value={f.contact_name} onChange={e => set('contact_name', e.target.value)} placeholder="Optional" />
+            </div>
+            <div>
+              <label style={labelBase}>Contact Info</label>
+              <input style={inputBase} value={f.contact_info} onChange={e => set('contact_info', e.target.value)} placeholder="Email or phone" />
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 12 }}>
+            <div>
+              <label style={labelBase}>Status</label>
+              <select style={inputBase} value={f.status} onChange={e => set('status', e.target.value as Announcement['status'])}>
+                {STATUS_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label} ({o.desc})</option>)}
+              </select>
+            </div>
+            <div>
               <label style={labelBase}>Assigned To</label>
               <input style={inputBase} value={f.assigned_to} onChange={e => set('assigned_to', e.target.value)} placeholder="Who's responsible" />
             </div>
-          )}
+          </div>
         </Section>
 
         <Section title="Timing">
-          {!isScheduledType && !timingExpanded && (
-            <button
-              type="button"
-              onClick={() => setTimingExpanded(true)}
-              style={{ fontFamily: font.display, fontSize: 10, fontWeight: 700, color: C.accent, background: 'none', border: `1px solid ${C.accent}44`, borderRadius: 4, padding: '5px 12px', cursor: 'pointer', letterSpacing: '0.05em', textTransform: 'uppercase' }}
-            >
-              + Schedule for a specific date or window (optional)
-            </button>
-          )}
-          {(isScheduledType || timingExpanded) && <>
-          {!isScheduledType && (
-            <button
-              type="button"
-              onClick={() => setTimingExpanded(false)}
-              style={{ fontFamily: font.display, fontSize: 10, fontWeight: 700, color: C.textMuted, background: 'none', border: 'none', padding: 0, cursor: 'pointer', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 12 }}
-            >
-              – Hide scheduling
-            </button>
-          )}
           <div style={fg}>
             <label style={labelBase}>Event Type</label>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -597,7 +495,6 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
               )}
             </div>
           )}
-          </>}
         </Section>
 
         <Section title="Destinations">
@@ -622,60 +519,99 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
             ))}
           </div>
 
-          {isScheduledType ? (
-            <div style={{ marginTop: 14, fontFamily: font.mono, fontSize: 11, color: C.textMuted }}>
-              Events and Classes sign up through the Registration Link above (Realm, etc.) - no separate sign-up here.
+          <div style={{ marginTop: 14 }}>
+            <label style={labelBase}>Sign-Up</label>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {SIGNUP_MODE_OPTIONS.map(opt => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => set('signup_mode', opt.value)}
+                  style={{
+                    fontFamily: font.body,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    padding: '8px 14px',
+                    borderRadius: 6,
+                    border: `1px solid ${f.signup_mode === opt.value ? C.accent : C.borderMed}`,
+                    background: f.signup_mode === opt.value ? C.accentBg : C.card,
+                    color: f.signup_mode === opt.value ? C.accent : C.textSec,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  {opt.label}
+                </button>
+              ))}
             </div>
-          ) : (
-            <>
-              <div style={{ marginTop: 14 }}>
-                <label style={labelBase}>Sign-Up</label>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  {SIGNUP_MODE_OPTIONS.map(opt => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => set('signup_mode', opt.value)}
-                      style={{
-                        fontFamily: font.body,
-                        fontSize: 12,
-                        fontWeight: 600,
-                        padding: '8px 14px',
-                        borderRadius: 6,
-                        border: `1px solid ${f.signup_mode === opt.value ? C.accent : C.borderMed}`,
-                        background: f.signup_mode === opt.value ? C.accentBg : C.card,
-                        color: f.signup_mode === opt.value ? C.accent : C.textSec,
-                        cursor: 'pointer',
-                        transition: 'all 0.15s ease',
-                      }}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+          </div>
 
-              {f.signup_mode === 'sheet' && (
-                <div style={{ marginTop: 14 }}>
-                  <button
-                    type="button"
-                    disabled={!onOpenSignupSheet || !f.id}
-                    title={!f.id ? 'Save this happening first' : 'Open the Sign-up Sheet builder for this happening'}
-                    onClick={() => f.id && onOpenSignupSheet?.({ id: f.id, title: f.title, event_date: f.event_date })}
-                    style={{
-                      ...btnGhost,
-                      fontSize: 12,
-                      fontWeight: 700,
-                      opacity: !onOpenSignupSheet || !f.id ? 0.5 : 1,
-                      cursor: !onOpenSignupSheet || !f.id ? 'default' : 'pointer',
-                    }}
-                  >
-                    {f.signup_sheet_config ? 'Edit Sign-up Sheet' : 'Create Sign-up Sheet'}
-                  </button>
-                </div>
-              )}
-            </>
+          {(f.signup_mode === 'sheet' || f.signup_mode === 'both') && (
+            <div style={{ marginTop: 14 }}>
+              <button
+                type="button"
+                disabled={!onOpenSignupSheet || !f.id}
+                title={!f.id ? 'Save this happening first' : 'Open the Sign-up Sheet builder for this happening'}
+                onClick={() => f.id && onOpenSignupSheet?.({ id: f.id, title: f.title, event_date: f.event_date })}
+                style={{
+                  ...btnGhost,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  opacity: !onOpenSignupSheet || !f.id ? 0.5 : 1,
+                  cursor: !onOpenSignupSheet || !f.id ? 'default' : 'pointer',
+                }}
+              >
+                {f.signup_sheet_config ? 'Edit Sign-up Sheet' : 'Create Sign-up Sheet'}
+              </button>
+            </div>
           )}
+        </Section>
+
+        <Section title="Content">
+          <div style={fg}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
+              <label style={labelBase}>Full Description <span style={{ fontWeight: 400, textTransform: 'none' }}>(The Happenings email)</span></label>
+              <AIWriteButton label="Draft" loading={aiLoading.body} onClick={generateBody} disabled={!hasEnoughForAI} />
+            </div>
+            <textarea
+              style={{ ...inputBase, minHeight: 80, resize: 'vertical' }}
+              value={f.body}
+              onChange={e => set('body', e.target.value)}
+              placeholder="Full email copy. AI can write this for you."
+            />
+          </div>
+
+          <div style={fg}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
+              <div>
+                <label style={labelBase}>Flyer Text <span style={{ fontWeight: 400, textTransform: 'none' }}>(Monthly Flyer)</span></label>
+                <div style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, marginTop: 1 }}>2–3 sentences, max 65 words</div>
+              </div>
+              <AIWriteButton label="Draft" loading={aiLoading.flyer} onClick={generateFlyer} disabled={!hasEnoughForAI} />
+            </div>
+            <textarea
+              style={{ ...inputBase, minHeight: 60, resize: 'vertical' }}
+              value={f.flyer_text}
+              onChange={e => set('flyer_text', e.target.value)}
+              placeholder="Medium-length copy for the printed monthly flyer."
+            />
+          </div>
+
+          <div style={fg}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
+              <div>
+                <label style={labelBase}>Short Line <span style={{ fontWeight: 400, textTransform: 'none' }}>(Slides & Email one-liner)</span></label>
+                <div style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, marginTop: 1 }}>one sentence, pipe-delimited</div>
+              </div>
+              <AIWriteButton label="Draft" loading={aiLoading.slide} onClick={generateSlide} disabled={!hasEnoughForAI} />
+            </div>
+            <input
+              style={{ ...inputBase, fontFamily: font.mono, fontSize: 12 }}
+              value={f.slide_override}
+              onChange={e => { set('slide_override', e.target.value); set('short_version', e.target.value); }}
+              placeholder="Men's Bible Study | May 6 | 7 PM | Fellowship Hall"
+            />
+          </div>
         </Section>
 
         <div style={{ display: 'flex', gap: 8, paddingTop: 4 }}>

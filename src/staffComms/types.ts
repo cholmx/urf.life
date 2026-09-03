@@ -1,6 +1,6 @@
 export type RecurrenceType = 'one_time' | 'date_range' | 'weekly';
 export type HappeningType = 'event' | 'class' | 'announcement' | 'general';
-export type SignupMode = 'none' | 'sheet';
+export type SignupMode = 'none' | 'online' | 'sheet' | 'both';
 
 export interface SignupSheetConfig {
   title: string;
@@ -57,4 +57,9 @@ export interface Announcement {
   updated_at?: string;
 }
 
-export type OutputTab = 'stage' | 'slides' | 'monthly' | 'weekly';
+export type OutputTab = 'stage' | 'slides' | 'happenings' | 'monthly' | 'weekly';
+
+export const STATUS_OPTIONS = [
+  { value: 'draft', label: 'Draft', desc: 'Still being written' },
+  { value: 'approved', label: 'Approved', desc: 'Cleared for use' },
+] as const;

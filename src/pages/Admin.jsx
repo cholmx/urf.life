@@ -1,4 +1,4 @@
-import React,{useState,useEffect} from 'react';
+import React,{useState,useEffect,useRef} from 'react';
 import {Link} from 'react-router-dom';
 import {motion,AnimatePresence} from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
@@ -21,16 +21,15 @@ import {ManagePage} from '../staffComms/components/manage/ManagePage';
 import {CalendarPage} from '../staffComms/components/calendar/CalendarPage';
 import {OutputsPage} from '../staffComms/components/outputs/OutputsPage';
 import {ArchivePage} from '../staffComms/components/archive/ArchivePage';
-import {HappeningsPage} from '../staffComms/components/happenings/HappeningsPage';
 import SlideMaker from '../staffTools/slideMaker/SlideMaker';
 import SignupSheetMaker from '../staffTools/signupSheet/SignupSheetMaker';
 
-const {FiPlay,FiBookOpen,FiHome,FiLock,FiStar,FiHeart,FiUsers,FiTrendingUp,FiMessageSquare,FiGrid,FiLogOut,FiInbox,FiRadio,FiCalendar,FiArchive,FiMail,FiImage,FiClipboard,FiMenu,FiX}=FiIcons;
+const {FiPlay,FiBookOpen,FiHome,FiLock,FiStar,FiHeart,FiUsers,FiTrendingUp,FiMessageSquare,FiGrid,FiLogOut,FiInbox,FiRadio,FiCalendar,FiArchive,FiImage,FiClipboard,FiMenu,FiX}=FiIcons;
 
 const NAV_SECTIONS=[
   {
     items: [
-      {id: 'overview',label: 'Create',icon: FiGrid},
+      {id: 'overview',label: 'Dashboard',icon: FiGrid},
       {id: 'submissions',label: 'Submissions',icon: FiInbox},
     ],
   },
@@ -38,7 +37,6 @@ const NAV_SECTIONS=[
     label: 'Communication',
     items: [
       {id: 'calendar',label: 'Calendar',icon: FiCalendar},
-      {id: 'happenings',label: 'The Happenings',icon: FiMail},
       {id: 'outputs',label: 'Outputs',icon: FiRadio},
       {id: 'archive',label: 'Archive',icon: FiArchive},
     ],
@@ -75,11 +73,15 @@ const Admin=()=> {
   const [loading,setLoading]=useState(false);
   const [sidebarOpen,setSidebarOpen]=useState(false);
   const [signupSheetTarget,setSignupSheetTarget]=useState(null);
+  const manageSectionRef=useRef(null);
 
   // Shared across the Dashboard's embedded Manage section, Calendar,
   // Outputs, and Archive pages - one fetch, one preview date, one toast
   // queue, no matter which of those pages is currently active.
-  const happenings=useHappeningsData(isAuthenticated,()=> setActiveTab('overview'));
+  const happenings=useHappeningsData(isAuthenticated,()=> {
+    setActiveTab('overview');
+    setTimeout(()=> manageSectionRef.current?.scrollIntoView({behavior: 'smooth',block: 'start'}),50);
+  });
 
   useEffect(()=> {
     supabase.auth.getSession().then(({data: {session}})=> {
@@ -132,25 +134,28 @@ const Admin=()=> {
       case 'overview':
         return (
           <>
-            <h2 className="text-xl font-bold text-neutral-900 mb-4">Communication Organizer</h2>
-            <ManagePage
-              announcements={happenings.activeAnnouncements}
-              today={happenings.today}
-              onPreviewDateChange={happenings.setToday}
-              onSave={happenings.handleSave}
-              onDelete={happenings.handleDelete}
-              onTogglePublish={happenings.handleTogglePublish}
-              editing={happenings.editing}
-              setEditing={happenings.setEditing}
-              copySource={happenings.copySource}
-              setCopySource={happenings.setCopySource}
-              loading={happenings.loading}
-              onError={happenings.showError}
-              onOpenSignupSheet={(a)=> { setSignupSheetTarget(a); setActiveTab('signupSheet'); }}
-              onNavigateTab={selectTab}
+            <AdminDashboard
+              onNavigate={selectTab}
+              onJumpToManage={()=> manageSectionRef.current?.scrollIntoView({behavior: 'smooth',block: 'start'})}
             />
-            <div className="mt-10 pt-6 border-t border-neutral-200">
-              <AdminDashboard onNavigate={selectTab} />
+            <div ref={manageSectionRef} className="mt-8">
+              <h2 className="text-xl font-bold text-neutral-900 mb-4">Communication Organizer</h2>
+              <ManagePage
+                announcements={happenings.activeAnnouncements}
+                today={happenings.today}
+                onPreviewDateChange={happenings.setToday}
+                onSave={happenings.handleSave}
+                onDelete={happenings.handleDelete}
+                onApprove={happenings.handleApprove}
+                onTogglePublish={happenings.handleTogglePublish}
+                editing={happenings.editing}
+                setEditing={happenings.setEditing}
+                copySource={happenings.copySource}
+                setCopySource={happenings.setCopySource}
+                loading={happenings.loading}
+                onError={happenings.showError}
+                onOpenSignupSheet={(a)=> { setSignupSheetTarget(a); setActiveTab('signupSheet'); }}
+              />
             </div>
           </>
         );
@@ -165,14 +170,6 @@ const Admin=()=> {
             onDelete={happenings.handleDelete}
             onPreviewDateChange={happenings.setToday}
             onError={happenings.showError}
-          />
-        );
-      case 'happenings':
-        return (
-          <HappeningsPage
-            announcements={happenings.activeAnnouncements}
-            today={happenings.today}
-            onPreviewDateChange={happenings.setToday}
           />
         );
       case 'outputs':
@@ -208,13 +205,7 @@ const Admin=()=> {
       case 'comments':
         return <AdminComments />;
       case 'slideMaker':
-        return (
-          <SlideMaker
-            announcements={happenings.activeAnnouncements}
-            today={happenings.today}
-            onToggleSlideMade={happenings.handleToggleSlideMade}
-          />
-        );
+        return <SlideMaker />;
       case 'signupSheet':
         return (
           <SignupSheetMaker
@@ -223,7 +214,12 @@ const Admin=()=> {
           />
         );
       default:
-        return <AdminDashboard onNavigate={selectTab} />;
+        return (
+          <AdminDashboard
+            onNavigate={selectTab}
+            onJumpToManage={()=> manageSectionRef.current?.scrollIntoView({behavior: 'smooth',block: 'start'})}
+          />
+        );
     }
   };
 

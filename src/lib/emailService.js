@@ -42,6 +42,8 @@ const getEmailSubject = (formType, formData) => {
       return `New Realm Registration: ${formData.first_name} ${formData.last_name}`
     case 'table_group':
       return `Table Group Sign-up: ${formData.first_name} ${formData.last_name}`
+    case 'rsvp':
+      return `RSVP: ${formData.happening_title || 'Happening'} - ${formData.name}`
     default:
       return 'Church Portal Form Submission'
   }
@@ -80,6 +82,15 @@ const formatEmailBody = (formType, formData) => {
       body += `Email: ${formData.email}\n`
       body += `Party Size: ${formData.party_size}\n`
       body += `Unavailable Days: ${formData.unavailable_days.length > 0 ? formData.unavailable_days.join(', ') : 'None specified'}\n`
+      break
+
+    case 'rsvp':
+      body += `Happening: ${formData.happening_title || 'Unknown'}\n`
+      body += `Name: ${formData.name}\n`
+      body += `Email: ${formData.email || 'Not provided'}\n`
+      body += `Phone: ${formData.phone || 'Not provided'}\n`
+      body += `Party Size: ${formData.party_size || 1}\n`
+      if (formData.notes) body += `Notes: ${formData.notes}\n`
       break
 
     default:

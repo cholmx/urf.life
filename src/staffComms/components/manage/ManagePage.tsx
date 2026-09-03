@@ -17,8 +17,9 @@ interface ManagePageProps {
   announcements: Announcement[];
   today: string;
   onPreviewDateChange: (date: string) => void;
-  onSave: (a: Omit<Announcement, 'id' | 'created_at' | 'updated_at'> & { id?: string }) => Promise<Announcement | null>;
+  onSave: (a: Omit<Announcement, 'id' | 'created_at' | 'updated_at'> & { id?: string }) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
+  onApprove: (id: string) => Promise<void>;
   onTogglePublish: (a: Announcement) => Promise<void>;
   editing: Announcement | 'new' | null;
   setEditing: (v: Announcement | 'new' | null) => void;
@@ -27,7 +28,6 @@ interface ManagePageProps {
   loading: boolean;
   onError: (msg: string) => void;
   onOpenSignupSheet?: (a: { id: string; title: string; event_date: string | null }) => void;
-  onNavigateTab?: (tab: string) => void;
 }
 
 export function ManagePage({ today, onPreviewDateChange, ...rest }: ManagePageProps) {

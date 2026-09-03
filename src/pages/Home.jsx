@@ -5,7 +5,7 @@ import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import supabase from '../lib/supabase';
 
-const {FiPlay,FiMic,FiUsers,FiCreditCard,FiUserPlus,FiMail,FiCalendar,FiBookOpen,FiSettings,FiFacebook,FiInstagram,FiYoutube,FiGlobe,FiLogIn,FiExternalLink,FiFileText,FiHeadphones,FiTrendingUp,FiCheck,FiStar}=FiIcons;
+const {FiBell,FiPlay,FiMic,FiUsers,FiCreditCard,FiUserPlus,FiMail,FiCalendar,FiBookOpen,FiSettings,FiFacebook,FiInstagram,FiYoutube,FiGlobe,FiLogIn,FiExternalLink,FiFileText,FiHeadphones,FiTrendingUp,FiCheck,FiStar}=FiIcons;
 
 const Home=()=> {
   const [hasEvents,setHasEvents]=useState(false);
@@ -20,8 +20,8 @@ const Home=()=> {
 
   const checkAvailability=async ()=> {
     try {
-      const {data: events}=await supabase.from('staff_announcements_portal123').select('id').eq('happening_type','event').eq('is_published',true).limit(1);
-      const {data: classes}=await supabase.from('staff_announcements_portal123').select('id').eq('happening_type','class').eq('is_published',true).limit(1);
+      const {data: events}=await supabase.from('events_portal123').select('id').limit(1);
+      const {data: classes}=await supabase.from('classes_portal123').select('id').limit(1);
       const {data: resources}=await supabase.from('resources_portal123').select('id').limit(1);
       const {data: featuredButtons}=await supabase
         .from('featured_buttons_portal123')
@@ -54,7 +54,7 @@ const Home=()=> {
   ];
 
   const mainButtons=[
-    {title: 'The Happenings',description: 'This week’s update',icon: FiMail,path: '/announcements',isInternal: true},
+    {title: 'Announcements',description: 'Latest church news',icon: FiBell,path: '/announcements',isInternal: true},
     {title: 'Calendar',description: 'Everything coming up',icon: FiCalendar,path: '/calendar',isInternal: true},
     {title: 'Sermon Blog',description: 'Weekly sermons',icon: FiFileText,path: '/sermon-blog',isInternal: true},
     {title: 'Shine Podcast',description: 'Latest episodes',icon: FiMic,path: '/shine-podcast',isInternal: true},

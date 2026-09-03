@@ -9,10 +9,9 @@ export const ASPECT_RATIOS = [
 ];
 
 export const FONT_COMBOS = [
-  { id: "google_sans_flex_inter", name: "Google Sans Flex + Inter", vibe: "URF Site Default", h: "'Google Sans Flex',sans-serif", b: "'Inter',sans-serif" },
   { id: "inter_tight_inconsolata", name: "Inter Tight + Inconsolata", vibe: "Compact & Monospaced", h: "'Inter Tight',sans-serif", b: "'Inconsolata',monospace" },
   { id: "outfit_outfit", name: "Outfit + Outfit", vibe: "Geometric & Unified", h: "'Outfit',sans-serif", b: "'Outfit',sans-serif" },
-  { id: "spartan_dm", name: "League Spartan + DM Sans", vibe: "Bold & Structured", h: "'League Spartan',sans-serif", b: "'DM Sans',sans-serif" },
+  { id: "spartan_dm", name: "League Spartan + DM Sans", vibe: "URF Default", h: "'League Spartan',sans-serif", b: "'DM Sans',sans-serif" },
   { id: "playfair_source", name: "Playfair + Source Sans", vibe: "Elegant & Readable", h: "'Playfair Display',serif", b: "'Source Sans 3',sans-serif" },
   { id: "montserrat_lora", name: "Montserrat + Lora", vibe: "Modern & Serif", h: "'Montserrat',sans-serif", b: "'Lora',serif" },
   { id: "space_grotesk_inter", name: "Space Grotesk + Inter", vibe: "Tech & Clean", h: "'Space Grotesk',sans-serif", b: "'Inter',sans-serif" },

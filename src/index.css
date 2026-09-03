@@ -162,35 +162,6 @@
   text-decoration: underline !important;
 }
 
-/* The Happenings script - shared by the admin ScriptEditor (contentEditable,
-   dark panel) and the public /announcements rendering of the same HTML, so
-   staff formatting (bold, title) looks the same in both places. */
-.happenings-script p {
-  margin: 0 0 1.6em;
-  line-height: 1.8;
-}
-.happenings-script p:last-child {
-  margin-bottom: 0;
-}
-.happenings-script h3 {
-  font-family: "Google Sans Flex", Inter, sans-serif;
-  font-size: 1.2em;
-  font-weight: 700;
-  line-height: 1.4;
-  text-transform: none;
-  color: inherit;
-  margin: 0 0 0.6em;
-}
-.happenings-script h3:not(:first-child) {
-  margin-top: 1.4em;
-}
-.happenings-script strong {
-  font-weight: 700;
-}
-.happenings-script em {
-  font-style: italic;
-}
-
 /* Admin dashboard: its own dark-gray-and-white look, Inter for body text
    (headings already inherit Inter Tight Bold from the base h1-h6 rule
    above), independent of the public site's green/cream/Liter styling. */
