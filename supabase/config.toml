@@ -1,5 +1,0 @@
-[functions.admin-login]
-verify_jwt = false
-
-[functions.generate-script]
-verify_jwt = true
