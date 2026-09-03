@@ -282,9 +282,9 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
 
         <Section title="Description">
           <div style={fg}>
-            <label style={labelBase}>Short Description <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(only feeds the AI below)</span></label>
+            <label style={labelBase}>Notes for AI <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(only feeds the drafts below)</span></label>
             <div style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, marginBottom: 5, lineHeight: 1.5 }}>
-              This is never published or printed anywhere on its own - it's only here to give the AI something to work from. Write it as rough notes. What actually gets used is whatever ends up in Full Description, Flyer Text, and Short Line below.
+              This is never published or printed anywhere on its own - it's only here to give the AI something to work from. Write it as rough notes. What actually gets used is whatever ends up in Full Description, Short Description, and Short Line below.
             </div>
             <textarea
               style={{ ...inputBase, minHeight: 68, resize: 'vertical', fontSize: 13 }}
@@ -310,8 +310,8 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
           <div style={fg}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
               <div>
-                <label style={labelBase}>Flyer Text <span style={{ fontWeight: 400, textTransform: 'none' }}>(Monthly Flyer & printed Invite)</span></label>
-                <div style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, marginTop: 1 }}>2–3 sentences, max 65 words - also the body copy on the printed Invite (Invite button, back on the list)</div>
+                <label style={labelBase}>Short Description <span style={{ fontWeight: 400, textTransform: 'none' }}>(Monthly Flyer & printed Invite)</span></label>
+                <div style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, marginTop: 1 }}>max 50 words - also the body copy on the printed Invite (Invite button, back on the list)</div>
               </div>
               <AIWriteButton label="Draft" loading={aiLoading.flyer} onClick={generateFlyer} disabled={!hasEnoughForAI} />
             </div>
@@ -319,7 +319,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
               style={{ ...inputBase, minHeight: 60, resize: 'vertical' }}
               value={f.flyer_text}
               onChange={e => set('flyer_text', e.target.value)}
-              placeholder="Medium-length copy for the printed monthly flyer."
+              placeholder="Short copy for the printed monthly flyer and invite."
             />
           </div>
 

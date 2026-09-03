@@ -98,8 +98,8 @@ export function useAnnouncementAI(
     setAiLoading(p => ({ ...p, flyer: true }));
     try {
       const result = await callAI(
-        SYS_BASE + ` You write flyer copy for a monthly printed church bulletin. Write 2-3 short sentences, maximum 65 words total. Be tight and punchy, noticeably shorter than the email description, but still give real substance, not just a title restated. One to two sentences on what makes it worth showing up for and what to expect, plus one sentence with the key practical details (when, where, who it's for) or the next step. No flowery language. No filler. Every word must earn its place on a printed page.`,
-        `Write the monthly flyer text for this announcement. Return ONLY the text, nothing else.\n\n${buildContext(f)}`,
+        SYS_BASE + ` You write a short description for a monthly printed church flyer and for printed invites. Write 2-3 short sentences, maximum 50 words total. Be tight and punchy, noticeably shorter than the email description, but still give real substance, not just a title restated. One to two sentences on what makes it worth showing up for and what to expect, plus one sentence with the key practical details (when, where, who it's for) or the next step. No flowery language. No filler. Every word must earn its place on a printed page.`,
+        `Write the short description for this announcement (used on the flyer and on printed invites). Return ONLY the text, nothing else.\n\n${buildContext(f)}`,
       );
       set('flyer_text', stripEmDash(result.trim()));
     } catch (e) {
@@ -114,7 +114,7 @@ export function useAnnouncementAI(
     setAiLoading({ body: true, slide: true, flyer: true, all: true });
     try {
       const result = await callAI(
-        SYS_BASE + ` You help write all versions of a church announcement at once. Provide three fields: "body" (5-7 sentence weekly email description, a full paragraph; open with the plain fact of what it is, name and a one-line description, then work in date, time, location, and who it's for in plain sentences, one short plain sentence on why it matters if there's a genuine reason, end with one clear action step), "slide" (a single short phrase, not a full sentence, in normal sentence case, no pipe characters, under 12 words; include the event's exact name, dates, time, and location, think billboard, not sentence), and "flyer" (2-3 short sentences, max 65 words, for a printed monthly bulletin; real substance but noticeably shorter than the email description; one to two sentences on why it matters and what to expect, one on the key practical details or next step, naming the event and its date/time/location; tight and punchy).`,
+        SYS_BASE + ` You help write all versions of a church announcement at once. Provide three fields: "body" (5-7 sentence weekly email description, a full paragraph; open with the plain fact of what it is, name and a one-line description, then work in date, time, location, and who it's for in plain sentences, one short plain sentence on why it matters if there's a genuine reason, end with one clear action step), "slide" (a single short phrase, not a full sentence, in normal sentence case, no pipe characters, under 12 words; include the event's exact name, dates, time, and location, think billboard, not sentence), and "flyer" (2-3 short sentences, max 50 words, a short description for the printed monthly flyer and printed invites; real substance but noticeably shorter than the email description; one to two sentences on why it matters and what to expect, one on the key practical details or next step, naming the event and its date/time/location; tight and punchy).`,
         `Write all versions for this announcement:\n\n${buildContext(f)}`,
         { json: true },
       );
