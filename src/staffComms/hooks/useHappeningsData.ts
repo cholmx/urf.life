@@ -66,7 +66,10 @@ export function useHappeningsData(enabled: boolean, onNavigateToManage?: () => v
       flyer_text: f.flyer_text,
       stage_notes: f.stage_notes,
       needs_signup: f.needs_signup,
-      signup_mode: f.signup_mode || 'none',
+      // Events and Classes sign up externally (Realm, etc.) via the Link
+      // field, not this app's built-in sign-up - enforced here too in case
+      // a row saved before this rule still has a stale mode set.
+      signup_mode: (f.happening_type === 'event' || f.happening_type === 'class') ? 'none' : (f.signup_mode || 'none'),
       signup_sheet_config: f.signup_sheet_config ?? null,
       is_published: f.is_published,
       published_at: f.is_published ? (f.published_at || new Date().toISOString()) : f.published_at,

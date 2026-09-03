@@ -118,6 +118,9 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
           next.is_recurring = v !== 'one_time';
         }
       }
+      if (k === 'happening_type' && (v === 'event' || v === 'class')) {
+        next.signup_mode = 'none';
+      }
       return next;
     });
 
@@ -555,51 +558,59 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
             ))}
           </div>
 
-          <div style={{ marginTop: 14 }}>
-            <label style={labelBase}>Sign-Up</label>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {SIGNUP_MODE_OPTIONS.map(opt => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => set('signup_mode', opt.value)}
-                  style={{
-                    fontFamily: font.body,
-                    fontSize: 12,
-                    fontWeight: 600,
-                    padding: '8px 14px',
-                    borderRadius: 6,
-                    border: `1px solid ${f.signup_mode === opt.value ? C.accent : C.borderMed}`,
-                    background: f.signup_mode === opt.value ? C.accentBg : C.card,
-                    color: f.signup_mode === opt.value ? C.accent : C.textSec,
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease',
-                  }}
-                >
-                  {opt.label}
-                </button>
-              ))}
+          {isScheduledType ? (
+            <div style={{ marginTop: 14, fontFamily: font.mono, fontSize: 11, color: C.textMuted }}>
+              Events and Classes sign up through the Registration Link above (Realm, etc.) - no separate sign-up here.
             </div>
-          </div>
+          ) : (
+            <>
+              <div style={{ marginTop: 14 }}>
+                <label style={labelBase}>Sign-Up</label>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {SIGNUP_MODE_OPTIONS.map(opt => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => set('signup_mode', opt.value)}
+                      style={{
+                        fontFamily: font.body,
+                        fontSize: 12,
+                        fontWeight: 600,
+                        padding: '8px 14px',
+                        borderRadius: 6,
+                        border: `1px solid ${f.signup_mode === opt.value ? C.accent : C.borderMed}`,
+                        background: f.signup_mode === opt.value ? C.accentBg : C.card,
+                        color: f.signup_mode === opt.value ? C.accent : C.textSec,
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-          {(f.signup_mode === 'sheet' || f.signup_mode === 'both') && (
-            <div style={{ marginTop: 14 }}>
-              <button
-                type="button"
-                disabled={!onOpenSignupSheet || !f.id}
-                title={!f.id ? 'Save this happening first' : 'Open the Sign-up Sheet builder for this happening'}
-                onClick={() => f.id && onOpenSignupSheet?.({ id: f.id, title: f.title, event_date: f.event_date })}
-                style={{
-                  ...btnGhost,
-                  fontSize: 12,
-                  fontWeight: 700,
-                  opacity: !onOpenSignupSheet || !f.id ? 0.5 : 1,
-                  cursor: !onOpenSignupSheet || !f.id ? 'default' : 'pointer',
-                }}
-              >
-                {f.signup_sheet_config ? 'Edit Sign-up Sheet' : 'Create Sign-up Sheet'}
-              </button>
-            </div>
+              {(f.signup_mode === 'sheet' || f.signup_mode === 'both') && (
+                <div style={{ marginTop: 14 }}>
+                  <button
+                    type="button"
+                    disabled={!onOpenSignupSheet || !f.id}
+                    title={!f.id ? 'Save this happening first' : 'Open the Sign-up Sheet builder for this happening'}
+                    onClick={() => f.id && onOpenSignupSheet?.({ id: f.id, title: f.title, event_date: f.event_date })}
+                    style={{
+                      ...btnGhost,
+                      fontSize: 12,
+                      fontWeight: 700,
+                      opacity: !onOpenSignupSheet || !f.id ? 0.5 : 1,
+                      cursor: !onOpenSignupSheet || !f.id ? 'default' : 'pointer',
+                    }}
+                  >
+                    {f.signup_sheet_config ? 'Edit Sign-up Sheet' : 'Create Sign-up Sheet'}
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </Section>
 
