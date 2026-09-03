@@ -26,8 +26,8 @@ function whenLabel(a: Announcement): string {
 }
 
 // Assembles this week's active items into the Happenings update HTML,
-// verbatim - each item's own Short Description (the same copy used on the
-// calendar, monthly flyer, and printed invite) becomes its body text
+// verbatim - each item's own Full Description (the same long-form copy
+// written specifically for the Happenings email) becomes its body text
 // unchanged, with only the title (Title format) and when/where (Bold
 // format) added around it. No AI rewriting: what staff already wrote for
 // the item is what goes out.
@@ -36,7 +36,7 @@ function buildAssembledScript(items: Announcement[]): string {
     return scriptTextToHtml(`Nothing officially scheduled this week, but we'd still love to see you. Check urf.life for anything that might come up.`);
   }
   const sections = items.map(a => {
-    const description = (a.flyer_text || a.short_version || a.body || '').trim();
+    const description = (a.body || a.flyer_text || a.short_version || '').trim();
     const whenWhere = [
       [whenLabel(a), a.event_time ? formatTime12h(a.event_time) : ''].filter(Boolean).join(' · '),
       a.event_location || '',
@@ -47,7 +47,7 @@ function buildAssembledScript(items: Announcement[]): string {
     if (description) html += scriptTextToHtml(description);
     return html;
   });
-  return sections.join('') + `<p>For the full list of what's happening, visit urf.life.</p>`;
+  return sections.join('');
 }
 
 export function HappeningsTab({ announcements, today }: HappeningsTabProps) {
@@ -239,7 +239,7 @@ export function HappeningsTab({ announcements, today }: HappeningsTabProps) {
         }}>
           {!script && !building && (
             <p style={{ fontFamily: font.body, fontSize: 13, color: C.textMuted, margin: '0 0 12px' }}>
-              No update yet for this week. Press "Build Update" to put this week's Short Descriptions together into a Happenings update, or start typing below.
+              No update yet for this week. Press "Build Update" to put this week's Full Descriptions together into a Happenings update, or start typing below.
             </p>
           )}
           <ScriptEditor
