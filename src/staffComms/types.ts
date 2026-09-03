@@ -1,6 +1,6 @@
 export type RecurrenceType = 'one_time' | 'date_range' | 'weekly';
 export type HappeningType = 'event' | 'class' | 'announcement' | 'general';
-export type SignupMode = 'none' | 'online' | 'sheet' | 'both';
+export type SignupMode = 'none' | 'sheet';
 
 export interface SignupSheetConfig {
   title: string;

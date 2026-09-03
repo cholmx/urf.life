@@ -591,7 +591,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
                 </div>
               </div>
 
-              {(f.signup_mode === 'sheet' || f.signup_mode === 'both') && (
+              {f.signup_mode === 'sheet' && (
                 <div style={{ marginTop: 14 }}>
                   <button
                     type="button"

@@ -52,7 +52,7 @@ export function ManageTab({ announcements, today, onSave, onDelete, onTogglePubl
           const saved = await onSave(f);
           setEditing(null);
           setCopySource(null);
-          if (saved && (saved.show_on_slides || saved.show_in_happenings || saved.signup_mode === 'sheet' || saved.signup_mode === 'both')) {
+          if (saved && (saved.show_on_slides || saved.show_in_happenings || saved.signup_mode === 'sheet')) {
             setJustSaved(saved);
           }
         }}
@@ -180,7 +180,7 @@ function SavedNextSteps({ saved, onNavigateTab, onOpenSignupSheet, onDismiss }: 
   if (saved.show_in_happenings) {
     steps.push({ label: 'Update this week\'s Happenings →', onClick: () => onNavigateTab?.('happenings') });
   }
-  if ((saved.signup_mode === 'sheet' || saved.signup_mode === 'both') && onOpenSignupSheet) {
+  if (saved.signup_mode === 'sheet' && onOpenSignupSheet) {
     steps.push({
       label: saved.signup_sheet_config ? 'Edit its sign-up sheet →' : 'Create its sign-up sheet →',
       onClick: () => onOpenSignupSheet({ id: saved.id, title: saved.title, event_date: saved.event_date }),

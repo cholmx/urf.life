@@ -269,7 +269,7 @@ const PublicCalendar=()=> {
                               <SafeIcon icon={FiExternalLink} className="h-3.5 w-3.5" />
                             </a>
                           )}
-                          {(a.signup_mode==='sheet' || a.signup_mode==='both') && (
+                          {a.signup_mode==='sheet' && (
                             <span className="text-sm text-text-light italic">Sign up in person</span>
                           )}
                         </div>

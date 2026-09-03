@@ -20,9 +20,7 @@ interface AnnouncementCardProps {
 }
 
 const SIGNUP_MODE_LABELS: Record<string, string> = {
-  online: 'Online RSVP',
   sheet: 'Sign-up Sheet',
-  both: 'RSVP + Sheet',
 };
 
 export function AnnouncementCard({ a, today, onEdit, onDelete, onTogglePublish }: AnnouncementCardProps) {
