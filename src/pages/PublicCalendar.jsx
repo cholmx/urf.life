@@ -249,6 +249,10 @@ const PublicCalendar=()=> {
                           )}
                         </div>
 
+                        {a.flyer_text && (
+                          <p className="text-sm text-text-primary mb-3 leading-relaxed whitespace-pre-wrap">{a.flyer_text}</p>
+                        )}
+
                         <div className="flex flex-wrap items-center gap-4">
                           <AddToCalendarButton
                             title={a.title}
