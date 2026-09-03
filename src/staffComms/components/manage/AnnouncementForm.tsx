@@ -15,6 +15,19 @@ import type { Announcement, RecurrenceType } from '../../types';
 
 const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
+const TIME_OPTIONS: { value: string; label: string }[] = (() => {
+  const opts: { value: string; label: string }[] = [];
+  for (let mins = 0; mins < 24 * 60; mins += 5) {
+    const h24 = Math.floor(mins / 60);
+    const m = mins % 60;
+    const value = `${String(h24).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
+    const period = h24 < 12 ? 'AM' : 'PM';
+    opts.push({ value, label: `${h12}:${String(m).padStart(2, '0')} ${period}` });
+  }
+  return opts;
+})();
+
 const RECURRENCE_OPTIONS: { value: RecurrenceType; label: string; desc: string }[] = [
   { value: 'one_time', label: 'One-Time', desc: 'A single event on one date' },
   { value: 'date_range', label: 'Date Range', desc: 'Spans multiple consecutive days (e.g. a retreat)' },
@@ -552,23 +565,25 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
           <div style={{ ...fg, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div>
               <label style={labelBase}>Start Time</label>
-              <input
-                type="time"
-                step={300}
+              <select
                 style={{ ...inputBase, fontFamily: font.mono, fontSize: 12 }}
                 value={f.event_time || ''}
                 onChange={e => set('event_time', e.target.value)}
-              />
+              >
+                <option value="">No time set</option>
+                {TIME_OPTIONS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+              </select>
             </div>
             <div>
               <label style={labelBase}>End Time</label>
-              <input
-                type="time"
-                step={300}
+              <select
                 style={{ ...inputBase, fontFamily: font.mono, fontSize: 12 }}
                 value={f.end_time || ''}
                 onChange={e => set('end_time', e.target.value)}
-              />
+              >
+                <option value="">No time set</option>
+                {TIME_OPTIONS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+              </select>
             </div>
           </div>
 
