@@ -1,4 +1,4 @@
-export type RecurrenceType = 'one_time' | 'date_range' | 'weekly';
+export type RecurrenceType = 'one_time' | 'date_range' | 'weekly' | 'biweekly' | 'monthly';
 export type HappeningType = 'event' | 'class' | 'announcement' | 'general';
 export type SignupMode = 'none' | 'sheet';
 

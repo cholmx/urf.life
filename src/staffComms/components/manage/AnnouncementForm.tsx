@@ -31,8 +31,21 @@ const TIME_OPTIONS: { value: string; label: string }[] = (() => {
 const RECURRENCE_OPTIONS: { value: RecurrenceType; label: string; desc: string }[] = [
   { value: 'one_time', label: 'One-Time', desc: 'A single event on one date' },
   { value: 'date_range', label: 'Date Range', desc: 'Spans multiple consecutive days (e.g. a retreat)' },
-  { value: 'weekly', label: 'Weekly Class', desc: 'Repeats every week on the same day' },
+  { value: 'weekly', label: 'Weekly', desc: 'Repeats every week on the same day' },
+  { value: 'biweekly', label: 'Every 2 Weeks', desc: 'Repeats every other week on the same day' },
+  { value: 'monthly', label: 'Monthly', desc: 'Repeats every month on the same date' },
 ];
+
+function ordinal(n: number): string {
+  const rem100 = n % 100;
+  if (rem100 >= 11 && rem100 <= 13) return `${n}th`;
+  switch (n % 10) {
+    case 1: return `${n}st`;
+    case 2: return `${n}nd`;
+    case 3: return `${n}rd`;
+    default: return `${n}th`;
+  }
+}
 
 function weekdayOf(dateStr: string): string {
   if (!dateStr) return '';
@@ -59,6 +72,19 @@ function computeRecurrenceLabel(
     const s = new Date(eventDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     const e = new Date(endDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     return `Every ${wd}, ${s} – ${e}`;
+  }
+  if (type === 'biweekly') {
+    const wd = day || weekdayOf(eventDate);
+    if (!endDate) return `Every other ${wd}`;
+    const s = new Date(eventDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const e = new Date(endDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return `Every other ${wd}, ${s} – ${e}`;
+  }
+  if (type === 'monthly') {
+    const dom = ordinal(new Date(eventDate + 'T12:00:00').getDate());
+    if (!endDate) return `Monthly on the ${dom}`;
+    const e = new Date(endDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return `Monthly on the ${dom}, through ${e}`;
   }
   return '';
 }
@@ -122,9 +148,9 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
           next.recurrence_type,
           next.event_date,
           next.recurrence_end_date,
-          next.recurrence_type === 'weekly' ? (next.recurrence_day || weekdayOf(next.event_date || '')) : '',
+          (next.recurrence_type === 'weekly' || next.recurrence_type === 'biweekly') ? (next.recurrence_day || weekdayOf(next.event_date || '')) : '',
         );
-        if (k === 'recurrence_type' && v === 'weekly' && next.event_date && !next.recurrence_day) {
+        if (k === 'recurrence_type' && (v === 'weekly' || v === 'biweekly') && next.event_date && !next.recurrence_day) {
           next.recurrence_day = weekdayOf(next.event_date);
         }
         if (k === 'recurrence_type') {
@@ -134,6 +160,26 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
       if (k === 'happening_type' && (v === 'event' || v === 'class')) {
         next.signup_mode = 'none';
       }
+      return next;
+    });
+
+  // Recurring/ranged types' primary date field also feeds recurrence_label
+  // and (for weekly/biweekly) the default weekday - centralized here so
+  // every "Start Date"/"First Session" picker stays in sync with both.
+  const setPrimaryDate = (val: string | null, autoWeekday = false) =>
+    setF(p => {
+      const next = {
+        ...p,
+        event_date: val,
+        event_dates: val ? [val] : [],
+        recurrence_day: autoWeekday && val ? weekdayOf(val) : p.recurrence_day,
+      };
+      next.recurrence_label = computeRecurrenceLabel(
+        next.recurrence_type,
+        next.event_date,
+        next.recurrence_end_date,
+        (next.recurrence_type === 'weekly' || next.recurrence_type === 'biweekly') ? (next.recurrence_day || weekdayOf(next.event_date || '')) : '',
+      );
       return next;
     });
 
@@ -500,10 +546,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
                   type="date"
                   style={{ ...inputBase, fontFamily: font.mono, fontSize: 12 }}
                   value={f.event_date || ''}
-                  onChange={e => {
-                    const val = e.target.value || null;
-                    setF(p => ({ ...p, event_date: val, event_dates: val ? [val] : [] }));
-                  }}
+                  onChange={e => setPrimaryDate(e.target.value || null)}
                 />
               </div>
               <div>
@@ -518,7 +561,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
             </div>
           )}
 
-          {f.recurrence_type === 'weekly' && (
+          {(f.recurrence_type === 'weekly' || f.recurrence_type === 'biweekly') && (
             <>
               <div style={{ ...fg, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div>
@@ -527,15 +570,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
                     type="date"
                     style={{ ...inputBase, fontFamily: font.mono, fontSize: 12 }}
                     value={f.event_date || ''}
-                    onChange={e => {
-                      const val = e.target.value || null;
-                      setF(p => ({
-                        ...p,
-                        event_date: val,
-                        event_dates: val ? [val] : [],
-                        recurrence_day: val ? weekdayOf(val) : p.recurrence_day,
-                      }));
-                    }}
+                    onChange={e => setPrimaryDate(e.target.value || null, true)}
                   />
                 </div>
                 <div>
@@ -559,6 +594,36 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
                   {WEEKDAYS.map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
               </div>
+            </>
+          )}
+
+          {f.recurrence_type === 'monthly' && (
+            <>
+              <div style={{ ...fg, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div>
+                  <label style={labelBase}>First Session *</label>
+                  <input
+                    type="date"
+                    style={{ ...inputBase, fontFamily: font.mono, fontSize: 12 }}
+                    value={f.event_date || ''}
+                    onChange={e => setPrimaryDate(e.target.value || null)}
+                  />
+                </div>
+                <div>
+                  <label style={labelBase}>Last Session (optional)</label>
+                  <input
+                    type="date"
+                    style={{ ...inputBase, fontFamily: font.mono, fontSize: 12 }}
+                    value={f.recurrence_end_date || ''}
+                    onChange={e => set('recurrence_end_date', e.target.value || null)}
+                  />
+                </div>
+              </div>
+              {f.event_date && (
+                <div style={{ fontFamily: font.mono, fontSize: 11, color: C.textMuted, padding: '0 0 14px' }}>
+                  Repeats on the {ordinal(new Date(f.event_date + 'T12:00:00').getDate())} of every month. In shorter months it falls on the last day.
+                </div>
+              )}
             </>
           )}
 

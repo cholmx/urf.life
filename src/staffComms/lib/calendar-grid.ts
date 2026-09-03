@@ -29,12 +29,33 @@ const WEEKDAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', '
 // (see AnnouncementForm's recurrence handling) - the actual calendar
 // occurrences have to be derived from recurrence_type/recurrence_day/
 // recurrence_end_date, not read off a literal date list.
+function daysBetween(a: string, b: string): number {
+  const da = new Date(a + 'T12:00:00').getTime();
+  const db = new Date(b + 'T12:00:00').getTime();
+  return Math.round((db - da) / (1000 * 60 * 60 * 24));
+}
+
 function occursOn(a: Announcement, day: string): boolean {
   if (a.recurrence_type === 'weekly' && a.event_date) {
     if (day < a.event_date) return false;
     if (a.recurrence_end_date && day > a.recurrence_end_date) return false;
     const targetDay = a.recurrence_day || WEEKDAY_NAMES[new Date(a.event_date + 'T12:00:00').getDay()];
     return WEEKDAY_NAMES[new Date(day + 'T12:00:00').getDay()] === targetDay;
+  }
+  if (a.recurrence_type === 'biweekly' && a.event_date) {
+    if (day < a.event_date) return false;
+    if (a.recurrence_end_date && day > a.recurrence_end_date) return false;
+    const targetDay = a.recurrence_day || WEEKDAY_NAMES[new Date(a.event_date + 'T12:00:00').getDay()];
+    if (WEEKDAY_NAMES[new Date(day + 'T12:00:00').getDay()] !== targetDay) return false;
+    return Math.round(daysBetween(a.event_date, day) / 7) % 2 === 0;
+  }
+  if (a.recurrence_type === 'monthly' && a.event_date) {
+    if (day < a.event_date) return false;
+    if (a.recurrence_end_date && day > a.recurrence_end_date) return false;
+    const targetDom = new Date(a.event_date + 'T12:00:00').getDate();
+    const d = new Date(day + 'T12:00:00');
+    const lastDayOfMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+    return d.getDate() === Math.min(targetDom, lastDayOfMonth);
   }
   if (a.recurrence_type === 'date_range' && a.event_date && a.recurrence_end_date) {
     return day >= a.event_date && day <= a.recurrence_end_date;

@@ -49,6 +49,8 @@ function getSundayDate(weekStart: Date): string {
 
 function announcementDateLabel(a: Announcement): string {
   if (a.recurrence_type === 'weekly' && a.recurrence_label) return a.recurrence_label;
+  if (a.recurrence_type === 'biweekly' && a.recurrence_label) return a.recurrence_label;
+  if (a.recurrence_type === 'monthly' && a.recurrence_label) return a.recurrence_label;
   if (a.recurrence_type === 'date_range' && a.recurrence_label) return a.recurrence_label;
   if (a.event_date) return formatDateNice(a.event_date);
   if (a.event_dates?.length) return a.event_dates.map(formatDateNice).join(', ');

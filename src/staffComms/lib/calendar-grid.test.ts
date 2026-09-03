@@ -89,6 +89,68 @@ describe('getEventItems', () => {
     expect(getEventItems('2026-09-17', [a])).toEqual([]);
   });
 
+  it('expands a biweekly recurrence onto every other matching weekday', () => {
+    // 2026-09-03 is a Thursday
+    const a = makeAnnouncement({
+      recurrence_type: 'biweekly',
+      recurrence_day: 'Thursday',
+      event_date: '2026-09-03',
+      event_dates: ['2026-09-03'],
+    });
+    expect(getEventItems('2026-09-03', [a])).toEqual([a]); // first session
+    expect(getEventItems('2026-09-10', [a])).toEqual([]); // one week later - skipped
+    expect(getEventItems('2026-09-17', [a])).toEqual([a]); // two weeks later
+    expect(getEventItems('2026-10-01', [a])).toEqual([a]); // four weeks later
+    expect(getEventItems('2026-08-27', [a])).toEqual([]); // before the first session
+  });
+
+  it('stops a biweekly recurrence at recurrence_end_date', () => {
+    const a = makeAnnouncement({
+      recurrence_type: 'biweekly',
+      recurrence_day: 'Thursday',
+      event_date: '2026-09-03',
+      event_dates: ['2026-09-03'],
+      recurrence_end_date: '2026-09-17',
+    });
+    expect(getEventItems('2026-09-17', [a])).toEqual([a]);
+    expect(getEventItems('2026-10-01', [a])).toEqual([]);
+  });
+
+  it('expands a monthly recurrence onto the same date each month', () => {
+    const a = makeAnnouncement({
+      recurrence_type: 'monthly',
+      event_date: '2026-01-15',
+      event_dates: ['2026-01-15'],
+    });
+    expect(getEventItems('2026-01-15', [a])).toEqual([a]); // first session
+    expect(getEventItems('2026-02-15', [a])).toEqual([a]);
+    expect(getEventItems('2026-03-15', [a])).toEqual([a]);
+    expect(getEventItems('2026-02-16', [a])).toEqual([]); // wrong day
+    expect(getEventItems('2025-12-15', [a])).toEqual([]); // before the first session
+  });
+
+  it('clamps a monthly recurrence started on the 31st to the last day of shorter months', () => {
+    const a = makeAnnouncement({
+      recurrence_type: 'monthly',
+      event_date: '2026-01-31',
+      event_dates: ['2026-01-31'],
+    });
+    expect(getEventItems('2026-01-31', [a])).toEqual([a]);
+    expect(getEventItems('2026-02-28', [a])).toEqual([a]); // Feb has no 31st
+    expect(getEventItems('2026-04-30', [a])).toEqual([a]); // April has no 31st
+  });
+
+  it('stops a monthly recurrence at recurrence_end_date', () => {
+    const a = makeAnnouncement({
+      recurrence_type: 'monthly',
+      event_date: '2026-01-15',
+      event_dates: ['2026-01-15'],
+      recurrence_end_date: '2026-02-15',
+    });
+    expect(getEventItems('2026-02-15', [a])).toEqual([a]);
+    expect(getEventItems('2026-03-15', [a])).toEqual([]);
+  });
+
   it('expands a date_range item across every day in its span', () => {
     const a = makeAnnouncement({
       recurrence_type: 'date_range',
