@@ -1,20 +1,25 @@
 import supabase from '../lib/supabase';
 import { makeSnippet, sanitizeForFilter } from './searchHelpers';
 
+// Events and classes are Communication Organizer items (happening_type)
+// living in the same unified table as plain announcements now - grouped
+// and linked by type so search results still read like separate sections.
+const HAPPENING_TYPE_META = {
+  event: { label: 'Events', url: '/event-registration' },
+  class: { label: 'Classes', url: '/class-registration' },
+};
+const DEFAULT_HAPPENING_META = { label: 'Announcements', url: '/announcements' };
+
 const SOURCES = [
   {
     type: 'announcement',
-    label: 'Announcements',
     table: 'staff_announcements_portal123',
-    select: 'id,title,body',
+    select: 'id,title,body,happening_type',
     columns: ['title', 'body'],
     titleField: 'title',
     snippetField: 'body',
-    url: '/announcements',
-    // Only published happenings, and skip ones copied in from the legacy
-    // events/classes tables - those are indexed separately below, still
-    // pointed at their own (frozen, no-longer-added-to) tables.
-    extraFilter: (q) => q.eq('is_published', true).is('legacy_source_table', null),
+    resolveMeta: (row) => HAPPENING_TYPE_META[row.happening_type] || DEFAULT_HAPPENING_META,
+    extraFilter: (q) => q.eq('is_published', true),
   },
   {
     type: 'sermon',
@@ -47,26 +52,6 @@ const SOURCES = [
     url: '/daily-devotionals',
   },
   {
-    type: 'event',
-    label: 'Events',
-    table: 'events_portal123',
-    select: 'id,title,details,location,event_date',
-    columns: ['title', 'details', 'location'],
-    titleField: 'title',
-    snippetField: 'details',
-    url: '/events',
-  },
-  {
-    type: 'class',
-    label: 'Classes',
-    table: 'classes_portal123',
-    select: 'id,title,details,location,start_date',
-    columns: ['title', 'details', 'location'],
-    titleField: 'title',
-    snippetField: 'details',
-    url: '/class-registration',
-  },
-  {
     type: 'ministry',
     label: 'Ministries & Opportunities',
     table: 'ministries_portal123',
@@ -91,14 +76,17 @@ const searchSource = async (source, term) => {
     return [];
   }
 
-  return (data || []).map((row) => ({
-    type: source.type,
-    label: source.label,
-    id: row.id,
-    title: row[source.titleField] || 'Untitled',
-    snippet: makeSnippet(row[source.snippetField]),
-    url: source.url,
-  }));
+  return (data || []).map((row) => {
+    const meta = source.resolveMeta ? source.resolveMeta(row) : { label: source.label, url: source.url };
+    return {
+      type: source.type,
+      label: meta.label,
+      id: row.id,
+      title: row[source.titleField] || 'Untitled',
+      snippet: makeSnippet(row[source.snippetField]),
+      url: meta.url,
+    };
+  });
 };
 
 export const searchSite = async (query) => {

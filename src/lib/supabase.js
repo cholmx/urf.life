@@ -24,7 +24,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 const testConnection = async () => {
   try {
     const { data, error } = await supabase
-      .from('announcements_portal123')
+      .from('staff_announcements_portal123')
       .select('count', { count: 'exact', head: true })
 
     if (error) {
