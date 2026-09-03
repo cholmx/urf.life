@@ -80,9 +80,9 @@ export function ScriptEditor({ value, onChange, disabled }: ScriptEditorProps) {
       onClick={onClick}
       title={title}
       style={{
-        border: `1px solid ${isActive ? C.stageText : 'rgba(255,255,255,0.25)'}`,
-        background: isActive ? C.stageText : 'transparent',
-        color: isActive ? C.stageBg : C.stageText,
+        border: `1px solid ${isActive ? C.accent : C.borderMed}`,
+        background: isActive ? C.accentBg : C.card,
+        color: isActive ? C.accent : C.textSec,
         borderRadius: 4,
         padding: '5px 12px',
         fontSize: 12,
@@ -118,7 +118,7 @@ export function ScriptEditor({ value, onChange, disabled }: ScriptEditorProps) {
           outline: 'none',
           fontFamily: font.body,
           fontSize: 15,
-          color: C.stageText,
+          color: C.text,
         }}
       />
     </div>

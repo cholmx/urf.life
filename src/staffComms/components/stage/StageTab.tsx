@@ -155,7 +155,7 @@ export function StageTab({ announcements, today, onError }: StageTabProps) {
             placeholder="Loading..."
             style={{
               width: '100%',
-              minHeight: 200,
+              minHeight: 520,
               fontFamily: font.body,
               fontSize: 15,
               lineHeight: 1.7,

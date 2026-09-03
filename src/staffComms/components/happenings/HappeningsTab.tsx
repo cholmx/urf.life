@@ -231,7 +231,8 @@ export function HappeningsTab({ announcements, today }: HappeningsTabProps) {
         </div>
       ) : (
         <div style={{
-          background: C.stageBg,
+          background: C.card,
+          border: `1px solid ${C.border}`,
           borderRadius: 10,
           padding: '32px 36px',
         }}>
