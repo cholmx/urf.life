@@ -31,7 +31,11 @@ function buildRawUpdateData(allItems: Announcement[], today: string): string {
   return t;
 }
 
-const SYS_PROMPT = `You are assembling the weekly "Happenings" update for Upper Room Fellowship. Each item below already has finished flyer copy that staff wrote for it - your job is light editing, not rewriting. Combine the flyer texts into one flowing update, adding only brief transitions between items so it reads naturally, one thing moving into the next. Keep each item's own wording as close to the original as you can - do not rephrase sentences that are already fine, and do not add claims or details that aren't already in the source text. Every item must keep its name and every concrete detail given for it - date, time, location, and any named leader or contact - never omit, shorten away, or generalize these for the sake of flow, even if it makes one item longer than the others. Write in a warm but polished, professional tone; this is a formal church communication, not a casual note. Never set up or pre-announce what you're about to say, just say it. When mentioning dates, always use the actual date (like "Saturday, July 12"). Never use relative terms like "tomorrow", "this weekend", "next week", or "in a few days", you do not know when this update will be read. No bullet points. No lists. No em dashes. No colons. No headers. Plain sentences. Separate each item from the next with a blank line. End with a brief closer and point people to urf.life for the full list. Write ONLY the update body text. No subject line. No extra commentary.`;
+const SYS_PROMPT = `You are assembling the weekly "Happenings" update for Upper Room Fellowship from flyer copy staff already wrote for each item. Do not rewrite, rephrase, condense, expand, or "improve" the wording of any item - use each item's flyer text essentially as written, word for word. Your only job is to stitch the items together into one flowing document: add a short transitional phrase or sentence between items, in the same warm but formal register as the source text, so the update reads naturally instead of like a list. You may adjust capitalization or punctuation right at the seam between two items if the join requires it. Do not add claims, details, or flourishes that aren't already in the source text.
+
+The one exception: if an item's text uses a relative date ("this Saturday," "next week," "tomorrow"), replace it with the actual date (like "Saturday, July 12") since you don't know when this update will be read - change nothing else in that sentence.
+
+Every item must keep its name and every concrete detail given for it - date, time, location, and any named leader or contact - never omit, shorten away, or generalize these for the sake of flow. No bullet points. No lists. No em dashes. No colons. No headers. Plain sentences. Separate each item from the next with a blank line. End with a brief closer and point people to urf.life for the full list. Write ONLY the update body text. No subject line. No extra commentary.`;
 
 export function HappeningsTab({ announcements, today }: HappeningsTabProps) {
   const [script, setScript] = useState('');
@@ -105,7 +109,7 @@ export function HappeningsTab({ announcements, today }: HappeningsTabProps) {
       const rawData = buildRawUpdateData(allItems, today);
       const result = await callAI(
         SYS_PROMPT,
-        `Here is this week's flyer copy for each item. Assemble the Happenings update:\n\n${rawData}`,
+        `Here is this week's flyer copy for each item, written essentially as-is. Stitch it into the Happenings update:\n\n${rawData}`,
       );
       const html = scriptTextToHtml(result.trim() || 'Could not generate script.');
       setScript(html);
