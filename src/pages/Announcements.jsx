@@ -7,6 +7,8 @@ import {SkeletonCard,LoadingTransition} from '../components/LoadingSkeletons';
 import {useCleanContent} from '../hooks/useCleanContent';
 import supabase from '../lib/supabase';
 import {formatDate} from '../utils/dateFormat';
+import {ensureScriptHtml} from '../lib/textToHtml';
+import {sanitizeHtml} from '../utils/sanitizeHtml';
 
 const {FiMail,FiHome}=FiIcons;
 
@@ -105,11 +107,9 @@ const Announcements=()=> {
               className="bg-white rounded-lg shadow-md overflow-hidden"
             >
               <div
-                className="p-8 md:p-10 text-text-primary"
-                style={{whiteSpace: 'pre-wrap',lineHeight: 1.8}}
-              >
-                {script.content}
-              </div>
+                className="happenings-script p-8 md:p-10 text-text-primary"
+                dangerouslySetInnerHTML={{__html: sanitizeHtml(ensureScriptHtml(script.content))}}
+              />
             </motion.div>
           )}
         </LoadingTransition>

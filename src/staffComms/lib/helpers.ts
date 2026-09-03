@@ -105,3 +105,37 @@ export function weeksUntil(eventDate: string | null | undefined, today: string):
   const diff = (new Date(eventDate + 'T12:00:00').getTime() - new Date(today + 'T12:00:00').getTime()) / (1000 * 60 * 60 * 24 * 7);
   return Math.ceil(diff);
 }
+
+// The Happenings script used to be stored as plain text with the public
+// page rendering it via white-space: pre-wrap. It's now stored as HTML so
+// staff can bold/title-format it in ScriptEditor - this converts a legacy
+// (or freshly AI-generated, still-plain) block of text into paragraph HTML
+// on the same blank-line-separates-paragraphs rule the old renderer used.
+export function scriptTextToHtml(text: string): string {
+  const escape = (s: string) =>
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return (text || '')
+    .split(/\n{2,}/)
+    .map(block => block.trim())
+    .filter(Boolean)
+    .map(block => `<p>${escape(block).replace(/\n/g, '<br>')}</p>`)
+    .join('');
+}
+
+export function looksLikeHtml(content: string): boolean {
+  return /<(p|div|h[1-6]|br)[\s/>]/i.test(content || '');
+}
+
+// For the "Copy Script" button, which staff use to paste the script into an
+// email - bold/title formatting doesn't survive plain text, but paragraph
+// breaks should.
+export function scriptHtmlToText(html: string): string {
+  const container = document.createElement('div');
+  container.innerHTML = html || '';
+  const blocks: string[] = [];
+  container.childNodes.forEach(node => {
+    const text = (node.textContent || '').trim();
+    if (text) blocks.push(text);
+  });
+  return blocks.join('\n\n');
+}
