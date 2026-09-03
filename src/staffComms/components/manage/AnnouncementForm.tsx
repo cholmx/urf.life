@@ -224,15 +224,6 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
               placeholder="Announcement title"
             />
           </div>
-          <div style={fg}>
-            <label style={labelBase}>Short Description <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(helps AI generate better content)</span></label>
-            <textarea
-              style={{ ...inputBase, minHeight: 68, resize: 'vertical', fontSize: 13 }}
-              value={f.description}
-              onChange={e => set('description', e.target.value)}
-              placeholder="Brief summary: what's happening, who it's for, why it matters."
-            />
-          </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div>
               <label style={labelBase}>Category</label>
@@ -287,6 +278,66 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
               </div>
             </div>
           )}
+        </Section>
+
+        <Section title="Description">
+          <div style={fg}>
+            <label style={labelBase}>Short Description <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(only feeds the AI below)</span></label>
+            <div style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, marginBottom: 5, lineHeight: 1.5 }}>
+              This is never published or printed anywhere on its own - it's only here to give the AI something to work from. Write it as rough notes. What actually gets used is whatever ends up in Full Description, Flyer Text, and Short Line below.
+            </div>
+            <textarea
+              style={{ ...inputBase, minHeight: 68, resize: 'vertical', fontSize: 13 }}
+              value={f.description}
+              onChange={e => set('description', e.target.value)}
+              placeholder="Brief summary: what's happening, who it's for, why it matters."
+            />
+          </div>
+
+          <div style={fg}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
+              <label style={labelBase}>Full Description <span style={{ fontWeight: 400, textTransform: 'none' }}>(The Happenings email)</span></label>
+              <AIWriteButton label="Draft" loading={aiLoading.body} onClick={generateBody} disabled={!hasEnoughForAI} />
+            </div>
+            <textarea
+              style={{ ...inputBase, minHeight: 80, resize: 'vertical' }}
+              value={f.body}
+              onChange={e => set('body', e.target.value)}
+              placeholder="Full email copy. AI can write this for you, or type your own - useful even if this isn't going anywhere yet, e.g. to print an invite."
+            />
+          </div>
+
+          <div style={fg}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
+              <div>
+                <label style={labelBase}>Flyer Text <span style={{ fontWeight: 400, textTransform: 'none' }}>(Monthly Flyer)</span></label>
+                <div style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, marginTop: 1 }}>2–3 sentences, max 65 words</div>
+              </div>
+              <AIWriteButton label="Draft" loading={aiLoading.flyer} onClick={generateFlyer} disabled={!hasEnoughForAI} />
+            </div>
+            <textarea
+              style={{ ...inputBase, minHeight: 60, resize: 'vertical' }}
+              value={f.flyer_text}
+              onChange={e => set('flyer_text', e.target.value)}
+              placeholder="Medium-length copy for the printed monthly flyer."
+            />
+          </div>
+
+          <div style={fg}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
+              <div>
+                <label style={labelBase}>Short Line <span style={{ fontWeight: 400, textTransform: 'none' }}>(Slides & Email one-liner)</span></label>
+                <div style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, marginTop: 1 }}>one sentence, pipe-delimited</div>
+              </div>
+              <AIWriteButton label="Draft" loading={aiLoading.slide} onClick={generateSlide} disabled={!hasEnoughForAI} />
+            </div>
+            <input
+              style={{ ...inputBase, fontFamily: font.mono, fontSize: 12 }}
+              value={f.slide_override}
+              onChange={e => { set('slide_override', e.target.value); set('short_version', e.target.value); }}
+              placeholder="Men's Bible Study | May 6 | 7 PM | Fellowship Hall"
+            />
+          </div>
         </Section>
 
         <Section title="Details">
@@ -611,65 +662,6 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
                 </div>
               )}
             </>
-          )}
-        </Section>
-
-        <Section title="Content">
-          {!f.show_in_happenings && !f.monthly_include && !f.show_on_slides && (
-            <div style={{ fontFamily: font.mono, fontSize: 11, color: C.textMuted }}>
-              Turn on a destination above (Sunday Slides, The Happenings, or Monthly Flyer) to write its content here.
-            </div>
-          )}
-
-          {f.show_in_happenings && (
-            <div style={fg}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
-                <label style={labelBase}>Full Description <span style={{ fontWeight: 400, textTransform: 'none' }}>(The Happenings email)</span></label>
-                <AIWriteButton label="Draft" loading={aiLoading.body} onClick={generateBody} disabled={!hasEnoughForAI} />
-              </div>
-              <textarea
-                style={{ ...inputBase, minHeight: 80, resize: 'vertical' }}
-                value={f.body}
-                onChange={e => set('body', e.target.value)}
-                placeholder="Full email copy. AI can write this for you."
-              />
-            </div>
-          )}
-
-          {f.monthly_include && (
-            <div style={fg}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
-                <div>
-                  <label style={labelBase}>Flyer Text <span style={{ fontWeight: 400, textTransform: 'none' }}>(Monthly Flyer)</span></label>
-                  <div style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, marginTop: 1 }}>2–3 sentences, max 65 words</div>
-                </div>
-                <AIWriteButton label="Draft" loading={aiLoading.flyer} onClick={generateFlyer} disabled={!hasEnoughForAI} />
-              </div>
-              <textarea
-                style={{ ...inputBase, minHeight: 60, resize: 'vertical' }}
-                value={f.flyer_text}
-                onChange={e => set('flyer_text', e.target.value)}
-                placeholder="Medium-length copy for the printed monthly flyer."
-              />
-            </div>
-          )}
-
-          {f.show_on_slides && (
-            <div style={fg}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
-                <div>
-                  <label style={labelBase}>Short Line <span style={{ fontWeight: 400, textTransform: 'none' }}>(Slides & Email one-liner)</span></label>
-                  <div style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, marginTop: 1 }}>one sentence, pipe-delimited</div>
-                </div>
-                <AIWriteButton label="Draft" loading={aiLoading.slide} onClick={generateSlide} disabled={!hasEnoughForAI} />
-              </div>
-              <input
-                style={{ ...inputBase, fontFamily: font.mono, fontSize: 12 }}
-                value={f.slide_override}
-                onChange={e => { set('slide_override', e.target.value); set('short_version', e.target.value); }}
-                placeholder="Men's Bible Study | May 6 | 7 PM | Fellowship Hall"
-              />
-            </div>
           )}
         </Section>
 
