@@ -17,7 +17,7 @@ type StatusFilter = typeof STATUS_FILTERS[number]['value'];
 interface ManageTabProps {
   announcements: Announcement[];
   today: string;
-  onSave: (a: Omit<Announcement, 'id' | 'created_at' | 'updated_at'> & { id?: string }) => Promise<void>;
+  onSave: (a: Omit<Announcement, 'id' | 'created_at' | 'updated_at'> & { id?: string }) => Promise<Announcement | null>;
   onDelete: (id: string) => Promise<void>;
   onApprove: (id: string) => Promise<void>;
   onTogglePublish: (a: Announcement) => Promise<void>;
@@ -28,11 +28,13 @@ interface ManageTabProps {
   loading: boolean;
   onError: (msg: string) => void;
   onOpenSignupSheet?: (a: { id: string; title: string; event_date: string | null }) => void;
+  onNavigateTab?: (tab: string) => void;
 }
 
-export function ManageTab({ announcements, today, onSave, onDelete, onApprove, onTogglePublish, editing, setEditing, copySource, setCopySource, loading, onError, onOpenSignupSheet }: ManageTabProps) {
+export function ManageTab({ announcements, today, onSave, onDelete, onApprove, onTogglePublish, editing, setEditing, copySource, setCopySource, loading, onError, onOpenSignupSheet, onNavigateTab }: ManageTabProps) {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [justSaved, setJustSaved] = useState<Announcement | null>(null);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -61,7 +63,14 @@ export function ManageTab({ announcements, today, onSave, onDelete, onApprove, o
       <AnnouncementForm
         announcement={editing === 'new' ? null : editing}
         initialOverrides={editing === 'new' && copySource ? copySource : undefined}
-        onSave={async (f) => { await onSave(f); setEditing(null); setCopySource(null); }}
+        onSave={async (f) => {
+          const saved = await onSave(f);
+          setEditing(null);
+          setCopySource(null);
+          if (saved && (saved.show_on_slides || saved.show_in_happenings || saved.signup_mode === 'sheet' || saved.signup_mode === 'both')) {
+            setJustSaved(saved);
+          }
+        }}
         onCancel={() => { setEditing(null); setCopySource(null); }}
         onError={onError}
         onOpenSignupSheet={onOpenSignupSheet}
@@ -71,6 +80,15 @@ export function ManageTab({ announcements, today, onSave, onDelete, onApprove, o
 
   return (
     <div>
+      {justSaved && (
+        <SavedNextSteps
+          saved={justSaved}
+          onNavigateTab={onNavigateTab}
+          onOpenSignupSheet={onOpenSignupSheet}
+          onDismiss={() => setJustSaved(null)}
+        />
+      )}
+
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <div>
           <h2 style={{ fontFamily: font.display, fontSize: 18, fontWeight: 800, color: C.text, margin: 0, letterSpacing: '-0.02em' }}>
@@ -179,6 +197,61 @@ export function ManageTab({ announcements, today, onSave, onDelete, onApprove, o
           />
         ))}
       </div>
+    </div>
+  );
+}
+
+// Shown right after saving something with a destination toggled on, so
+// staff don't have to remember on their own that a slide, the weekly
+// script, or a sign-up sheet still needs attention elsewhere in the app.
+function SavedNextSteps({ saved, onNavigateTab, onOpenSignupSheet, onDismiss }: {
+  saved: Announcement;
+  onNavigateTab?: (tab: string) => void;
+  onOpenSignupSheet?: (a: { id: string; title: string; event_date: string | null }) => void;
+  onDismiss: () => void;
+}) {
+  const steps: { label: string; onClick: () => void }[] = [];
+  if (saved.show_on_slides && !saved.slide_made) {
+    steps.push({ label: 'Make its slide →', onClick: () => onNavigateTab?.('slideMaker') });
+  }
+  if (saved.show_in_happenings) {
+    steps.push({ label: 'Update this week\'s Happenings →', onClick: () => onNavigateTab?.('happenings') });
+  }
+  if ((saved.signup_mode === 'sheet' || saved.signup_mode === 'both') && onOpenSignupSheet) {
+    steps.push({
+      label: saved.signup_sheet_config ? 'Edit its sign-up sheet →' : 'Create its sign-up sheet →',
+      onClick: () => onOpenSignupSheet({ id: saved.id, title: saved.title, event_date: saved.event_date }),
+    });
+  }
+
+  if (steps.length === 0) return null;
+
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10,
+      background: C.accentBg, border: `1px solid ${C.accent}33`, borderRadius: 8,
+      padding: '12px 16px', marginBottom: 16,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+        <span style={{ fontFamily: font.display, fontSize: 12, fontWeight: 800, color: C.accent }}>
+          "{saved.title}" saved.
+        </span>
+        {steps.map(s => (
+          <button
+            key={s.label}
+            onClick={s.onClick}
+            style={{ ...btnGhost, fontSize: 12, padding: '5px 12px', borderColor: C.accent + '55', color: C.accent }}
+          >
+            {s.label}
+          </button>
+        ))}
+      </div>
+      <button
+        onClick={onDismiss}
+        style={{ background: 'none', border: 'none', color: C.textMuted, fontFamily: font.body, fontSize: 12, cursor: 'pointer', padding: 4 }}
+      >
+        Dismiss
+      </button>
     </div>
   );
 }

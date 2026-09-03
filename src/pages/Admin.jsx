@@ -30,7 +30,7 @@ const {FiPlay,FiBookOpen,FiHome,FiLock,FiStar,FiHeart,FiUsers,FiTrendingUp,FiMes
 const NAV_SECTIONS=[
   {
     items: [
-      {id: 'overview',label: 'Dashboard',icon: FiGrid},
+      {id: 'overview',label: 'Create',icon: FiGrid},
       {id: 'submissions',label: 'Submissions',icon: FiInbox},
     ],
   },
@@ -148,6 +148,7 @@ const Admin=()=> {
               loading={happenings.loading}
               onError={happenings.showError}
               onOpenSignupSheet={(a)=> { setSignupSheetTarget(a); setActiveTab('signupSheet'); }}
+              onNavigateTab={selectTab}
             />
             <div className="mt-10 pt-6 border-t border-neutral-200">
               <AdminDashboard onNavigate={selectTab} />

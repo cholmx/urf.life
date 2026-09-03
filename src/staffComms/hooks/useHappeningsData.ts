@@ -33,11 +33,11 @@ export function useHappeningsData(enabled: boolean, onNavigateToManage?: () => v
     if (enabled) fetchAnnouncements();
   }, [enabled, fetchAnnouncements]);
 
-  const handleSave = async (f: Omit<Announcement, 'id' | 'created_at' | 'updated_at'> & { id?: string }) => {
+  const handleSave = async (f: Omit<Announcement, 'id' | 'created_at' | 'updated_at'> & { id?: string }): Promise<Announcement | null> => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       showError('Session expired. Please sign back in.');
-      return;
+      return null;
     }
     const announcementLike = { ...f, id: f.id ?? '' } as Announcement;
     const payload = {
@@ -87,16 +87,25 @@ export function useHappeningsData(enabled: boolean, onNavigateToManage?: () => v
         .from('staff_announcements_portal123')
         .update(payload)
         .eq('id', f.id);
-      if (error) showError(`Failed to save announcement: ${error.message}`);
-      else setAnnouncements(prev => prev.map(a => a.id === f.id ? { ...a, ...payload } : a));
+      if (error) {
+        showError(`Failed to save announcement: ${error.message}`);
+        return null;
+      }
+      const merged = { ...announcementLike, ...payload, id: f.id } as Announcement;
+      setAnnouncements(prev => prev.map(a => a.id === f.id ? merged : a));
+      return merged;
     } else {
       const { data, error } = await supabase
         .from('staff_announcements_portal123')
         .insert(payload)
         .select()
         .single();
-      if (error) showError(`Failed to create announcement: ${error.message}`);
-      else if (data) setAnnouncements(prev => [data as Announcement, ...prev]);
+      if (error) {
+        showError(`Failed to create announcement: ${error.message}`);
+        return null;
+      }
+      if (data) setAnnouncements(prev => [data as Announcement, ...prev]);
+      return data as Announcement;
     }
   };
 
