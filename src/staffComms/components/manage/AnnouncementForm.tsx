@@ -310,8 +310,8 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
           <div style={fg}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
               <div>
-                <label style={labelBase}>Flyer Text <span style={{ fontWeight: 400, textTransform: 'none' }}>(Monthly Flyer)</span></label>
-                <div style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, marginTop: 1 }}>2–3 sentences, max 65 words</div>
+                <label style={labelBase}>Flyer Text <span style={{ fontWeight: 400, textTransform: 'none' }}>(Monthly Flyer & printed Invite)</span></label>
+                <div style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, marginTop: 1 }}>2–3 sentences, max 65 words - also the body copy on the printed Invite (Invite button, back on the list)</div>
               </div>
               <AIWriteButton label="Draft" loading={aiLoading.flyer} onClick={generateFlyer} disabled={!hasEnoughForAI} />
             </div>
@@ -336,6 +336,19 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
               value={f.slide_override}
               onChange={e => { set('slide_override', e.target.value); set('short_version', e.target.value); }}
               placeholder="Men's Bible Study | May 6 | 7 PM | Fellowship Hall"
+            />
+          </div>
+
+          <div>
+            <label style={labelBase}>Stage Notes <span style={{ fontWeight: 400, textTransform: 'none' }}>(optional)</span></label>
+            <div style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, marginTop: 1, marginBottom: 5 }}>
+              A short line of tone guidance for whoever reads the Stage Script live, and the quoted line printed on the Invite. Leave blank for neither.
+            </div>
+            <input
+              style={inputBase}
+              value={f.stage_notes}
+              onChange={e => set('stage_notes', e.target.value)}
+              placeholder={`e.g. "Come as you are."`}
             />
           </div>
         </Section>
