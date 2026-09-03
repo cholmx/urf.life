@@ -68,9 +68,13 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
   const [accentPhoto, setAccentPhoto] = useState(null);
   const [ov, setOv] = useState(86);
   const [blur, setBlur] = useState(0);
-  const [tab, setTab] = useState("content");
+  // Land on the queue whenever there's something pending, instead of
+  // always opening to whatever was last on the canvas - that's the whole
+  // point of the queue existing, but it was never actually the default.
+  const [tab, setTab] = useState(() => (queueItems.some(a => !a.slide_made) ? "queue" : "content"));
   const [aspectRatio, setAspectRatio] = useState(ASPECT_RATIOS[0]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeQueueItem, setActiveQueueItem] = useState(null);
   const canvasRef = useRef(null);
 
   const undoHistory = useUndoHistory(50);
@@ -204,11 +208,12 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     if (fc) setCombo(fc);
     const pl = COLOR_PALETTES.find(p => p.bg === presetData.brand.bgColor && p.ac === presetData.brand.accentColor);
     if (pl) setPalette(pl);
+    setActiveQueueItem(null);
     setTab("content");
     setSidebarOpen(false);
   };
 
-  const useQueueItem = useCallback((a) => {
+  const loadQueueItem = useCallback((a) => {
     pushUndo();
     const dates = (a.event_dates && a.event_dates.length > 0)
       ? [...a.event_dates].filter(Boolean).sort()
@@ -220,9 +225,26 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
       line2: a.slide_override || dateStr || '',
       line3: a.slide_override ? [dateStr, a.event_location].filter(Boolean).join(' · ') : (a.event_location || ''),
     }));
+    setActiveQueueItem(a);
     setTab("content");
     setSidebarOpen(false);
   }, [pushUndo]);
+
+  // One click from "just finished this slide" to "building the next one" -
+  // no manual trip back to the queue tab to find what's left.
+  const markMadeAndNext = useCallback(() => {
+    if (!activeQueueItem) return;
+    onToggleSlideMade(activeQueueItem.id, true);
+    const next = queueItems.find(a => a.id !== activeQueueItem.id && !a.slide_made);
+    if (next) {
+      loadQueueItem(next);
+    } else {
+      setActiveQueueItem(null);
+      setTab("queue");
+    }
+  }, [activeQueueItem, queueItems, onToggleSlideMade, loadQueueItem]);
+
+  const clearActiveQueueItem = useCallback(() => setActiveQueueItem(null), []);
 
   const cornerR = aspectRatio.id === "16:10" ? 80 : 0;
   const slideProps = {tmplId, data, brand, bgImg: activePhoto, accentImg: accentPhoto, ov, blur, canvasW: aspectRatio.w, canvasH: aspectRatio.h, cornerR};
@@ -267,6 +289,40 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
       }}>
         {/* Left: Canvas */}
         <div style={{flex: 1, minWidth: 0}}>
+          {activeQueueItem && (
+            <div style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8,
+              padding: "10px 14px", marginBottom: 12,
+              background: C.accentBg, border: `1px solid ${C.border}`, borderRadius: 10,
+            }}>
+              <span style={{fontFamily: ui.body, fontSize: 13, color: C.text}}>
+                Building: <strong>{activeQueueItem.title}</strong>
+              </span>
+              <div style={{display: "flex", gap: 8, alignItems: "center"}}>
+                <button
+                  onClick={markMadeAndNext}
+                  style={{
+                    padding: "6px 12px", border: "none", borderRadius: 6,
+                    background: C.accentDark, color: "#fff",
+                    fontFamily: ui.body, fontSize: 12, fontWeight: 700, cursor: "pointer",
+                  }}
+                >
+                  ✓ Mark Made &amp; Next
+                </button>
+                <button
+                  onClick={clearActiveQueueItem}
+                  title="Stop tracking this item (won't mark it made)"
+                  style={{
+                    padding: "6px 8px", border: `1px solid ${C.border}`, borderRadius: 6,
+                    background: "transparent", color: C.textTer,
+                    fontFamily: ui.body, fontSize: 12, cursor: "pointer",
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          )}
           <div style={{
             border: `1px solid ${C.border}`,
             borderRadius: 12,
@@ -309,7 +365,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
             canvasRef={canvasRef}
             onLoadPreset={loadPreset}
             queueItems={queueItems}
-            onUseQueueItem={useQueueItem}
+            onUseQueueItem={loadQueueItem}
             onToggleSlideMade={onToggleSlideMade}
           />
         </div>
@@ -354,7 +410,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
               canvasRef={canvasRef}
               onLoadPreset={loadPreset}
               queueItems={queueItems}
-              onUseQueueItem={useQueueItem}
+              onUseQueueItem={loadQueueItem}
               onToggleSlideMade={onToggleSlideMade}
             />
           </div>

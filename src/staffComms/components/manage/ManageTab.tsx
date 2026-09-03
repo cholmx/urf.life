@@ -97,7 +97,13 @@ export function ManageTab({ announcements, today, onSave, onDelete, onTogglePubl
       {/* Weekly status dashboard */}
       {!loading && announcements.length > 0 && (
         <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
-          <DashboardStat label="Slides Due" value={slidesPending.length} accent={slidesPending.length > 0 ? '#B45309' : '#15803D'} sub={slidesPending.length > 0 ? 'Need making' : 'All caught up'} />
+          <DashboardStat
+            label="Slides Due"
+            value={slidesPending.length}
+            accent={slidesPending.length > 0 ? '#B45309' : '#15803D'}
+            sub={slidesPending.length > 0 ? 'Need making' : 'All caught up'}
+            onClick={() => onNavigateTab?.('slideMaker')}
+          />
         </div>
       )}
 
@@ -219,16 +225,24 @@ function SavedNextSteps({ saved, onNavigateTab, onOpenSignupSheet, onDismiss }: 
   );
 }
 
-function DashboardStat({ label, value, accent, sub }: { label: string; value: number; accent: string; sub: string }) {
+function DashboardStat({ label, value, accent, sub, onClick }: { label: string; value: number; accent: string; sub: string; onClick?: () => void }) {
   return (
-    <div style={{
-      flex: '1 1 120px',
-      minWidth: 120,
-      background: C.card,
-      border: `1px solid ${C.border}`,
-      borderRadius: 8,
-      padding: '12px 14px',
-    }}>
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        flex: '1 1 120px',
+        minWidth: 120,
+        background: C.card,
+        border: `1px solid ${C.border}`,
+        borderRadius: 8,
+        padding: '12px 14px',
+        textAlign: 'left',
+        fontFamily: 'inherit',
+        cursor: onClick ? 'pointer' : 'default',
+        transition: 'border-color 0.15s',
+      }}
+    >
       <div style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 4 }}>
         {label}
       </div>
@@ -240,6 +254,6 @@ function DashboardStat({ label, value, accent, sub }: { label: string; value: nu
           {sub}
         </span>
       </div>
-    </div>
+    </button>
   );
 }
