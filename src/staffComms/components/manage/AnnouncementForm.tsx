@@ -554,6 +554,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
               <label style={labelBase}>Start Time</label>
               <input
                 type="time"
+                step={300}
                 style={{ ...inputBase, fontFamily: font.mono, fontSize: 12 }}
                 value={f.event_time || ''}
                 onChange={e => set('event_time', e.target.value)}
@@ -563,6 +564,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
               <label style={labelBase}>End Time</label>
               <input
                 type="time"
+                step={300}
                 style={{ ...inputBase, fontFamily: font.mono, fontSize: 12 }}
                 value={f.end_time || ''}
                 onChange={e => set('end_time', e.target.value)}
