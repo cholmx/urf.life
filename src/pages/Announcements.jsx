@@ -54,7 +54,7 @@ const Announcements=()=> {
           <SafeIcon icon={FiHome} className="h-5 w-5 text-white" />
         </Link>
       </div>
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12">
           <motion.div
