@@ -6,9 +6,10 @@ import SafeIcon from '../common/SafeIcon';
 import {SkeletonCard,LoadingTransition} from '../components/LoadingSkeletons';
 import {useCleanContent} from '../hooks/useCleanContent';
 import supabase from '../lib/supabase';
-import {formatDate} from '../utils/dateFormat';
+import {formatDate,getTodayDateString} from '../utils/dateFormat';
 import {ensureScriptHtml} from '../lib/textToHtml';
 import {sanitizeHtml} from '../utils/sanitizeHtml';
+import {getWeekStartDate} from '../staffComms/lib/helpers';
 
 const {FiMail,FiHome}=FiIcons;
 
@@ -25,19 +26,36 @@ const Announcements=()=> {
 
   const fetchLatestScript=async ()=> {
     try {
-      // Always show the most recently generated weekly script - if this
-      // week's hasn't been written yet, staff would rather visitors see
-      // last week's than nothing at all.
-      const {data,error}=await supabase
+      // Prefer this calendar week's own script (keyed by its Sunday - see
+      // HappeningsTab). Falling back to "most recent by week_date" alone
+      // isn't safe: a row saved before week_date was Sunday-anchored can
+      // carry a date later in the week than this week's real Sunday (e.g.
+      // a Friday build outranking Sunday numerically), which would keep
+      // outranking this week's correct row forever. Only fall back to
+      // "most recent" when this week doesn't have its own row yet - staff
+      // would rather visitors see last week's than nothing at all.
+      const thisWeekSunday=getWeekStartDate(getTodayDateString());
+      const {data: thisWeek,error: thisWeekError}=await supabase
         .from('staff_generated_scripts_portal123')
         .select('content,week_date')
         .eq('type','happenings')
-        .order('week_date',{ascending: false})
-        .limit(1)
+        .eq('week_date',thisWeekSunday)
         .maybeSingle();
+      if (thisWeekError) throw thisWeekError;
 
-      if (error) throw error;
-      setScript(data || null);
+      if (thisWeek) {
+        setScript(thisWeek);
+      } else {
+        const {data: fallback,error: fallbackError}=await supabase
+          .from('staff_generated_scripts_portal123')
+          .select('content,week_date')
+          .eq('type','happenings')
+          .order('week_date',{ascending: false})
+          .limit(1)
+          .maybeSingle();
+        if (fallbackError) throw fallbackError;
+        setScript(fallback || null);
+      }
     } catch (error) {
       console.error('Error fetching the Happenings script:',error);
     } finally {
