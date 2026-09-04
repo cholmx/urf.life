@@ -1,6 +1,6 @@
 import { C, font } from '../../lib/theme';
 import { btnGhost } from '../ui/inputs';
-import { formatDateNice, escapeHtml, stripLeadingTitle } from '../../lib/helpers';
+import { formatDateNice, escapeHtml, stripLeadingTitle, getWeekStartDate } from '../../lib/helpers';
 import { occursOn } from '../../lib/calendar-grid';
 import type { Announcement } from '../../types';
 import type { ReactNode } from 'react';
@@ -21,10 +21,7 @@ interface WeeklyTabProps {
 }
 
 function getWeekStart(dateStr: string): Date {
-  const d = new Date(dateStr + 'T12:00:00');
-  const day = d.getDay();
-  d.setDate(d.getDate() - day);
-  return d;
+  return new Date(getWeekStartDate(dateStr) + 'T12:00:00');
 }
 
 function getWeekEnd(start: Date): Date {

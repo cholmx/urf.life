@@ -119,6 +119,17 @@ export function stripLeadingTitle(text: string, title: string): string {
   return text.replace(new RegExp(`^${title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*[:\\-–—]?\\s*`, 'i'), '');
 }
 
+// The Sunday that begins the calendar week containing dateStr (weeks run
+// Sunday-Saturday). Shared by the printed Weekly Bulletin and the
+// Happenings email so both key off the same week, and so building the
+// Happenings script on any day within a week updates the same saved row
+// instead of creating a fresh one keyed to that literal day.
+export function getWeekStartDate(dateStr: string): string {
+  const d = new Date(dateStr + 'T12:00:00');
+  d.setDate(d.getDate() - d.getDay());
+  return d.toISOString().split('T')[0];
+}
+
 export function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }

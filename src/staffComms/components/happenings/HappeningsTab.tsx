@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { C, font } from '../../lib/theme';
 import { btnGhost, btnPrimary } from '../ui/inputs';
-import { isHappeningsActive, formatDateNice, formatTime12h, escapeHtml, scriptTextToHtml, scriptHtmlToText, looksLikeHtml } from '../../lib/helpers';
+import { isHappeningsActive, formatDateNice, formatTime12h, escapeHtml, scriptTextToHtml, scriptHtmlToText, looksLikeHtml, getWeekStartDate } from '../../lib/helpers';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { supabase } from '../../lib/supabase';
 import { Radio } from 'lucide-react';
@@ -68,6 +68,14 @@ export function HappeningsTab({ announcements, today }: HappeningsTabProps) {
     grouped[a.category].push(a);
   });
 
+  // Weeks run Sunday-Saturday - anchor the saved script to that week's
+  // Sunday, not the literal day it happens to be built on. Otherwise
+  // building on, say, a Friday saves under Friday's date: the public page
+  // shows "Week of [Friday]" instead of the week's actual Sunday, and
+  // rebuilding later in the same week (a different weekday) creates a
+  // whole separate row instead of updating this one.
+  const weekStartDate = getWeekStartDate(today);
+
   useEffect(() => {
     setScript('');
     setDirty(false);
@@ -77,7 +85,7 @@ export function HappeningsTab({ announcements, today }: HappeningsTabProps) {
       .from('staff_generated_scripts_portal123')
       .select('content')
       .eq('type', 'happenings')
-      .eq('week_date', today)
+      .eq('week_date', weekStartDate)
       .maybeSingle()
       .then(({ data }) => {
         if (data?.content) {
@@ -88,11 +96,11 @@ export function HappeningsTab({ announcements, today }: HappeningsTabProps) {
         }
         setLoadingScript(false);
       });
-  }, [today]);
+  }, [weekStartDate]);
 
   const saveScript = async (content: string) => {
     await supabase.from('staff_generated_scripts_portal123').upsert(
-      { type: 'happenings', week_date: today, content },
+      { type: 'happenings', week_date: weekStartDate, content },
       { onConflict: 'type,week_date,user_id' },
     );
   };
@@ -141,7 +149,7 @@ export function HappeningsTab({ announcements, today }: HappeningsTabProps) {
           </h2>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <p style={{ fontFamily: font.mono, fontSize: 11, color: C.textMuted, margin: 0, letterSpacing: '0.03em' }}>
-              {active.length} items · week of {formatDateNice(today)}
+              {active.length} items · week of {formatDateNice(weekStartDate)}
             </p>
             {script && (
               <span style={{
