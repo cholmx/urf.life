@@ -144,7 +144,7 @@ const AdminResources = () => {
       if (resource.author) exportText += `Author: ${resource.author}\n`;
       exportText += `Links to Books:\n\n`;
 
-      const links = resource.amazon_link.split('\n').filter(link => link.trim());
+      const links = (resource.amazon_link || '').split('\n').filter(link => link.trim());
       links.forEach(link => { exportText += `${link.trim()}\n`; });
 
       if (index < resources.length - 1) exportText += '\n\n\n';

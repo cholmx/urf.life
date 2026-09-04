@@ -40,7 +40,7 @@ const DevotionalBulkImport = ({ onImported, onCancel, onError }) => {
         throw new Error('No valid devotionals found in the file. Please check the format.');
       }
 
-      const confirmMessage = `Found ${parsedEntries.length} devotional entries. Import them all?`;
+      const confirmMessage = `Found ${parsedEntries.length} devotional entries. This will replace ALL existing devotionals with this new set - continue?`;
       if (!(await confirm(confirmMessage))) {
         setImporting(false);
         return;
@@ -51,8 +51,11 @@ const DevotionalBulkImport = ({ onImported, onCancel, onError }) => {
         .delete()
         .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all
 
+      // Stop rather than continuing to insert on top of a failed clear -
+      // that would silently leave old and new devotionals mixed together
+      // with no indication anything went wrong.
       if (deleteError) {
-        console.warn('Warning clearing existing devotionals:', deleteError);
+        throw new Error('Could not clear existing devotionals before import: ' + deleteError.message);
       }
 
       const { error: insertError } = await supabase

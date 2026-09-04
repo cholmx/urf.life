@@ -27,20 +27,30 @@ const Ministries=()=> {
 
       if (ministriesError) throw ministriesError;
 
-      const ministriesWithFeatures=await Promise.all(
-        ministriesData.map(async (ministry)=> {
-          const {data: features}=await supabase
-            .from('ministry_features_portal123')
-            .select('*')
-            .eq('ministry_id',ministry.id)
-            .order('display_order',{ascending: true});
+      // One query for every ministry's features instead of one query per
+      // ministry (N+1), grouped back out by ministry_id client-side.
+      const ministryIds=(ministriesData || []).map(m=> m.id);
+      let featuresByMinistry={};
+      if (ministryIds.length > 0) {
+        const {data: allFeatures,error: featuresError}=await supabase
+          .from('ministry_features_portal123')
+          .select('*')
+          .in('ministry_id',ministryIds)
+          .order('display_order',{ascending: true});
 
-          return {
-            ...ministry,
-            features: features || []
-          };
-        })
-      );
+        if (featuresError) throw featuresError;
+
+        featuresByMinistry=(allFeatures || []).reduce((acc,feature)=> {
+          if (!acc[feature.ministry_id]) acc[feature.ministry_id]=[];
+          acc[feature.ministry_id].push(feature);
+          return acc;
+        },{});
+      }
+
+      const ministriesWithFeatures=(ministriesData || []).map(ministry=> ({
+        ...ministry,
+        features: featuresByMinistry[ministry.id] || []
+      }));
 
       setMinistries(ministriesWithFeatures);
     } catch (error) {

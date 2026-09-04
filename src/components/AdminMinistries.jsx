@@ -58,7 +58,11 @@ const AdminMinistries=()=> {
         leader_role: formData.leader_role || null,
         age_group: formData.age_group,
         is_active: formData.is_active,
-        display_order: editingId ? undefined : ministries.length
+        // max+1 rather than array length - length collides with an
+        // existing display_order once anything has been deleted.
+        display_order: editingId ? undefined : (ministries.length
+          ? Math.max(...ministries.map(m => m.display_order ?? 0)) + 1
+          : 0)
       };
 
       let ministryId=editingId;
@@ -70,12 +74,15 @@ const AdminMinistries=()=> {
         ministryId=inserted[0].id;
       }
 
-      if (features.length > 0) {
-        await supabase
-          .from('ministry_features_portal123')
-          .delete()
-          .eq('ministry_id',ministryId);
+      // Always clear existing features first, even when the new list is
+      // empty - otherwise removing every feature from a ministry left the
+      // old rows in place and they'd silently reappear next time it's edited.
+      await supabase
+        .from('ministry_features_portal123')
+        .delete()
+        .eq('ministry_id',ministryId);
 
+      if (features.length > 0) {
         const featureData=features.map((feature,index)=> ({
           ministry_id: ministryId,
           feature_text: feature.feature_text || feature,
@@ -161,19 +168,26 @@ const AdminMinistries=()=> {
     const targetIndex=direction==='up' ? index - 1 : index + 1;
     if (targetIndex < 0 || targetIndex >= ministries.length) return;
 
-    try {
-      const ministry1=ministries[index];
-      const ministry2=ministries[targetIndex];
+    const ministry1=ministries[index];
+    const ministry2=ministries[targetIndex];
 
-      await supabase
+    try {
+      const {error: error1}=await supabase
         .from('ministries_portal123')
         .update({display_order: ministry2.display_order})
         .eq('id',ministry1.id);
+      if (error1) throw error1;
 
-      await supabase
+      const {error: error2}=await supabase
         .from('ministries_portal123')
         .update({display_order: ministry1.display_order})
         .eq('id',ministry2.id);
+      if (error2) {
+        // Undo the first update so a failed swap doesn't leave both rows
+        // sharing the same display_order.
+        await supabase.from('ministries_portal123').update({display_order: ministry1.display_order}).eq('id',ministry1.id);
+        throw error2;
+      }
 
       fetchItems();
     } catch (error) {
@@ -196,7 +210,7 @@ const AdminMinistries=()=> {
       </div>
 
       {showForm && (
-        <LoadingTransition isLoading={saving && editingId} skeleton={<SkeletonForm />}>
+        <LoadingTransition isLoading={saving && !!editingId} skeleton={<SkeletonForm />}>
           <motion.div
             initial={{opacity: 0,y: 20}}
             animate={{opacity: 1,y: 0}}

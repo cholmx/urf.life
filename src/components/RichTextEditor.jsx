@@ -38,8 +38,9 @@ const RichTextEditor = ({ value, onChange, placeholder, rows = 12, className = '
 
   const handleInput = () => {
     if (editorRef.current && onChange) {
-      // Clean up styles before saving
-      cleanupInlineStyles()
+      // Nothing typed directly introduces inline styles - only pasted
+      // content does, and handlePaste already strips those before this
+      // fires - so no need to re-walk every element on every keystroke.
       onChange({ target: { value: editorRef.current.innerHTML } })
     }
   }
@@ -116,8 +117,9 @@ const RichTextEditor = ({ value, onChange, placeholder, rows = 12, className = '
     if (e.key === 'Enter') {
       e.preventDefault()
       const selection = window.getSelection()
+      if (!selection || selection.rangeCount === 0) return
       const range = selection.getRangeAt(0)
-      
+
       if (e.shiftKey) {
         // Shift+Enter: Insert line break
         const br = document.createElement('br')

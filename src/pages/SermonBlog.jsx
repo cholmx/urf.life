@@ -8,6 +8,7 @@ import {useCleanContent} from '../hooks/useCleanContent';
 import supabase from '../lib/supabase';
 import {formatDate} from '../utils/dateFormat';
 import {sanitizeHtml} from '../utils/sanitizeHtml';
+import {getYouTubeEmbedUrl} from '../utils/youtube';
 
 const {FiPlay,FiCalendar,FiUser,FiMessageCircle,FiHome,FiLayers,FiFilter}=FiIcons;
 
@@ -55,15 +56,6 @@ const SermonBlog=()=> {
     } catch (error) {
       console.error('Error fetching sermon series:',error);
     }
-  };
-
-  const getYouTubeEmbedUrl=(url)=> {
-    if (!url) return null;
-    const regExp=/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-    const match=url.match(regExp);
-    return match && match[2].length===11
-      ? `https://www.youtube.com/embed/${match[2]}`
-      : url;
   };
 
   const getSeriesName=(seriesId)=> {

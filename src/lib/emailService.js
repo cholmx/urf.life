@@ -65,11 +65,11 @@ const formatEmailBody = (formType, formData) => {
     case 'realm':
       body += `Name: ${formData.first_name} ${formData.last_name}\n`
       body += `Email: ${formData.email}\n`
-      body += `Phone: ${formData.phone}\n`
-      body += `Address: ${formData.address_line1}\n`
+      body += `Phone: ${formData.phone || 'Not provided'}\n`
+      body += `Address: ${formData.address_line1 || 'Not provided'}\n`
       if (formData.address_line2) body += `Address Line 2: ${formData.address_line2}\n`
-      body += `City: ${formData.city}, ${formData.state} ${formData.zip_code}\n`
-      body += `Country: ${formData.country}\n`
+      body += `City: ${formData.city || 'Not provided'}, ${formData.state || ''} ${formData.zip_code || ''}\n`
+      body += `Country: ${formData.country || 'Not provided'}\n`
       if (formData.birthday) body += `Birthday: ${formData.birthday}\n`
       if (formData.marital_status) body += `Marital Status: ${formData.marital_status}\n`
       if (formData.anniversary) body += `Anniversary: ${formData.anniversary}\n`
@@ -79,7 +79,7 @@ const formatEmailBody = (formType, formData) => {
       body += `Name: ${formData.first_name} ${formData.last_name}\n`
       body += `Email: ${formData.email}\n`
       body += `Party Size: ${formData.party_size}\n`
-      body += `Unavailable Days: ${formData.unavailable_days.length > 0 ? formData.unavailable_days.join(', ') : 'None specified'}\n`
+      body += `Unavailable Days: ${(formData.unavailable_days || []).length > 0 ? formData.unavailable_days.join(', ') : 'None specified'}\n`
       break
 
     default:

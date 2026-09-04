@@ -9,6 +9,7 @@ import supabase from '../lib/supabase';
 import LivingStonesGallery from '../components/LivingStonesGallery';
 import LivingStonesUpload from '../components/LivingStonesUpload';
 import { sanitizeHtml } from '../utils/sanitizeHtml';
+import { getYouTubeEmbedUrl } from '../utils/youtube';
 
 const { FiTrendingUp, FiHome, FiPlayCircle, FiFileText, FiEye, FiHelpCircle, FiChevronDown, FiChevronUp, FiCamera } = FiIcons;
 
@@ -106,7 +107,7 @@ const CapitalCampaign = () => {
                 <div className="mb-6 rounded-lg overflow-hidden aspect-video bg-gray-100">
                   {update.video_url.includes('youtube.com') || update.video_url.includes('youtu.be') ? (
                     <iframe
-                      src={update.video_url.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')}
+                      src={getYouTubeEmbedUrl(update.video_url)}
                       title={update.title}
                       className="w-full h-full"
                       frameBorder="0"

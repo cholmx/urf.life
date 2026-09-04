@@ -7,6 +7,7 @@ import { EditModal } from './EditModal';
 import type { Announcement } from '../../types';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const WEEKDAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 const navBtn: React.CSSProperties = {
   padding: '5px 12px',
@@ -87,7 +88,20 @@ function CalendarInner({ announcements, today, onSave, onDelete, onPreviewDateCh
       await onSave({ ...a, event_dates: newDates, event_date: sorted[0] ?? null });
     } else {
       if (a.event_date === day) { clearDrag(); return; }
-      await onSave({ ...a, event_date: day, event_dates: [day] });
+      if (a.recurrence_type === 'weekly') {
+        // Dragging a weekly item's anchor changes what weekday it recurs
+        // on - recompute recurrence_day/recurrence_label to match (same
+        // format as AnnouncementForm's computeRecurrenceLabel), or its
+        // future occurrences (derived from the old recurrence_day) would
+        // silently desync from the day it now sits on.
+        const newDay = WEEKDAY_NAMES[new Date(day + 'T12:00:00').getDay()];
+        const recurrence_label = a.recurrence_end_date
+          ? `Every ${newDay}, ${new Date(day + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${new Date(a.recurrence_end_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+          : `Every ${newDay}`;
+        await onSave({ ...a, event_date: day, event_dates: [day], recurrence_day: newDay, recurrence_label });
+      } else {
+        await onSave({ ...a, event_date: day, event_dates: [day] });
+      }
     }
     clearDrag();
   };

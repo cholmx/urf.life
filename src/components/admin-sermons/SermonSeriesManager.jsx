@@ -13,10 +13,13 @@ const emptyForm = { name: '', description: '', start_date: '', end_date: '' };
 
 // Manages sermon series independently of individual sermons - a series is
 // created/deleted here and referenced by id from SermonsManager's sermon
-// form (which fetches its own copy of the series list for the dropdown).
-const SermonSeriesManager = ({ showForm, onCloseForm }) => {
+// form. series/saving/insertItem/deleteItem come from AdminSermons, which
+// owns the single useSermonSeries() instance both components share - each
+// calling the hook separately would give them their own disconnected copy
+// of the list, so a newly-created series wouldn't show up in the other's
+// dropdown until an unrelated remount.
+const SermonSeriesManager = ({ showForm, onCloseForm, series, saving, insertItem, deleteItem }) => {
   const confirm = useConfirm();
-  const { items: series, saving, insertItem, deleteItem } = useSermonSeries();
   const [formData, setFormData] = useState(emptyForm);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState('');

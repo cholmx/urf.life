@@ -1,6 +1,7 @@
 import React,{useState,useEffect} from 'react';
 import {extractFirstAmazonImage,getBookFallbackImage,testImageUrls,testImageUrl} from '../utils/amazonImageExtractor';
 import {LoadingSpinner} from './LoadingSpinner';
+import {getCleanDescription} from '../utils/resourceText';
 
 const BookCard=({resource})=> {
 const [imageUrl,setImageUrl]=useState(null);
@@ -46,41 +47,12 @@ setImageError(true);
 setImageUrl(getBookFallbackImage());
 };
 
-// Clean the description - remove "Available from multiple sources" text
-const getCleanDescription=()=> {
-if (!resource.description) return '';
-
-const description = resource.description.trim();
-
-// Remove various forms of the "Available from multiple sources" text
-const textToRemove = [
-'Available from multiple sources',
-'Available from multiple sources.',
-'available from multiple sources',
-'available from multiple sources.',
-'AVAILABLE FROM MULTIPLE SOURCES',
-'AVAILABLE FROM MULTIPLE SOURCES.'
-];
-
-let cleanDescription = description;
-textToRemove.forEach(text => {
-cleanDescription = cleanDescription.replace(text, '').trim();
-});
-
-// If the description is now empty or just punctuation, return empty string
-if (!cleanDescription || cleanDescription.match(/^[.,!?;:\s]*$/)) {
-return '';
-}
-
-return cleanDescription;
-};
-
 // Get the first Amazon link from the amazon_link field
 const getAmazonUrl = () => {
 if (!resource.amazon_link) return null;
 
 // Split by newlines and find first Amazon link
-const links = resource.amazon_link.split('\n').filter(link => link.trim());
+const links = (resource.amazon_link || '').split('\n').filter(link => link.trim());
 const amazonLink = links.find(link => 
 link.includes('amazon.com') || 
 link.includes('amazon.co.uk') || 
@@ -91,7 +63,7 @@ link.includes('amzn.to')
 return amazonLink ? amazonLink.trim() : null;
 };
 
-const cleanDescription = getCleanDescription();
+const cleanDescription = getCleanDescription(resource.description);
 const amazonUrl = getAmazonUrl();
 
 return (

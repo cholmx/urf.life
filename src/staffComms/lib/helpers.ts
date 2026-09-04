@@ -80,15 +80,20 @@ export function isStageActive(a: Announcement, today: string): boolean {
   return today >= start && today <= end;
 }
 
-export function isArchived(a: Announcement, today: string): boolean {
-  if (a.is_recurring) return false;
+// Shared by isArchived and the Archive tab's own display/sort - all three
+// used to independently gather+sort the same three date fields.
+export function getLastRelevantDate(a: Announcement): string | null {
   const dates: string[] = [];
   if (a.event_date) dates.push(a.event_date);
   if (a.event_dates?.length) dates.push(...a.event_dates);
   if (a.happenings_end_date) dates.push(a.happenings_end_date);
-  if (dates.length === 0) return false;
-  const last = dates.sort().at(-1)!;
-  return last < today;
+  return dates.length ? dates.sort().at(-1)! : null;
+}
+
+export function isArchived(a: Announcement, today: string): boolean {
+  if (a.is_recurring) return false;
+  const last = getLastRelevantDate(a);
+  return last !== null && last < today;
 }
 
 export function formatDateNice(d: string | null | undefined): string {
@@ -104,6 +109,14 @@ export function weeksUntil(eventDate: string | null | undefined, today: string):
   if (!eventDate) return null;
   const diff = (new Date(eventDate + 'T12:00:00').getTime() - new Date(today + 'T12:00:00').getTime()) / (1000 * 60 * 60 * 24 * 7);
   return Math.ceil(diff);
+}
+
+// Announcement body/flyer text often repeats the title as its own leading
+// sentence ("Men's Bible Study - join us...") - strip that duplicate lead-in
+// wherever the title is already shown separately (bulletin/flyer layouts).
+export function stripLeadingTitle(text: string, title: string): string {
+  if (!text || !title) return text;
+  return text.replace(new RegExp(`^${title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*[:\\-–—]?\\s*`, 'i'), '');
 }
 
 export function escapeHtml(s: string): string {

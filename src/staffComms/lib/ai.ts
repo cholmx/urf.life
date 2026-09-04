@@ -37,6 +37,6 @@ export async function generateStageScript(
     body: JSON.stringify({ announcements, date }),
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Failed to generate script');
+  if (!res.ok || data.error) throw new Error(data.error || 'Failed to generate script');
   return data.script || '';
 }

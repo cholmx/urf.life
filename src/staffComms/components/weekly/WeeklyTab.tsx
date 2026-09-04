@@ -1,6 +1,7 @@
 import { C, font } from '../../lib/theme';
 import { btnGhost } from '../ui/inputs';
-import { formatDateNice } from '../../lib/helpers';
+import { formatDateNice, escapeHtml, stripLeadingTitle } from '../../lib/helpers';
+import { occursOn } from '../../lib/calendar-grid';
 import type { Announcement } from '../../types';
 import type { ReactNode } from 'react';
 
@@ -32,15 +33,18 @@ function getWeekEnd(start: Date): Date {
   return end;
 }
 
+// event_date only ever holds a recurring item's first session (see
+// AnnouncementForm) - later weeks have to be derived from
+// recurrence_type/recurrence_day/recurrence_week_of_month/
+// recurrence_end_date, not read off that one literal date. occursOn (from
+// calendar-grid, also used by the Calendar tab) already does that
+// correctly for every recurrence type, so reuse it instead of
+// re-deriving occurrences here.
 function isThisWeek(a: Announcement, weekStart: Date, weekEnd: Date): boolean {
-  const dates: string[] = [];
-  if (a.event_date) dates.push(a.event_date);
-  if (a.event_dates?.length) dates.push(...a.event_dates.filter(Boolean));
-  if (!dates.length) return false;
-  return dates.some(d => {
-    const dd = new Date(d + 'T12:00:00');
-    return dd >= weekStart && dd <= weekEnd;
-  });
+  for (let d = new Date(weekStart); d <= weekEnd; d.setDate(d.getDate() + 1)) {
+    if (occursOn(a, d.toISOString().split('T')[0])) return true;
+  }
+  return false;
 }
 
 function formatDateRange(start: Date, end: Date): string {
@@ -64,7 +68,7 @@ function announcementDateLabel(a: Announcement): string {
 
 function getAnnouncementBody(a: Announcement): string {
   const raw = a.flyer_text || a.body || a.short_version || '';
-  return raw.replace(new RegExp(`^${a.title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*[:\\-–—]?\\s*`, 'i'), '');
+  return stripLeadingTitle(raw, a.title);
 }
 
 export function WeeklyTab({ announcements, today }: WeeklyTabProps) {
@@ -328,20 +332,24 @@ function buildBulletinHTML(items: Announcement[], sundayDate: string): string {
   const itemsHTML = items.length === 0
     ? `<div style="color:#000;padding:40px 0;text-align:center;font-size:13pt;">No announcements for this week.</div>`
     : items.map(a => {
-        const dateLabel = announcementDateLabel(a);
+        const dateLabel = escapeHtml(announcementDateLabel(a));
         const accent = a.scope === 'whole_church' ? ORANGE : TEAL;
         const raw = a.flyer_text || a.body || a.short_version || '';
-        const text = raw.replace(new RegExp(`^${a.title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*[:\\-–—]?\\s*`, 'i'), '');
+        const text = escapeHtml(stripLeadingTitle(raw, a.title));
+        const title = escapeHtml(a.title);
+        const ministry = escapeHtml(a.ministry);
+        const contactName = escapeHtml(a.contact_name);
+        const contactInfo = escapeHtml(a.contact_info);
         return `<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1pt solid #000;align-items:flex-start;">
           <div style="width:4pt;align-self:stretch;min-height:0.35in;background:${accent};border-radius:2pt;flex-shrink:0;"></div>
           <div style="flex:1;min-width:0;">
             <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:2px;">
-              <span style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:13pt;font-weight:800;color:${TEAL};">${a.title}</span>
+              <span style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:13pt;font-weight:800;color:${TEAL};">${title}</span>
               ${dateLabel ? `<span style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:10pt;font-weight:700;color:${ORANGE};">${dateLabel}</span>` : ''}
-              ${a.ministry ? `<span style="font-family:'Inter',sans-serif;font-size:7.5pt;font-weight:700;color:${TEAL};background:${TEAL_LIGHT};border-radius:999px;padding:2pt 7pt;">${a.ministry}</span>` : ''}
+              ${ministry ? `<span style="font-family:'Inter',sans-serif;font-size:7.5pt;font-weight:700;color:${TEAL};background:${TEAL_LIGHT};border-radius:999px;padding:2pt 7pt;">${ministry}</span>` : ''}
             </div>
             ${text ? `<div style="font-family:'Inter',sans-serif;font-size:10.5pt;color:#1A1A1A;line-height:1.3;margin-bottom:2px;">${text}</div>` : ''}
-            ${a.contact_info ? `<div style="font-family:'Inter',sans-serif;font-size:8pt;color:#000;margin-top:3px;">${a.contact_name ? `${a.contact_name}, ` : ''}${a.contact_info}</div>` : ''}
+            ${contactInfo ? `<div style="font-family:'Inter',sans-serif;font-size:8pt;color:#000;margin-top:3px;">${contactName ? `${contactName}, ` : ''}${contactInfo}</div>` : ''}
           </div>
         </div>`;
       }).join('');

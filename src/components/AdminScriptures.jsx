@@ -122,9 +122,15 @@ const AdminScriptures = () => {
           }])
       );
 
-      await Promise.all(importPromises);
+      const results = await Promise.all(importPromises);
+      const failures = results.filter(r => r.error);
 
-      toast.success(`Successfully imported ${parsedEntries.length} scriptures!`);
+      if (failures.length > 0) {
+        console.error('Some scripture imports failed:', failures.map(f => f.error));
+        toast.error(`Imported ${parsedEntries.length - failures.length} of ${parsedEntries.length} scriptures - ${failures.length} failed. Check console for details.`);
+      } else {
+        toast.success(`Successfully imported ${parsedEntries.length} scriptures!`);
+      }
       setImportText('');
       setShowBulkImport(false);
       fetchItems();

@@ -1,6 +1,6 @@
 import { C, font } from '../../lib/theme';
 import { btnGhost } from '../ui/inputs';
-import { isMonthlyActive, formatDateNice } from '../../lib/helpers';
+import { isMonthlyActive, formatDateNice, escapeHtml, stripLeadingTitle } from '../../lib/helpers';
 import type { Announcement } from '../../types';
 
 interface MonthlyTabProps {
@@ -127,18 +127,22 @@ function buildFlyerHTML(items: Announcement[], today: string, bathroomVariant: b
     ? `<div style="color:#999;padding:0.5in 0;text-align:center;font-size:11pt;">No announcements for this month.</div>`
     : active.map((a, i) => {
         const rawText = a.flyer_text || a.month_override || a.body || a.short_version || '';
-        const text = rawText.replace(new RegExp(`^${a.title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*[:\\-–—]?\\s*`, 'i'), '');
+        const text = escapeHtml(stripLeadingTitle(rawText, a.title));
+        const title = escapeHtml(a.title);
+        const ministry = escapeHtml(a.ministry);
+        const contactName = escapeHtml(a.contact_name);
+        const contactInfo = escapeHtml(a.contact_info);
         const isWC = a.scope === 'whole_church';
         const barColor = isWC ? ORANGE : TEAL;
-        const dateLabel = formatDateList(a);
+        const dateLabel = escapeHtml(formatDateList(a));
         const dateSpan = dateLabel
           ? `<span style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:${s.dateFontSize}pt;font-weight:700;color:${ORANGE};letter-spacing:0.05em;white-space:nowrap;flex-shrink:0;">${dateLabel}</span>`
           : '';
-        const ministryTag = a.ministry
-          ? `<span style="font-family:'Inter',sans-serif;font-size:${Math.max(s.contactFontSize - 0.5, 7)}pt;font-weight:700;color:${TEAL};background:${isWC ? '#F0EBE0' : '#D5E8E2'};border-radius:999px;padding:1pt 7pt;letter-spacing:0.04em;white-space:nowrap;flex-shrink:0;">${a.ministry}</span>`
+        const ministryTag = ministry
+          ? `<span style="font-family:'Inter',sans-serif;font-size:${Math.max(s.contactFontSize - 0.5, 7)}pt;font-weight:700;color:${TEAL};background:${isWC ? '#F0EBE0' : '#D5E8E2'};border-radius:999px;padding:1pt 7pt;letter-spacing:0.04em;white-space:nowrap;flex-shrink:0;">${ministry}</span>`
           : '';
-        const contactHTML = a.contact_info
-          ? `<div style="font-family:'Inter',sans-serif;font-size:${s.contactFontSize}pt;color:#777;margin-top:${s.contactMarginTop}pt;">${a.contact_name ? `${a.contact_name}, ` : ''}${a.contact_info}</div>`
+        const contactHTML = contactInfo
+          ? `<div style="font-family:'Inter',sans-serif;font-size:${s.contactFontSize}pt;color:#777;margin-top:${s.contactMarginTop}pt;">${contactName ? `${contactName}, ` : ''}${contactInfo}</div>`
           : '';
         const border = i < active.length - 1 ? `border-bottom:1pt solid #E8E8E8;` : '';
         return `
@@ -146,7 +150,7 @@ function buildFlyerHTML(items: Announcement[], today: string, bathroomVariant: b
             <div style="width:3pt;align-self:stretch;min-height:${s.barMinH}in;background:${barColor};border-radius:3pt;flex-shrink:0;"></div>
             <div style="flex:1;min-width:0;">
               <div style="margin-bottom:${s.titleMarginBottom}pt;">
-                <div style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:${s.titleFontSize}pt;font-weight:900;color:${TEAL};letter-spacing:0.02em;line-height:1.1;">${a.title}</div>
+                <div style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:${s.titleFontSize}pt;font-weight:900;color:${TEAL};letter-spacing:0.02em;line-height:1.1;">${title}</div>
                 <div style="margin-top:1pt;line-height:1.1;display:flex;gap:4pt;align-items:center;flex-wrap:wrap;">
                   ${dateSpan}
                   ${ministryTag}
@@ -211,7 +215,7 @@ function FlyerPagePreview({ announcements, today, bathroomVariant }: {
         )}
         {active.map((a, i) => {
           const rawText = a.flyer_text || a.month_override || a.body || a.short_version || '';
-          const text = rawText.replace(new RegExp(`^${a.title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*[:\\-–—]?\\s*`, 'i'), '');
+          const text = stripLeadingTitle(rawText, a.title);
           const barColor = a.scope === 'whole_church' ? ORANGE : TEAL;
           return (
             <div key={a.id} style={{ display: 'flex', gap: `${s.gap}in`, padding: `${s.itemPadV}in 0`, borderBottom: i < active.length - 1 ? `1pt solid #E8E8E8` : 'none', alignItems: 'flex-start' }}>

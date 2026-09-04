@@ -57,10 +57,18 @@ const AudioPlayer = ({ episode, onClose }) => {
 
     if (isPlaying) {
       audio.pause();
+      setIsPlaying(false);
     } else {
-      audio.play().catch(console.error);
+      // Only flip to "playing" once play() actually resolves - otherwise
+      // a blocked/failed play() (autoplay policy, network error) left the
+      // button showing Pause while nothing was audibly playing.
+      audio.play()
+        .then(() => setIsPlaying(true))
+        .catch(err => {
+          console.error(err);
+          setIsPlaying(false);
+        });
     }
-    setIsPlaying(!isPlaying);
   };
 
   const handleSeek = (e) => {

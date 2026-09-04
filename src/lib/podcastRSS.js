@@ -4,7 +4,6 @@ export class PodcastRSSService {
     this.rssUrl = 'https://anchor.fm/s/34abb934/podcast/rss'
     this.proxies = [
       'https://api.allorigins.win/get?url=',
-      'https://cors-anywhere.herokuapp.com/',
       'https://api.codetabs.com/v1/proxy?quest='
     ]
   }
@@ -95,7 +94,7 @@ export class PodcastRSSService {
         author: this.getTextContent(channel, 'itunes\\:author,author') || 'Upper Room Fellowship'
       }
 
-      const episodes = Array.from(items).slice(0, 20).map((item, index) => {
+      const episodes = Array.from(items).slice(0, 50).map((item, index) => {
         const enclosure = item.querySelector('enclosure')
         const duration = this.getTextContent(item, 'itunes\\:duration')
         const pubDate = this.getTextContent(item, 'pubDate')

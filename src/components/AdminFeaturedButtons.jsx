@@ -42,7 +42,11 @@ const AdminFeaturedButtons=()=> {
         await updateItem(editingId,buttonData);
       } else {
         const autoType=formData.title.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
-        const nextOrder=buttons.length + 1;
+        // max+1 rather than length+1 - length collides with an existing
+        // display_order once anything has been deleted.
+        const nextOrder=buttons.length
+          ? Math.max(...buttons.map(b => b.display_order ?? 0)) + 1
+          : 1;
         const buttonData={
           button_type: autoType,
           title: toTitleCase(formData.title),
@@ -118,7 +122,7 @@ const AdminFeaturedButtons=()=> {
       </div>
 
       {showForm && (
-        <LoadingTransition isLoading={saving && editingId} skeleton={<SkeletonForm />}>
+        <LoadingTransition isLoading={saving && !!editingId} skeleton={<SkeletonForm />}>
           <motion.div
             initial={{opacity: 0,y: 20}}
             animate={{opacity: 1,y: 0}}

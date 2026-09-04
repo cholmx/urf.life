@@ -197,7 +197,7 @@ const AdminComments = () => {
                 </label>
                 <div className="flex space-x-2">
                   <textarea
-                    value={replyText[comment.id] || comment.admin_reply || ''}
+                    value={replyText[comment.id] !== undefined ? replyText[comment.id] : (comment.admin_reply || '')}
                     onChange={(e) => setReplyText({ ...replyText, [comment.id]: e.target.value })}
                     className="flex-1 px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
                     rows="3"

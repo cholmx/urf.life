@@ -4,7 +4,6 @@ export class GreenPodcastRSSService {
     this.rssUrl = 'https://anchor.fm/s/108ad943c/podcast/rss'
     this.proxies = [
       'https://api.allorigins.win/get?url=',
-      'https://cors-anywhere.herokuapp.com/',
       'https://api.codetabs.com/v1/proxy?quest='
     ]
   }

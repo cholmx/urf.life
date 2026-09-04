@@ -134,8 +134,11 @@ export function buildInviteHTMLFromAnnouncement(a: Announcement): string {
   const endStr = a.recurrence_end_date
     ? new Date(a.recurrence_end_date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
     : '';
+  // slide_override is pipe-delimited "Title | Date | Time | Location" -
+  // only the third segment is the time; taking everything after the
+  // first pipe pulled in the date/location too and garbled the line.
   const rawTime = a.event_time || (a.slide_override
-    ? a.slide_override.split('|').slice(1).join('|').trim()
+    ? (a.slide_override.split('|')[2] || '').trim()
     : '');
   const timeStr = formatTime12h(rawTime);
 

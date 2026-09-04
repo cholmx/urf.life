@@ -2,33 +2,13 @@ import React from 'react';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../../common/SafeIcon';
 import { LoadingSpinner } from '../LoadingSpinner';
+import { getCleanDescription } from '../../utils/resourceText';
+
+// Re-exported for existing importers - the canonical implementation now
+// lives in utils/resourceText so BookCard.jsx can share it too.
+export { getCleanDescription };
 
 const { FiEdit, FiTrash2, FiBookOpen, FiTag } = FiIcons;
-
-// Longer, period-inclusive variants must come before their shorter
-// no-period counterparts: String.replace only removes the first literal
-// match, so checking the no-period form first left a stray "." behind
-// whenever the noise phrase in the source text actually ended in one.
-const DESCRIPTION_NOISE = [
-  'Available from multiple sources.',
-  'Available from multiple sources',
-  'available from multiple sources.',
-  'available from multiple sources',
-  'AVAILABLE FROM MULTIPLE SOURCES.',
-  'AVAILABLE FROM MULTIPLE SOURCES'
-];
-
-// Strips leftover "Available from multiple sources" boilerplate that used
-// to get pasted into descriptions before the bulk-import format changed.
-export const getCleanDescription = (description) => {
-  if (!description) return '';
-  let cleanDescription = description.trim();
-  DESCRIPTION_NOISE.forEach(text => {
-    cleanDescription = cleanDescription.replace(text, '').trim();
-  });
-  if (!cleanDescription || cleanDescription.match(/^[.,!?;:\s]*$/)) return '';
-  return cleanDescription;
-};
 
 export const getWebsiteName = (url) => {
   try {
@@ -72,7 +52,7 @@ const ResourceList = ({ resources, categories, loading, onEdit, onDelete }) => {
       ) : (
         <div className="divide-y divide-accent">
           {resources.map((resource) => {
-            const links = resource.amazon_link.split('\n').filter(link => link.trim());
+            const links = (resource.amazon_link || '').split('\n').filter(link => link.trim());
             const cleanDescription = getCleanDescription(resource.description);
 
             return (

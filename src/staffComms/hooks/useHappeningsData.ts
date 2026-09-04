@@ -122,6 +122,10 @@ export function useHappeningsData(enabled: boolean, onNavigateToManage?: () => v
       happenings_start_date: null,
       happenings_end_date: null,
       slide_made: false,
+      // The archived item may have been published - a copy is a new,
+      // unpublished happening until staff explicitly publish it again.
+      is_published: false,
+      published_at: null,
     });
     setEditing('new');
     onNavigateToManage?.();

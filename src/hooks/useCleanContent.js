@@ -37,9 +37,14 @@ export const useCleanContent = () => {
             .replace(/float[^;]*;?/gi, '')
             .trim()
           
-          if (cleanedStyle) {
+          // Only write back when something actually changed - the
+          // MutationObserver below watches this same [style] attribute,
+          // so an unconditional setAttribute() here (even to the same
+          // value) queues a new mutation record and re-triggers this
+          // function forever.
+          if (cleanedStyle && cleanedStyle !== style) {
             element.setAttribute('style', cleanedStyle)
-          } else {
+          } else if (!cleanedStyle && style) {
             element.removeAttribute('style')
           }
           

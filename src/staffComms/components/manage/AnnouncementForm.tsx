@@ -255,8 +255,17 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
   const updateDate = (i: number, val: string) => syncDatesFromArray(f.event_dates.map((d, idx) => idx === i ? val : d));
   const removeDate = (i: number) => syncDatesFromArray(f.event_dates.filter((_, idx) => idx !== i));
 
+  // A recurring item saved without its required date(s) never becomes
+  // active anywhere (isHappeningsActive/isSlideActive/isStageActive all
+  // key off event_date/recurrence_end_date) - block save instead of
+  // silently producing a happening that can never appear.
+  const missingRequiredDate =
+    (f.recurrence_type === 'date_range' && (!f.event_date || !f.recurrence_end_date)) ||
+    ((f.recurrence_type === 'weekly' || f.recurrence_type === 'biweekly' || f.recurrence_type === 'monthly') && !f.event_date);
+  const canSave = !!f.title.trim() && !missingRequiredDate;
+
   const handleSave = async () => {
-    if (!f.title.trim()) return;
+    if (!canSave) return;
     setSaving(true);
     try { await onSave(f); } finally { setSaving(false); }
   };
@@ -579,7 +588,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
                       onChange={e => updateDate(i, e.target.value)}
                     />
                     <button type="button" onClick={() => removeDate(i)} style={{ fontFamily: font.body, fontSize: 12, color: C.textMuted, background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px', lineHeight: 1 }}>×</button>
-                    {i === 0 && f.event_dates.length > 1 && (
+                    {d && d === f.event_date && f.event_dates.length > 1 && (
                       <span style={{ fontFamily: font.mono, fontSize: 9, color: C.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>primary</span>
                     )}
                   </div>
@@ -780,6 +789,12 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
             </div>
           )}
 
+          {missingRequiredDate && (
+            <div style={{ fontFamily: font.body, fontSize: 12, color: C.warn, fontWeight: 600, padding: '6px 12px', background: C.warnBg, borderRadius: 6, marginBottom: 14 }}>
+              {f.recurrence_type === 'date_range' ? 'Start and End Date are required.' : 'First Session is required.'}
+            </div>
+          )}
+
           {f.event_date && (
             <div style={{ background: C.bgSubtle, border: `1px solid ${C.border}`, borderRadius: 6, padding: '10px 14px', fontFamily: font.mono, fontSize: 11, color: C.textTer, lineHeight: 1.8 }}>
               <div style={{ fontFamily: font.display, fontSize: 9, fontWeight: 700, color: C.textMuted, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>Auto schedule</div>
@@ -885,9 +900,9 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
         <div style={{ display: 'flex', gap: 8, paddingTop: 4 }}>
           <button
             onClick={handleSave}
-            disabled={saving || !f.title.trim()}
-            style={{ ...btnPrimary, opacity: saving || !f.title.trim() ? 0.5 : 1 }}
-            onMouseEnter={e => { if (!saving && f.title.trim()) (e.currentTarget as HTMLElement).style.background = C.accentHover; }}
+            disabled={saving || !canSave}
+            style={{ ...btnPrimary, opacity: saving || !canSave ? 0.5 : 1 }}
+            onMouseEnter={e => { if (!saving && canSave) (e.currentTarget as HTMLElement).style.background = C.accentHover; }}
             onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = C.accent}
           >
             {saving ? 'Saving...' : 'Save'}

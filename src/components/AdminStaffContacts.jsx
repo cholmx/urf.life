@@ -37,7 +37,11 @@ const AdminStaffContacts=()=> {
         title: toTitleCase(formData.title),
         email: formData.email,
         is_active: formData.is_active,
-        display_order: editingId ? undefined : staffContacts.length
+        // max+1 rather than array length - length collides with an
+        // existing display_order once anything has been deleted.
+        display_order: editingId ? undefined : (staffContacts.length
+          ? Math.max(...staffContacts.map(s => s.display_order ?? 0)) + 1
+          : 0)
       };
 
       if (editingId) {
@@ -92,19 +96,26 @@ const AdminStaffContacts=()=> {
     const targetIndex=direction==='up' ? index - 1 : index + 1;
     if (targetIndex < 0 || targetIndex >= staffContacts.length) return;
 
-    try {
-      const staff1=staffContacts[index];
-      const staff2=staffContacts[targetIndex];
+    const staff1=staffContacts[index];
+    const staff2=staffContacts[targetIndex];
 
-      await supabase
+    try {
+      const {error: error1}=await supabase
         .from('staff_contacts_portal123')
         .update({display_order: staff2.display_order})
         .eq('id',staff1.id);
+      if (error1) throw error1;
 
-      await supabase
+      const {error: error2}=await supabase
         .from('staff_contacts_portal123')
         .update({display_order: staff1.display_order})
         .eq('id',staff2.id);
+      if (error2) {
+        // Undo the first update so a failed swap doesn't leave both rows
+        // sharing the same display_order.
+        await supabase.from('staff_contacts_portal123').update({display_order: staff1.display_order}).eq('id',staff1.id);
+        throw error2;
+      }
 
       fetchItems();
     } catch (error) {
@@ -127,7 +138,7 @@ const AdminStaffContacts=()=> {
       </div>
 
       {showForm && (
-        <LoadingTransition isLoading={saving && editingId} skeleton={<SkeletonForm />}>
+        <LoadingTransition isLoading={saving && !!editingId} skeleton={<SkeletonForm />}>
           <motion.div
             initial={{opacity: 0,y: 20}}
             animate={{opacity: 1,y: 0}}

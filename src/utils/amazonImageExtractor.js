@@ -73,18 +73,17 @@ export const getBookFallbackImage = () => {
   return 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&h=600&fit=crop&crop=center';
 };
 
-// Test multiple image URLs and return the first working one
+// Test multiple image URLs and return the first working one, preferring
+// the earlier (higher-quality) URLs when more than one loads. Tested in
+// parallel rather than one at a time - a serial loop could wait up to
+// 5s per URL, so a fully-broken list of 5 took ~25s before falling back
+// to the placeholder cover.
 export const testImageUrls = async (urls) => {
-  if (!urls || !Array.isArray(urls)) return null;
-  
-  for (const url of urls) {
-    const isValid = await testImageUrl(url);
-    if (isValid) {
-      return url;
-    }
-  }
-  
-  return null;
+  if (!urls || !Array.isArray(urls) || urls.length === 0) return null;
+
+  const results = await Promise.all(urls.map(url => testImageUrl(url)));
+  const index = results.findIndex(Boolean);
+  return index === -1 ? null : urls[index];
 };
 
 // Test if an image URL is valid by attempting to load it
@@ -95,12 +94,20 @@ export const testImageUrl = (url) => {
       return;
     }
 
+    let settled = false;
+    const finish = (result) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve(result);
+    };
+
     const img = new Image();
-    img.onload = () => resolve(true);
-    img.onerror = () => resolve(false);
+    img.onload = () => finish(true);
+    img.onerror = () => finish(false);
     img.src = url;
-    
+
     // Timeout after 5 seconds for high-res images
-    setTimeout(() => resolve(false), 5000);
+    const timer = setTimeout(() => finish(false), 5000);
   });
 };

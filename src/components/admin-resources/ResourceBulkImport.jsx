@@ -52,6 +52,7 @@ const ResourceBulkImport = ({ resources, categories, onImported, onCancel, onErr
       // dedupe both see records created earlier in this same loop.
       const workingCategories = [...categories];
       const workingResources = [...resources];
+      const failedTitles = [];
 
       for (const resource of parsedResources) {
         let categoryId = null;
@@ -99,6 +100,7 @@ const ResourceBulkImport = ({ resources, categories, onImported, onCancel, onErr
               .eq('id', existingResource.id);
             if (updateError) {
               console.warn(`Error updating resource "${resource.title}":`, updateError);
+              failedTitles.push(resource.title);
             } else {
               existingResource.amazon_link = allLinks;
             }
@@ -121,6 +123,7 @@ const ResourceBulkImport = ({ resources, categories, onImported, onCancel, onErr
 
           if (insertError) {
             console.warn(`Error inserting resource "${resource.title}":`, insertError);
+            failedTitles.push(resource.title);
           } else {
             workingResources.push(newResource);
           }
@@ -128,7 +131,11 @@ const ResourceBulkImport = ({ resources, categories, onImported, onCancel, onErr
       }
 
       setImportText('');
-      onImported(`Successfully imported ${parsedResources.length} book recommendations!`);
+      if (failedTitles.length > 0) {
+        onImported(`Imported ${parsedResources.length - failedTitles.length} of ${parsedResources.length} book recommendations - ${failedTitles.length} failed (${failedTitles.join(', ')}). Check console for details.`);
+      } else {
+        onImported(`Successfully imported ${parsedResources.length} book recommendations!`);
+      }
     } catch (err) {
       console.error('Error importing resources:', err);
       onError('Error importing resources: ' + err.message);

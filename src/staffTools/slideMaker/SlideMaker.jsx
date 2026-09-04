@@ -192,7 +192,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
 
     if (presetData.photoId) {
       const photo = photos.find(p => p.dbId === presetData.photoId);
-      if (photo) setActivePhoto(photo);
+      setActivePhoto(photo ? photo.img : null);
     } else {
       setActivePhoto(null);
     }

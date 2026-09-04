@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ChevronDown, ChevronUp, Search, X, CopyPlus } from 'lucide-react';
 import { C, font } from '../../lib/theme';
 import { ScopePill } from '../ui/Pill';
-import { formatDateNice } from '../../lib/helpers';
+import { formatDateNice, getLastRelevantDate } from '../../lib/helpers';
 import type { Announcement } from '../../types';
 
 interface ArchiveTabProps {
@@ -24,13 +24,7 @@ function ArchiveCard({ a, onDelete, onCopy }: { a: Announcement; onDelete: (id: 
   const [confirming, setConfirming] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
-  const lastDate = (() => {
-    const dates: string[] = [];
-    if (a.event_date) dates.push(a.event_date);
-    if (a.event_dates?.length) dates.push(...a.event_dates);
-    if (a.happenings_end_date) dates.push(a.happenings_end_date);
-    return dates.sort().at(-1) ?? null;
-  })();
+  const lastDate = getLastRelevantDate(a);
 
   const allDates = (() => {
     const dates: string[] = [];
@@ -137,16 +131,9 @@ function ArchiveCard({ a, onDelete, onCopy }: { a: Announcement; onDelete: (id: 
 export function ArchiveTab({ announcements, onDelete, onCopy }: ArchiveTabProps) {
   const [query, setQuery] = useState('');
 
-  const sorted = [...announcements].sort((a, b) => {
-    const getDate = (x: Announcement) => {
-      const dates: string[] = [];
-      if (x.event_date) dates.push(x.event_date);
-      if (x.event_dates?.length) dates.push(...x.event_dates);
-      if (x.happenings_end_date) dates.push(x.happenings_end_date);
-      return dates.sort().at(-1) ?? '';
-    };
-    return getDate(b).localeCompare(getDate(a));
-  });
+  const sorted = [...announcements].sort((a, b) =>
+    (getLastRelevantDate(b) ?? '').localeCompare(getLastRelevantDate(a) ?? '')
+  );
 
   const q = query.trim().toLowerCase();
   const filtered = q

@@ -80,9 +80,9 @@ const AdminDevotionals = () => {
       exportText += `${monthName} ${day}: ${devotional.title}\n\n`;
       if (devotional.subtitle) exportText += `${devotional.subtitle}\n\n`;
       if (devotional.scripture_reference) exportText += `${devotional.scripture_reference}\n\n`;
-      if (devotional.content) exportText += `${devotional.content}\n\n`;
-      if (devotional.response) exportText += `Response: ${devotional.response}\n\n`;
-      if (devotional.prayer) exportText += `Prayer: ${devotional.prayer}\n\n`;
+      if (devotional.content) exportText += `${devotional.content.replace(/<[^>]*>/g, '')}\n\n`;
+      if (devotional.response) exportText += `Response: ${devotional.response.replace(/<[^>]*>/g, '')}\n\n`;
+      if (devotional.prayer) exportText += `Prayer: ${devotional.prayer.replace(/<[^>]*>/g, '')}\n\n`;
       if (index < devotionals.length - 1) exportText += '\n';
     });
 
