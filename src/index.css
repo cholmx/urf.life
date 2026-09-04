@@ -191,6 +191,15 @@
 .happenings-script em {
   font-style: italic;
 }
+.happenings-script a {
+  color: #83A682;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.happenings-script a:hover {
+  color: #6d8a6b;
+}
 
 /* Admin dashboard: its own dark-gray-and-white look, Inter for body text
    (headings already inherit Inter Tight Bold from the base h1-h6 rule

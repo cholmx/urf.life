@@ -45,6 +45,7 @@ function buildAssembledScript(items: Announcement[]): string {
     let html = `<h3>${escapeHtml(a.title)}</h3>`;
     if (whenWhere) html += `<p><strong>${escapeHtml(whenWhere)}</strong></p>`;
     if (description) html += scriptTextToHtml(description);
+    if (a.link) html += `<p><a href="${escapeHtml(a.link)}" target="_blank" rel="noopener noreferrer">Register Here</a></p>`;
     return html;
   });
   return sections.join('');
