@@ -90,12 +90,6 @@ export function getLastRelevantDate(a: Announcement): string | null {
   return dates.length ? dates.sort().at(-1)! : null;
 }
 
-export function isArchived(a: Announcement, today: string): boolean {
-  if (a.is_recurring) return false;
-  const last = getLastRelevantDate(a);
-  return last !== null && last < today;
-}
-
 // How long a class stays listed on the public Classes page (and keeps the
 // Home page's Classes button visible) after its first session starts.
 // Deliberately separate from the class's own ongoing schedule (which can
@@ -109,6 +103,18 @@ export function isClassListingActive(eventDate: string | null | undefined, today
   const cutoff = new Date(eventDate + 'T12:00:00');
   cutoff.setDate(cutoff.getDate() + CLASS_LISTING_GRACE_DAYS);
   return today <= cutoff.toISOString().split('T')[0];
+}
+
+export function isArchived(a: Announcement, today: string): boolean {
+  if (a.is_recurring) return false;
+  const last = getLastRelevantDate(a);
+  if (last === null) return false;
+  // A class moves to the admin Archive the same moment it drops off the
+  // public listing (see isClassListingActive), not the instant its start
+  // date passes - otherwise staff would see it archived while visitors
+  // could still register for it.
+  if (a.happening_type === 'class') return !isClassListingActive(last, today);
+  return last < today;
 }
 
 export function formatDateNice(d: string | null | undefined): string {
