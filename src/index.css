@@ -167,16 +167,16 @@
    formatting (bold, title) looks the same in both places. */
 .happenings-script p {
   margin: 0 0 1.6em;
-  line-height: 1.8;
+  line-height: 1.45;
 }
 .happenings-script p:last-child {
   margin-bottom: 0;
 }
 .happenings-script h3 {
   font-family: "Google Sans Flex", Inter, sans-serif;
-  font-size: 1.15em;
+  font-size: 1.5em;
   font-weight: 800;
-  line-height: 1.4;
+  line-height: 1.15;
   text-transform: uppercase;
   letter-spacing: 0.02em;
   color: inherit;

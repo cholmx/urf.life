@@ -117,7 +117,7 @@ export function ScriptEditor({ value, onChange, disabled }: ScriptEditorProps) {
           minHeight: 360,
           outline: 'none',
           fontFamily: font.body,
-          fontSize: 15,
+          fontSize: 13,
           color: C.text,
         }}
       />
