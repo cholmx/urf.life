@@ -96,6 +96,21 @@ export function isArchived(a: Announcement, today: string): boolean {
   return last !== null && last < today;
 }
 
+// How long a class stays listed on the public Classes page (and keeps the
+// Home page's Classes button visible) after its first session starts.
+// Deliberately separate from the class's own ongoing schedule (which can
+// run for months) - this is a grace window so people who don't sign up
+// until after it's begun still see it, not a measure of when the class
+// itself ends.
+export const CLASS_LISTING_GRACE_DAYS = 7;
+
+export function isClassListingActive(eventDate: string | null | undefined, today: string): boolean {
+  if (!eventDate) return true;
+  const cutoff = new Date(eventDate + 'T12:00:00');
+  cutoff.setDate(cutoff.getDate() + CLASS_LISTING_GRACE_DAYS);
+  return today <= cutoff.toISOString().split('T')[0];
+}
+
 export function formatDateNice(d: string | null | undefined): string {
   if (!d) return '';
   return new Date(d + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });

@@ -4,6 +4,8 @@ import {motion} from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import supabase from '../lib/supabase';
+import {getTodayDateString} from '../utils/dateFormat';
+import {CLASS_LISTING_GRACE_DAYS} from '../staffComms/lib/helpers';
 
 const {FiPlay,FiMic,FiUsers,FiCreditCard,FiUserPlus,FiMail,FiCalendar,FiBookOpen,FiSettings,FiFacebook,FiInstagram,FiYoutube,FiGlobe,FiLogIn,FiExternalLink,FiFileText,FiHeadphones,FiTrendingUp,FiCheck,FiStar}=FiIcons;
 
@@ -20,6 +22,13 @@ const Home=()=> {
 
   const checkAvailability=async ()=> {
     try {
+      // The Classes button should disappear once every class has passed
+      // its listing grace period (see isClassListingActive) - not just
+      // when there are literally zero class rows.
+      const cutoff=new Date(getTodayDateString() + 'T12:00:00');
+      cutoff.setDate(cutoff.getDate() - CLASS_LISTING_GRACE_DAYS);
+      const cutoffStr=cutoff.toISOString().slice(0,10);
+
       const [
         {data: events},
         {data: classes},
@@ -27,7 +36,7 @@ const Home=()=> {
         {data: featuredButtons}
       ]=await Promise.all([
         supabase.from('staff_announcements_portal123').select('id').eq('happening_type','event').eq('is_published',true).limit(1),
-        supabase.from('staff_announcements_portal123').select('id').eq('happening_type','class').eq('is_published',true).limit(1),
+        supabase.from('staff_announcements_portal123').select('id').eq('happening_type','class').eq('is_published',true).or(`event_date.is.null,event_date.gte.${cutoffStr}`).limit(1),
         supabase.from('resources_portal123').select('id').limit(1),
         supabase
           .from('featured_buttons_portal123')

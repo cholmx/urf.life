@@ -8,8 +8,9 @@ import supabase from '../lib/supabase';
 import StandardButton from '../components/StandardButton';
 import {sanitizeHtml} from '../utils/sanitizeHtml';
 import {plainTextToHtml} from '../lib/textToHtml';
-import {formatDate,formatTime} from '../utils/dateFormat';
+import {formatDate,formatTime,getTodayDateString} from '../utils/dateFormat';
 import AddToCalendarButton from '../components/AddToCalendarButton';
+import {isClassListingActive} from '../staffComms/lib/helpers';
 
 const {FiBookOpen,FiHome,FiExternalLink}=FiIcons;
 
@@ -34,7 +35,11 @@ const ClassRegistration=()=> {
         .order('event_date',{ascending: true,nullsFirst: false});
 
       if (error) throw error;
-      setClasses(data || []);
+      // Keep a class listed until a week after it starts (not its whole
+      // multi-week run) - late signers still see it, but it drops off once
+      // that grace window passes instead of staying up indefinitely.
+      const today=getTodayDateString();
+      setClasses((data || []).filter(c=> isClassListingActive(c.event_date,today)));
     } catch (error) {
       console.error('Error fetching classes:',error);
     } finally {
