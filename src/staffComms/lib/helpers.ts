@@ -130,8 +130,21 @@ export function getWeekStartDate(dateStr: string): string {
   return d.toISOString().split('T')[0];
 }
 
+// Some legacy/migrated content already contains HTML entities (e.g. an
+// old rich-text field that got its tags stripped but not its "&amp;"
+// left behind) - decode those first so escaping stays idempotent instead
+// of double-encoding them into a visible "&amp;amp;".
+function decodeCommonEntities(s: string): string {
+  return s
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#0?39;/g, "'");
+}
+
 export function escapeHtml(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return decodeCommonEntities(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 // The Happenings script used to be stored as plain text with the public

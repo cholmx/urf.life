@@ -8,5 +8,10 @@ import DOMPurify from 'dompurify';
 // visitor loads.
 export const sanitizeHtml = (html) => {
   if (!html) return '';
-  return DOMPurify.sanitize(html);
+  // DOMPurify strips target by default; allow it back for links (e.g. the
+  // Happenings script's "Register Here" links) since rel="noopener
+  // noreferrer" - which admin-authored content already sets alongside it -
+  // is what actually mitigates the reverse-tabnabbing risk target="_blank"
+  // poses on its own.
+  return DOMPurify.sanitize(html, {ADD_ATTR: ['target']});
 };
