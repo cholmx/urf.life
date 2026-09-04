@@ -72,8 +72,13 @@ export function isStageActive(a: Announcement, today: string): boolean {
   }
   if (a.event_date) {
     const start = getSlideStartDate(a) || getAutoHappeningsStartDate(a, today);
-    const end = a.event_date;
-    return today >= start && today <= end;
+    if (today < start) return false;
+    // A class stays on the stage script through the same one-week grace
+    // window the public listing uses (see isClassListingActive) instead of
+    // dropping off the instant it starts - the pastor still needs to
+    // mention it isn't too late to join the Sunday right after it began.
+    if (a.happening_type === 'class') return isClassListingActive(a.event_date, today);
+    return today <= a.event_date;
   }
   const start = getAutoHappeningsStartDate(a, today);
   const end = getAutoHappeningsEndDate(a) || '2099-12-31';

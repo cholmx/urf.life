@@ -40,9 +40,15 @@ export function StageTab({ announcements, today, onError }: StageTabProps) {
     let s = '';
     stageItems.forEach((a, i) => {
       const wks = weeksUntil(a.event_date, today);
+      const classAlreadyStarted = a.happening_type === 'class' && !!a.event_date && a.event_date < today;
       s += `── ${i + 1}. ${a.title.toUpperCase()} ──\n`;
       s += a.body + '\n';
-      if (a.event_date) s += `Date: ${formatDateNice(a.event_date)}${wks !== null && wks > 0 ? ` (${wks} weeks out)` : ''}\n`;
+      if (a.event_date) {
+        s += `Date: ${formatDateNice(a.event_date)}`;
+        if (classAlreadyStarted) s += ' (already started - mention it\'s not too late to join)';
+        else if (wks !== null && wks > 0) s += ` (${wks} weeks out)`;
+        s += '\n';
+      }
       if (a.contact_name || a.contact_info) s += `Contact: ${[a.contact_name, a.contact_info].filter(Boolean).join(' | ')}\n`;
       if (a.stage_notes) s += `[Tone: ${a.stage_notes}]\n`;
       s += '\n';
