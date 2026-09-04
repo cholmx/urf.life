@@ -189,7 +189,7 @@ const CampaignUpdatesManager = () => {
         </motion.div>
       )}
 
-      <LoadingTransition isLoading={loading} skeleton={<SkeletonTable />}>
+      <LoadingTransition isLoading={loading} skeleton={<SkeletonTable columns={5} rounded="rounded-lg" shadow="shadow-md" />}>
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
           <table className="min-w-full divide-y divide-accent">
             <thead className="bg-accent">

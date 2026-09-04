@@ -2,6 +2,7 @@ import React from 'react';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../../common/SafeIcon';
 import { formatDate } from '../../utils/dateFormat';
+import { LoadingSpinner } from '../LoadingSpinner';
 
 const { FiBookOpen, FiEdit, FiTrash2 } = FiIcons;
 
@@ -9,7 +10,7 @@ const DevotionalList = ({ devotionals, loading, onEdit, onDelete }) => (
   <div className="bg-white rounded-lg shadow-md overflow-hidden">
     {loading ? (
       <div className="p-8 text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+        <LoadingSpinner size="md" className="justify-center mb-4" />
         <p className="text-text-primary font-inter">Loading devotionals...</p>
       </div>
     ) : devotionals.length === 0 ? (

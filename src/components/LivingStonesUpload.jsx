@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import supabase from '../lib/supabase';
+import { LoadingSpinner } from './LoadingSpinner';
 
 const { FiUpload, FiX, FiCamera, FiCheck, FiImage } = FiIcons;
 
@@ -297,7 +298,7 @@ const LivingStonesUpload = () => {
         >
           {uploading ? (
             <>
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <LoadingSpinner size="sm" color="#ffffff" />
               <span>Uploading...</span>
             </>
           ) : (

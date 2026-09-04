@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../../common/SafeIcon';
 import RichTextEditor from '../RichTextEditor';
+import { LoadingSpinner } from '../LoadingSpinner';
 import { toTitleCase } from '../../utils/textFormat';
 import { formatDate } from '../../utils/dateFormat';
 import { useSupabaseCrud } from '../../hooks/useSupabaseCrud';
@@ -242,7 +243,7 @@ const SermonsManager = () => {
       <div className="bg-white rounded-2xl shadow-modern overflow-hidden">
         {loading ? (
           <div className="p-8 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <LoadingSpinner size="md" className="justify-center mb-4" />
             <p className="text-text-primary font-inter">Loading...</p>
           </div>
         ) : sermons.length === 0 ? (

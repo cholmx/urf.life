@@ -1,6 +1,7 @@
 import React from 'react';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../../common/SafeIcon';
+import { LoadingSpinner } from '../LoadingSpinner';
 
 const { FiEdit, FiTrash2, FiBookOpen, FiTag } = FiIcons;
 
@@ -60,7 +61,7 @@ const ResourceList = ({ resources, categories, loading, onEdit, onDelete }) => {
     <div className="bg-white rounded-2xl shadow-modern overflow-hidden">
       {loading ? (
         <div className="p-8 text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <LoadingSpinner size="md" className="justify-center mb-4" />
           <p className="text-text-primary font-inter">Loading...</p>
         </div>
       ) : resources.length === 0 ? (

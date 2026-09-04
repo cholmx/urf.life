@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
-import { SkeletonCard, LoadingTransition } from '../components/LoadingSkeletons';
+import { SkeletonCard, SkeletonBox, LoadingTransition } from '../components/LoadingSkeletons';
 import { useCleanContent } from '../hooks/useCleanContent';
 import supabase from '../lib/supabase';
 import LivingStonesGallery from '../components/LivingStonesGallery';
@@ -237,6 +237,53 @@ const CapitalCampaign = () => {
     </div>
   );
 
+  // Each tab's real content has a different shape (Updates: title/date
+  // header + prose; Vision: mandatory top image + title + prose; FAQs: a
+  // short collapsed accordion row) - one shared skeleton can't stand in
+  // for all three without either over- or under-shooting height.
+  const renderTabSkeleton = () => {
+    if (activeTab === 'faqs') {
+      return (
+        <div className="space-y-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="bg-white rounded-lg shadow-md overflow-hidden px-6 py-5 flex items-center justify-between">
+              <div className="flex items-center space-x-3 flex-1 pr-4">
+                <SkeletonBox width="w-5" height="h-5" rounded="rounded-full" />
+                <SkeletonBox width="w-2/3" height="h-5" className="bg-gray-300" />
+              </div>
+              <SkeletonBox width="w-5" height="h-5" />
+            </div>
+          ))}
+        </div>
+      );
+    }
+    if (activeTab === 'vision') {
+      return (
+        <div className="space-y-8">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <div key={i} className="bg-white rounded-lg shadow-md overflow-hidden">
+              <SkeletonBox width="w-full" height="h-64" rounded="rounded-none" />
+              <div className="p-8 space-y-3">
+                <SkeletonBox width="w-1/2" height="h-7" className="bg-gray-300" />
+                <SkeletonBox width="w-full" height="h-4" />
+                <SkeletonBox width="w-full" height="h-4" />
+                <SkeletonBox width="w-3/4" height="h-4" />
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+    // updates (and any future tab) - title/date header, no image, prose lines
+    return (
+      <div className="space-y-8">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <SkeletonCard key={i} rounded="rounded-lg" shadow="shadow-md" padding="p-8" showMeta={false} lines={5} />
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen py-12 relative" style={{ backgroundColor: '#fcfaf2' }}>
       {/* Back to Home Button */}
@@ -375,13 +422,7 @@ const CapitalCampaign = () => {
         {/* Content */}
         <LoadingTransition
           isLoading={loading}
-          skeleton={
-            <div className="space-y-8">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <SkeletonCard key={i} showImage={false} showMeta={true} />
-              ))}
-            </div>
-          }
+          skeleton={renderTabSkeleton()}
         >
           {activeTab === 'updates' && renderUpdates()}
           {activeTab === 'vision' && renderVision()}

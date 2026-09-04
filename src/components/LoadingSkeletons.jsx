@@ -1,5 +1,6 @@
 import React from 'react';
 import {motion} from 'framer-motion';
+import {LoadingSpinner} from './LoadingSpinner';
 
 // Base skeleton animation
 const shimmer = {
@@ -42,12 +43,24 @@ export const SkeletonButton = ({ size = 'medium' }) => {
   );
 };
 
-// Card skeleton for announcements, sermons, etc.
-export const SkeletonCard = ({ showImage = false, showMeta = true }) => (
+// Card skeleton for announcements, sermons, etc. No avatar or action
+// buttons by default - most real cards this stands in for (a long-form
+// script, a campaign update) don't have either; opt in with the props
+// for the ones that do.
+export const SkeletonCard = ({
+  showImage = false,
+  showMeta = true,
+  showAvatar = false,
+  showActions = false,
+  lines = 3,
+  rounded = 'rounded-2xl',
+  shadow = 'shadow-modern',
+  padding = 'p-6',
+}) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
-    className="bg-white rounded-lg shadow-md p-6 space-y-4"
+    className={`bg-white ${rounded} ${shadow} ${padding} space-y-4`}
   >
     {/* Header */}
     <div className="flex items-start justify-between">
@@ -60,7 +73,7 @@ export const SkeletonCard = ({ showImage = false, showMeta = true }) => (
           </div>
         )}
       </div>
-      <SkeletonBox width="w-8" height="h-8" rounded="rounded-full" />
+      {showAvatar && <SkeletonBox width="w-8" height="h-8" rounded="rounded-full" />}
     </div>
 
     {/* Image */}
@@ -70,53 +83,64 @@ export const SkeletonCard = ({ showImage = false, showMeta = true }) => (
 
     {/* Content */}
     <div className="space-y-2">
-      <SkeletonBox width="w-full" height="h-4" />
-      <SkeletonBox width="w-5/6" height="h-4" />
-      <SkeletonBox width="w-4/6" height="h-4" />
+      {Array.from({ length: lines }).map((_, i) => (
+        <SkeletonBox
+          key={i}
+          width={i === lines - 1 ? 'w-4/6' : i === lines - 2 ? 'w-5/6' : 'w-full'}
+          height="h-4"
+        />
+      ))}
     </div>
 
     {/* Actions */}
-    <div className="flex space-x-2 pt-2">
-      <SkeletonButton size="small" />
-      <SkeletonButton size="small" />
-    </div>
+    {showActions && (
+      <div className="flex space-x-2 pt-2">
+        <SkeletonButton size="small" />
+        <SkeletonButton size="small" />
+      </div>
+    )}
   </motion.div>
 );
 
-// Episode/Podcast skeleton
-export const SkeletonEpisode = () => (
+// Episode/Podcast skeleton - matches the real episode card's
+// rounded-2xl/shadow-modern shell, its optional artwork, its small
+// circular play toggle (not a big 40px one), and its two full-width
+// pill action buttons ("Play Episode" / "View Online").
+export const SkeletonEpisode = ({ showImage = true }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
-    className="bg-white rounded-lg shadow-md p-6"
+    className="bg-white rounded-2xl shadow-modern overflow-hidden p-6"
   >
     <div className="flex items-start space-x-4">
-      {/* Episode image */}
-      <SkeletonBox width="w-16" height="h-16" rounded="rounded-lg" className="flex-shrink-0" />
-      
+      {/* Episode artwork */}
+      {showImage && (
+        <SkeletonBox width="w-16" height="h-16" rounded="rounded-lg" className="flex-shrink-0" />
+      )}
+
       <div className="flex-1 space-y-3">
-        {/* Title and play button */}
-        <div className="flex items-start justify-between">
+        {/* Title and play toggle */}
+        <div className="flex items-start justify-between gap-3">
           <SkeletonBox width="w-2/3" height="h-5" className="bg-gray-300" />
-          <SkeletonBox width="w-10" height="h-10" rounded="rounded-full" className="bg-gray-300" />
+          <SkeletonBox width="w-9" height="h-9" rounded="rounded-full" className="bg-gray-300 flex-shrink-0" />
         </div>
-        
+
         {/* Meta info */}
         <div className="flex items-center space-x-4">
-          <SkeletonBox width="w-20" height="h-3" />
-          <SkeletonBox width="w-16" height="h-3" />
+          <SkeletonBox width="w-20" height="h-4" />
+          <SkeletonBox width="w-16" height="h-4" />
         </div>
-        
+
         {/* Description */}
         <div className="space-y-2">
           <SkeletonBox width="w-full" height="h-4" />
           <SkeletonBox width="w-3/4" height="h-4" />
         </div>
-        
-        {/* Action buttons */}
-        <div className="flex space-x-3">
-          <SkeletonButton size="medium" />
-          <SkeletonButton size="medium" />
+
+        {/* Action buttons - full-width pills, matching StandardButton */}
+        <div className="flex space-x-3 pt-1">
+          <SkeletonBox width="w-full" height="h-11" rounded="rounded-lg" className="bg-gray-300" />
+          <SkeletonBox width="w-full" height="h-11" rounded="rounded-lg" className="bg-gray-300" />
         </div>
       </div>
     </div>
@@ -144,74 +168,92 @@ export const SkeletonBookCard = () => (
   </motion.div>
 );
 
-// Admin table skeleton
-export const SkeletonTable = ({ rows = 5, columns = 4 }) => (
-  <div className="bg-white rounded-lg shadow-md overflow-hidden">
-    {/* Header */}
-    <div className="border-b border-gray-200 p-4">
-      <div className="grid grid-cols-4 gap-4">
-        {Array.from({ length: columns }).map((_, i) => (
-          <SkeletonBox key={i} width="w-full" height="h-4" className="bg-gray-300" />
+// Admin table skeleton. Tailwind needs static class names, so the
+// column count maps to a fixed grid-cols-N class rather than being
+// interpolated - previously this was hardcoded to grid-cols-4 no
+// matter what `columns` was passed, silently ignoring it.
+const GRID_COLS = {
+  1: 'grid-cols-1', 2: 'grid-cols-2', 3: 'grid-cols-3',
+  4: 'grid-cols-4', 5: 'grid-cols-5', 6: 'grid-cols-6',
+};
+
+export const SkeletonTable = ({ rows = 5, columns = 4, rounded = 'rounded-2xl', shadow = 'shadow-modern' }) => {
+  const gridColsClass = GRID_COLS[columns] || GRID_COLS[4];
+  return (
+    <div className={`bg-white ${rounded} ${shadow} overflow-hidden`}>
+      {/* Header */}
+      <div className="border-b border-gray-200 p-4">
+        <div className={`grid ${gridColsClass} gap-4`}>
+          {Array.from({ length: columns }).map((_, i) => (
+            <SkeletonBox key={i} width="w-full" height="h-4" className="bg-gray-300" />
+          ))}
+        </div>
+      </div>
+
+      {/* Rows */}
+      <div className="divide-y divide-gray-200">
+        {Array.from({ length: rows }).map((_, rowIndex) => (
+          <motion.div
+            key={rowIndex}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: rowIndex * 0.1 }}
+            className="p-4"
+          >
+            <div className={`grid ${gridColsClass} gap-4 items-center`}>
+              {Array.from({ length: columns }).map((_, colIndex) => (
+                <SkeletonBox
+                  key={colIndex}
+                  width={colIndex === 0 ? "w-3/4" : "w-full"}
+                  height="h-4"
+                />
+              ))}
+            </div>
+          </motion.div>
         ))}
       </div>
     </div>
-    
-    {/* Rows */}
-    <div className="divide-y divide-gray-200">
-      {Array.from({ length: rows }).map((_, rowIndex) => (
-        <motion.div
-          key={rowIndex}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: rowIndex * 0.1 }}
-          className="p-4"
-        >
-          <div className="grid grid-cols-4 gap-4 items-center">
-            {Array.from({ length: columns }).map((_, colIndex) => (
-              <SkeletonBox
-                key={colIndex}
-                width={colIndex === 0 ? "w-3/4" : "w-full"}
-                height="h-4"
-              />
-            ))}
-          </div>
-        </motion.div>
-      ))}
-    </div>
-  </div>
-);
+  );
+};
 
-// Form skeleton
-export const SkeletonForm = () => (
+// Form skeleton. Field/textarea/button counts are configurable since
+// real admin forms vary quite a bit in shape - defaults match the
+// most common case (title + a few short fields + a description + save/cancel).
+export const SkeletonForm = ({ fields = 4, textarea = true, buttons = 2, title = true }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
-    className="bg-white rounded-lg shadow-md p-6 space-y-6"
+    className="bg-white rounded-2xl shadow-modern p-6 space-y-6"
   >
     {/* Form title */}
-    <SkeletonBox width="w-1/3" height="h-6" className="bg-gray-300" />
-    
+    {title && <SkeletonBox width="w-1/3" height="h-6" className="bg-gray-300" />}
+
     {/* Form fields */}
     <div className="space-y-4">
-      {Array.from({ length: 4 }).map((_, i) => (
+      {Array.from({ length: fields }).map((_, i) => (
         <div key={i} className="space-y-2">
           <SkeletonBox width="w-24" height="h-4" />
           <SkeletonBox width="w-full" height="h-10" rounded="rounded-lg" />
         </div>
       ))}
-      
+
       {/* Text area */}
-      <div className="space-y-2">
-        <SkeletonBox width="w-20" height="h-4" />
-        <SkeletonBox width="w-full" height="h-24" rounded="rounded-lg" />
-      </div>
+      {textarea && (
+        <div className="space-y-2">
+          <SkeletonBox width="w-20" height="h-4" />
+          <SkeletonBox width="w-full" height="h-24" rounded="rounded-lg" />
+        </div>
+      )}
     </div>
-    
+
     {/* Action buttons */}
-    <div className="flex space-x-3">
-      <SkeletonButton size="medium" />
-      <SkeletonButton size="medium" />
-    </div>
+    {buttons > 0 && (
+      <div className="flex space-x-3">
+        {Array.from({ length: buttons }).map((_, i) => (
+          <SkeletonButton key={i} size="medium" />
+        ))}
+      </div>
+    )}
   </motion.div>
 );
 
@@ -327,7 +369,7 @@ export const LoadingOverlay = ({ message = "Loading..." }) => (
       animate={{ scale: 1, opacity: 1 }}
       className="bg-white rounded-lg p-6 shadow-xl text-center space-y-4"
     >
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+      <LoadingSpinner size="md" className="justify-center" />
       <p className="text-text-primary font-inter">{message}</p>
     </motion.div>
   </motion.div>

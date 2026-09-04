@@ -1,5 +1,6 @@
 import React,{useState,useEffect} from 'react';
 import {extractFirstAmazonImage,getBookFallbackImage,testImageUrls,testImageUrl} from '../utils/amazonImageExtractor';
+import {LoadingSpinner} from './LoadingSpinner';
 
 const BookCard=({resource})=> {
 const [imageUrl,setImageUrl]=useState(null);
@@ -107,7 +108,7 @@ window.open(amazonUrl, '_blank');
 >
 {imageLoading ? (
 <div className="w-full h-full flex items-center justify-center">
-<div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+<LoadingSpinner size="sm" />
 </div>
 ) : (
 <img

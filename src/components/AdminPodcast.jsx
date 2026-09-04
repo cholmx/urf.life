@@ -82,7 +82,7 @@ const AdminPodcast=()=> {
           <span>Refresh</span>
         </button>
       </div>
-      <LoadingTransition isLoading={loading} skeleton={<SkeletonForm />}>
+      <LoadingTransition isLoading={loading} skeleton={<SkeletonForm fields={2} buttons={1} title={false} />}>
         <motion.div
           initial={{opacity: 0,y: 20}}
           animate={{opacity: 1,y: 0}}

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
+import { LoadingSpinner } from './LoadingSpinner';
 
 const { FiPlay, FiPause, FiSkipBack, FiSkipForward, FiVolume2, FiVolumeX } = FiIcons;
 
@@ -154,7 +155,7 @@ const AudioPlayer = ({ episode, onClose }) => {
               style={{ backgroundColor: '#2c4747' }}
             >
               {loading ? (
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                <LoadingSpinner size="sm" color="#ffffff" />
               ) : (
                 <SafeIcon icon={isPlaying ? FiPause : FiPlay} className="h-6 w-6" />
               )}

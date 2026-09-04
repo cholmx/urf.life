@@ -208,7 +208,7 @@ const AdminStaffContacts=()=> {
         </LoadingTransition>
       )}
 
-      <LoadingTransition isLoading={loading} skeleton={<SkeletonTable />}>
+      <LoadingTransition isLoading={loading} skeleton={<SkeletonTable columns={6} />}>
         <div className="bg-white rounded-2xl shadow-modern overflow-hidden">
           {staffContacts.length===0 ? (
             <div className="p-12 text-center">

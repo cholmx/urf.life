@@ -83,7 +83,13 @@ const Announcements=()=> {
           isLoading={loading}
           skeleton={
             <div className="space-y-8">
-              <SkeletonCard showImage={false} showMeta={false} />
+              <SkeletonCard
+                showMeta={false}
+                rounded="rounded-lg"
+                shadow="shadow-md"
+                padding="p-8 md:p-10"
+                lines={8}
+              />
             </div>
           }
         >

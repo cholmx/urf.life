@@ -5,6 +5,7 @@ import './App.css'
 
 import Home from './pages/Home'
 import ErrorBoundary from './components/ErrorBoundary'
+import { LoadingSpinner } from './components/LoadingSpinner'
 import { ToastProvider } from './hooks/useToast'
 import { ConfirmProvider } from './hooks/useConfirm'
 
@@ -41,7 +42,7 @@ const pageTransition = {duration: 0.28, ease: [0.4, 0, 0.2, 1]}
 
 const PageLoader = () => (
   <div style={{minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+    <LoadingSpinner size="lg" />
   </div>
 )
 

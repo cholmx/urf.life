@@ -5,9 +5,31 @@ import { formatDate } from '../../utils/dateFormat';
 import { useSupabaseCrud } from '../../hooks/useSupabaseCrud';
 import { useToast } from '../../hooks/useToast';
 import { useConfirm } from '../../hooks/useConfirm';
-import { SkeletonTable, LoadingTransition } from '../LoadingSkeletons';
+import { SkeletonBox, LoadingTransition } from '../LoadingSkeletons';
 
 const { FiArchive, FiRotateCcw, FiTrash2, FiInbox } = FiIcons;
+
+// The real list is a stacked column of detail rows, not a table -
+// SkeletonTable's grid-with-header shape had no visual relationship to it.
+const SubmissionsSkeleton = () => (
+  <div className="bg-white rounded-2xl shadow-modern overflow-hidden divide-y divide-accent">
+    {Array.from({ length: 4 }).map((_, i) => (
+      <div key={i} className="p-6">
+        <div className="flex justify-between items-start gap-4">
+          <div className="flex-1 min-w-0 space-y-2">
+            <SkeletonBox width="w-1/2" height="h-4" className="bg-gray-300" />
+            <SkeletonBox width="w-3/4" height="h-4" />
+            <SkeletonBox width="w-24" height="h-3" />
+          </div>
+          <div className="flex space-x-2 flex-shrink-0">
+            <SkeletonBox width="w-8" height="h-8" rounded="rounded-lg" />
+            <SkeletonBox width="w-8" height="h-8" rounded="rounded-lg" />
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+);
 
 // Generic read/archive/delete list shared by every submission type - each
 // caller just supplies the table name and how to render one row's detail;
@@ -61,7 +83,7 @@ const SubmissionsList = ({ table, emptyLabel, renderDetail }) => {
         </label>
       </div>
 
-      <LoadingTransition isLoading={loading} skeleton={<SkeletonTable rows={4} columns={2} />}>
+      <LoadingTransition isLoading={loading} skeleton={<SubmissionsSkeleton />}>
         {visible.length === 0 ? (
           <div className="bg-white rounded-2xl shadow-modern p-12 text-center">
             <SafeIcon icon={FiInbox} className="h-10 w-10 text-text-light mx-auto mb-3" />

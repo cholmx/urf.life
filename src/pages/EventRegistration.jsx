@@ -3,6 +3,7 @@ import {Link} from 'react-router-dom';
 import {motion} from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
+import { LoadingSpinner } from '../components/LoadingSpinner';
 import supabase from '../lib/supabase';
 import StandardButton from '../components/StandardButton';
 import {sanitizeHtml} from '../utils/sanitizeHtml';
@@ -45,7 +46,7 @@ const EventRegistration=()=> {
     return (
       <div className="min-h-screen bg-accent py-12 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <LoadingSpinner size="lg" className="justify-center mb-4" />
           <p className="text-text-primary font-inter">Loading...</p>
         </div>
       </div>

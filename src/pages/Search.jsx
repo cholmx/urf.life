@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
+import { LoadingSpinner } from '../components/LoadingSpinner';
 import { searchSite } from '../utils/siteSearch';
 
 const { FiSearch, FiHome, FiInbox } = FiIcons;
@@ -102,7 +103,7 @@ const Search = () => {
 
         {loading && (
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <LoadingSpinner size="lg" className="justify-center mb-4" />
             <p className="text-text-primary font-inter">Searching...</p>
           </div>
         )}

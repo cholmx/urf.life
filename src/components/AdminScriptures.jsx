@@ -8,6 +8,7 @@ import { useSupabaseCrud } from '../hooks/useSupabaseCrud';
 import { sanitizeHtml } from '../utils/sanitizeHtml';
 import { useToast } from '../hooks/useToast';
 import { useConfirm } from '../hooks/useConfirm';
+import { LoadingSpinner } from './LoadingSpinner';
 
 const { FiPlus, FiEdit, FiTrash2, FiSave, FiX, FiBookOpen, FiUpload, FiDownload } = FiIcons;
 
@@ -440,7 +441,7 @@ And we know that in all things God works for the good of those who love him, who
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         {loading ? (
           <div className="p-8 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <LoadingSpinner size="md" className="justify-center mb-4" />
             <p className="text-text-primary font-inter">Loading...</p>
           </div>
         ) : scriptures.length === 0 ? (

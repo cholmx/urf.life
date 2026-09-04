@@ -4,7 +4,7 @@ import {motion,AnimatePresence} from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import supabase from '../lib/supabase';
-import {SkeletonForm,LoadingTransition} from '../components/LoadingSkeletons';
+import {SkeletonBox,LoadingTransition} from '../components/LoadingSkeletons';
 import AdminSermons from '../components/AdminSermons';
 import AdminResources from '../components/AdminResources';
 import AdminFeaturedButtons from '../components/AdminFeaturedButtons';
@@ -72,6 +72,23 @@ const NAV_SECTIONS=[
 ];
 
 const ALL_TABS=NAV_SECTIONS.flatMap((section)=> section.items);
+
+// Matches the real login card's shape (icon circle, title, subtitle, one
+// password field, one submit button) rather than the generic multi-field
+// SkeletonForm, which was roughly 4x too big for this one-field form.
+const LoginSkeleton=()=> (
+  <div className="bg-white rounded-3xl shadow-modern-lg p-8 max-w-md w-full mx-4 border border-neutral-100">
+    <div className="text-center mb-6 flex flex-col items-center">
+      <SkeletonBox width="w-16" height="h-16" rounded="rounded-full" className="mb-4 bg-gray-300" />
+      <SkeletonBox width="w-40" height="h-7" className="mb-2 bg-gray-300" />
+      <SkeletonBox width="w-56" height="h-4" />
+    </div>
+    <div className="space-y-4">
+      <SkeletonBox width="w-full" height="h-12" rounded="rounded-xl" />
+      <SkeletonBox width="w-full" height="h-12" rounded="rounded-xl" className="bg-gray-300" />
+    </div>
+  </div>
+);
 
 const Admin=()=> {
   const [isAuthenticated,setIsAuthenticated]=useState(false);
@@ -246,7 +263,7 @@ const Admin=()=> {
     if (checkingSession) {
       return (
         <div className="admin-shell min-h-screen py-12 flex items-center justify-center bg-neutral-50">
-          <SkeletonForm />
+          <LoginSkeleton />
         </div>
       );
     }
@@ -263,7 +280,7 @@ const Admin=()=> {
           </Link>
         </div>
 
-        <LoadingTransition isLoading={loading} skeleton={<SkeletonForm />}>
+        <LoadingTransition isLoading={loading} skeleton={<LoginSkeleton />}>
           <motion.div
             initial={{opacity: 0,scale: 0.9}}
             animate={{opacity: 1,scale: 1}}
