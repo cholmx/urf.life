@@ -70,12 +70,12 @@ export function AnnouncementCard({ a, today, onEdit, onDelete, onTogglePublish }
         border: `1px solid ${hovered ? C.borderMed : C.border}`,
         borderLeft: `3px solid ${accentColor}`,
         borderRadius: 8,
-        padding: '13px 16px',
+        padding: '9px 14px',
         transition: 'border-color 0.15s, box-shadow 0.15s',
         boxShadow: hovered ? '0 2px 12px rgba(0,0,0,0.07)' : '0 1px 2px rgba(0,0,0,0.03)',
         display: 'flex',
         flexDirection: 'column',
-        gap: 6,
+        gap: 3,
       }}
     >
       {/* Top row */}
@@ -123,14 +123,14 @@ export function AnnouncementCard({ a, today, onEdit, onDelete, onTogglePublish }
           {a.title}
         </h4>
         {(a.short_version || a.body) && (
-          <p style={{ fontFamily: font.body, fontSize: 13, color: C.textSec, margin: '3px 0 0', lineHeight: 1.5, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+          <p style={{ fontFamily: font.body, fontSize: 12, color: C.textSec, margin: '2px 0 0', lineHeight: 1.4, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' }}>
             {a.short_version || a.body.slice(0, 120)}
           </p>
         )}
       </div>
 
       {/* Bottom row */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 2 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 1 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
           <span style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, letterSpacing: '0.03em' }}>
             {a.category}
