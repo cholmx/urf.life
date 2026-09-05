@@ -10,7 +10,7 @@ const corsHeaders = {
 };
 
 const MODEL = "claude-opus-5";
-const MAX_TOKENS = 8192;
+const MAX_TOKENS = 8192; // script generation token budget
 
 // Schema for the Communication Organizer's "Write All" call, which asks for
 // the email description, slide line, and flyer copy together in one
@@ -115,15 +115,7 @@ Deno.serve(async (req: Request) => {
         const formatted = d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
         const refDate = new Date(sundayStr + "T12:00:00");
         const weeksOut = Math.ceil((d.getTime() - refDate.getTime()) / (1000 * 60 * 60 * 24 * 7));
-        // A class can still be on this list up to a week after it started
-        // (see isStageActive's grace window) - phrase those as "already
-        // started, not too late to join" instead of announcing a date
-        // that's already passed.
-        if (a.happening_type === "class" && d.getTime() < refDate.getTime()) {
-          lines.push(`Event Date: ${formatted} (this class already started - tell people it's not too late to join)`);
-        } else {
-          lines.push(`Event Date: ${formatted}${weeksOut > 0 ? ` (${weeksOut} weeks from this Sunday)` : " (this week)"}`);
-        }
+        lines.push(`Event Date: ${formatted}${weeksOut > 0 ? ` (${weeksOut} weeks from this Sunday)` : " (this week)"}`);
       } else {
         lines.push("Ongoing");
       }
@@ -137,11 +129,7 @@ Deno.serve(async (req: Request) => {
       month: "long", day: "numeric", year: "numeric",
     });
 
-    const systemPrompt = `You are writing a Sunday morning announcement script for Upper Room Fellowship. This script will be read on ${formattedSunday}. All date references should be oriented from that Sunday, that is "today" from the pastor's perspective. The lead pastor will read this from the stage. Write the way a real person actually talks to people they know and love. It should feel warm without being performative, not fake-friendly, just genuinely human. Use natural spoken rhythm. Sentences don't all have to be short, vary the length so it flows well out loud. Plain words. No em dashes. No colons. No lists. No hype. No filler phrases. Don't announce what you're about to say, just say it. If there is a contact person, mention their name and tell people to reach out to them, never read out a phone number or email address from the stage. Move between announcements naturally, the way a pastor would in real life.
-
-Keep each announcement tight. The "Details" notes below are reference material, not a script to read in full - pull out only what people actually need (what it is, when, who to talk to) and say it in a few sentences. Don't narrate every point from the notes or restate something you already said. A short, clear announcement lands better out loud than a long, thorough one.
-
-After covering all the announcements, release kids to Sunday school, then invite everyone to head to the lobby, grab some coffee, and take a minute to introduce themselves to somebody. Then let them know the sermon starts in about 6 minutes. Write ONLY the words the pastor would say out loud. No headers, no labels, no stage directions.`;
+    const systemPrompt = `You are writing a Sunday morning announcement script for Upper Room Fellowship. This script will be read on ${formattedSunday}. All date references should be oriented from that Sunday, that is "today" from the pastor's perspective. The lead pastor will read this from the stage. Write the way a real person actually talks to people they know and love. It should feel warm without being performative, not fake-friendly, just genuinely human. Use natural spoken rhythm. Sentences don't all have to be short, vary the length so it flows well out loud. Plain words. No em dashes. No colons. No lists. No hype. No filler phrases. Don't announce what you're about to say, just say it. Let each announcement breathe, give it enough space that people can actually absorb it. If there is a contact person, mention their name and tell people to reach out to them, never read out a phone number or email address from the stage. Move between announcements naturally, the way a pastor would in real life. After covering all the announcements, release kids to Sunday school, then invite everyone to head to the lobby, grab some coffee, and take a minute to introduce themselves to somebody. Then let them know the sermon starts in about 6 minutes. Write ONLY the words the pastor would say out loud. No headers, no labels, no stage directions.`;
 
     const userContent = `Write the Sunday morning stage announcement script for ${formattedSunday}. Here are the whole-church announcements that need to be covered:\n\n${itemsContext}\n\nWrite ONLY the script text. No headers, no labels, no stage directions. Just the words the pastor would say out loud.`;
 
