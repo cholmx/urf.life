@@ -9,7 +9,15 @@ import { sendEmail } from './emailService';
 
 export const submitContactForm = async (formData) => {
   try {
-    const { data, error } = await supabase
+    // No .select() here on purpose - these tables only grant SELECT to
+    // authenticated (admin) sessions, and Postgres RLS filters RETURNING
+    // rows through the SELECT policy same as a real SELECT. Anonymous
+    // visitors have no SELECT access, so asking for the row back made the
+    // insert intermittently "fail" (empty RETURNING -> PGRST116) whenever
+    // the browser wasn't also carrying an admin session, even though the
+    // row was saved. Skipping .select() sends Prefer: return=minimal, which
+    // sidesteps that check entirely - nothing here uses the row back anyway.
+    const { error } = await supabase
       .from('contact_messages_portal123')
       .insert([{
         name: formData.name,
@@ -17,9 +25,7 @@ export const submitContactForm = async (formData) => {
         phone: formData.phone || null,
         subject: formData.subject || null,
         message: formData.message
-      }])
-      .select()
-      .single();
+      }]);
 
     if (error) throw error;
 
@@ -27,7 +33,7 @@ export const submitContactForm = async (formData) => {
       console.error('Contact notification email failed:', err)
     );
 
-    return { data, error: null };
+    return { data: null, error: null };
   } catch (error) {
     console.error('Error submitting contact form:', error);
     return { data: null, error: error.message };
@@ -36,7 +42,8 @@ export const submitContactForm = async (formData) => {
 
 export const submitRealmSignup = async (formData) => {
   try {
-    const { data, error } = await supabase
+    // See submitContactForm - no .select() for the same RLS-on-RETURNING reason.
+    const { error } = await supabase
       .from('realm_signups_portal123')
       .insert([{
         first_name: formData.first_name,
@@ -52,9 +59,7 @@ export const submitRealmSignup = async (formData) => {
         birthday: formData.birthday || null,
         marital_status: formData.marital_status || null,
         anniversary: formData.anniversary || null
-      }])
-      .select()
-      .single();
+      }]);
 
     if (error) throw error;
 
@@ -62,7 +67,7 @@ export const submitRealmSignup = async (formData) => {
       console.error('Realm signup notification email failed:', err)
     );
 
-    return { data, error: null };
+    return { data: null, error: null };
   } catch (error) {
     console.error('Error submitting realm signup:', error);
     return { data: null, error: error.message };
@@ -71,7 +76,8 @@ export const submitRealmSignup = async (formData) => {
 
 export const submitTableGroupSignup = async (formData) => {
   try {
-    const { data, error } = await supabase
+    // See submitContactForm - no .select() for the same RLS-on-RETURNING reason.
+    const { error } = await supabase
       .from('table_group_signups_portal123')
       .insert([{
         first_name: formData.first_name,
@@ -79,9 +85,7 @@ export const submitTableGroupSignup = async (formData) => {
         email: formData.email,
         party_size: formData.party_size || null,
         unavailable_days: formData.unavailable_days || []
-      }])
-      .select()
-      .single();
+      }]);
 
     if (error) throw error;
 
@@ -89,7 +93,7 @@ export const submitTableGroupSignup = async (formData) => {
       console.error('Table group signup notification email failed:', err)
     );
 
-    return { data, error: null };
+    return { data: null, error: null };
   } catch (error) {
     console.error('Error submitting table group signup:', error);
     return { data: null, error: error.message };
