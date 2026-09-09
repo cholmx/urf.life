@@ -115,7 +115,15 @@ Deno.serve(async (req: Request) => {
         const formatted = d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
         const refDate = new Date(sundayStr + "T12:00:00");
         const weeksOut = Math.ceil((d.getTime() - refDate.getTime()) / (1000 * 60 * 60 * 24 * 7));
-        lines.push(`Event Date: ${formatted}${weeksOut > 0 ? ` (${weeksOut} weeks from this Sunday)` : " (this week)"}`);
+        // A class can still be on this list up to a week after it started
+        // (see isStageActive's grace window) - phrase those as "already
+        // started, not too late to join" instead of announcing a date
+        // that's already passed.
+        if (a.happening_type === "class" && d.getTime() < refDate.getTime()) {
+          lines.push(`Event Date: ${formatted} (this class already started - tell people it's not too late to join)`);
+        } else {
+          lines.push(`Event Date: ${formatted}${weeksOut > 0 ? ` (${weeksOut} weeks from this Sunday)` : " (this week)"}`);
+        }
       } else {
         lines.push("Ongoing");
       }
