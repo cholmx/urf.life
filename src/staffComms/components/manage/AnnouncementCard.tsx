@@ -131,7 +131,7 @@ export function AnnouncementCard({ a, today, onEdit, onDelete, onTogglePublish, 
           Click one to flip it right here, no need to open Edit. Stage
           only appears for Whole Church items, since it does nothing
           otherwise (isStageActive requires both). */}
-      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         {(a.scope === 'whole_church' ? [...DEST_LABELS, STAGE_DEST] : DEST_LABELS).map(d => {
           const on = !!a[d.key];
           const toggling = togglingKeys.has(d.key);
@@ -143,15 +143,18 @@ export function AnnouncementCard({ a, today, onEdit, onDelete, onTogglePublish, 
               disabled={toggling}
               title={`Click to ${on ? 'remove from' : 'include in'} ${d.short}`}
               style={{
-                display: 'inline-flex', alignItems: 'center', gap: 3,
-                fontFamily: font.display, fontSize: 9.5, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase',
+                display: 'inline-flex', alignItems: 'center', gap: 5,
+                fontFamily: font.display, fontSize: 12, fontWeight: 700, letterSpacing: '0.03em', textTransform: 'uppercase',
                 color: on ? C.accent : C.textMuted,
-                opacity: toggling ? 0.5 : (on ? 1 : 0.4),
-                background: 'none', border: 'none', padding: 0, margin: 0,
+                opacity: toggling ? 0.5 : 1,
+                background: on ? C.accentBg : C.card,
+                border: `1px solid ${on ? C.accent + '55' : C.border}`,
+                borderRadius: 6, padding: '4px 10px', margin: 0,
                 cursor: toggling ? 'default' : 'pointer',
+                transition: 'all 0.15s',
               }}
             >
-              <span style={{ fontSize: 10, lineHeight: 1 }}>{toggling ? '···' : (on ? '✓' : '–')}</span>
+              <span style={{ fontSize: 13, lineHeight: 1 }}>{toggling ? '···' : (on ? '✓' : '–')}</span>
               {d.short}
             </button>
           );
@@ -182,7 +185,7 @@ export function AnnouncementCard({ a, today, onEdit, onDelete, onTogglePublish, 
             </span>
           )}
         </div>
-        <div style={{ display: 'flex', gap: 4, opacity: hovered ? 1 : 0, transition: 'opacity 0.15s' }}>
+        <div style={{ display: 'flex', gap: 4 }}>
           {a.signup_mode && a.signup_mode !== 'none' && (
             <span
               title="Edit this happening to manage sign-ups"
