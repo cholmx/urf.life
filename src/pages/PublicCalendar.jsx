@@ -8,8 +8,15 @@ import AddToCalendarButton from '../components/AddToCalendarButton';
 import supabase from '../lib/supabase';
 import {getTodayDateString,formatTime} from '../utils/dateFormat';
 import {getMonthGrid,getEventItems,getRangeItems} from '../staffComms/lib/calendar-grid';
+import {downloadIcsCalendar} from '../utils/generateIcs';
 
-const {FiCalendar,FiClock,FiMapPin,FiExternalLink,FiHome,FiChevronLeft,FiChevronRight,FiX}=FiIcons;
+const {FiCalendar,FiClock,FiMapPin,FiExternalLink,FiHome,FiChevronLeft,FiChevronRight,FiX,FiDownload}=FiIcons;
+
+// How far ahead the "Coming Up" list and the bulk calendar download look -
+// far enough to be useful (a season's worth of weekly recurring items),
+// not so far it drags in things nobody's ready to commit to yet.
+const UPCOMING_WINDOW_DAYS=120;
+const UPCOMING_DISPLAY_LIMIT=8;
 
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
@@ -69,6 +76,60 @@ const PublicCalendar=()=> {
     setViewYear(Number(today.slice(0,4)));
     setViewMonth(Number(today.slice(5,7)) - 1);
     setSelectedDay(today);
+  };
+
+  // Every occurrence (including each future date of a recurring item) in
+  // the next UPCOMING_WINDOW_DAYS days, deduped and in chronological order -
+  // reuses the same getEventItems logic the month grid and day panel use,
+  // so this list always matches what the grid itself would show.
+  const upcomingItems=useMemo(()=> {
+    const items=[];
+    const seen=new Set();
+    for (let i=0;i<=UPCOMING_WINDOW_DAYS;i++) {
+      const d=new Date(today + 'T12:00:00');
+      d.setDate(d.getDate() + i);
+      const dayStr=d.toISOString().split('T')[0];
+      for (const a of getEventItems(dayStr,announcements)) {
+        const key=`${a.id}-${dayStr}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        items.push({...a,occurrenceDate: dayStr});
+      }
+    }
+    items.sort((x,y)=> (x.occurrenceDate + (x.event_time || '')).localeCompare(y.occurrenceDate + (y.event_time || '')));
+    return items;
+  },[announcements,today]);
+
+  // The list shown on the page is "what's coming up", not "every date it
+  // happens" - a weekly item should take one line (its next occurrence),
+  // not crowd out everything else with a row per future Sunday. The full
+  // occurrence set above still feeds the calendar download, where every
+  // date genuinely belongs.
+  const upcomingDisplayItems=useMemo(()=> {
+    const seenIds=new Set();
+    const out=[];
+    for (const item of upcomingItems) {
+      if (seenIds.has(item.id)) continue;
+      seenIds.add(item.id);
+      out.push(item);
+    }
+    return out;
+  },[upcomingItems]);
+
+  const handleDownloadUpcoming=()=> {
+    downloadIcsCalendar(
+      upcomingItems.map(a=> ({
+        uid: `${a.id}-${a.occurrenceDate}`,
+        title: a.title,
+        description: a.body,
+        date: a.occurrenceDate,
+        startTime: a.event_time,
+        endTime: a.end_time,
+        location: a.event_location,
+      })),
+      'urf-life-upcoming.ics',
+      'Upper Room Fellowship'
+    );
   };
 
   const selectedEventItems=selectedDay ? getEventItems(selectedDay,announcements) : [];
@@ -184,6 +245,69 @@ const PublicCalendar=()=> {
             ))}
           </div>
         </LoadingTransition>
+
+        {!loading && upcomingItems.length > 0 && (
+          <motion.div
+            initial={{opacity: 0,y: 20}}
+            animate={{opacity: 1,y: 0}}
+            transition={{duration: 0.6,delay: 0.1}}
+            className="bg-white rounded-2xl shadow-modern overflow-hidden mt-6"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-5 border-b border-accent-dark">
+              <div>
+                <h2 className="text-xl md:text-2xl font-semibold text-text-primary">Coming Up</h2>
+                <p className="text-sm text-text-light">
+                  Next {Math.min(upcomingDisplayItems.length,UPCOMING_DISPLAY_LIMIT)} happening{Math.min(upcomingDisplayItems.length,UPCOMING_DISPLAY_LIMIT) !== 1 ? 's' : ''}
+                </p>
+              </div>
+              <button
+                onClick={handleDownloadUpcoming}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-primary text-white hover:bg-primary/90 transition-colors"
+                title="Download an .ics file of everything upcoming to import into Google, Apple, or Outlook Calendar"
+              >
+                <SafeIcon icon={FiDownload} className="h-4 w-4" />
+                <span>Add to Your Calendar</span>
+              </button>
+            </div>
+
+            <div className="divide-y divide-accent-dark">
+              {upcomingDisplayItems.slice(0,UPCOMING_DISPLAY_LIMIT).map(a=> {
+                const style=TYPE_STYLES[a.happening_type] || TYPE_STYLES.general;
+                const [weekdayLabel,monthDayLabel]=new Date(a.occurrenceDate + 'T12:00:00')
+                  .toLocaleDateString('en-US',{weekday: 'short',month: 'short',day: 'numeric'})
+                  .split(', ');
+                return (
+                  <button
+                    key={`${a.id}-${a.occurrenceDate}`}
+                    onClick={()=> setSelectedDay(a.occurrenceDate)}
+                    className="w-full text-left flex items-center gap-4 px-6 py-4 hover:bg-accent-dark/20 transition-colors"
+                  >
+                    <div className="flex-shrink-0 w-16 text-center">
+                      <div className="text-[10px] font-bold uppercase tracking-wide text-text-light">{weekdayLabel}</div>
+                      <div className="text-sm font-semibold text-text-primary">{monthDayLabel}</div>
+                    </div>
+                    <span className={`w-2 h-2 rounded-full flex-shrink-0 ${style.dot}`} />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-text-primary truncate">{a.title}</p>
+                      <div className="flex flex-wrap items-center gap-x-3 text-xs text-text-light">
+                        {a.event_time && <span>{formatTime(a.event_time)}</span>}
+                        {a.event_location && <span>{a.event_location}</span>}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {upcomingDisplayItems.length > UPCOMING_DISPLAY_LIMIT && (
+              <div className="px-6 py-3 border-t border-accent-dark text-center">
+                <span className="text-xs text-text-light">
+                  +{upcomingDisplayItems.length - UPCOMING_DISPLAY_LIMIT} more in the next {Math.round(UPCOMING_WINDOW_DAYS / 30)} months
+                </span>
+              </div>
+            )}
+          </motion.div>
+        )}
       </div>
 
       <AnimatePresence>

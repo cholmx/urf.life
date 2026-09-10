@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildIcsContent } from './generateIcs';
+import { buildIcsContent, buildIcsCalendar } from './generateIcs';
 
 describe('buildIcsContent', () => {
   it('returns null when there is no date', () => {
@@ -52,5 +52,46 @@ describe('buildIcsContent', () => {
 
     const withoutLocation = buildIcsContent({ title: 'Bible Study', date: '2026-09-06' });
     expect(withoutLocation).not.toContain('LOCATION');
+  });
+});
+
+describe('buildIcsCalendar', () => {
+  it('returns null when no events have a date', () => {
+    expect(buildIcsCalendar([{ title: 'No Date' }])).toBeNull();
+  });
+
+  it('wraps multiple events in a single VCALENDAR with one VEVENT each', () => {
+    const content = buildIcsCalendar([
+      { title: 'Sunday Service', date: '2026-09-06', startTime: '10:00' },
+      { title: 'Marriage Class', date: '2026-09-13', startTime: '18:00' },
+    ]);
+    expect(content.match(/BEGIN:VCALENDAR/g)).toHaveLength(1);
+    expect(content.match(/END:VCALENDAR/g)).toHaveLength(1);
+    expect(content.match(/BEGIN:VEVENT/g)).toHaveLength(2);
+    expect(content.match(/END:VEVENT/g)).toHaveLength(2);
+    expect(content).toContain('SUMMARY:Sunday Service');
+    expect(content).toContain('SUMMARY:Marriage Class');
+  });
+
+  it('skips dateless events but keeps the dated ones', () => {
+    const content = buildIcsCalendar([
+      { title: 'Ongoing Ministry' },
+      { title: 'Potluck', date: '2026-09-06' },
+    ]);
+    expect(content.match(/BEGIN:VEVENT/g)).toHaveLength(1);
+    expect(content).toContain('SUMMARY:Potluck');
+    expect(content).not.toContain('Ongoing Ministry');
+  });
+
+  it('uses a deterministic UID when one is supplied, for stable re-downloads', () => {
+    const content = buildIcsCalendar([
+      { uid: 'class-1-2026-09-06', title: 'Marriage Class', date: '2026-09-06' },
+    ]);
+    expect(content).toContain('UID:class-1-2026-09-06@urf.life');
+  });
+
+  it('sets X-WR-CALNAME when a calendar name is given', () => {
+    const content = buildIcsCalendar([{ title: 'Potluck', date: '2026-09-06' }], 'Upper Room Fellowship');
+    expect(content).toContain('X-WR-CALNAME:Upper Room Fellowship');
   });
 });
