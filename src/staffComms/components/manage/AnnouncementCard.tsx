@@ -12,9 +12,6 @@ const DEST_LABELS: { key: DestinationKey; short: string }[] = [
   { key: 'show_in_weekly' as const,     short: 'Bulletin' },
 ];
 
-// Only meaningful for Whole Church scope (isStageActive requires both) -
-// shown only on those cards rather than as a fifth always-dashed entry
-// that would do nothing if checked on a Ministry/Informational item.
 const STAGE_DEST = { key: 'show_on_stage' as const, short: 'Stage' };
 
 interface AnnouncementCardProps {
@@ -126,35 +123,41 @@ export function AnnouncementCard({ a, today, onEdit, onDelete, onTogglePublish, 
         )}
       </div>
 
-      {/* Where this shows up - always all of them, checked or not, so it
-          reads as a full picture rather than only the ones turned on.
-          Click one to flip it right here, no need to open Edit. Stage
-          only appears for Whole Church items, since it does nothing
-          otherwise (isStageActive requires both). */}
+      {/* Where this shows up - always all five, checked or not, on every
+          card, so it reads as the full picture of what's possible, not
+          just what happens to apply to this one. Click one to flip it
+          right here, no need to open Edit. Stage only actually does
+          anything for Whole Church scope (isStageActive requires both),
+          so it's disabled rather than hidden on other cards - shown, but
+          can't be falsely checked into a state that wouldn't happen. */}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-        {(a.scope === 'whole_church' ? [...DEST_LABELS, STAGE_DEST] : DEST_LABELS).map(d => {
+        {[...DEST_LABELS, STAGE_DEST].map(d => {
           const on = !!a[d.key];
           const toggling = togglingKeys.has(d.key);
+          const applicable = d.key !== 'show_on_stage' || a.scope === 'whole_church';
+          const disabled = toggling || !applicable;
           return (
             <button
               key={d.key}
               type="button"
-              onClick={() => handleToggleDestination(d.key)}
-              disabled={toggling}
-              title={`Click to ${on ? 'remove from' : 'include in'} ${d.short}`}
+              onClick={() => applicable && handleToggleDestination(d.key)}
+              disabled={disabled}
+              title={applicable
+                ? `Click to ${on ? 'remove from' : 'include in'} ${d.short}`
+                : 'Only Whole Church scope items can go on the Stage Script'}
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 5,
                 fontFamily: font.display, fontSize: 12, fontWeight: 700, letterSpacing: '0.03em', textTransform: 'uppercase',
-                color: on ? C.accent : C.textMuted,
-                opacity: toggling ? 0.5 : 1,
-                background: on ? C.accentBg : C.card,
-                border: `1px solid ${on ? C.accent + '55' : C.border}`,
+                color: !applicable ? C.textMuted : (on ? C.accent : C.textMuted),
+                opacity: !applicable ? 0.35 : (toggling ? 0.5 : 1),
+                background: applicable && on ? C.accentBg : C.card,
+                border: `1px solid ${applicable && on ? C.accent + '55' : C.border}`,
                 borderRadius: 6, padding: '4px 10px', margin: 0,
-                cursor: toggling ? 'default' : 'pointer',
+                cursor: disabled ? 'default' : 'pointer',
                 transition: 'all 0.15s',
               }}
             >
-              <span style={{ fontSize: 13, lineHeight: 1 }}>{toggling ? '···' : (on ? '✓' : '–')}</span>
+              <span style={{ fontSize: 13, lineHeight: 1 }}>{toggling ? '···' : (applicable && on ? '✓' : '–')}</span>
               {d.short}
             </button>
           );

@@ -40,6 +40,13 @@ export function isSlideActive(a: Announcement, today: string): boolean {
     const end = a.happenings_end_date || '2099-12-31';
     return today >= start && today <= end;
   }
+  // A one-time item with no event_date is "ongoing" (see the form's "no
+  // dates set, runs until removed") - isHappeningsActive already treats
+  // that as always-active starting today; Slides needs the same fallback,
+  // since getSlideStartDate/getSlideEndDate both require event_date and
+  // return null without it, which silently dropped every dateless item
+  // that had Slides checked.
+  if (!a.event_date) return true;
   const start = getSlideStartDate(a);
   const end = getSlideEndDate(a);
   if (!start || !end) return false;

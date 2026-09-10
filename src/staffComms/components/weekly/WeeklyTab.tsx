@@ -38,6 +38,13 @@ function getWeekEnd(start: Date): Date {
 // correctly for every recurrence type, so reuse it instead of
 // re-deriving occurrences here.
 function isThisWeek(a: Announcement, weekStart: Date, weekEnd: Date): boolean {
+  // A one-time item with no date at all is "ongoing" (see the form's "no
+  // dates set, runs until removed") - occursOn falls through to
+  // event_date === day for these, which is never true since event_date is
+  // null, so a dateless item checked for the Bulletin would never
+  // actually appear on it. isHappeningsActive/isMonthlyActive already
+  // treat this state as always-current; the bulletin needs the same.
+  if (!a.is_recurring && !a.event_date && !a.event_dates?.length) return true;
   for (let d = new Date(weekStart); d <= weekEnd; d.setDate(d.getDate() + 1)) {
     if (occursOn(a, d.toISOString().split('T')[0])) return true;
   }
