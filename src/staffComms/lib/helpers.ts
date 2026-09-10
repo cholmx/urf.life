@@ -64,7 +64,12 @@ export function isMonthlyActive(a: Announcement, today: string): boolean {
 }
 
 export function isStageActive(a: Announcement, today: string): boolean {
-  if (a.scope !== 'whole_church') return false;
+  // Whole Church scope alone used to be enough to land something on the
+  // Stage Script automatically - show_on_stage (default true, see its
+  // migration) narrows that: it still has to be whole-church, but staff
+  // can now exclude a whole-church item that isn't something the pastor
+  // should actually read out loud.
+  if (a.scope !== 'whole_church' || !a.show_on_stage) return false;
   if (a.is_recurring) {
     const start = a.happenings_start_date || '2000-01-01';
     const end = a.happenings_end_date || '2099-12-31';

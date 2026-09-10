@@ -164,6 +164,7 @@ const Admin=()=> {
               onSave={happenings.handleSave}
               onDelete={happenings.handleDelete}
               onTogglePublish={happenings.handleTogglePublish}
+              onToggleDestination={happenings.handleToggleDestination}
               editing={happenings.editing}
               setEditing={happenings.setEditing}
               copySource={happenings.copySource}

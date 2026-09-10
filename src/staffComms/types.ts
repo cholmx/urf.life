@@ -34,6 +34,7 @@ export interface Announcement {
   show_on_slides: boolean;
   show_in_happenings: boolean;
   show_in_weekly: boolean;
+  show_on_stage: boolean;
   event_location: string;
   contact_name: string;
   contact_info: string;
@@ -63,3 +64,7 @@ export interface Announcement {
 }
 
 export type PrintablesTab = 'weekly' | 'monthly';
+
+// The "Destinations" booleans on Announcement, toggled from both the full
+// form and (single-field, without opening it) an announcement's card.
+export type DestinationKey = 'show_on_slides' | 'show_in_happenings' | 'monthly_include' | 'show_in_weekly' | 'show_on_stage';

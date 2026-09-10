@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useErrorToast } from '../components/ui/ErrorToast';
 import { getAutoHappeningsStartDate, getAutoHappeningsEndDate, isArchived } from '../lib/helpers';
-import type { Announcement } from '../types';
+import type { Announcement, DestinationKey } from '../types';
 
 // Shared happenings state, lifted out of the old single StaffCommsApp so the
 // Manage/Calendar/Outputs/Archive views can live as separate top-level admin
@@ -60,6 +60,7 @@ export function useHappeningsData(enabled: boolean, onNavigateToManage?: () => v
       show_on_slides: f.show_on_slides,
       show_in_happenings: f.show_in_happenings,
       show_in_weekly: f.show_in_weekly,
+      show_on_stage: f.show_on_stage,
       contact_name: f.contact_name,
       contact_info: f.contact_info,
       slide_override: f.slide_override,
@@ -167,6 +168,24 @@ export function useHappeningsData(enabled: boolean, onNavigateToManage?: () => v
     }
   };
 
+  // Flips one of the four Destinations booleans straight from an
+  // announcement's card, without opening the full form. Same optimistic-
+  // update/revert-on-error shape as handleTogglePublish, and writes only
+  // the one field that changed rather than the form's whole payload, so it
+  // can't clobber a concurrent edit to anything else on the row.
+  const handleToggleDestination = async (a: Announcement, key: DestinationKey) => {
+    const nextValue = !a[key];
+    setAnnouncements(prev => prev.map(x => x.id === a.id ? { ...x, [key]: nextValue } : x));
+    const { error } = await supabase
+      .from('staff_announcements_portal123')
+      .update({ [key]: nextValue })
+      .eq('id', a.id);
+    if (error) {
+      showError('Failed to update.');
+      setAnnouncements(prev => prev.map(x => x.id === a.id ? { ...x, [key]: a[key] } : x));
+    }
+  };
+
   const activeAnnouncements = announcements.filter(a => !isArchived(a, today));
   const archivedAnnouncements = announcements.filter(a => isArchived(a, today));
 
@@ -174,7 +193,7 @@ export function useHappeningsData(enabled: boolean, onNavigateToManage?: () => v
     announcements, activeAnnouncements, archivedAnnouncements, loading,
     today, setToday,
     editing, setEditing, copySource, setCopySource,
-    handleSave, handleDelete, handleTogglePublish, handleToggleSlideMade, handleCopyFromArchive,
+    handleSave, handleDelete, handleTogglePublish, handleToggleDestination, handleToggleSlideMade, handleCopyFromArchive,
     toasts, showError, showSuccess, dismissToast,
   };
 }

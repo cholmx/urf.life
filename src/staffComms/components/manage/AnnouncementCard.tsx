@@ -3,14 +3,19 @@ import { C, font, scopeRangeColors } from '../../lib/theme';
 import { ScopePill, Pill } from '../ui/Pill';
 import { formatDateNice, weeksUntil } from '../../lib/helpers';
 import { buildInviteHTMLFromAnnouncement } from './invitePrinter';
-import type { Announcement } from '../../types';
+import type { Announcement, DestinationKey } from '../../types';
 
-const DEST_LABELS = [
+const DEST_LABELS: { key: DestinationKey; short: string }[] = [
   { key: 'show_on_slides' as const,     short: 'Slides' },
   { key: 'show_in_happenings' as const, short: 'Email' },
   { key: 'monthly_include' as const,    short: 'Flyer' },
   { key: 'show_in_weekly' as const,     short: 'Bulletin' },
 ];
+
+// Only meaningful for Whole Church scope (isStageActive requires both) -
+// shown only on those cards rather than as a fifth always-dashed entry
+// that would do nothing if checked on a Ministry/Informational item.
+const STAGE_DEST = { key: 'show_on_stage' as const, short: 'Stage' };
 
 interface AnnouncementCardProps {
   a: Announcement;
@@ -18,16 +23,27 @@ interface AnnouncementCardProps {
   onEdit: (a: Announcement) => void;
   onDelete: (id: string) => void;
   onTogglePublish: (a: Announcement) => Promise<void>;
+  onToggleDestination: (a: Announcement, key: DestinationKey) => Promise<void>;
 }
 
 const SIGNUP_MODE_LABELS: Record<string, string> = {
   sheet: 'Sign-up Sheet',
 };
 
-export function AnnouncementCard({ a, today, onEdit, onDelete, onTogglePublish }: AnnouncementCardProps) {
+export function AnnouncementCard({ a, today, onEdit, onDelete, onTogglePublish, onToggleDestination }: AnnouncementCardProps) {
   const [hovered, setHovered] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [togglingKeys, setTogglingKeys] = useState<Set<DestinationKey>>(new Set());
+
+  const handleToggleDestination = async (key: DestinationKey) => {
+    setTogglingKeys(prev => new Set(prev).add(key));
+    try {
+      await onToggleDestination(a, key);
+    } finally {
+      setTogglingKeys(prev => { const next = new Set(prev); next.delete(key); return next; });
+    }
+  };
 
   const handleTogglePublish = async () => {
     setPublishing(true);
@@ -84,9 +100,6 @@ export function AnnouncementCard({ a, today, onEdit, onDelete, onTogglePublish }
         <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap', minWidth: 0 }}>
           <ScopePill scope={a.scope} />
           {a.is_recurring && <Pill>Recurring</Pill>}
-          {a.scope === 'whole_church' && (
-            <span style={{ fontFamily: font.display, fontSize: 9, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: C.accent }}>Stage</span>
-          )}
           {a.is_published && (
             <span style={{
               fontFamily: font.display,
@@ -113,25 +126,34 @@ export function AnnouncementCard({ a, today, onEdit, onDelete, onTogglePublish }
         )}
       </div>
 
-      {/* Where this shows up - always all four, checked or not, so it
-          reads as a full picture rather than only the ones turned on. */}
+      {/* Where this shows up - always all of them, checked or not, so it
+          reads as a full picture rather than only the ones turned on.
+          Click one to flip it right here, no need to open Edit. Stage
+          only appears for Whole Church items, since it does nothing
+          otherwise (isStageActive requires both). */}
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-        {DEST_LABELS.map(d => {
+        {(a.scope === 'whole_church' ? [...DEST_LABELS, STAGE_DEST] : DEST_LABELS).map(d => {
           const on = !!a[d.key];
+          const toggling = togglingKeys.has(d.key);
           return (
-            <span
+            <button
               key={d.key}
-              title={`${on ? 'Shows' : "Doesn't show"} in ${d.short}`}
+              type="button"
+              onClick={() => handleToggleDestination(d.key)}
+              disabled={toggling}
+              title={`Click to ${on ? 'remove from' : 'include in'} ${d.short}`}
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 3,
                 fontFamily: font.display, fontSize: 9.5, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase',
                 color: on ? C.accent : C.textMuted,
-                opacity: on ? 1 : 0.4,
+                opacity: toggling ? 0.5 : (on ? 1 : 0.4),
+                background: 'none', border: 'none', padding: 0, margin: 0,
+                cursor: toggling ? 'default' : 'pointer',
               }}
             >
-              <span style={{ fontSize: 10, lineHeight: 1 }}>{on ? '✓' : '–'}</span>
+              <span style={{ fontSize: 10, lineHeight: 1 }}>{toggling ? '···' : (on ? '✓' : '–')}</span>
               {d.short}
-            </span>
+            </button>
           );
         })}
       </div>

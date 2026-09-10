@@ -4,7 +4,7 @@ import { btnPrimary, btnGhost } from '../ui/inputs';
 import { AnnouncementCard } from './AnnouncementCard';
 import { AnnouncementForm } from './AnnouncementForm';
 import { isSlideActive } from '../../lib/helpers';
-import type { Announcement } from '../../types';
+import type { Announcement, DestinationKey } from '../../types';
 
 interface ManageTabProps {
   announcements: Announcement[];
@@ -12,6 +12,7 @@ interface ManageTabProps {
   onSave: (a: Omit<Announcement, 'id' | 'created_at' | 'updated_at'> & { id?: string }) => Promise<Announcement | null>;
   onDelete: (id: string) => Promise<void>;
   onTogglePublish: (a: Announcement) => Promise<void>;
+  onToggleDestination: (a: Announcement, key: DestinationKey) => Promise<void>;
   editing: Announcement | 'new' | null;
   setEditing: (v: Announcement | 'new' | null) => void;
   copySource: Omit<Announcement, 'id' | 'created_at' | 'updated_at'> | null;
@@ -22,7 +23,7 @@ interface ManageTabProps {
   onNavigateTab?: (tab: string) => void;
 }
 
-export function ManageTab({ announcements, today, onSave, onDelete, onTogglePublish, editing, setEditing, copySource, setCopySource, loading, onError, onOpenSignupSheet, onNavigateTab }: ManageTabProps) {
+export function ManageTab({ announcements, today, onSave, onDelete, onTogglePublish, onToggleDestination, editing, setEditing, copySource, setCopySource, loading, onError, onOpenSignupSheet, onNavigateTab }: ManageTabProps) {
   const [search, setSearch] = useState('');
   const [justSaved, setJustSaved] = useState<Announcement | null>(null);
 
@@ -163,6 +164,7 @@ export function ManageTab({ announcements, today, onSave, onDelete, onTogglePubl
             onEdit={() => setEditing(a)}
             onDelete={onDelete}
             onTogglePublish={onTogglePublish}
+            onToggleDestination={onToggleDestination}
           />
         ))}
       </div>

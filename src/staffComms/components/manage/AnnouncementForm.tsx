@@ -463,7 +463,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
               </select>
               {f.scope === 'whole_church' && (
                 <div style={{ fontFamily: font.mono, fontSize: 10, color: C.accent, marginTop: 4, letterSpacing: '0.02em' }}>
-                  → appears in Stage Script
+                  → eligible for Stage Script (see Destinations below)
                 </div>
               )}
             </div>
@@ -926,7 +926,9 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
 
         <Section title="Destinations">
           <div style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, marginBottom: 10, letterSpacing: '0.02em' }}>
-            Whole Church scope → Stage Script automatically
+            {f.scope === 'whole_church'
+              ? 'Whole Church scope makes this eligible for the Stage Script - Stage Announcement below decides if it actually goes on it'
+              : 'Only Whole Church scope items can go on the Stage Script'}
           </div>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             {[
@@ -934,6 +936,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
               { key: 'show_in_happenings' as const, label: 'The Happenings' },
               { key: 'monthly_include' as const, label: 'Monthly Flyer' },
               { key: 'show_in_weekly' as const, label: 'Weekly Bulletin' },
+              ...(f.scope === 'whole_church' ? [{ key: 'show_on_stage' as const, label: 'Stage Announcement' }] : []),
             ].map(d => (
               <label key={d.key} style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: font.body, fontSize: 13, color: C.textSec, cursor: 'pointer', padding: '6px 12px', border: `1px solid ${f[d.key] ? C.accent + '44' : C.border}`, borderRadius: 6, background: f[d.key] ? C.accentBg : C.card, transition: 'all 0.15s' }}>
                 <input

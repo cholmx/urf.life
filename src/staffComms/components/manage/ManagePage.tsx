@@ -1,7 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { C, font } from '../../lib/theme';
 import { PreviewDateControl } from '../PreviewDateControl';
-import type { Announcement } from '../../types';
+import type { Announcement, DestinationKey } from '../../types';
 
 const ManageTab = lazy(() => import('./ManageTab').then(m => ({ default: m.ManageTab })));
 
@@ -20,6 +20,7 @@ interface ManagePageProps {
   onSave: (a: Omit<Announcement, 'id' | 'created_at' | 'updated_at'> & { id?: string }) => Promise<Announcement | null>;
   onDelete: (id: string) => Promise<void>;
   onTogglePublish: (a: Announcement) => Promise<void>;
+  onToggleDestination: (a: Announcement, key: DestinationKey) => Promise<void>;
   editing: Announcement | 'new' | null;
   setEditing: (v: Announcement | 'new' | null) => void;
   copySource: Omit<Announcement, 'id' | 'created_at' | 'updated_at'> | null;

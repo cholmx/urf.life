@@ -64,6 +64,7 @@ export const DEFAULT_ANNOUNCEMENT = {
   show_on_slides: true,
   show_in_happenings: true,
   show_in_weekly: true,
+  show_on_stage: true,
   event_location: '',
   contact_name: '',
   contact_info: '',
