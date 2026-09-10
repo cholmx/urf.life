@@ -233,8 +233,75 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
       return relabel({ ...p, recurrence_week_of_month: WEEK_POSITIONS.filter(x => updated.includes(x)).join(',') });
     });
 
-  const { aiLoading, hasEnoughForAI, generateBody, generateSlide, generateFlyer, generateAll } =
+  const { aiLoading, hasEnoughForAI, generateBody, generateSlide, generateFlyer, generateAll, parsingDraft, parseDraft } =
     useAnnouncementAI(f, set, onError);
+
+  const [draftNotes, setDraftNotes] = useState('');
+  const [draftPanelOpen, setDraftPanelOpen] = useState(false);
+
+  // AI output is re-validated here, field by field, before it ever touches
+  // form state - a wrong guess for event_time (say) should just be
+  // skipped, not silently write something the 5-minute <select> can't even
+  // represent and shows blank.
+  const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+  const TIME_RE = /^([01]\d|2[0-3]):([0-5]\d)$/;
+  const HAPPENING_TYPE_VALUES = HAPPENING_TYPE_OPTIONS.map(o => o.value) as string[];
+  const RECURRENCE_TYPE_VALUES = RECURRENCE_OPTIONS.map(o => o.value) as string[];
+
+  // The time <select> only offers 5-minute increments - round whatever
+  // Claude returned to the nearest one so it actually matches an <option>
+  // instead of rendering blank.
+  function roundTo5Min(time: string): string {
+    const [h, m] = time.split(':').map(Number);
+    let rounded = Math.round(m / 5) * 5;
+    let hh = h;
+    if (rounded === 60) { rounded = 0; hh = (h + 1) % 24; }
+    return `${String(hh).padStart(2, '0')}:${String(rounded).padStart(2, '0')}`;
+  }
+
+  const handleParseDraft = async () => {
+    const parsed = await parseDraft(draftNotes);
+    if (!parsed) return;
+
+    if (parsed.title) set('title', parsed.title);
+    if (parsed.happening_type && HAPPENING_TYPE_VALUES.includes(parsed.happening_type)) {
+      set('happening_type', parsed.happening_type as Announcement['happening_type']);
+    }
+
+    const recurrenceType = (parsed.recurrence_type && RECURRENCE_TYPE_VALUES.includes(parsed.recurrence_type))
+      ? parsed.recurrence_type as RecurrenceType
+      : 'one_time';
+    set('recurrence_type', recurrenceType);
+
+    if (parsed.event_date && ISO_DATE_RE.test(parsed.event_date)) {
+      setPrimaryDate(parsed.event_date, false);
+    }
+    if (parsed.recurrence_end_date && ISO_DATE_RE.test(parsed.recurrence_end_date)) {
+      set('recurrence_end_date', parsed.recurrence_end_date);
+    }
+    if (parsed.recurrence_day && WEEKDAYS.includes(parsed.recurrence_day)) {
+      set('recurrence_day', parsed.recurrence_day);
+    }
+    if (parsed.recurrence_week_of_month && WEEK_POSITIONS.includes(parsed.recurrence_week_of_month as WeekPosition)) {
+      set('recurrence_week_of_month', parsed.recurrence_week_of_month);
+    }
+    if (parsed.event_time && TIME_RE.test(parsed.event_time)) {
+      set('event_time', roundTo5Min(parsed.event_time));
+    }
+    if (parsed.end_time && TIME_RE.test(parsed.end_time)) {
+      set('end_time', roundTo5Min(parsed.end_time));
+    }
+    if (parsed.event_location) set('event_location', parsed.event_location);
+
+    // The raw notes themselves are worth more than anything we'd re-derive
+    // from them - they carry the staffer's original phrasing for the
+    // Draft buttons to actually write from.
+    if (draftNotes.trim()) set('description', draftNotes.trim());
+
+    setTimingExpanded(true);
+    setDraftNotes('');
+    setDraftPanelOpen(false);
+  };
 
   const isScheduledType = f.happening_type === 'event' || f.happening_type === 'class';
 
@@ -304,6 +371,44 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
       </div>
 
       <div style={{ padding: '24px 24px 20px' }}>
+
+        <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: 10, padding: '14px 18px', marginBottom: 20 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+            <div>
+              <div style={{ fontFamily: font.display, fontSize: 11, fontWeight: 700, color: '#1D4ED8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Quick Fill from Notes
+              </div>
+              <div style={{ fontFamily: font.mono, fontSize: 10, color: '#3B5FA8', marginTop: 3, lineHeight: 1.5 }}>
+                Paste rough notes - Claude fills in the type, dates, times, and recurrence below for you to review before saving.
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setDraftPanelOpen(v => !v)}
+              style={{
+                fontFamily: font.display, fontSize: 10, fontWeight: 700, color: '#1D4ED8',
+                background: '#fff', border: '1px solid #BFDBFE', borderRadius: 5, padding: '6px 12px',
+                cursor: 'pointer', letterSpacing: '0.05em', textTransform: 'uppercase', flexShrink: 0,
+              }}
+            >
+              {draftPanelOpen ? 'Hide' : 'Paste Notes'}
+            </button>
+          </div>
+          {draftPanelOpen && (
+            <div style={{ marginTop: 12 }}>
+              <textarea
+                style={{ ...inputBase, minHeight: 70, resize: 'vertical', fontSize: 13, background: '#fff' }}
+                value={draftNotes}
+                onChange={e => setDraftNotes(e.target.value)}
+                placeholder={`e.g. "Marriage class starts Sept 20, every other Wednesday at 7pm through November, room 2"`}
+                autoFocus
+              />
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
+                <AIWriteButton label="Fill In Fields" loading={parsingDraft} onClick={handleParseDraft} disabled={!draftNotes.trim()} />
+              </div>
+            </div>
+          )}
+        </div>
 
         <Section title="Basics">
           <div style={fg}>
@@ -910,6 +1015,30 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
           <button onClick={onCancel} style={btnGhost}>Cancel</button>
         </div>
       </div>
+
+      {/* This form runs long (Basics through Destinations) and the whole
+          admin page scrolls as one document - without this, Save is only
+          reachable by scrolling all the way past everything else. Fixed
+          rather than sticky: the card's own overflow:hidden (for its
+          rounded corners) would otherwise clip a sticky header/footer. */}
+      <button
+        onClick={handleSave}
+        disabled={saving || !canSave}
+        title={canSave ? 'Save' : 'Add a title to save'}
+        style={{
+          ...btnPrimary,
+          position: 'fixed',
+          bottom: 24,
+          right: 24,
+          zIndex: 30,
+          opacity: saving || !canSave ? 0.5 : 1,
+          boxShadow: '0 6px 20px rgba(0,0,0,0.18)',
+        }}
+        onMouseEnter={e => { if (!saving && canSave) (e.currentTarget as HTMLElement).style.background = C.accentHover; }}
+        onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = C.accent}
+      >
+        {saving ? 'Saving...' : 'Save'}
+      </button>
     </div>
   );
 }

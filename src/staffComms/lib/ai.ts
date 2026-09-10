@@ -8,11 +8,11 @@ const headers = () => ({
   'Content-Type': 'application/json',
 });
 
-export async function callAI(systemPrompt: string, userPrompt: string, options?: { json?: boolean }): Promise<string> {
+export async function callAI(systemPrompt: string, userPrompt: string, options?: { json?: boolean; schema?: string }): Promise<string> {
   const res = await fetch(EDGE_FN_URL, {
     method: 'POST',
     headers: headers(),
-    body: JSON.stringify({ _direct: true, systemPrompt, userPrompt, _json: options?.json ?? false }),
+    body: JSON.stringify({ _direct: true, systemPrompt, userPrompt, _json: options?.json ?? false, _schema: options?.schema }),
   });
   const data = await res.json();
   // This used to fall back to returning data.error as if it were the

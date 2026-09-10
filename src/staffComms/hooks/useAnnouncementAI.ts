@@ -42,6 +42,23 @@ interface AILoadingState {
   all: boolean;
 }
 
+// Every field nullable and unvalidated on purpose - this is exactly what
+// the edge function's ParseDraftSchema returns, and the caller (the form,
+// which owns the field-level validation/normalization already) decides
+// what's safe to apply.
+export interface ParsedDraft {
+  title: string | null;
+  happening_type: string | null;
+  recurrence_type: string | null;
+  event_date: string | null;
+  recurrence_end_date: string | null;
+  recurrence_day: string | null;
+  recurrence_week_of_month: string | null;
+  event_time: string | null;
+  end_time: string | null;
+  event_location: string | null;
+}
+
 interface UseAnnouncementAIReturn {
   aiLoading: AILoadingState;
   hasEnoughForAI: boolean;
@@ -49,6 +66,8 @@ interface UseAnnouncementAIReturn {
   generateSlide: () => Promise<void>;
   generateFlyer: () => Promise<void>;
   generateAll: () => Promise<void>;
+  parsingDraft: boolean;
+  parseDraft: (draftText: string) => Promise<ParsedDraft | null>;
 }
 
 export function useAnnouncementAI(
@@ -144,5 +163,43 @@ export function useAnnouncementAI(
     }
   };
 
-  return { aiLoading, hasEnoughForAI, generateBody, generateSlide, generateFlyer, generateAll };
+  const [parsingDraft, setParsingDraft] = useState(false);
+
+  // Reads a staffer's rough, unstructured notes ("marriage class starts
+  // sept 20, every other wed at 7, room 2, through november") and returns
+  // the scheduling fields Claude could confidently pull out of them. Does
+  // NOT touch form state itself - the caller applies (and validates) each
+  // field, since AnnouncementForm already owns the normalization rules
+  // (event_dates syncing, recurrence_label recompute, etc.) those fields
+  // need to go through.
+  const parseDraft = async (draftText: string): Promise<ParsedDraft | null> => {
+    if (!draftText.trim()) return null;
+    setParsingDraft(true);
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const todayWeekday = new Date(today + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long' });
+      const result = await callAI(
+        `You read a church staff member's rough, informal notes about something happening at the church - an event, class, or announcement - and extract its scheduling details. Today is ${today}, a ${todayWeekday}. Resolve any relative date or day reference ("next Tuesday", "starting the 20th", "every other Wednesday") into an actual date using today as the reference point.
+
+If no recurrence is mentioned, use "one_time". event_date and recurrence_end_date must be real ISO dates (YYYY-MM-DD) or null. event_time and end_time must be 24-hour HH:MM or null. recurrence_day only applies to weekly/biweekly, or to monthly when a weekday position is mentioned ("first Sunday", "third Wednesday") - otherwise null. recurrence_week_of_month is only set when such a weekday position is mentioned, otherwise null.
+
+If a detail isn't stated or you aren't confident about it, return null for that field rather than guessing - a wrong guess is worse than a blank the staffer fills in themselves.`,
+        `Extract the structured scheduling details from these rough notes:\n\n${draftText}`,
+        { json: true, schema: 'parseDraft' },
+      );
+      const cleaned = result.trim().replace(/```json|```/g, '').trim();
+      try {
+        return JSON.parse(cleaned) as ParsedDraft;
+      } catch {
+        throw new Error('Could not read those notes into a structured form. Try rewording, or fill the fields in by hand.');
+      }
+    } catch (e) {
+      onError(e instanceof Error ? e.message : 'AI parsing failed');
+      return null;
+    } finally {
+      setParsingDraft(false);
+    }
+  };
+
+  return { aiLoading, hasEnoughForAI, generateBody, generateSlide, generateFlyer, generateAll, parsingDraft, parseDraft };
 }

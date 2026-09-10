@@ -24,6 +24,33 @@ const WriteAllSchema = z.object({
   flyer: z.string(),
 });
 
+// Schema for "Fill In From Notes" - Claude reads a staffer's rough,
+// unstructured notes about something happening and extracts the actual
+// scheduling fields, so staff only have to review what it guessed rather
+// than pick through the whole Type/Timing form field by field. Every field
+// is nullable on purpose: a field Claude isn't confident about should come
+// back empty rather than guessed, since the caller writes these straight
+// into real form fields (the client still re-validates each one before
+// applying it, but the schema shouldn't encourage guessing in the first
+// place).
+const ParseDraftSchema = z.object({
+  title: z.string().nullable(),
+  happening_type: z.enum(["announcement", "event", "class", "general"]).nullable(),
+  recurrence_type: z.enum(["one_time", "date_range", "weekly", "biweekly", "monthly"]).nullable(),
+  event_date: z.string().nullable(),
+  recurrence_end_date: z.string().nullable(),
+  recurrence_day: z.enum(["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]).nullable(),
+  recurrence_week_of_month: z.enum(["first", "second", "third", "fourth", "last"]).nullable(),
+  event_time: z.string().nullable(),
+  end_time: z.string().nullable(),
+  event_location: z.string().nullable(),
+});
+
+const SCHEMAS: Record<string, z.ZodTypeAny> = {
+  writeAll: WriteAllSchema,
+  parseDraft: ParseDraftSchema,
+};
+
 function checkStopReason(response: { stop_reason: string | null; stop_details?: { explanation?: string | null } | null }) {
   if (response.stop_reason === "refusal") {
     const explanation = response.stop_details?.explanation;
@@ -65,12 +92,13 @@ Deno.serve(async (req: Request) => {
 
     if (body._direct && body.systemPrompt && body.userPrompt) {
       if (body._json) {
+        const schema = SCHEMAS[body._schema as string] ?? WriteAllSchema;
         const response = await client.messages.parse({
           model: MODEL,
           max_tokens: MAX_TOKENS,
           system: body.systemPrompt,
           messages: [{ role: "user", content: body.userPrompt }],
-          output_config: { format: zodOutputFormat(WriteAllSchema) },
+          output_config: { format: zodOutputFormat(schema) },
         });
         checkStopReason(response);
         if (!response.parsed_output) {

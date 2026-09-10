@@ -366,8 +366,11 @@ const Admin=()=> {
   return (
     <div className="admin-shell min-h-screen bg-neutral-50 md:flex">
       <StaffCommsStyles />
-      {/* Sidebar - desktop */}
-      <aside className="hidden md:flex md:flex-col md:w-64 md:flex-shrink-0 bg-neutral-900">
+      {/* Sidebar - desktop. Pinned to the viewport height (not just
+          flex-stretched to match the main content column) so "Back to
+          Site"/"Log Out" stay reachable without scrolling the whole page -
+          the main content column can run much taller than one screen. */}
+      <aside className="hidden md:flex md:flex-col md:w-64 md:flex-shrink-0 md:sticky md:top-0 md:h-screen bg-neutral-900">
         <div className="px-5 py-5 border-b border-white/10">
           <div className="text-white font-bold text-lg leading-tight">Admin</div>
           <div className="text-white/40 text-xs">Upper Room Fellowship</div>
