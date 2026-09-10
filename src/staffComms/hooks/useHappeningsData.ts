@@ -59,6 +59,7 @@ export function useHappeningsData(enabled: boolean, onNavigateToManage?: () => v
       monthly_include: f.monthly_include,
       show_on_slides: f.show_on_slides,
       show_in_happenings: f.show_in_happenings,
+      show_in_weekly: f.show_in_weekly,
       contact_name: f.contact_name,
       contact_info: f.contact_info,
       slide_override: f.slide_override,

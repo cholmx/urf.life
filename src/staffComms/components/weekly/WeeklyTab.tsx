@@ -75,7 +75,10 @@ export function WeeklyTab({ announcements, today }: WeeklyTabProps) {
   const sundayDate = getSundayDate(weekStart);
 
   const weekItems = announcements
-    .filter(a => isThisWeek(a, weekStart, weekEnd))
+    // show_in_weekly defaults true (see migration) but treat undefined as
+    // included too, for any row from before that default was backfilled -
+    // the bulletin used to include everything with no opt-out at all.
+    .filter(a => a.show_in_weekly !== false && isThisWeek(a, weekStart, weekEnd))
     .sort((a, b) => {
       const da = a.event_date || a.event_dates?.[0] || '';
       const db = b.event_date || b.event_dates?.[0] || '';

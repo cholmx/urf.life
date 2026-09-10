@@ -33,6 +33,7 @@ export interface Announcement {
   monthly_include: boolean;
   show_on_slides: boolean;
   show_in_happenings: boolean;
+  show_in_weekly: boolean;
   event_location: string;
   contact_name: string;
   contact_info: string;

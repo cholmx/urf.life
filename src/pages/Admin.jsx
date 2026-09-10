@@ -31,7 +31,7 @@ const {FiPlay,FiBookOpen,FiHome,FiLock,FiStar,FiHeart,FiUsers,FiTrendingUp,FiMes
 const NAV_SECTIONS=[
   {
     items: [
-      {id: 'overview',label: 'Create',icon: FiGrid},
+      {id: 'overview',label: 'Dashboard',icon: FiGrid},
       {id: 'submissions',label: 'Submissions',icon: FiInbox},
     ],
   },

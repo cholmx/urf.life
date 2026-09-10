@@ -63,6 +63,7 @@ export const DEFAULT_ANNOUNCEMENT = {
   monthly_include: false,
   show_on_slides: true,
   show_in_happenings: true,
+  show_in_weekly: true,
   event_location: '',
   contact_name: '',
   contact_info: '',

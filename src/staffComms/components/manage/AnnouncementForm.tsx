@@ -933,6 +933,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
               { key: 'show_on_slides' as const, label: 'Sunday Slides' },
               { key: 'show_in_happenings' as const, label: 'The Happenings' },
               { key: 'monthly_include' as const, label: 'Monthly Flyer' },
+              { key: 'show_in_weekly' as const, label: 'Weekly Bulletin' },
             ].map(d => (
               <label key={d.key} style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: font.body, fontSize: 13, color: C.textSec, cursor: 'pointer', padding: '6px 12px', border: `1px solid ${f[d.key] ? C.accent + '44' : C.border}`, borderRadius: 6, background: f[d.key] ? C.accentBg : C.card, transition: 'all 0.15s' }}>
                 <input

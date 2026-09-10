@@ -6,9 +6,10 @@ import { buildInviteHTMLFromAnnouncement } from './invitePrinter';
 import type { Announcement } from '../../types';
 
 const DEST_LABELS = [
-  { key: 'show_on_slides' as const,    short: 'Slides' },
+  { key: 'show_on_slides' as const,     short: 'Slides' },
   { key: 'show_in_happenings' as const, short: 'Email' },
-  { key: 'monthly_include' as const,   short: 'Flyer' },
+  { key: 'monthly_include' as const,    short: 'Flyer' },
+  { key: 'show_in_weekly' as const,     short: 'Bulletin' },
 ];
 
 interface AnnouncementCardProps {
@@ -100,11 +101,6 @@ export function AnnouncementCard({ a, today, onEdit, onDelete, onTogglePublish }
               padding: '2px 7px',
             }}>Published</span>
           )}
-          {DEST_LABELS.filter(d => a[d.key]).map(d => (
-            <span key={d.key} style={{ fontFamily: font.display, fontSize: 10, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: C.textTer }}>
-              {d.short}
-            </span>
-          ))}
         </div>
         {a.event_date && (
           <span style={{ fontFamily: font.mono, fontSize: 11, color: C.textMuted, flexShrink: 0, letterSpacing: '0.02em' }}>
@@ -115,6 +111,29 @@ export function AnnouncementCard({ a, today, onEdit, onDelete, onTogglePublish }
         {!a.event_date && a.is_recurring && (
           <span style={{ fontFamily: font.mono, fontSize: 11, color: C.textMuted }}>recurring</span>
         )}
+      </div>
+
+      {/* Where this shows up - always all four, checked or not, so it
+          reads as a full picture rather than only the ones turned on. */}
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+        {DEST_LABELS.map(d => {
+          const on = !!a[d.key];
+          return (
+            <span
+              key={d.key}
+              title={`${on ? 'Shows' : "Doesn't show"} in ${d.short}`}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 3,
+                fontFamily: font.display, fontSize: 9.5, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase',
+                color: on ? C.accent : C.textMuted,
+                opacity: on ? 1 : 0.4,
+              }}
+            >
+              <span style={{ fontSize: 10, lineHeight: 1 }}>{on ? '✓' : '–'}</span>
+              {d.short}
+            </span>
+          );
+        })}
       </div>
 
       {/* Title + preview */}
