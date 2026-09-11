@@ -80,7 +80,7 @@ function announcementDateLabel(a: Announcement): string {
 }
 
 function getAnnouncementBody(a: Announcement): string {
-  const raw = a.flyer_text || a.body || a.short_version || '';
+  const raw = a.flyer_text || a.short_version || a.body || '';
   return stripLeadingTitle(raw, a.title);
 }
 
@@ -254,27 +254,17 @@ function FrontContent({ items, sundayDate }: { items: Announcement[]; sundayDate
 
 function FrontAnnouncement({ a }: { a: Announcement }) {
   const dateLabel = announcementDateLabel(a);
-  const accent = a.scope === 'whole_church' ? ORANGE : TEAL;
   const text = getAnnouncementBody(a);
 
   return (
-    <div style={{
-      display: 'flex',
-      gap: 12,
-      padding: '11px 0',
-      borderBottom: '1pt solid #000',
-      alignItems: 'flex-start',
-    }}>
-      <div style={{ width: '4pt', alignSelf: 'stretch', minHeight: '0.35in', background: accent, borderRadius: '2pt', flexShrink: 0 }} />
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 4 }}>
-          <span style={{ fontFamily: BULLETIN_FONT, fontSize: 11.5, fontWeight: 800, color: TEAL, textTransform: 'uppercase', letterSpacing: '0.01em' }}>{a.title}</span>
-          {dateLabel && <span style={{ fontFamily: BULLETIN_FONT, fontSize: 9, fontWeight: 700, color: ORANGE }}>{dateLabel}</span>}
-          {a.ministry && <Pill>{a.ministry}</Pill>}
-        </div>
-        {text && <div style={{ fontFamily: font.body, fontSize: 9.5, color: '#1A1A1A', lineHeight: 1.4, marginBottom: 4 }}>{text}</div>}
-        {a.contact_info && <ContactLine a={a} />}
+    <div style={{ padding: '11px 0' }}>
+      <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 4 }}>
+        <span style={{ fontFamily: BULLETIN_FONT, fontSize: 11.5, fontWeight: 800, color: TEAL, textTransform: 'uppercase', letterSpacing: '0.01em' }}>{a.title}</span>
+        {dateLabel && <span style={{ fontFamily: BULLETIN_FONT, fontSize: 9, fontWeight: 700, color: ORANGE }}>{dateLabel}</span>}
+        {a.ministry && <Pill>{a.ministry}</Pill>}
       </div>
+      {text && <div style={{ fontFamily: font.body, fontSize: 9.5, color: '#1A1A1A', lineHeight: 1.4, marginBottom: 4 }}>{text}</div>}
+      {a.contact_info && <ContactLine a={a} />}
     </div>
   );
 }
@@ -349,24 +339,20 @@ function buildBulletinHTML(items: Announcement[], sundayDate: string): string {
     ? `<div style="color:#000;padding:40px 0;text-align:center;font-size:13pt;">No announcements for this week.</div>`
     : items.map(a => {
         const dateLabel = escapeHtml(announcementDateLabel(a));
-        const accent = a.scope === 'whole_church' ? ORANGE : TEAL;
-        const raw = a.flyer_text || a.body || a.short_version || '';
+        const raw = a.flyer_text || a.short_version || a.body || '';
         const text = escapeHtml(stripLeadingTitle(raw, a.title));
         const title = escapeHtml(a.title);
         const ministry = escapeHtml(a.ministry);
         const contactName = escapeHtml(a.contact_name);
         const contactInfo = escapeHtml(a.contact_info);
-        return `<div style="display:flex;gap:12px;padding:11px 0;border-bottom:1pt solid #000;align-items:flex-start;">
-          <div style="width:4pt;align-self:stretch;min-height:0.35in;background:${accent};border-radius:2pt;flex-shrink:0;"></div>
-          <div style="flex:1;min-width:0;">
-            <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:4px;">
-              <span style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:11.5pt;font-weight:800;color:${TEAL};text-transform:uppercase;letter-spacing:0.01em;">${title}</span>
-              ${dateLabel ? `<span style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:9pt;font-weight:700;color:${ORANGE};">${dateLabel}</span>` : ''}
-              ${ministry ? `<span style="font-family:'Inter',sans-serif;font-size:7.5pt;font-weight:700;color:${TEAL};background:${TEAL_LIGHT};border-radius:999px;padding:2pt 7pt;">${ministry}</span>` : ''}
-            </div>
-            ${text ? `<div style="font-family:'Inter',sans-serif;font-size:9.5pt;color:#1A1A1A;line-height:1.4;margin-bottom:4px;">${text}</div>` : ''}
-            ${contactInfo ? `<div style="font-family:'Inter',sans-serif;font-size:7.5pt;color:#000;margin-top:4px;">${contactName ? `${contactName}, ` : ''}${contactInfo}</div>` : ''}
+        return `<div style="padding:11px 0;">
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:4px;">
+            <span style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:11.5pt;font-weight:800;color:${TEAL};text-transform:uppercase;letter-spacing:0.01em;">${title}</span>
+            ${dateLabel ? `<span style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:9pt;font-weight:700;color:${ORANGE};">${dateLabel}</span>` : ''}
+            ${ministry ? `<span style="font-family:'Inter',sans-serif;font-size:7.5pt;font-weight:700;color:${TEAL};background:${TEAL_LIGHT};border-radius:999px;padding:2pt 7pt;">${ministry}</span>` : ''}
           </div>
+          ${text ? `<div style="font-family:'Inter',sans-serif;font-size:9.5pt;color:#1A1A1A;line-height:1.4;margin-bottom:4px;">${text}</div>` : ''}
+          ${contactInfo ? `<div style="font-family:'Inter',sans-serif;font-size:7.5pt;color:#000;margin-top:4px;">${contactName ? `${contactName}, ` : ''}${contactInfo}</div>` : ''}
         </div>`;
       }).join('');
 
