@@ -50,11 +50,13 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
 
   // What still needs a slide made, pulled straight from the Communication
   // Organizer's happenings data - lets staff jump from "what needs making"
-  // straight into building it, without leaving the Slide Maker.
+  // straight into building it, without leaving the Slide Maker. Once a
+  // slide is marked made it drops off this list entirely - it's a "Needs
+  // Making" queue, not a checklist of everything eligible.
   const queueItems = useMemo(() => {
     if (!announcements || !today) return [];
     return announcements
-      .filter(a => isSlideActive(a, today))
+      .filter(a => isSlideActive(a, today) && !a.slide_made)
       .sort((a, b) => (SCOPE_ORDER[a.scope] ?? 2) - (SCOPE_ORDER[b.scope] ?? 2));
   }, [announcements, today]);
 
@@ -71,7 +73,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
   // Land on the queue whenever there's something pending, instead of
   // always opening to whatever was last on the canvas - that's the whole
   // point of the queue existing, but it was never actually the default.
-  const [tab, setTab] = useState(() => (queueItems.some(a => !a.slide_made) ? "queue" : "content"));
+  const [tab, setTab] = useState(() => (queueItems.length > 0 ? "queue" : "content"));
   const [aspectRatio, setAspectRatio] = useState(ASPECT_RATIOS[0]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeQueueItem, setActiveQueueItem] = useState(null);

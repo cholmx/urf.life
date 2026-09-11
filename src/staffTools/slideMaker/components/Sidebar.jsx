@@ -36,7 +36,8 @@ export default function Sidebar(props) {
     queueItems, onUseQueueItem, onToggleSlideMade,
   } = props;
 
-  const pendingCount = (queueItems || []).filter(a => !a.slide_made).length;
+  // queueItems is already filtered to just what still needs a slide made.
+  const pendingCount = (queueItems || []).length;
 
   return (
     <div style={{

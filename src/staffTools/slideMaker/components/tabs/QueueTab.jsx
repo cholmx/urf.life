@@ -11,12 +11,10 @@ export default function QueueTab({ items, onUseItem, onToggleSlideMade }) {
     );
   }
 
-  const doneCount = items.filter(a => a.slide_made).length;
-
   return (
     <div>
       <div style={{ fontFamily: ui.body, fontSize: 11, color: C.textTer, marginBottom: 12 }}>
-        {doneCount}/{items.length} made
+        {items.length} still need{items.length === 1 ? 's' : ''} a slide
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {items.map(a => {
@@ -32,7 +30,7 @@ export default function QueueTab({ items, onUseItem, onToggleSlideMade }) {
                 border: `1px solid ${C.border}`,
                 borderRadius: 8,
                 padding: '10px 12px',
-                background: a.slide_made ? C.cardAlt : C.card,
+                background: C.card,
               }}
             >
               <div style={{
@@ -40,8 +38,6 @@ export default function QueueTab({ items, onUseItem, onToggleSlideMade }) {
                 fontSize: 13,
                 fontWeight: 700,
                 color: C.text,
-                textDecoration: a.slide_made ? 'line-through' : 'none',
-                opacity: a.slide_made ? 0.55 : 1,
                 marginBottom: 2,
               }}>
                 {a.title}
@@ -70,21 +66,22 @@ export default function QueueTab({ items, onUseItem, onToggleSlideMade }) {
                   Use This
                 </button>
                 <button
-                  onClick={() => onToggleSlideMade(a.id, !a.slide_made)}
+                  onClick={() => onToggleSlideMade(a.id, true)}
+                  title="Removes it from this list"
                   style={{
                     flex: 1,
                     padding: '5px 8px',
                     border: `1px solid ${C.border}`,
                     borderRadius: 5,
-                    background: a.slide_made ? C.card : C.accentDark,
-                    color: a.slide_made ? C.textTer : '#fff',
+                    background: C.accentDark,
+                    color: '#fff',
                     fontFamily: ui.body,
                     fontSize: 11,
                     fontWeight: 600,
                     cursor: 'pointer',
                   }}
                 >
-                  {a.slide_made ? 'Mark Not Made' : 'Mark Made'}
+                  Mark Made
                 </button>
               </div>
             </div>
