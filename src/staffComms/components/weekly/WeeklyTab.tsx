@@ -113,12 +113,19 @@ interface BulletinScale {
   itemPadV: number;
 }
 
-function getBulletinScale(count: number): BulletinScale {
-  if (count <= 7) return { titleFontSize: 11.5, dateFontSize: 9, bodyFontSize: 9.5, contactFontSize: 7.5, itemPadV: 11 };
-  if (count <= 11) return { titleFontSize: 10.5, dateFontSize: 8.5, bodyFontSize: 9, contactFontSize: 7, itemPadV: 8 };
-  if (count <= 16) return { titleFontSize: 9.5, dateFontSize: 8, bodyFontSize: 8.5, contactFontSize: 6.5, itemPadV: 6 };
-  return { titleFontSize: 8.5, dateFontSize: 7.5, bodyFontSize: 8, contactFontSize: 6, itemPadV: 5 };
-}
+// Ordered largest to smallest - pickBulletinScale (below, after the back
+// page's static-section tiers) walks these to find the largest one where
+// everything actually fits on both pages, rather than just guessing from
+// item count the way getScaleParams does for the Monthly Flyer. A busy
+// week can need more shrinking than count alone suggests, e.g. a handful
+// of long items that spill onto a back page already tight on space.
+const BULLETIN_SCALE_TIERS: BulletinScale[] = [
+  { titleFontSize: 11.5, dateFontSize: 9, bodyFontSize: 9.5, contactFontSize: 7.5, itemPadV: 11 },
+  { titleFontSize: 10.5, dateFontSize: 8.5, bodyFontSize: 9, contactFontSize: 7, itemPadV: 8 },
+  { titleFontSize: 9.5, dateFontSize: 8, bodyFontSize: 8.5, contactFontSize: 6.5, itemPadV: 6 },
+  { titleFontSize: 8.5, dateFontSize: 7.5, bodyFontSize: 8, contactFontSize: 6, itemPadV: 5 },
+  { titleFontSize: 7.5, dateFontSize: 6.5, bodyFontSize: 7, contactFontSize: 5.5, itemPadV: 4 },
+];
 
 function estimateItemHeightPt(a: Announcement, scale: BulletinScale): number {
   const text = getAnnouncementBody(a);
@@ -146,6 +153,71 @@ function splitBulletinItems(items: Announcement[], scale: BulletinScale): { fron
   return { front, back };
 }
 
+/* ── Back page's static info box ────────────────────────────────────
+   The Table Groups / Kids / etc. sections at the bottom of the back page
+   must always be fully visible, never squeezed off the fixed-size page by
+   overflow items spilled from the front - their own text shrinks in tiers
+   as overflow eats into the available space, same idea as the items. */
+
+// Compact header + divider + footer, in points.
+const BACK_CHROME_PT = 104;
+
+interface BackSectionsScale {
+  titleFontSize: number;
+  bodyFontSize: number;
+  lineHeight: number;
+  gap: number;
+  boxPadV: number;
+}
+
+const BACK_SECTIONS_TIERS: BackSectionsScale[] = [
+  { titleFontSize: 10, bodyFontSize: 9, lineHeight: 1.25, gap: 8, boxPadV: 12 },
+  { titleFontSize: 9, bodyFontSize: 8, lineHeight: 1.2, gap: 6, boxPadV: 10 },
+  { titleFontSize: 8, bodyFontSize: 7.25, lineHeight: 1.15, gap: 5, boxPadV: 8 },
+  { titleFontSize: 7, bodyFontSize: 6.5, lineHeight: 1.1, gap: 4, boxPadV: 6 },
+];
+
+function estimateBackSectionsHeightPt(scale: BackSectionsScale): number {
+  const boxWidthPt = BULLETIN_CONTENT_WIDTH_PT - 28 * 0.75;
+  let total = 2 * (scale.boxPadV * 0.75);
+  total += (BACK_SECTIONS.length - 1) * (scale.gap * 0.75);
+  for (const s of BACK_SECTIONS) {
+    total += scale.titleFontSize + 2 * 0.75;
+    const plain = s.body.replace(/<[^>]+>/g, ' ');
+    total += estimateWrappedLines(plain, scale.bodyFontSize, boxWidthPt) * scale.bodyFontSize * scale.lineHeight;
+  }
+  return total;
+}
+
+function pickBackSectionsScale(overflowItems: Announcement[], itemScale: BulletinScale): BackSectionsScale {
+  const overflowHeight = overflowItems.reduce((sum, a) => sum + estimateItemHeightPt(a, itemScale), 0);
+  const overflowMargin = overflowItems.length > 0 ? 12 * 0.75 : 0;
+  const available = BULLETIN_CONTENT_HEIGHT_PT - BACK_CHROME_PT - overflowHeight - overflowMargin;
+  for (const tier of BACK_SECTIONS_TIERS) {
+    if (estimateBackSectionsHeightPt(tier) <= available) return tier;
+  }
+  return BACK_SECTIONS_TIERS[BACK_SECTIONS_TIERS.length - 1];
+}
+
+// Picking an item-text tier from count alone (as the Monthly Flyer does)
+// isn't enough here - a handful of long items overflowing onto the back
+// page can eat all its space before the static info box gets a look in,
+// and no amount of shrinking that box alone would fix it. Walk tiers
+// largest to smallest and use the first one where the back page's
+// overflow items still leave room for at least the smallest static-box
+// tier, so the info box is never squeezed off the page.
+function pickBulletinScale(items: Announcement[]): BulletinScale {
+  const smallestSectionsHeight = estimateBackSectionsHeightPt(BACK_SECTIONS_TIERS[BACK_SECTIONS_TIERS.length - 1]);
+  for (const scale of BULLETIN_SCALE_TIERS) {
+    const { back } = splitBulletinItems(items, scale);
+    const overflowHeight = back.reduce((sum, a) => sum + estimateItemHeightPt(a, scale), 0);
+    const overflowMargin = back.length > 0 ? 12 * 0.75 : 0;
+    const available = BULLETIN_CONTENT_HEIGHT_PT - BACK_CHROME_PT - overflowHeight - overflowMargin;
+    if (available >= smallestSectionsHeight) return scale;
+  }
+  return BULLETIN_SCALE_TIERS[BULLETIN_SCALE_TIERS.length - 1];
+}
+
 export function WeeklyTab({ announcements, today }: WeeklyTabProps) {
   const weekStart = getWeekStart(today);
   const weekEnd = getWeekEnd(weekStart);
@@ -163,8 +235,9 @@ export function WeeklyTab({ announcements, today }: WeeklyTabProps) {
       return da < db ? -1 : da > db ? 1 : 0;
     });
 
-  const bulletinScale = getBulletinScale(weekItems.length);
+  const bulletinScale = pickBulletinScale(weekItems);
   const { front: frontItems, back: backOverflowItems } = splitBulletinItems(weekItems, bulletinScale);
+  const backSectionsScale = pickBackSectionsScale(backOverflowItems, bulletinScale);
 
   const handlePrint = () => {
     const html = buildBulletinHTML(weekItems, sundayDate);
@@ -208,11 +281,11 @@ export function WeeklyTab({ announcements, today }: WeeklyTabProps) {
         <div style={{ fontFamily: font.display, fontSize: 10, fontWeight: 700, color: C.textMuted, textTransform: 'uppercase', letterSpacing: '0.12em' }}>
           Front (Page 1)
         </div>
-        <BulletinPreview frontItems={frontItems} backOverflowItems={backOverflowItems} scale={bulletinScale} sundayDate={sundayDate} side="front" />
+        <BulletinPreview frontItems={frontItems} backOverflowItems={backOverflowItems} scale={bulletinScale} sectionsScale={backSectionsScale} sundayDate={sundayDate} side="front" />
         <div style={{ fontFamily: font.display, fontSize: 10, fontWeight: 700, color: C.textMuted, textTransform: 'uppercase', letterSpacing: '0.12em', marginTop: 8 }}>
           Back (Page 2)
         </div>
-        <BulletinPreview frontItems={frontItems} backOverflowItems={backOverflowItems} scale={bulletinScale} sundayDate={sundayDate} side="back" />
+        <BulletinPreview frontItems={frontItems} backOverflowItems={backOverflowItems} scale={bulletinScale} sectionsScale={backSectionsScale} sundayDate={sundayDate} side="back" />
       </div>
     </div>
   );
@@ -220,7 +293,7 @@ export function WeeklyTab({ announcements, today }: WeeklyTabProps) {
 
 /* ── Preview wrappers ────────────────────────────────────────────── */
 
-function BulletinPreview({ frontItems, backOverflowItems, scale, sundayDate, side }: { frontItems: Announcement[]; backOverflowItems: Announcement[]; scale: BulletinScale; sundayDate: string; side: 'front' | 'back' }) {
+function BulletinPreview({ frontItems, backOverflowItems, scale, sectionsScale, sundayDate, side }: { frontItems: Announcement[]; backOverflowItems: Announcement[]; scale: BulletinScale; sectionsScale: BackSectionsScale; sundayDate: string; side: 'front' | 'back' }) {
   return (
     <div style={{
       width: '11in',
@@ -236,11 +309,11 @@ function BulletinPreview({ frontItems, backOverflowItems, scale, sundayDate, sid
     }}>
       <BulletinHalf>{side === 'front'
         ? <FrontContent items={frontItems} scale={scale} sundayDate={sundayDate} />
-        : <BackContent overflowItems={backOverflowItems} scale={scale} />}</BulletinHalf>
+        : <BackContent overflowItems={backOverflowItems} scale={scale} sectionsScale={sectionsScale} />}</BulletinHalf>
       <div style={{ position: 'absolute', top: 0, bottom: 0, left: '50%', width: 0, borderLeft: '1px dashed #000', pointerEvents: 'none' }} />
       <BulletinHalf>{side === 'front'
         ? <FrontContent items={frontItems} scale={scale} sundayDate={sundayDate} />
-        : <BackContent overflowItems={backOverflowItems} scale={scale} />}</BulletinHalf>
+        : <BackContent overflowItems={backOverflowItems} scale={scale} sectionsScale={sectionsScale} />}</BulletinHalf>
     </div>
   );
 }
@@ -360,7 +433,7 @@ const BACK_SECTIONS: { title: string; color: string; body: string }[] = [
   { title: 'Contact Us', color: TEAL, body: 'Have a question or need prayer? We would love to hear from you.<br><strong style="color:' + TEAL + ';">Info@urfellowship.com</strong>' },
 ];
 
-function BackContent({ overflowItems, scale }: { overflowItems: Announcement[]; scale: BulletinScale }) {
+function BackContent({ overflowItems, scale, sectionsScale }: { overflowItems: Announcement[]; scale: BulletinScale; sectionsScale: BackSectionsScale }) {
   return (
     <>
       <BulletinHeader size="compact" />
@@ -376,14 +449,14 @@ function BackContent({ overflowItems, scale }: { overflowItems: Announcement[]; 
 
       <div style={{
         flexShrink: 0,
-        padding: '12px 14px',
+        padding: `${sectionsScale.boxPadV}px 14px`,
         background: '#FFFFFF',
         borderRadius: '6px',
         display: 'flex',
         flexDirection: 'column',
-        gap: 8,
+        gap: sectionsScale.gap,
       }}>
-        {BACK_SECTIONS.map(s => <BackSection key={s.title} {...s} />)}
+        {BACK_SECTIONS.map(s => <BackSection key={s.title} {...s} scale={sectionsScale} />)}
       </div>
 
       <Footer />
@@ -391,13 +464,13 @@ function BackContent({ overflowItems, scale }: { overflowItems: Announcement[]; 
   );
 }
 
-function BackSection({ title, color, body }: { title: string; color: string; body: string }) {
+function BackSection({ title, color, body, scale }: { title: string; color: string; body: string; scale: BackSectionsScale }) {
   return (
     <div>
-      <div style={{ fontFamily: BULLETIN_FONT, fontSize: 10, fontWeight: 800, color, marginBottom: 2, lineHeight: 1, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+      <div style={{ fontFamily: BULLETIN_FONT, fontSize: scale.titleFontSize, fontWeight: 800, color, marginBottom: 2, lineHeight: 1, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
         {title}
       </div>
-      <div style={{ fontFamily: font.body, fontSize: 9, color: '#1A1A1A', lineHeight: 1.25 }}
+      <div style={{ fontFamily: font.body, fontSize: scale.bodyFontSize, color: '#1A1A1A', lineHeight: scale.lineHeight }}
         dangerouslySetInnerHTML={{ __html: body }} />
     </div>
   );
@@ -425,8 +498,9 @@ function buildItemHTML(a: Announcement, scale: BulletinScale): string {
 }
 
 function buildBulletinHTML(items: Announcement[], sundayDate: string): string {
-  const scale = getBulletinScale(items.length);
+  const scale = pickBulletinScale(items);
   const { front, back } = splitBulletinItems(items, scale);
+  const sectionsScale = pickBackSectionsScale(back, scale);
 
   const frontItemsHTML = front.length === 0
     ? `<div style="color:#000;padding:40px 0;text-align:center;font-size:13pt;">No announcements for this week.</div>`
@@ -435,7 +509,7 @@ function buildBulletinHTML(items: Announcement[], sundayDate: string): string {
   const backOverflowHTML = back.map(a => buildItemHTML(a, scale)).join('');
 
   const frontHalf = buildPrintFront(frontItemsHTML, sundayDate);
-  const backHalf = buildPrintBack(backOverflowHTML);
+  const backHalf = buildPrintBack(backOverflowHTML, sectionsScale);
 
   return `<!DOCTYPE html>
 <html>
@@ -493,11 +567,11 @@ function buildPrintFront(itemsHTML: string, sundayDate: string): string {
   </div>`;
 }
 
-function buildPrintBack(overflowItemsHTML: string): string {
+function buildPrintBack(overflowItemsHTML: string, sectionsScale: BackSectionsScale): string {
   const sectionsHTML = BACK_SECTIONS.map(s =>
     `<div>
-      <div style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:10pt;font-weight:800;color:${s.color};margin-bottom:2px;line-height:1;text-transform:uppercase;letter-spacing:0.06em;">${s.title}</div>
-      <div style="font-family:'Inter',sans-serif;font-size:9pt;color:#1A1A1A;line-height:1.25;">${s.body}</div>
+      <div style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:${sectionsScale.titleFontSize}pt;font-weight:800;color:${s.color};margin-bottom:2px;line-height:1;text-transform:uppercase;letter-spacing:0.06em;">${s.title}</div>
+      <div style="font-family:'Inter',sans-serif;font-size:${sectionsScale.bodyFontSize}pt;color:#1A1A1A;line-height:${sectionsScale.lineHeight};">${s.body}</div>
     </div>`).join('');
 
   const overflowBlock = overflowItemsHTML
@@ -514,7 +588,7 @@ function buildPrintBack(overflowItemsHTML: string): string {
     </div>
     <div style="border-top:2.5pt solid ${ORANGE};margin-top:6px;margin-bottom:12px;flex-shrink:0;"></div>
     ${overflowBlock}
-    <div style="flex-shrink:0;padding:12px 14px;background:#FFFFFF;border-radius:6px;display:flex;flex-direction:column;gap:8px;">
+    <div style="flex-shrink:0;padding:${sectionsScale.boxPadV}px 14px;background:#FFFFFF;border-radius:6px;display:flex;flex-direction:column;gap:${sectionsScale.gap}px;">
       ${sectionsHTML}
     </div>
     <div style="border-top:1.5pt solid ${ORANGE};padding-top:9px;text-align:center;flex-shrink:0;margin-top:10px;">
