@@ -439,13 +439,12 @@ function BackContent({ overflowItems, scale, sectionsScale }: { overflowItems: A
       <BulletinHeader size="compact" />
       <div style={{ borderTop: `2.5pt solid ${ORANGE}`, marginTop: 6, marginBottom: 12, flexShrink: 0 }} />
 
-      {overflowItems.length > 0 ? (
+      {overflowItems.length > 0 && (
         <div style={{ flexShrink: 0, marginBottom: 12 }}>
           {overflowItems.map(a => <FrontAnnouncement key={a.id} a={a} scale={scale} />)}
         </div>
-      ) : (
-        <div style={{ flex: 1 }} />
       )}
+      <div style={{ flex: 1 }} />
 
       <div style={{
         flexShrink: 0,
@@ -576,7 +575,7 @@ function buildPrintBack(overflowItemsHTML: string, sectionsScale: BackSectionsSc
 
   const overflowBlock = overflowItemsHTML
     ? `<div style="flex-shrink:0;margin-bottom:12px;">${overflowItemsHTML}</div>`
-    : `<div style="flex:1;"></div>`;
+    : '';
 
   return `<div class="bulletin">
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
@@ -588,6 +587,7 @@ function buildPrintBack(overflowItemsHTML: string, sectionsScale: BackSectionsSc
     </div>
     <div style="border-top:2.5pt solid ${ORANGE};margin-top:6px;margin-bottom:12px;flex-shrink:0;"></div>
     ${overflowBlock}
+    <div style="flex:1;"></div>
     <div style="flex-shrink:0;padding:${sectionsScale.boxPadV}px 14px;background:#FFFFFF;border-radius:6px;display:flex;flex-direction:column;gap:${sectionsScale.gap}px;">
       ${sectionsHTML}
     </div>
