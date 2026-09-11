@@ -150,7 +150,7 @@ function buildFlyerHTML(items: Announcement[], today: string, bathroomVariant: b
             <div style="width:3pt;align-self:stretch;min-height:${s.barMinH}in;background:${barColor};border-radius:3pt;flex-shrink:0;"></div>
             <div style="flex:1;min-width:0;">
               <div style="margin-bottom:${s.titleMarginBottom}pt;">
-                <div style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:${s.titleFontSize}pt;font-weight:900;color:${TEAL};letter-spacing:0.02em;line-height:1.1;">${title}</div>
+                <div style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:${s.titleFontSize}pt;font-weight:900;color:${TEAL};letter-spacing:0.02em;line-height:1.1;text-transform:uppercase;">${title}</div>
                 <div style="margin-top:1pt;line-height:1.1;display:flex;gap:4pt;align-items:center;flex-wrap:wrap;">
                   ${dateSpan}
                   ${ministryTag}
@@ -222,7 +222,7 @@ function FlyerPagePreview({ announcements, today, bathroomVariant }: {
               <div style={{ width: '3pt', alignSelf: 'stretch', minHeight: `${s.barMinH}in`, background: barColor, borderRadius: '3pt', flexShrink: 0 }} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ marginBottom: `${s.titleMarginBottom}pt` }}>
-                  <div style={{ fontFamily: FLYER_FONT, fontSize: `${s.titleFontSize}pt`, fontWeight: 900, color: TEAL, letterSpacing: '0.02em', lineHeight: 1.1 }}>
+                  <div style={{ fontFamily: FLYER_FONT, fontSize: `${s.titleFontSize}pt`, fontWeight: 900, color: TEAL, letterSpacing: '0.02em', lineHeight: 1.1, textTransform: 'uppercase' }}>
                     {a.title}
                   </div>
                   {(formatDateList(a) || a.ministry) && (

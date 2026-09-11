@@ -20,7 +20,7 @@ const DEFAULT_DATA = {
   dateMo: "APRIL",
   label: "JOIN US",
   s1: 155, s2: 65, s3: 24,
-  uppercaseHeadline: false,
+  uppercaseHeadline: true,
   autoFit: true,
   headLineHeight: 1.12,
 };
