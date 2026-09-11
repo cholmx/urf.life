@@ -84,6 +84,68 @@ function getAnnouncementBody(a: Announcement): string {
   return stripLeadingTitle(raw, a.title);
 }
 
+/* ── Overflow handling ──────────────────────────────────────────────
+   The front page's item list used to just render everything and clip
+   whatever didn't fit inside its fixed-size container - a busy week could
+   silently lose announcements off the bottom. Instead: text shrinks in
+   tiers as the week gets busier (same idea as the Monthly Flyer's
+   getScaleParams), and anything that still doesn't fit within the front
+   page's available height spills onto the back page, above the static
+   info sections, rather than being cut off. */
+
+const BULLETIN_CONTENT_WIDTH_PT = (5.5 - 0.75 * 2) * 72;
+const BULLETIN_CONTENT_HEIGHT_PT = (8.5 - 0.85 * 2) * 72;
+// Rough fixed cost of the front page's logo header, date line, divider,
+// and footer, in points - whatever's left is available for items.
+const FRONT_CHROME_PT = 138;
+
+function estimateWrappedLines(text: string, fontSizePt: number, widthPt: number): number {
+  if (!text) return 0;
+  const charsPerLine = Math.max(1, Math.floor(widthPt / (fontSizePt * 0.46)));
+  return Math.max(1, Math.ceil(text.length / charsPerLine));
+}
+
+interface BulletinScale {
+  titleFontSize: number;
+  dateFontSize: number;
+  bodyFontSize: number;
+  contactFontSize: number;
+  itemPadV: number;
+}
+
+function getBulletinScale(count: number): BulletinScale {
+  if (count <= 7) return { titleFontSize: 11.5, dateFontSize: 9, bodyFontSize: 9.5, contactFontSize: 7.5, itemPadV: 11 };
+  if (count <= 11) return { titleFontSize: 10.5, dateFontSize: 8.5, bodyFontSize: 9, contactFontSize: 7, itemPadV: 8 };
+  if (count <= 16) return { titleFontSize: 9.5, dateFontSize: 8, bodyFontSize: 8.5, contactFontSize: 6.5, itemPadV: 6 };
+  return { titleFontSize: 8.5, dateFontSize: 7.5, bodyFontSize: 8, contactFontSize: 6, itemPadV: 5 };
+}
+
+function estimateItemHeightPt(a: Announcement, scale: BulletinScale): number {
+  const text = getAnnouncementBody(a);
+  let h = scale.titleFontSize * 1.25 + 4;
+  if (text) h += estimateWrappedLines(text, scale.bodyFontSize, BULLETIN_CONTENT_WIDTH_PT) * scale.bodyFontSize * 1.4 + 4;
+  if (a.contact_info) h += scale.contactFontSize * 1.2 + 4;
+  h += scale.itemPadV * 2 * 0.75;
+  return h;
+}
+
+function splitBulletinItems(items: Announcement[], scale: BulletinScale): { front: Announcement[]; back: Announcement[] } {
+  const budget = BULLETIN_CONTENT_HEIGHT_PT - FRONT_CHROME_PT;
+  const front: Announcement[] = [];
+  const back: Announcement[] = [];
+  let used = 0;
+  for (const a of items) {
+    const h = estimateItemHeightPt(a, scale);
+    if (back.length === 0 && (used + h <= budget || front.length === 0)) {
+      front.push(a);
+      used += h;
+    } else {
+      back.push(a);
+    }
+  }
+  return { front, back };
+}
+
 export function WeeklyTab({ announcements, today }: WeeklyTabProps) {
   const weekStart = getWeekStart(today);
   const weekEnd = getWeekEnd(weekStart);
@@ -100,6 +162,9 @@ export function WeeklyTab({ announcements, today }: WeeklyTabProps) {
       const db = b.event_date || b.event_dates?.[0] || '';
       return da < db ? -1 : da > db ? 1 : 0;
     });
+
+  const bulletinScale = getBulletinScale(weekItems.length);
+  const { front: frontItems, back: backOverflowItems } = splitBulletinItems(weekItems, bulletinScale);
 
   const handlePrint = () => {
     const html = buildBulletinHTML(weekItems, sundayDate);
@@ -143,11 +208,11 @@ export function WeeklyTab({ announcements, today }: WeeklyTabProps) {
         <div style={{ fontFamily: font.display, fontSize: 10, fontWeight: 700, color: C.textMuted, textTransform: 'uppercase', letterSpacing: '0.12em' }}>
           Front (Page 1)
         </div>
-        <BulletinPreview items={weekItems} sundayDate={sundayDate} side="front" />
+        <BulletinPreview frontItems={frontItems} backOverflowItems={backOverflowItems} scale={bulletinScale} sundayDate={sundayDate} side="front" />
         <div style={{ fontFamily: font.display, fontSize: 10, fontWeight: 700, color: C.textMuted, textTransform: 'uppercase', letterSpacing: '0.12em', marginTop: 8 }}>
           Back (Page 2)
         </div>
-        <BulletinPreview items={weekItems} sundayDate={sundayDate} side="back" />
+        <BulletinPreview frontItems={frontItems} backOverflowItems={backOverflowItems} scale={bulletinScale} sundayDate={sundayDate} side="back" />
       </div>
     </div>
   );
@@ -155,7 +220,7 @@ export function WeeklyTab({ announcements, today }: WeeklyTabProps) {
 
 /* ── Preview wrappers ────────────────────────────────────────────── */
 
-function BulletinPreview({ items, sundayDate, side }: { items: Announcement[]; sundayDate: string; side: 'front' | 'back' }) {
+function BulletinPreview({ frontItems, backOverflowItems, scale, sundayDate, side }: { frontItems: Announcement[]; backOverflowItems: Announcement[]; scale: BulletinScale; sundayDate: string; side: 'front' | 'back' }) {
   return (
     <div style={{
       width: '11in',
@@ -170,12 +235,12 @@ function BulletinPreview({ items, sundayDate, side }: { items: Announcement[]; s
       position: 'relative',
     }}>
       <BulletinHalf>{side === 'front'
-        ? <FrontContent items={items} sundayDate={sundayDate} />
-        : <BackContent />}</BulletinHalf>
+        ? <FrontContent items={frontItems} scale={scale} sundayDate={sundayDate} />
+        : <BackContent overflowItems={backOverflowItems} scale={scale} />}</BulletinHalf>
       <div style={{ position: 'absolute', top: 0, bottom: 0, left: '50%', width: 0, borderLeft: '1px dashed #000', pointerEvents: 'none' }} />
       <BulletinHalf>{side === 'front'
-        ? <FrontContent items={items} sundayDate={sundayDate} />
-        : <BackContent />}</BulletinHalf>
+        ? <FrontContent items={frontItems} scale={scale} sundayDate={sundayDate} />
+        : <BackContent overflowItems={backOverflowItems} scale={scale} />}</BulletinHalf>
     </div>
   );
 }
@@ -229,7 +294,7 @@ function Footer() {
 
 /* ── Front side ──────────────────────────────────────────────────── */
 
-function FrontContent({ items, sundayDate }: { items: Announcement[]; sundayDate: string }) {
+function FrontContent({ items, scale, sundayDate }: { items: Announcement[]; scale: BulletinScale; sundayDate: string }) {
   return (
     <>
       <BulletinHeader />
@@ -244,7 +309,7 @@ function FrontContent({ items, sundayDate }: { items: Announcement[]; sundayDate
             No announcements for this week.
           </div>
         )}
-        {items.map(a => <FrontAnnouncement key={a.id} a={a} />)}
+        {items.map(a => <FrontAnnouncement key={a.id} a={a} scale={scale} />)}
       </div>
 
       <Footer />
@@ -252,34 +317,34 @@ function FrontContent({ items, sundayDate }: { items: Announcement[]; sundayDate
   );
 }
 
-function FrontAnnouncement({ a }: { a: Announcement }) {
+function FrontAnnouncement({ a, scale }: { a: Announcement; scale: BulletinScale }) {
   const dateLabel = announcementDateLabel(a);
   const text = getAnnouncementBody(a);
 
   return (
-    <div style={{ padding: '11px 0' }}>
+    <div style={{ padding: `${scale.itemPadV}px 0` }}>
       <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 4 }}>
-        <span style={{ fontFamily: BULLETIN_FONT, fontSize: 11.5, fontWeight: 800, color: TEAL, textTransform: 'uppercase', letterSpacing: '0.01em' }}>{a.title}</span>
-        {dateLabel && <span style={{ fontFamily: BULLETIN_FONT, fontSize: 9, fontWeight: 700, color: ORANGE }}>{dateLabel}</span>}
-        {a.ministry && <Pill>{a.ministry}</Pill>}
+        <span style={{ fontFamily: BULLETIN_FONT, fontSize: scale.titleFontSize, fontWeight: 800, color: TEAL, textTransform: 'uppercase', letterSpacing: '0.01em' }}>{a.title}</span>
+        {dateLabel && <span style={{ fontFamily: BULLETIN_FONT, fontSize: scale.dateFontSize, fontWeight: 700, color: ORANGE }}>{dateLabel}</span>}
+        {a.ministry && <Pill fontSize={scale.contactFontSize}>{a.ministry}</Pill>}
       </div>
-      {text && <div style={{ fontFamily: font.body, fontSize: 9.5, color: '#1A1A1A', lineHeight: 1.4, marginBottom: 4 }}>{text}</div>}
-      {a.contact_info && <ContactLine a={a} />}
+      {text && <div style={{ fontFamily: font.body, fontSize: scale.bodyFontSize, color: '#1A1A1A', lineHeight: 1.4, marginBottom: 4 }}>{text}</div>}
+      {a.contact_info && <ContactLine a={a} fontSize={scale.contactFontSize} />}
     </div>
   );
 }
 
-function Pill({ children }: { children: ReactNode }) {
+function Pill({ children, fontSize = 7.5 }: { children: ReactNode; fontSize?: number }) {
   return (
-    <span style={{ fontFamily: font.body, fontSize: 7.5, fontWeight: 700, color: TEAL, background: TEAL_LIGHT, borderRadius: '999px', padding: '2pt 7pt' }}>
+    <span style={{ fontFamily: font.body, fontSize, fontWeight: 700, color: TEAL, background: TEAL_LIGHT, borderRadius: '999px', padding: '2pt 7pt' }}>
       {children}
     </span>
   );
 }
 
-function ContactLine({ a }: { a: Announcement }) {
+function ContactLine({ a, fontSize = 7.5 }: { a: Announcement; fontSize?: number }) {
   return (
-    <div style={{ fontFamily: font.body, fontSize: 7.5, color: '#000', marginTop: 4 }}>
+    <div style={{ fontFamily: font.body, fontSize, color: '#000', marginTop: 4 }}>
       {a.contact_name ? `${a.contact_name}, ` : ''}{a.contact_info}
     </div>
   );
@@ -295,13 +360,19 @@ const BACK_SECTIONS: { title: string; color: string; body: string }[] = [
   { title: 'Contact Us', color: TEAL, body: 'Have a question or need prayer? We would love to hear from you.<br><strong style="color:' + TEAL + ';">Info@urfellowship.com</strong>' },
 ];
 
-function BackContent() {
+function BackContent({ overflowItems, scale }: { overflowItems: Announcement[]; scale: BulletinScale }) {
   return (
     <>
       <BulletinHeader size="compact" />
       <div style={{ borderTop: `2.5pt solid ${ORANGE}`, marginTop: 6, marginBottom: 12, flexShrink: 0 }} />
 
-      <div style={{ flex: 1 }} />
+      {overflowItems.length > 0 ? (
+        <div style={{ flexShrink: 0, marginBottom: 12 }}>
+          {overflowItems.map(a => <FrontAnnouncement key={a.id} a={a} scale={scale} />)}
+        </div>
+      ) : (
+        <div style={{ flex: 1 }} />
+      )}
 
       <div style={{
         flexShrink: 0,
@@ -334,30 +405,37 @@ function BackSection({ title, color, body }: { title: string; color: string; bod
 
 /* ── Print HTML ──────────────────────────────────────────────────── */
 
-function buildBulletinHTML(items: Announcement[], sundayDate: string): string {
-  const itemsHTML = items.length === 0
-    ? `<div style="color:#000;padding:40px 0;text-align:center;font-size:13pt;">No announcements for this week.</div>`
-    : items.map(a => {
-        const dateLabel = escapeHtml(announcementDateLabel(a));
-        const raw = a.flyer_text || a.short_version || a.body || '';
-        const text = escapeHtml(stripLeadingTitle(raw, a.title));
-        const title = escapeHtml(a.title);
-        const ministry = escapeHtml(a.ministry);
-        const contactName = escapeHtml(a.contact_name);
-        const contactInfo = escapeHtml(a.contact_info);
-        return `<div style="padding:11px 0;">
-          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:4px;">
-            <span style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:11.5pt;font-weight:800;color:${TEAL};text-transform:uppercase;letter-spacing:0.01em;">${title}</span>
-            ${dateLabel ? `<span style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:9pt;font-weight:700;color:${ORANGE};">${dateLabel}</span>` : ''}
-            ${ministry ? `<span style="font-family:'Inter',sans-serif;font-size:7.5pt;font-weight:700;color:${TEAL};background:${TEAL_LIGHT};border-radius:999px;padding:2pt 7pt;">${ministry}</span>` : ''}
-          </div>
-          ${text ? `<div style="font-family:'Inter',sans-serif;font-size:9.5pt;color:#1A1A1A;line-height:1.4;margin-bottom:4px;">${text}</div>` : ''}
-          ${contactInfo ? `<div style="font-family:'Inter',sans-serif;font-size:7.5pt;color:#000;margin-top:4px;">${contactName ? `${contactName}, ` : ''}${contactInfo}</div>` : ''}
-        </div>`;
-      }).join('');
+function buildItemHTML(a: Announcement, scale: BulletinScale): string {
+  const dateLabel = escapeHtml(announcementDateLabel(a));
+  const raw = a.flyer_text || a.short_version || a.body || '';
+  const text = escapeHtml(stripLeadingTitle(raw, a.title));
+  const title = escapeHtml(a.title);
+  const ministry = escapeHtml(a.ministry);
+  const contactName = escapeHtml(a.contact_name);
+  const contactInfo = escapeHtml(a.contact_info);
+  return `<div style="padding:${scale.itemPadV}pt 0;">
+    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:4px;">
+      <span style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:${scale.titleFontSize}pt;font-weight:800;color:${TEAL};text-transform:uppercase;letter-spacing:0.01em;">${title}</span>
+      ${dateLabel ? `<span style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:${scale.dateFontSize}pt;font-weight:700;color:${ORANGE};">${dateLabel}</span>` : ''}
+      ${ministry ? `<span style="font-family:'Inter',sans-serif;font-size:${scale.contactFontSize}pt;font-weight:700;color:${TEAL};background:${TEAL_LIGHT};border-radius:999px;padding:2pt 7pt;">${ministry}</span>` : ''}
+    </div>
+    ${text ? `<div style="font-family:'Inter',sans-serif;font-size:${scale.bodyFontSize}pt;color:#1A1A1A;line-height:1.4;margin-bottom:4px;">${text}</div>` : ''}
+    ${contactInfo ? `<div style="font-family:'Inter',sans-serif;font-size:${scale.contactFontSize}pt;color:#000;margin-top:4px;">${contactName ? `${contactName}, ` : ''}${contactInfo}</div>` : ''}
+  </div>`;
+}
 
-  const frontHalf = buildPrintFront(itemsHTML, sundayDate);
-  const backHalf = buildPrintBack();
+function buildBulletinHTML(items: Announcement[], sundayDate: string): string {
+  const scale = getBulletinScale(items.length);
+  const { front, back } = splitBulletinItems(items, scale);
+
+  const frontItemsHTML = front.length === 0
+    ? `<div style="color:#000;padding:40px 0;text-align:center;font-size:13pt;">No announcements for this week.</div>`
+    : front.map(a => buildItemHTML(a, scale)).join('');
+
+  const backOverflowHTML = back.map(a => buildItemHTML(a, scale)).join('');
+
+  const frontHalf = buildPrintFront(frontItemsHTML, sundayDate);
+  const backHalf = buildPrintBack(backOverflowHTML);
 
   return `<!DOCTYPE html>
 <html>
@@ -415,12 +493,16 @@ function buildPrintFront(itemsHTML: string, sundayDate: string): string {
   </div>`;
 }
 
-function buildPrintBack(): string {
+function buildPrintBack(overflowItemsHTML: string): string {
   const sectionsHTML = BACK_SECTIONS.map(s =>
     `<div>
       <div style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:10pt;font-weight:800;color:${s.color};margin-bottom:2px;line-height:1;text-transform:uppercase;letter-spacing:0.06em;">${s.title}</div>
       <div style="font-family:'Inter',sans-serif;font-size:9pt;color:#1A1A1A;line-height:1.25;">${s.body}</div>
     </div>`).join('');
+
+  const overflowBlock = overflowItemsHTML
+    ? `<div style="flex-shrink:0;margin-bottom:12px;">${overflowItemsHTML}</div>`
+    : `<div style="flex:1;"></div>`;
 
   return `<div class="bulletin">
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
@@ -431,7 +513,7 @@ function buildPrintBack(): string {
       </div>
     </div>
     <div style="border-top:2.5pt solid ${ORANGE};margin-top:6px;margin-bottom:12px;flex-shrink:0;"></div>
-    <div style="flex:1;"></div>
+    ${overflowBlock}
     <div style="flex-shrink:0;padding:12px 14px;background:#FFFFFF;border-radius:6px;display:flex;flex-direction:column;gap:8px;">
       ${sectionsHTML}
     </div>
