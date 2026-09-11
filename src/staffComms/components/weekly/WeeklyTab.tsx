@@ -30,6 +30,13 @@ function getWeekEnd(start: Date): Date {
   return end;
 }
 
+// Same lead-time idea as Slides/Happenings (see getScopeLeadWeeks) -
+// something shouldn't only appear on the one bulletin printed the week it
+// happens, it should give people a heads up. Two weeks, counted from the
+// end of the week being previewed, so it keeps showing on every bulletin
+// between first appearing and the week it actually happens.
+const BULLETIN_LEAD_DAYS = 14;
+
 // event_date only ever holds a recurring item's first session (see
 // AnnouncementForm) - later weeks have to be derived from
 // recurrence_type/recurrence_day/recurrence_week_of_month/
@@ -45,7 +52,9 @@ function isThisWeek(a: Announcement, weekStart: Date, weekEnd: Date): boolean {
   // actually appear on it. isHappeningsActive/isMonthlyActive already
   // treat this state as always-current; the bulletin needs the same.
   if (!a.is_recurring && !a.event_date && !a.event_dates?.length) return true;
-  for (let d = new Date(weekStart); d <= weekEnd; d.setDate(d.getDate() + 1)) {
+  const lookaheadEnd = new Date(weekEnd);
+  lookaheadEnd.setDate(lookaheadEnd.getDate() + BULLETIN_LEAD_DAYS);
+  for (let d = new Date(weekStart); d <= lookaheadEnd; d.setDate(d.getDate() + 1)) {
     if (occursOn(a, d.toISOString().split('T')[0])) return true;
   }
   return false;
