@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Vite writes one of these next to vite.config.* while resolving an ESM
+# config on the fly, then removes it - stray ones only survive if something
+# (e.g. Bolt's build environment) got interrupted mid-run.
+vite.config.*.timestamp-*.mjs
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
