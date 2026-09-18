@@ -35,7 +35,7 @@ function formatDateList(a: Announcement): string {
   return dates.map(formatDateNice).join(' + ');
 }
 
-interface ScaleParams {
+export interface ScaleParams {
   headerFontSize: number;
   headerPadV: number;
   bodyPadV: number;
@@ -54,7 +54,7 @@ interface ScaleParams {
   monthFontSize: number;
 }
 
-function getScaleParams(count: number, hasBathroom: boolean): ScaleParams {
+export function getScaleParams(count: number, hasBathroom: boolean): ScaleParams {
   const extra = hasBathroom ? 2 : 0;
   const n = count + extra;
 
@@ -96,6 +96,11 @@ function getScaleParams(count: number, hasBathroom: boolean): ScaleParams {
   }
 }
 
+// This builds the same layout as the React preview below (FlyerPagePreview),
+// but as a standalone HTML string for the print/PDF path (see handlePrint) -
+// there is no shared rendering between the two. Any visual change in one
+// needs the identical change made in the other, or the preview and the
+// printed page will silently drift apart.
 function buildFlyerHTML(items: Announcement[], today: string, bathroomVariant: boolean): string {
   const active = getActiveMonthlyItems(items, today);
   const monthLabel = new Date(today + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });

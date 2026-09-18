@@ -47,11 +47,11 @@ function getAnnouncementBody(a: Announcement): string {
    page's available height spills onto the back page, above the static
    info sections, rather than being cut off. */
 
-const BULLETIN_CONTENT_WIDTH_PT = (5.5 - 0.75 * 2) * 72;
-const BULLETIN_CONTENT_HEIGHT_PT = (8.5 - 0.85 * 2) * 72;
+export const BULLETIN_CONTENT_WIDTH_PT = (5.5 - 0.75 * 2) * 72;
+export const BULLETIN_CONTENT_HEIGHT_PT = (8.5 - 0.85 * 2) * 72;
 // Rough fixed cost of the front page's logo header, date line, divider,
 // and footer, in points - whatever's left is available for items.
-const FRONT_CHROME_PT = 138;
+export const FRONT_CHROME_PT = 138;
 
 function estimateWrappedLines(text: string, fontSizePt: number, widthPt: number): number {
   if (!text) return 0;
@@ -59,7 +59,7 @@ function estimateWrappedLines(text: string, fontSizePt: number, widthPt: number)
   return Math.max(1, Math.ceil(text.length / charsPerLine));
 }
 
-interface BulletinScale {
+export interface BulletinScale {
   titleFontSize: number;
   dateFontSize: number;
   bodyFontSize: number;
@@ -73,15 +73,16 @@ interface BulletinScale {
 // item count the way getScaleParams does for the Monthly Flyer. A busy
 // month can need more shrinking than count alone suggests, e.g. a handful
 // of long items that spill onto a back page already tight on space.
-const BULLETIN_SCALE_TIERS: BulletinScale[] = [
+export const BULLETIN_SCALE_TIERS: BulletinScale[] = [
   { titleFontSize: 11.5, dateFontSize: 9, bodyFontSize: 9.5, contactFontSize: 7.5, itemPadV: 11 },
   { titleFontSize: 10.5, dateFontSize: 8.5, bodyFontSize: 9, contactFontSize: 7, itemPadV: 8 },
   { titleFontSize: 9.5, dateFontSize: 8, bodyFontSize: 8.5, contactFontSize: 6.5, itemPadV: 6 },
   { titleFontSize: 8.5, dateFontSize: 7.5, bodyFontSize: 8, contactFontSize: 6, itemPadV: 5 },
   { titleFontSize: 7.5, dateFontSize: 6.5, bodyFontSize: 7, contactFontSize: 5.5, itemPadV: 4 },
+  { titleFontSize: 6.5, dateFontSize: 6, bodyFontSize: 6.5, contactFontSize: 5, itemPadV: 3 },
 ];
 
-function estimateItemHeightPt(a: Announcement, scale: BulletinScale): number {
+export function estimateItemHeightPt(a: Announcement, scale: BulletinScale): number {
   const text = getAnnouncementBody(a);
   let h = scale.titleFontSize * 1.25 + 4;
   if (text) h += estimateWrappedLines(text, scale.bodyFontSize, BULLETIN_CONTENT_WIDTH_PT) * scale.bodyFontSize * 1.4 + 4;
@@ -90,7 +91,7 @@ function estimateItemHeightPt(a: Announcement, scale: BulletinScale): number {
   return h;
 }
 
-function splitBulletinItems(items: Announcement[], scale: BulletinScale): { front: Announcement[]; back: Announcement[] } {
+export function splitBulletinItems(items: Announcement[], scale: BulletinScale): { front: Announcement[]; back: Announcement[] } {
   const budget = BULLETIN_CONTENT_HEIGHT_PT - FRONT_CHROME_PT;
   const front: Announcement[] = [];
   const back: Announcement[] = [];
@@ -114,9 +115,9 @@ function splitBulletinItems(items: Announcement[], scale: BulletinScale): { fron
    as overflow eats into the available space, same idea as the items. */
 
 // Compact header + divider + footer, in points.
-const BACK_CHROME_PT = 104;
+export const BACK_CHROME_PT = 104;
 
-interface BackSectionsScale {
+export interface BackSectionsScale {
   titleFontSize: number;
   bodyFontSize: number;
   lineHeight: number;
@@ -124,14 +125,15 @@ interface BackSectionsScale {
   boxPadV: number;
 }
 
-const BACK_SECTIONS_TIERS: BackSectionsScale[] = [
+export const BACK_SECTIONS_TIERS: BackSectionsScale[] = [
   { titleFontSize: 10, bodyFontSize: 9, lineHeight: 1.25, gap: 8, boxPadV: 12 },
   { titleFontSize: 9, bodyFontSize: 8, lineHeight: 1.2, gap: 6, boxPadV: 10 },
   { titleFontSize: 8, bodyFontSize: 7.25, lineHeight: 1.15, gap: 5, boxPadV: 8 },
   { titleFontSize: 7, bodyFontSize: 6.5, lineHeight: 1.1, gap: 4, boxPadV: 6 },
+  { titleFontSize: 6.25, bodyFontSize: 5.75, lineHeight: 1.05, gap: 3, boxPadV: 5 },
 ];
 
-function estimateBackSectionsHeightPt(scale: BackSectionsScale): number {
+export function estimateBackSectionsHeightPt(scale: BackSectionsScale): number {
   const boxWidthPt = BULLETIN_CONTENT_WIDTH_PT - 28 * 0.75;
   let total = 2 * (scale.boxPadV * 0.75);
   total += (BACK_SECTIONS.length - 1) * (scale.gap * 0.75);
@@ -143,7 +145,7 @@ function estimateBackSectionsHeightPt(scale: BackSectionsScale): number {
   return total;
 }
 
-function pickBackSectionsScale(overflowItems: Announcement[], itemScale: BulletinScale): BackSectionsScale {
+export function pickBackSectionsScale(overflowItems: Announcement[], itemScale: BulletinScale): BackSectionsScale {
   const overflowHeight = overflowItems.reduce((sum, a) => sum + estimateItemHeightPt(a, itemScale), 0);
   const overflowMargin = overflowItems.length > 0 ? 12 * 0.75 : 0;
   const available = BULLETIN_CONTENT_HEIGHT_PT - BACK_CHROME_PT - overflowHeight - overflowMargin;
@@ -160,7 +162,7 @@ function pickBackSectionsScale(overflowItems: Announcement[], itemScale: Bulleti
 // largest to smallest and use the first one where the back page's
 // overflow items still leave room for at least the smallest static-box
 // tier, so the info box is never squeezed off the page.
-function pickBulletinScale(items: Announcement[]): BulletinScale {
+export function pickBulletinScale(items: Announcement[]): BulletinScale {
   const smallestSectionsHeight = estimateBackSectionsHeightPt(BACK_SECTIONS_TIERS[BACK_SECTIONS_TIERS.length - 1]);
   for (const scale of BULLETIN_SCALE_TIERS) {
     const { back } = splitBulletinItems(items, scale);
@@ -419,6 +421,11 @@ function BackSection({ title, color, body, scale }: { title: string; color: stri
 }
 
 /* ── Print HTML ──────────────────────────────────────────────────── */
+// This builds the same layout as the React preview above, but as a
+// standalone HTML string for the print/PDF path (see handlePrint) - there
+// is no shared rendering between the two. Any visual change above (sizes,
+// spacing, colors, text) needs the identical change made here too, or the
+// preview and the printed page will silently drift apart.
 
 function buildItemHTML(a: Announcement, scale: BulletinScale): string {
   const dateLabel = escapeHtml(announcementDateLabel(a));
