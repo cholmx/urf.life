@@ -1,19 +1,10 @@
-import React,{useState,useEffect} from 'react';
+import React,{useState,useEffect,lazy,Suspense} from 'react';
 import {Link} from 'react-router-dom';
 import {motion,AnimatePresence} from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import supabase from '../lib/supabase';
 import {SkeletonBox,LoadingTransition} from '../components/LoadingSkeletons';
-import AdminSermons from '../components/AdminSermons';
-import AdminResources from '../components/AdminResources';
-import AdminFeaturedButtons from '../components/AdminFeaturedButtons';
-import AdminMinistries from '../components/AdminMinistries';
-import AdminStaffContacts from '../components/AdminStaffContacts';
-import AdminCapitalCampaign from '../components/AdminCapitalCampaign';
-import AdminComments from '../components/AdminComments';
-import AdminDashboard from '../components/AdminDashboard';
-import AdminSubmissions from '../components/AdminSubmissions';
 import {StaffCommsStyles} from '../staffComms/components/StaffCommsStyles';
 import {ErrorToastContainer} from '../staffComms/components/ui/ErrorToast';
 import {useHappeningsData} from '../staffComms/hooks/useHappeningsData';
@@ -23,8 +14,22 @@ import {StageScriptPage} from '../staffComms/components/stage/StageScriptPage';
 import {PrintablesPage} from '../staffComms/components/printables/PrintablesPage';
 import {ArchivePage} from '../staffComms/components/archive/ArchivePage';
 import {HappeningsPage} from '../staffComms/components/happenings/HappeningsPage';
-import SlideMaker from '../staffTools/slideMaker/SlideMaker';
-import SignupSheetMaker from '../staffTools/signupSheet/SignupSheetMaker';
+
+// Each of these is only ever needed once its own nav section is opened -
+// eagerly importing them here used to pull all ten (SlideMaker and
+// SignupSheetMaker included) into the same chunk as Admin.jsx itself, so
+// every admin page load downloaded every tool's code up front.
+const AdminSermons = lazy(() => import('../components/AdminSermons'));
+const AdminResources = lazy(() => import('../components/AdminResources'));
+const AdminFeaturedButtons = lazy(() => import('../components/AdminFeaturedButtons'));
+const AdminMinistries = lazy(() => import('../components/AdminMinistries'));
+const AdminStaffContacts = lazy(() => import('../components/AdminStaffContacts'));
+const AdminCapitalCampaign = lazy(() => import('../components/AdminCapitalCampaign'));
+const AdminComments = lazy(() => import('../components/AdminComments'));
+const AdminDashboard = lazy(() => import('../components/AdminDashboard'));
+const AdminSubmissions = lazy(() => import('../components/AdminSubmissions'));
+const SlideMaker = lazy(() => import('../staffTools/slideMaker/SlideMaker'));
+const SignupSheetMaker = lazy(() => import('../staffTools/signupSheet/SignupSheetMaker'));
 
 const {FiPlay,FiBookOpen,FiHome,FiLock,FiStar,FiHeart,FiUsers,FiTrendingUp,FiMessageSquare,FiGrid,FiLogOut,FiInbox,FiMic,FiPrinter,FiCalendar,FiArchive,FiMail,FiImage,FiClipboard,FiMenu,FiX}=FiIcons;
 
@@ -87,6 +92,17 @@ const LoginSkeleton=()=> (
       <SkeletonBox width="w-full" height="h-12" rounded="rounded-xl" />
       <SkeletonBox width="w-full" height="h-12" rounded="rounded-xl" className="bg-gray-300" />
     </div>
+  </div>
+);
+
+// Fallback while a lazy-loaded admin section's own code downloads - brief
+// on a normal connection, but real content only starts painting once it's
+// actually there rather than leaving a blank pane.
+const AdminSectionSkeleton=()=> (
+  <div className="space-y-4">
+    <SkeletonBox width="w-48" height="h-6" />
+    <SkeletonBox width="w-full" height="h-32" rounded="rounded-xl" />
+    <SkeletonBox width="w-full" height="h-32" rounded="rounded-xl" />
   </div>
 );
 
@@ -460,7 +476,9 @@ const Admin=()=> {
             animate={{opacity: 1,y: 0}}
             transition={{duration: 0.3}}
           >
-            {renderContent()}
+            <Suspense fallback={<AdminSectionSkeleton />}>
+              {renderContent()}
+            </Suspense>
           </motion.div>
         </div>
       </div>
