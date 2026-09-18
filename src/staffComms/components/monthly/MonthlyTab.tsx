@@ -1,6 +1,6 @@
 import { C, font } from '../../lib/theme';
 import { btnGhost } from '../ui/inputs';
-import { isMonthlyActive, formatDateNice, escapeHtml, stripLeadingTitle } from '../../lib/helpers';
+import { getActiveMonthlyItems, formatDateNice, escapeHtml, stripLeadingTitle } from '../../lib/helpers';
 import type { Announcement } from '../../types';
 
 interface MonthlyTabProps {
@@ -33,28 +33,6 @@ function formatDateList(a: Announcement): string {
   const dates = allEventDates(a);
   if (!dates.length) return '';
   return dates.map(formatDateNice).join(' + ');
-}
-
-function earliestDate(a: Announcement): string | null {
-  const candidates: string[] = [];
-  if (a.event_date) candidates.push(a.event_date);
-  if (a.event_dates?.length) candidates.push(...a.event_dates.filter(Boolean));
-  if (!candidates.length) return null;
-  return candidates.sort()[0];
-}
-
-function sortActive(items: Announcement[], today: string) {
-  return items
-    .filter(a => isMonthlyActive(a, today))
-    .sort((a, b) => {
-      const da = earliestDate(a);
-      const db = earliestDate(b);
-      if (!da && !db) return a.title.localeCompare(b.title);
-      if (!da) return 1;
-      if (!db) return -1;
-      if (da !== db) return da < db ? -1 : 1;
-      return a.title.localeCompare(b.title);
-    });
 }
 
 interface ScaleParams {
@@ -119,7 +97,7 @@ function getScaleParams(count: number, hasBathroom: boolean): ScaleParams {
 }
 
 function buildFlyerHTML(items: Announcement[], today: string, bathroomVariant: boolean): string {
-  const active = sortActive(items, today);
+  const active = getActiveMonthlyItems(items, today);
   const monthLabel = new Date(today + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   const s = getScaleParams(active.length, bathroomVariant);
 
@@ -188,7 +166,7 @@ function FlyerPagePreview({ announcements, today, bathroomVariant }: {
   today: string;
   bathroomVariant: boolean;
 }) {
-  const active = sortActive(announcements, today);
+  const active = getActiveMonthlyItems(announcements, today);
   const monthLabel = new Date(today + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   const s = getScaleParams(active.length, bathroomVariant);
 
@@ -295,7 +273,7 @@ function isPrintReminderWeek(today: string): { show: boolean; nextMonth: string;
 
 export function MonthlyTab({ announcements, today }: MonthlyTabProps) {
   const monthLabel = new Date(today + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-  const active = announcements.filter(a => isMonthlyActive(a, today));
+  const active = getActiveMonthlyItems(announcements, today);
   const printReminder = isPrintReminderWeek(today);
 
   const handlePrint = () => {

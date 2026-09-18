@@ -1,7 +1,6 @@
 import { C, font } from '../../lib/theme';
 import { btnGhost } from '../ui/inputs';
-import { formatDateNice, escapeHtml, stripLeadingTitle, getWeekStartDate } from '../../lib/helpers';
-import { occursOn } from '../../lib/calendar-grid';
+import { getActiveMonthlyItems, formatDateNice, escapeHtml, stripLeadingTitle } from '../../lib/helpers';
 import type { Announcement } from '../../types';
 import type { ReactNode } from 'react';
 
@@ -15,58 +14,13 @@ const LOGO_URL = '/logonegtransblack.png';
 // the admin UI it's edited in.
 const BULLETIN_FONT = "'Google Sans Flex', Inter, sans-serif";
 
-interface WeeklyTabProps {
+interface BulletinTabProps {
   announcements: Announcement[];
   today: string;
 }
 
-function getWeekStart(dateStr: string): Date {
-  return new Date(getWeekStartDate(dateStr) + 'T12:00:00');
-}
-
-function getWeekEnd(start: Date): Date {
-  const end = new Date(start);
-  end.setDate(end.getDate() + 6);
-  return end;
-}
-
-// Same lead-time idea as Slides/Happenings (see getScopeLeadWeeks) -
-// something shouldn't only appear on the one bulletin printed the week it
-// happens, it should give people a heads up. Two weeks, counted from the
-// end of the week being previewed, so it keeps showing on every bulletin
-// between first appearing and the week it actually happens.
-const BULLETIN_LEAD_DAYS = 14;
-
-// event_date only ever holds a recurring item's first session (see
-// AnnouncementForm) - later weeks have to be derived from
-// recurrence_type/recurrence_day/recurrence_week_of_month/
-// recurrence_end_date, not read off that one literal date. occursOn (from
-// calendar-grid, also used by the Calendar tab) already does that
-// correctly for every recurrence type, so reuse it instead of
-// re-deriving occurrences here.
-function isThisWeek(a: Announcement, weekStart: Date, weekEnd: Date): boolean {
-  // A one-time item with no date at all is "ongoing" (see the form's "no
-  // dates set, runs until removed") - occursOn falls through to
-  // event_date === day for these, which is never true since event_date is
-  // null, so a dateless item checked for the Bulletin would never
-  // actually appear on it. isHappeningsActive/isMonthlyActive already
-  // treat this state as always-current; the bulletin needs the same.
-  if (!a.is_recurring && !a.event_date && !a.event_dates?.length) return true;
-  const lookaheadEnd = new Date(weekEnd);
-  lookaheadEnd.setDate(lookaheadEnd.getDate() + BULLETIN_LEAD_DAYS);
-  for (let d = new Date(weekStart); d <= lookaheadEnd; d.setDate(d.getDate() + 1)) {
-    if (occursOn(a, d.toISOString().split('T')[0])) return true;
-  }
-  return false;
-}
-
-function formatDateRange(start: Date, end: Date): string {
-  const fmt = (d: Date) => d.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
-  return `${fmt(start)} to ${fmt(end)}`;
-}
-
-function getSundayDate(weekStart: Date): string {
-  return weekStart.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+function getMonthLabel(today: string): string {
+  return new Date(today + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 }
 
 function announcementDateLabel(a: Announcement): string {
@@ -86,9 +40,9 @@ function getAnnouncementBody(a: Announcement): string {
 
 /* ── Overflow handling ──────────────────────────────────────────────
    The front page's item list used to just render everything and clip
-   whatever didn't fit inside its fixed-size container - a busy week could
+   whatever didn't fit inside its fixed-size container - a busy month could
    silently lose announcements off the bottom. Instead: text shrinks in
-   tiers as the week gets busier (same idea as the Monthly Flyer's
+   tiers as the month gets busier (same idea as the Monthly Flyer's
    getScaleParams), and anything that still doesn't fit within the front
    page's available height spills onto the back page, above the static
    info sections, rather than being cut off. */
@@ -117,7 +71,7 @@ interface BulletinScale {
 // page's static-section tiers) walks these to find the largest one where
 // everything actually fits on both pages, rather than just guessing from
 // item count the way getScaleParams does for the Monthly Flyer. A busy
-// week can need more shrinking than count alone suggests, e.g. a handful
+// month can need more shrinking than count alone suggests, e.g. a handful
 // of long items that spill onto a back page already tight on space.
 const BULLETIN_SCALE_TIERS: BulletinScale[] = [
   { titleFontSize: 11.5, dateFontSize: 9, bodyFontSize: 9.5, contactFontSize: 7.5, itemPadV: 11 },
@@ -218,29 +172,18 @@ function pickBulletinScale(items: Announcement[]): BulletinScale {
   return BULLETIN_SCALE_TIERS[BULLETIN_SCALE_TIERS.length - 1];
 }
 
-export function WeeklyTab({ announcements, today }: WeeklyTabProps) {
-  const weekStart = getWeekStart(today);
-  const weekEnd = getWeekEnd(weekStart);
-  const weekLabel = formatDateRange(weekStart, weekEnd);
-  const sundayDate = getSundayDate(weekStart);
+export function BulletinTab({ announcements, today }: BulletinTabProps) {
+  const monthLabel = getMonthLabel(today);
+  // Same source as the Monthly Flyer - isMonthlyActive filtered, soonest
+  // date first - so the two printables always agree on what's current.
+  const monthItems = getActiveMonthlyItems(announcements, today);
 
-  const weekItems = announcements
-    // show_in_weekly defaults true (see migration) but treat undefined as
-    // included too, for any row from before that default was backfilled -
-    // the bulletin used to include everything with no opt-out at all.
-    .filter(a => a.show_in_weekly !== false && isThisWeek(a, weekStart, weekEnd))
-    .sort((a, b) => {
-      const da = a.event_date || a.event_dates?.[0] || '';
-      const db = b.event_date || b.event_dates?.[0] || '';
-      return da < db ? -1 : da > db ? 1 : 0;
-    });
-
-  const bulletinScale = pickBulletinScale(weekItems);
-  const { front: frontItems, back: backOverflowItems } = splitBulletinItems(weekItems, bulletinScale);
+  const bulletinScale = pickBulletinScale(monthItems);
+  const { front: frontItems, back: backOverflowItems } = splitBulletinItems(monthItems, bulletinScale);
   const backSectionsScale = pickBackSectionsScale(backOverflowItems, bulletinScale);
 
   const handlePrint = () => {
-    const html = buildBulletinHTML(weekItems, sundayDate);
+    const html = buildBulletinHTML(monthItems, monthLabel);
     const iframe = document.createElement('iframe');
     iframe.style.position = 'fixed';
     iframe.style.top = '-10000px';
@@ -266,10 +209,10 @@ export function WeeklyTab({ announcements, today }: WeeklyTabProps) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
         <div>
           <h3 style={{ fontFamily: font.display, fontSize: 16, fontWeight: 800, color: C.text, margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-            Weekly Bulletin
+            Monthly Bulletin
           </h3>
           <p style={{ fontFamily: font.body, fontSize: 13, color: C.textSec, margin: 0 }}>
-            {weekItems.length} announcement{weekItems.length !== 1 ? 's' : ''} for {weekLabel}. Prints two identical bulletins per page (front and back) on landscape paper with a cut line down the middle.
+            {monthItems.length} announcement{monthItems.length !== 1 ? 's' : ''} for {monthLabel}. Prints two identical bulletins per page (front and back) on landscape paper with a cut line down the middle.
           </p>
         </div>
         <button onClick={handlePrint} style={{ ...btnGhost, fontSize: 12, padding: '7px 14px' }}>
@@ -281,11 +224,11 @@ export function WeeklyTab({ announcements, today }: WeeklyTabProps) {
         <div style={{ fontFamily: font.display, fontSize: 10, fontWeight: 700, color: C.textMuted, textTransform: 'uppercase', letterSpacing: '0.12em' }}>
           Front (Page 1)
         </div>
-        <BulletinPreview frontItems={frontItems} backOverflowItems={backOverflowItems} scale={bulletinScale} sectionsScale={backSectionsScale} sundayDate={sundayDate} side="front" />
+        <BulletinPreview frontItems={frontItems} backOverflowItems={backOverflowItems} scale={bulletinScale} sectionsScale={backSectionsScale} monthLabel={monthLabel} side="front" />
         <div style={{ fontFamily: font.display, fontSize: 10, fontWeight: 700, color: C.textMuted, textTransform: 'uppercase', letterSpacing: '0.12em', marginTop: 8 }}>
           Back (Page 2)
         </div>
-        <BulletinPreview frontItems={frontItems} backOverflowItems={backOverflowItems} scale={bulletinScale} sectionsScale={backSectionsScale} sundayDate={sundayDate} side="back" />
+        <BulletinPreview frontItems={frontItems} backOverflowItems={backOverflowItems} scale={bulletinScale} sectionsScale={backSectionsScale} monthLabel={monthLabel} side="back" />
       </div>
     </div>
   );
@@ -293,7 +236,7 @@ export function WeeklyTab({ announcements, today }: WeeklyTabProps) {
 
 /* ── Preview wrappers ────────────────────────────────────────────── */
 
-function BulletinPreview({ frontItems, backOverflowItems, scale, sectionsScale, sundayDate, side }: { frontItems: Announcement[]; backOverflowItems: Announcement[]; scale: BulletinScale; sectionsScale: BackSectionsScale; sundayDate: string; side: 'front' | 'back' }) {
+function BulletinPreview({ frontItems, backOverflowItems, scale, sectionsScale, monthLabel, side }: { frontItems: Announcement[]; backOverflowItems: Announcement[]; scale: BulletinScale; sectionsScale: BackSectionsScale; monthLabel: string; side: 'front' | 'back' }) {
   return (
     <div style={{
       width: '11in',
@@ -308,11 +251,11 @@ function BulletinPreview({ frontItems, backOverflowItems, scale, sectionsScale, 
       position: 'relative',
     }}>
       <BulletinHalf>{side === 'front'
-        ? <FrontContent items={frontItems} scale={scale} sundayDate={sundayDate} />
+        ? <FrontContent items={frontItems} scale={scale} monthLabel={monthLabel} />
         : <BackContent overflowItems={backOverflowItems} scale={scale} sectionsScale={sectionsScale} />}</BulletinHalf>
       <div style={{ position: 'absolute', top: 0, bottom: 0, left: '50%', width: 0, borderLeft: '1px dashed #000', pointerEvents: 'none' }} />
       <BulletinHalf>{side === 'front'
-        ? <FrontContent items={frontItems} scale={scale} sundayDate={sundayDate} />
+        ? <FrontContent items={frontItems} scale={scale} monthLabel={monthLabel} />
         : <BackContent overflowItems={backOverflowItems} scale={scale} sectionsScale={sectionsScale} />}</BulletinHalf>
     </div>
   );
@@ -348,7 +291,7 @@ function BulletinHeader({ size = 'full' }: { size?: 'full' | 'compact' }) {
           Upper Room Fellowship
         </div>
         <div style={{ fontFamily: BULLETIN_FONT, fontSize: line2Size, fontWeight: 700, color: ORANGE, lineHeight: 1.1, marginTop: 2 }}>
-          Weekly Announcements
+          Monthly Announcements
         </div>
       </div>
     </div>
@@ -367,19 +310,19 @@ function Footer() {
 
 /* ── Front side ──────────────────────────────────────────────────── */
 
-function FrontContent({ items, scale, sundayDate }: { items: Announcement[]; scale: BulletinScale; sundayDate: string }) {
+function FrontContent({ items, scale, monthLabel }: { items: Announcement[]; scale: BulletinScale; monthLabel: string }) {
   return (
     <>
       <BulletinHeader />
       <div style={{ fontFamily: BULLETIN_FONT, fontSize: 10, fontWeight: 600, color: ORANGE, letterSpacing: '0.1em', marginBottom: 4 }}>
-        {sundayDate}
+        {monthLabel}
       </div>
       <div style={{ borderTop: `2.5pt solid ${ORANGE}`, marginTop: 10, marginBottom: 14, flexShrink: 0 }} />
 
       <div style={{ flex: 1, overflow: 'hidden' }}>
         {items.length === 0 && (
           <div style={{ color: '#000', padding: '40px 0', textAlign: 'center', fontSize: 13 }}>
-            No announcements for this week.
+            No announcements for this month.
           </div>
         )}
         {items.map(a => <FrontAnnouncement key={a.id} a={a} scale={scale} />)}
@@ -496,25 +439,25 @@ function buildItemHTML(a: Announcement, scale: BulletinScale): string {
   </div>`;
 }
 
-function buildBulletinHTML(items: Announcement[], sundayDate: string): string {
+function buildBulletinHTML(items: Announcement[], monthLabel: string): string {
   const scale = pickBulletinScale(items);
   const { front, back } = splitBulletinItems(items, scale);
   const sectionsScale = pickBackSectionsScale(back, scale);
 
   const frontItemsHTML = front.length === 0
-    ? `<div style="color:#000;padding:40px 0;text-align:center;font-size:13pt;">No announcements for this week.</div>`
+    ? `<div style="color:#000;padding:40px 0;text-align:center;font-size:13pt;">No announcements for this month.</div>`
     : front.map(a => buildItemHTML(a, scale)).join('');
 
   const backOverflowHTML = back.map(a => buildItemHTML(a, scale)).join('');
 
-  const frontHalf = buildPrintFront(frontItemsHTML, sundayDate);
+  const frontHalf = buildPrintFront(frontItemsHTML, monthLabel);
   const backHalf = buildPrintBack(backOverflowHTML, sectionsScale);
 
   return `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Upper Room Fellowship Weekly Announcements - ${sundayDate}</title>
+  <title>Upper Room Fellowship Monthly Announcements - ${monthLabel}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@400;500;700;900&family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,700;1,14..32,400&display=swap" rel="stylesheet">
@@ -546,16 +489,16 @@ function buildBulletinHTML(items: Announcement[], sundayDate: string): string {
 </html>`;
 }
 
-function buildPrintFront(itemsHTML: string, sundayDate: string): string {
+function buildPrintFront(itemsHTML: string, monthLabel: string): string {
   return `<div class="bulletin">
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
       <img src="${LOGO_URL}" alt="URF" style="height:52px;width:auto;flex-shrink:0;" />
       <div>
         <div style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:22pt;font-weight:900;color:${TEAL};line-height:1;letter-spacing:-0.01em;">Upper Room Fellowship</div>
-        <div style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:16pt;font-weight:700;color:${ORANGE};line-height:1.1;margin-top:2px;">Weekly Announcements</div>
+        <div style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:16pt;font-weight:700;color:${ORANGE};line-height:1.1;margin-top:2px;">Monthly Announcements</div>
       </div>
     </div>
-    <div style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:10pt;font-weight:600;color:${ORANGE};letter-spacing:0.1em;margin-bottom:4px;">${sundayDate}</div>
+    <div style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:10pt;font-weight:600;color:${ORANGE};letter-spacing:0.1em;margin-bottom:4px;">${monthLabel}</div>
     <div style="border-top:2.5pt solid ${ORANGE};margin-top:10px;margin-bottom:14px;flex-shrink:0;"></div>
     <div style="flex:1;overflow:hidden;">
       ${itemsHTML}
@@ -582,7 +525,7 @@ function buildPrintBack(overflowItemsHTML: string, sectionsScale: BackSectionsSc
       <img src="${LOGO_URL}" alt="URF" style="height:40px;width:auto;flex-shrink:0;" />
       <div>
         <div style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:18pt;font-weight:900;color:${TEAL};line-height:1;letter-spacing:-0.01em;">Upper Room Fellowship</div>
-        <div style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:13pt;font-weight:700;color:${ORANGE};line-height:1.1;margin-top:2px;">Weekly Announcements</div>
+        <div style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:13pt;font-weight:700;color:${ORANGE};line-height:1.1;margin-top:2px;">Monthly Announcements</div>
       </div>
     </div>
     <div style="border-top:2.5pt solid ${ORANGE};margin-top:6px;margin-bottom:12px;flex-shrink:0;"></div>

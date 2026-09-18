@@ -53,8 +53,8 @@ function nthWeekdayOfMonth(year: number, month: number, weekdayIdx: number, posi
 // (see AnnouncementForm's recurrence handling) - the actual calendar
 // occurrences have to be derived from recurrence_type/recurrence_day/
 // recurrence_end_date, not read off a literal date list. Exported so other
-// "does this happen on/around day X" consumers (e.g. WeeklyTab's isThisWeek)
-// can reuse this instead of re-deriving occurrences themselves.
+// "does this happen on/around day X" consumers (e.g. CalendarTab) can reuse
+// this instead of re-deriving occurrences themselves.
 export function occursOn(a: Announcement, day: string): boolean {
   if (a.recurrence_type === 'weekly' && a.event_date) {
     if (day < a.event_date) return false;

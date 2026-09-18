@@ -8,8 +8,7 @@ import type { Announcement, DestinationKey } from '../../types';
 const DEST_LABELS: { key: DestinationKey; short: string }[] = [
   { key: 'show_on_slides' as const,     short: 'Slides' },
   { key: 'show_in_happenings' as const, short: 'Email' },
-  { key: 'monthly_include' as const,    short: 'Flyer' },
-  { key: 'show_in_weekly' as const,     short: 'Bulletin' },
+  { key: 'monthly_include' as const,    short: 'Flyer & Bulletin' },
 ];
 
 const STAGE_DEST = { key: 'show_on_stage' as const, short: 'Stage' };

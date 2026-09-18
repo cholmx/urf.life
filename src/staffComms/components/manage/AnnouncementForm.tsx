@@ -533,7 +533,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
           <div style={fg}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
               <div>
-                <label style={labelBase}>Short Description <span style={{ fontWeight: 400, textTransform: 'none' }}>(Monthly Flyer & printed Invite)</span></label>
+                <label style={labelBase}>Short Description <span style={{ fontWeight: 400, textTransform: 'none' }}>(Monthly Flyer, Monthly Bulletin & printed Invite)</span></label>
                 <div style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, marginTop: 1 }}>max 50 words - also the body copy on the printed Invite (Invite button, back on the list)</div>
               </div>
               <AIWriteButton label="Draft" loading={aiLoading.flyer} onClick={generateFlyer} disabled={!hasEnoughForAI} />
@@ -934,8 +934,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
             {[
               { key: 'show_on_slides' as const, label: 'Sunday Slides' },
               { key: 'show_in_happenings' as const, label: 'The Happenings' },
-              { key: 'monthly_include' as const, label: 'Monthly Flyer' },
-              { key: 'show_in_weekly' as const, label: 'Weekly Bulletin' },
+              { key: 'monthly_include' as const, label: 'Monthly Flyer & Bulletin' },
               ...(f.scope === 'whole_church' ? [{ key: 'show_on_stage' as const, label: 'Stage Announcement' }] : []),
             ].map(d => (
               <label key={d.key} style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: font.body, fontSize: 13, color: C.textSec, cursor: 'pointer', padding: '6px 12px', border: `1px solid ${f[d.key] ? C.accent + '44' : C.border}`, borderRadius: 6, background: f[d.key] ? C.accentBg : C.card, transition: 'all 0.15s' }}>

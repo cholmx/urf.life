@@ -4,8 +4,8 @@ import { PRINTABLES_TABS } from '../../lib/constants';
 import { btnGhost } from '../ui/inputs';
 import type { Announcement, PrintablesTab as PrintablesTabKey } from '../../types';
 
-const MonthlyTab = lazy(() => import('../monthly/MonthlyTab').then(m => ({ default: m.MonthlyTab })));
-const WeeklyTab  = lazy(() => import('../weekly/WeeklyTab').then(m => ({ default: m.WeeklyTab })));
+const MonthlyTab  = lazy(() => import('../monthly/MonthlyTab').then(m => ({ default: m.MonthlyTab })));
+const BulletinTab = lazy(() => import('../bulletin/BulletinTab').then(m => ({ default: m.BulletinTab })));
 
 function SubFallback() {
   return (
@@ -21,7 +21,7 @@ interface PrintablesTabProps {
 }
 
 export function PrintablesTab({ announcements, today }: PrintablesTabProps) {
-  const [sub, setSub] = useState<PrintablesTabKey>('weekly');
+  const [sub, setSub] = useState<PrintablesTabKey>('bulletin');
 
   return (
     <div>
@@ -67,7 +67,7 @@ export function PrintablesTab({ announcements, today }: PrintablesTabProps) {
       </div>
 
       <Suspense fallback={<SubFallback />}>
-        {sub === 'weekly' && <WeeklyTab announcements={announcements} today={today} />}
+        {sub === 'bulletin' && <BulletinTab announcements={announcements} today={today} />}
         {sub === 'monthly' && <MonthlyTab announcements={announcements} today={today} />}
       </Suspense>
     </div>

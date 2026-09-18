@@ -39,7 +39,7 @@ export const SIGNUP_MODE_OPTIONS = [
 ] as const;
 
 export const PRINTABLES_TABS = [
-  { key: 'weekly', label: 'Weekly Bulletin' },
+  { key: 'bulletin', label: 'Monthly Bulletin' },
   { key: 'monthly', label: 'Monthly Flyer' },
 ] as const;
 

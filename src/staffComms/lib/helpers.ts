@@ -70,6 +70,32 @@ export function isMonthlyActive(a: Announcement, today: string): boolean {
   return sm <= cm && em >= cm;
 }
 
+function earliestEventDate(a: Announcement): string | null {
+  const candidates: string[] = [];
+  if (a.event_date) candidates.push(a.event_date);
+  if (a.event_dates?.length) candidates.push(...a.event_dates.filter(Boolean));
+  if (!candidates.length) return null;
+  return candidates.sort()[0];
+}
+
+// Shared by the Monthly Flyer and the Monthly Bulletin so both always show
+// the exact same set of items in the exact same order - filtered by
+// isMonthlyActive, then soonest date first (dateless items last), title as
+// the tiebreaker.
+export function getActiveMonthlyItems(items: Announcement[], today: string): Announcement[] {
+  return items
+    .filter(a => isMonthlyActive(a, today))
+    .sort((a, b) => {
+      const da = earliestEventDate(a);
+      const db = earliestEventDate(b);
+      if (!da && !db) return a.title.localeCompare(b.title);
+      if (!da) return 1;
+      if (!db) return -1;
+      if (da !== db) return da < db ? -1 : 1;
+      return a.title.localeCompare(b.title);
+    });
+}
+
 export function isStageActive(a: Announcement, today: string): boolean {
   // Whole Church scope alone used to be enough to land something on the
   // Stage Script automatically - show_on_stage (default true, see its
@@ -158,8 +184,7 @@ export function stripLeadingTitle(text: string, title: string): string {
 }
 
 // The Sunday that begins the calendar week containing dateStr (weeks run
-// Sunday-Saturday). Shared by the printed Weekly Bulletin and the
-// Happenings email so both key off the same week, and so building the
+// Sunday-Saturday). Used by the Happenings email so building the
 // Happenings script on any day within a week updates the same saved row
 // instead of creating a fresh one keyed to that literal day.
 export function getWeekStartDate(dateStr: string): string {
