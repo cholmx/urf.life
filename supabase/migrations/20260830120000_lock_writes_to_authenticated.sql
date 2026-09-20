@@ -21,16 +21,30 @@
   per-command USING/WITH CHECK shape. SELECT (read) policies are left
   completely untouched, so public pages keep working exactly as before.
 
-  ## Exception
-  `living_stones_photos` INSERT stays open to `anon`: it's a genuine
-  visitor-facing feature (church members uploading their own photos without
-  logging in). Its UPDATE/DELETE (moderation) is tightened like everything
-  else.
+  ## Exceptions
+  These INSERT policies stay open to `anon` - each is a genuine
+  visitor-facing form that submits directly from client-side JS with the
+  anon key (see src/lib/contactStorage.js and LivingStonesUpload.jsx), not
+  an admin-authored content table:
+    - `living_stones_photos` (photo uploads)
+    - `contact_messages_portal123` (the Contact page form)
+    - `realm_signups_portal123` (the Realm signup form)
+    - `table_group_signups_portal123` (Table Group signup)
+  Their UPDATE/DELETE (moderation/admin review) is tightened like
+  everything else - visitors can submit, only staff can manage. This list
+  does NOT include `overflow_signups_portal123`: nothing in the app
+  writes to it anymore, so it gets locked down with everything else.
 */
 
 DO $$
 DECLARE
   pol RECORD;
+  anon_insert_exceptions text[] := ARRAY[
+    'living_stones_photos',
+    'contact_messages_portal123',
+    'realm_signups_portal123',
+    'table_group_signups_portal123'
+  ];
 BEGIN
   FOR pol IN
     SELECT schemaname, tablename, policyname, cmd
@@ -38,7 +52,7 @@ BEGIN
     WHERE schemaname = 'public'
       AND cmd IN ('INSERT', 'UPDATE', 'DELETE')
       AND 'anon' = ANY (roles)
-      AND NOT (tablename = 'living_stones_photos' AND cmd = 'INSERT')
+      AND NOT (cmd = 'INSERT' AND tablename = ANY (anon_insert_exceptions))
   LOOP
     EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', pol.policyname, pol.tablename);
 
