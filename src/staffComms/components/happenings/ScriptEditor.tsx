@@ -1,5 +1,19 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
+import DOMPurify from 'dompurify';
 import { C, font } from '../../lib/theme';
+
+// Word/Gmail/Docs paste as a pile of <span style="font-family:...;color:...">
+// wrappers around the actual content - keeping those would fight the site's
+// own typography instead of matching it. Strip everything down to the
+// formatting this editor's own toolbar can produce (plus underline and
+// lists/links, which are common in pasted content even without a button
+// for them here) and drop every attribute except href, so pasted text
+// stays *formatted* without dragging in the source's fonts and colors.
+const PASTE_ALLOWED_TAGS = ['p', 'br', 'h3', 'b', 'strong', 'i', 'em', 'u', 'ul', 'ol', 'li', 'a'];
+
+function cleanPastedHtml(html: string): string {
+  return DOMPurify.sanitize(html, { ALLOWED_TAGS: PASTE_ALLOWED_TAGS, ALLOWED_ATTR: ['href'] });
+}
 
 interface ScriptEditorProps {
   value: string;
@@ -67,8 +81,12 @@ export function ScriptEditor({ value, onChange, disabled }: ScriptEditorProps) {
 
   const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
     e.preventDefault();
-    const text = e.clipboardData.getData('text/plain');
-    document.execCommand('insertText', false, text);
+    const html = e.clipboardData.getData('text/html');
+    if (html) {
+      document.execCommand('insertHTML', false, cleanPastedHtml(html));
+    } else {
+      document.execCommand('insertText', false, e.clipboardData.getData('text/plain'));
+    }
     emitChange();
   };
 
