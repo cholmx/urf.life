@@ -13,6 +13,7 @@
   authenticated-only policies.
 */
 
+DROP POLICY IF EXISTS "Public can view the happenings script" ON staff_generated_scripts_portal123;
 CREATE POLICY "Public can view the happenings script"
   ON staff_generated_scripts_portal123 FOR SELECT
   TO anon USING (type = 'happenings');

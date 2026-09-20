@@ -38,15 +38,19 @@ CREATE TABLE IF NOT EXISTS staff_slide_photos_portal123 (
 
 ALTER TABLE staff_slide_photos_portal123 ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Authenticated users can view staff slide photos" ON staff_slide_photos_portal123;
 CREATE POLICY "Authenticated users can view staff slide photos"
   ON staff_slide_photos_portal123 FOR SELECT
   TO authenticated USING (true);
+DROP POLICY IF EXISTS "Authenticated users can insert staff slide photos" ON staff_slide_photos_portal123;
 CREATE POLICY "Authenticated users can insert staff slide photos"
   ON staff_slide_photos_portal123 FOR INSERT
   TO authenticated WITH CHECK (true);
+DROP POLICY IF EXISTS "Authenticated users can update staff slide photos" ON staff_slide_photos_portal123;
 CREATE POLICY "Authenticated users can update staff slide photos"
   ON staff_slide_photos_portal123 FOR UPDATE
   TO authenticated USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Authenticated users can delete staff slide photos" ON staff_slide_photos_portal123;
 CREATE POLICY "Authenticated users can delete staff slide photos"
   ON staff_slide_photos_portal123 FOR DELETE
   TO authenticated USING (true);
@@ -65,15 +69,19 @@ CREATE TABLE IF NOT EXISTS staff_slide_presets_portal123 (
 
 ALTER TABLE staff_slide_presets_portal123 ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Authenticated users can view staff slide presets" ON staff_slide_presets_portal123;
 CREATE POLICY "Authenticated users can view staff slide presets"
   ON staff_slide_presets_portal123 FOR SELECT
   TO authenticated USING (true);
+DROP POLICY IF EXISTS "Authenticated users can insert staff slide presets" ON staff_slide_presets_portal123;
 CREATE POLICY "Authenticated users can insert staff slide presets"
   ON staff_slide_presets_portal123 FOR INSERT
   TO authenticated WITH CHECK (true);
+DROP POLICY IF EXISTS "Authenticated users can update staff slide presets" ON staff_slide_presets_portal123;
 CREATE POLICY "Authenticated users can update staff slide presets"
   ON staff_slide_presets_portal123 FOR UPDATE
   TO authenticated USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Authenticated users can delete staff slide presets" ON staff_slide_presets_portal123;
 CREATE POLICY "Authenticated users can delete staff slide presets"
   ON staff_slide_presets_portal123 FOR DELETE
   TO authenticated USING (true);
@@ -89,10 +97,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS staff_slide_photos_updated_at ON staff_slide_photos_portal123;
 CREATE TRIGGER staff_slide_photos_updated_at
   BEFORE UPDATE ON staff_slide_photos_portal123
   FOR EACH ROW EXECUTE FUNCTION staff_slide_set_updated_at();
 
+DROP TRIGGER IF EXISTS staff_slide_presets_updated_at ON staff_slide_presets_portal123;
 CREATE TRIGGER staff_slide_presets_updated_at
   BEFORE UPDATE ON staff_slide_presets_portal123
   FOR EACH ROW EXECUTE FUNCTION staff_slide_set_updated_at();
@@ -106,28 +116,36 @@ INSERT INTO storage.buckets (id, name, public)
 VALUES ('staff-slide-preset-thumbnails', 'staff-slide-preset-thumbnails', true)
 ON CONFLICT (id) DO NOTHING;
 
+DROP POLICY IF EXISTS "Anyone can view staff slide photos in storage" ON storage.objects;
 CREATE POLICY "Anyone can view staff slide photos in storage"
   ON storage.objects FOR SELECT
   USING (bucket_id = 'staff-slide-photos');
+DROP POLICY IF EXISTS "Authenticated users can upload staff slide photos" ON storage.objects;
 CREATE POLICY "Authenticated users can upload staff slide photos"
   ON storage.objects FOR INSERT
   TO authenticated WITH CHECK (bucket_id = 'staff-slide-photos');
+DROP POLICY IF EXISTS "Authenticated users can update staff slide photos in storage" ON storage.objects;
 CREATE POLICY "Authenticated users can update staff slide photos in storage"
   ON storage.objects FOR UPDATE
   TO authenticated USING (bucket_id = 'staff-slide-photos') WITH CHECK (bucket_id = 'staff-slide-photos');
+DROP POLICY IF EXISTS "Authenticated users can delete staff slide photos in storage" ON storage.objects;
 CREATE POLICY "Authenticated users can delete staff slide photos in storage"
   ON storage.objects FOR DELETE
   TO authenticated USING (bucket_id = 'staff-slide-photos');
 
+DROP POLICY IF EXISTS "Anyone can view staff slide preset thumbnails" ON storage.objects;
 CREATE POLICY "Anyone can view staff slide preset thumbnails"
   ON storage.objects FOR SELECT
   USING (bucket_id = 'staff-slide-preset-thumbnails');
+DROP POLICY IF EXISTS "Authenticated users can upload staff slide preset thumbnails" ON storage.objects;
 CREATE POLICY "Authenticated users can upload staff slide preset thumbnails"
   ON storage.objects FOR INSERT
   TO authenticated WITH CHECK (bucket_id = 'staff-slide-preset-thumbnails');
+DROP POLICY IF EXISTS "Authenticated users can update staff slide preset thumbnails in storage" ON storage.objects;
 CREATE POLICY "Authenticated users can update staff slide preset thumbnails in storage"
   ON storage.objects FOR UPDATE
   TO authenticated USING (bucket_id = 'staff-slide-preset-thumbnails') WITH CHECK (bucket_id = 'staff-slide-preset-thumbnails');
+DROP POLICY IF EXISTS "Authenticated users can delete staff slide preset thumbnails in storage" ON storage.objects;
 CREATE POLICY "Authenticated users can delete staff slide preset thumbnails in storage"
   ON storage.objects FOR DELETE
   TO authenticated USING (bucket_id = 'staff-slide-preset-thumbnails');

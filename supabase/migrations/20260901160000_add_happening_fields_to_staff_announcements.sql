@@ -48,6 +48,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_staff_announcements_legacy_source
 CREATE INDEX IF NOT EXISTS idx_staff_announcements_published
   ON staff_announcements_portal123(is_published) WHERE is_published = true;
 
+DROP POLICY IF EXISTS "Anyone can view published happenings" ON staff_announcements_portal123;
 CREATE POLICY "Anyone can view published happenings"
   ON staff_announcements_portal123 FOR SELECT
   TO anon

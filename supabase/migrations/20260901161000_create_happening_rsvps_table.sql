@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS happening_rsvps_portal123 (
 
 ALTER TABLE happening_rsvps_portal123 ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Anyone can submit an RSVP for a published, open happening" ON happening_rsvps_portal123;
 CREATE POLICY "Anyone can submit an RSVP for a published, open happening"
   ON happening_rsvps_portal123 FOR INSERT
   TO anon, authenticated
@@ -42,10 +43,13 @@ CREATE POLICY "Anyone can submit an RSVP for a published, open happening"
     )
   );
 
+DROP POLICY IF EXISTS "Authenticated users can view happening rsvps" ON happening_rsvps_portal123;
 CREATE POLICY "Authenticated users can view happening rsvps"
   ON happening_rsvps_portal123 FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "Authenticated users can update happening rsvps" ON happening_rsvps_portal123;
 CREATE POLICY "Authenticated users can update happening rsvps"
   ON happening_rsvps_portal123 FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Authenticated users can delete happening rsvps" ON happening_rsvps_portal123;
 CREATE POLICY "Authenticated users can delete happening rsvps"
   ON happening_rsvps_portal123 FOR DELETE TO authenticated USING (true);
 

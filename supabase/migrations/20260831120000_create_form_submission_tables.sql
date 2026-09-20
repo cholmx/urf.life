@@ -78,54 +78,70 @@ ALTER TABLE realm_signups_portal123 ENABLE ROW LEVEL SECURITY;
 ALTER TABLE table_group_signups_portal123 ENABLE ROW LEVEL SECURITY;
 ALTER TABLE overflow_signups_portal123 ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Anyone can submit a contact message" ON contact_messages_portal123;
 CREATE POLICY "Anyone can submit a contact message"
   ON contact_messages_portal123 FOR INSERT
   TO anon, authenticated WITH CHECK (true);
+DROP POLICY IF EXISTS "Authenticated users can view contact messages" ON contact_messages_portal123;
 CREATE POLICY "Authenticated users can view contact messages"
   ON contact_messages_portal123 FOR SELECT
   TO authenticated USING (true);
+DROP POLICY IF EXISTS "Authenticated users can update contact messages" ON contact_messages_portal123;
 CREATE POLICY "Authenticated users can update contact messages"
   ON contact_messages_portal123 FOR UPDATE
   TO authenticated USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Authenticated users can delete contact messages" ON contact_messages_portal123;
 CREATE POLICY "Authenticated users can delete contact messages"
   ON contact_messages_portal123 FOR DELETE
   TO authenticated USING (true);
 
+DROP POLICY IF EXISTS "Anyone can submit a realm signup" ON realm_signups_portal123;
 CREATE POLICY "Anyone can submit a realm signup"
   ON realm_signups_portal123 FOR INSERT
   TO anon, authenticated WITH CHECK (true);
+DROP POLICY IF EXISTS "Authenticated users can view realm signups" ON realm_signups_portal123;
 CREATE POLICY "Authenticated users can view realm signups"
   ON realm_signups_portal123 FOR SELECT
   TO authenticated USING (true);
+DROP POLICY IF EXISTS "Authenticated users can update realm signups" ON realm_signups_portal123;
 CREATE POLICY "Authenticated users can update realm signups"
   ON realm_signups_portal123 FOR UPDATE
   TO authenticated USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Authenticated users can delete realm signups" ON realm_signups_portal123;
 CREATE POLICY "Authenticated users can delete realm signups"
   ON realm_signups_portal123 FOR DELETE
   TO authenticated USING (true);
 
+DROP POLICY IF EXISTS "Anyone can submit a table group signup" ON table_group_signups_portal123;
 CREATE POLICY "Anyone can submit a table group signup"
   ON table_group_signups_portal123 FOR INSERT
   TO anon, authenticated WITH CHECK (true);
+DROP POLICY IF EXISTS "Authenticated users can view table group signups" ON table_group_signups_portal123;
 CREATE POLICY "Authenticated users can view table group signups"
   ON table_group_signups_portal123 FOR SELECT
   TO authenticated USING (true);
+DROP POLICY IF EXISTS "Authenticated users can update table group signups" ON table_group_signups_portal123;
 CREATE POLICY "Authenticated users can update table group signups"
   ON table_group_signups_portal123 FOR UPDATE
   TO authenticated USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Authenticated users can delete table group signups" ON table_group_signups_portal123;
 CREATE POLICY "Authenticated users can delete table group signups"
   ON table_group_signups_portal123 FOR DELETE
   TO authenticated USING (true);
 
+DROP POLICY IF EXISTS "Anyone can submit an overflow signup" ON overflow_signups_portal123;
 CREATE POLICY "Anyone can submit an overflow signup"
   ON overflow_signups_portal123 FOR INSERT
   TO anon, authenticated WITH CHECK (true);
+DROP POLICY IF EXISTS "Authenticated users can view overflow signups" ON overflow_signups_portal123;
 CREATE POLICY "Authenticated users can view overflow signups"
   ON overflow_signups_portal123 FOR SELECT
   TO authenticated USING (true);
+DROP POLICY IF EXISTS "Authenticated users can update overflow signups" ON overflow_signups_portal123;
 CREATE POLICY "Authenticated users can update overflow signups"
   ON overflow_signups_portal123 FOR UPDATE
   TO authenticated USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Authenticated users can delete overflow signups" ON overflow_signups_portal123;
 CREATE POLICY "Authenticated users can delete overflow signups"
   ON overflow_signups_portal123 FOR DELETE
   TO authenticated USING (true);

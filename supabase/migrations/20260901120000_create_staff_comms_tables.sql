@@ -80,19 +80,24 @@ CREATE TABLE IF NOT EXISTS staff_announcements_portal123 (
 
 ALTER TABLE staff_announcements_portal123 ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Authenticated users can view staff announcements" ON staff_announcements_portal123;
 CREATE POLICY "Authenticated users can view staff announcements"
   ON staff_announcements_portal123 FOR SELECT
   TO authenticated USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Authenticated users can insert staff announcements" ON staff_announcements_portal123;
 CREATE POLICY "Authenticated users can insert staff announcements"
   ON staff_announcements_portal123 FOR INSERT
   TO authenticated WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Authenticated users can update staff announcements" ON staff_announcements_portal123;
 CREATE POLICY "Authenticated users can update staff announcements"
   ON staff_announcements_portal123 FOR UPDATE
   TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Authenticated users can delete staff announcements" ON staff_announcements_portal123;
 CREATE POLICY "Authenticated users can delete staff announcements"
   ON staff_announcements_portal123 FOR DELETE
   TO authenticated USING (auth.uid() = user_id);
 
+DROP TRIGGER IF EXISTS staff_announcements_updated_at ON staff_announcements_portal123;
 CREATE TRIGGER staff_announcements_updated_at
   BEFORE UPDATE ON staff_announcements_portal123
   FOR EACH ROW EXECUTE FUNCTION staff_comms_set_updated_at();
@@ -112,19 +117,24 @@ CREATE TABLE IF NOT EXISTS staff_generated_scripts_portal123 (
 
 ALTER TABLE staff_generated_scripts_portal123 ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Authenticated users can view staff generated scripts" ON staff_generated_scripts_portal123;
 CREATE POLICY "Authenticated users can view staff generated scripts"
   ON staff_generated_scripts_portal123 FOR SELECT
   TO authenticated USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Authenticated users can insert staff generated scripts" ON staff_generated_scripts_portal123;
 CREATE POLICY "Authenticated users can insert staff generated scripts"
   ON staff_generated_scripts_portal123 FOR INSERT
   TO authenticated WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Authenticated users can update staff generated scripts" ON staff_generated_scripts_portal123;
 CREATE POLICY "Authenticated users can update staff generated scripts"
   ON staff_generated_scripts_portal123 FOR UPDATE
   TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Authenticated users can delete staff generated scripts" ON staff_generated_scripts_portal123;
 CREATE POLICY "Authenticated users can delete staff generated scripts"
   ON staff_generated_scripts_portal123 FOR DELETE
   TO authenticated USING (auth.uid() = user_id);
 
+DROP TRIGGER IF EXISTS staff_generated_scripts_updated_at ON staff_generated_scripts_portal123;
 CREATE TRIGGER staff_generated_scripts_updated_at
   BEFORE UPDATE ON staff_generated_scripts_portal123
   FOR EACH ROW EXECUTE FUNCTION staff_comms_set_updated_at();
