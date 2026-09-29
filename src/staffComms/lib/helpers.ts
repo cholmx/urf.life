@@ -130,6 +130,7 @@ export function getLastRelevantDate(a: Announcement): string | null {
   if (a.event_date) dates.push(a.event_date);
   if (a.event_dates?.length) dates.push(...a.event_dates);
   if (a.happenings_end_date) dates.push(a.happenings_end_date);
+  if (a.recurrence_end_date) dates.push(a.recurrence_end_date);
   return dates.length ? dates.sort().at(-1)! : null;
 }
 
@@ -149,7 +150,13 @@ export function isClassListingActive(eventDate: string | null | undefined, today
 }
 
 export function isArchived(a: Announcement, today: string): boolean {
-  if (a.is_recurring) return false;
+  // Only an open-ended recurring item (no recurrence_end_date - an ongoing
+  // weekly gathering with no planned end) is exempt from archiving. One
+  // with an end date should still archive once that date (plus the same
+  // grace period as everything else) has passed - it was previously never
+  // being checked at all, so a finished multi-week recurring class never
+  // left the Manage list.
+  if (a.is_recurring && !a.recurrence_end_date) return false;
   const last = getLastRelevantDate(a);
   if (last === null) return false;
   // A class moves to the admin Archive the same moment it drops off the
