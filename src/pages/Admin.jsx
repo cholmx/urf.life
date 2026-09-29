@@ -31,7 +31,7 @@ const AdminSubmissions = lazy(() => import('../components/AdminSubmissions'));
 const SlideMaker = lazy(() => import('../staffTools/slideMaker/SlideMaker'));
 const SignupSheetMaker = lazy(() => import('../staffTools/signupSheet/SignupSheetMaker'));
 
-const {FiPlay,FiBookOpen,FiHome,FiLock,FiStar,FiHeart,FiUsers,FiTrendingUp,FiMessageSquare,FiGrid,FiLogOut,FiInbox,FiMic,FiPrinter,FiCalendar,FiArchive,FiMail,FiImage,FiClipboard,FiMenu,FiX}=FiIcons;
+const {FiPlay,FiBookOpen,FiHome,FiLock,FiStar,FiHeart,FiUsers,FiTrendingUp,FiMessageSquare,FiGrid,FiLogOut,FiInbox,FiMic,FiPrinter,FiCalendar,FiArchive,FiMail,FiImage,FiClipboard,FiMenu,FiX,FiEdit3}=FiIcons;
 
 const NAV_SECTIONS=[
   {
@@ -43,6 +43,7 @@ const NAV_SECTIONS=[
   {
     label: 'Communication',
     items: [
+      {id: 'manage',label: 'Manage',icon: FiEdit3},
       {id: 'calendar',label: 'Calendar',icon: FiCalendar},
       {id: 'happenings',label: 'The Happenings',icon: FiMail},
       {id: 'stageScript',label: 'Stage Script',icon: FiMic},
@@ -119,7 +120,7 @@ const Admin=()=> {
   // Shared across the Dashboard's embedded Manage section, Calendar,
   // Stage Script, Printables, and Archive pages - one fetch, one preview
   // date, one toast queue, no matter which of those pages is currently active.
-  const happenings=useHappeningsData(isAuthenticated,()=> setActiveTab('overview'));
+  const happenings=useHappeningsData(isAuthenticated,()=> setActiveTab('manage'));
 
   useEffect(()=> {
     supabase.auth.getSession().then(({data: {session}})=> {
@@ -170,6 +171,8 @@ const Admin=()=> {
   const renderContent=()=> {
     switch (activeTab) {
       case 'overview':
+        return <AdminDashboard onNavigate={selectTab} />;
+      case 'manage':
         return (
           <>
             <h2 className="text-xl font-bold text-neutral-900 mb-4">Communication Organizer</h2>
@@ -190,9 +193,6 @@ const Admin=()=> {
               onOpenSignupSheet={(a)=> { setSignupSheetTarget(a); setActiveTab('signupSheet'); }}
               onNavigateTab={selectTab}
             />
-            <div className="mt-10 pt-6 border-t border-neutral-200">
-              <AdminDashboard onNavigate={selectTab} />
-            </div>
           </>
         );
       case 'submissions':
