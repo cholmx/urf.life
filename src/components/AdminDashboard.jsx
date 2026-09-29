@@ -2,7 +2,8 @@ import React,{useState,useEffect} from 'react';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import supabase from '../lib/supabase';
-import { formatDate as formatDateSafe } from '../utils/dateFormat';
+import { formatDate as formatDateSafe, getTodayDateString } from '../utils/dateFormat';
+import { isArchived } from '../staffComms/lib/helpers';
 
 const {FiMic,FiExternalLink,FiRefreshCw}=FiIcons;
 
@@ -18,10 +19,15 @@ const AdminDashboard=({onNavigate})=> {
   const fetchRecent=async ()=> {
     try {
       const [annRes,sermonRes]=await Promise.all([
-        supabase.from('staff_announcements_portal123').select('id,title,event_date,published_at').eq('is_published',true).order('published_at',{ascending: false,nullsFirst: false}).limit(4),
+        // Fetch more than the 4 shown and filter out archived ones (events
+        // gone the day after, classes a week after - same rule as the
+        // Manage/Archive tabs) before slicing to 4, so a past happening
+        // doesn't linger here just because it was published recently.
+        supabase.from('staff_announcements_portal123').select('id,title,event_date,event_dates,happenings_end_date,is_recurring,happening_type,published_at').eq('is_published',true).order('published_at',{ascending: false,nullsFirst: false}).limit(20),
         supabase.from('sermons_portal123').select('id,title,sermon_date,speaker').order('sermon_date',{ascending: false}).limit(4),
       ]);
-      setRecentAnnouncements(annRes.data || []);
+      const today=getTodayDateString();
+      setRecentAnnouncements((annRes.data || []).filter(a=> !isArchived(a,today)).slice(0,4));
       setRecentSermons(sermonRes.data || []);
     } catch (error) {
       console.error('Error fetching recent:',error);
