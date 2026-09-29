@@ -124,18 +124,32 @@ describe('isArchived', () => {
     expect(isArchived(a, TODAY)).toBe(false);
   });
 
-  it('keeps a recurring class listed through its grace week after recurrence_end_date', () => {
+  // A class's grace window is always anchored to its start date - it
+  // archives a week after it first met, whether it's a one-time class,
+  // still actively meeting weekly with no end date, or has a recurrence_end_date
+  // months away. Real data that shipped this bug: a weekly class starting
+  // Aug 16 with no end date, and one starting Sep 16 ending Nov 4 - both
+  // stayed on the Manage list because recurrence_end_date (or its absence)
+  // was being used instead of event_date.
+  it('archives a recurring class a week after it starts, even with no end date', () => {
     const a = makeAnnouncement({
       happening_type: 'class', is_recurring: true, recurrence_type: 'weekly',
-      event_date: '2026-08-01', recurrence_end_date: '2026-09-25',
-    });
-    expect(isArchived(a, TODAY)).toBe(false); // +4 days, still in grace
-  });
-  it('archives a recurring class a week after recurrence_end_date passes', () => {
-    const a = makeAnnouncement({
-      happening_type: 'class', is_recurring: true, recurrence_type: 'weekly',
-      event_date: '2026-08-01', recurrence_end_date: '2026-09-01',
+      event_date: '2026-08-16', recurrence_end_date: null,
     });
     expect(isArchived(a, TODAY)).toBe(true);
+  });
+  it('archives a recurring class a week after it starts, even with a future end date', () => {
+    const a = makeAnnouncement({
+      happening_type: 'class', is_recurring: true, recurrence_type: 'weekly',
+      event_date: '2026-09-16', recurrence_end_date: '2026-11-04',
+    });
+    expect(isArchived(a, TODAY)).toBe(true);
+  });
+  it('keeps a still-new recurring class listed through its grace week', () => {
+    const a = makeAnnouncement({
+      happening_type: 'class', is_recurring: true, recurrence_type: 'weekly',
+      event_date: '2026-09-25', recurrence_end_date: null,
+    });
+    expect(isArchived(a, TODAY)).toBe(false); // +4 days, still in grace
   });
 });

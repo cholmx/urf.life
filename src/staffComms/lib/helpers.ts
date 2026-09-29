@@ -150,20 +150,24 @@ export function isClassListingActive(eventDate: string | null | undefined, today
 }
 
 export function isArchived(a: Announcement, today: string): boolean {
-  // Only an open-ended recurring item (no recurrence_end_date - an ongoing
-  // weekly gathering with no planned end) is exempt from archiving. One
-  // with an end date should still archive once that date (plus the same
-  // grace period as everything else) has passed - it was previously never
-  // being checked at all, so a finished multi-week recurring class never
-  // left the Manage list.
+  // A class's sign-up window is always anchored to when it first meets,
+  // never to how many weeks it keeps running or when a recurring series
+  // ends (see isClassListingActive's own comment) - so it archives a week
+  // after event_date regardless of is_recurring/recurrence_end_date. A
+  // still-running weekly class is exactly the case this covers: it stays
+  // on the calendar/public site, it just doesn't need to keep taking
+  // sign-ups or space on the admin Manage list once that week has passed.
+  if (a.happening_type === 'class') {
+    if (!a.event_date) return false;
+    return !isClassListingActive(a.event_date, today);
+  }
+  // Everything else: an open-ended recurring item (no recurrence_end_date -
+  // an ongoing gathering with no planned end) is exempt from archiving.
+  // One with an end date archives once that date has passed, same as a
+  // one-time item's own date.
   if (a.is_recurring && !a.recurrence_end_date) return false;
   const last = getLastRelevantDate(a);
   if (last === null) return false;
-  // A class moves to the admin Archive the same moment it drops off the
-  // public listing (see isClassListingActive), not the instant its start
-  // date passes - otherwise staff would see it archived while visitors
-  // could still register for it.
-  if (a.happening_type === 'class') return !isClassListingActive(last, today);
   return last < today;
 }
 
