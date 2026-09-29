@@ -172,7 +172,6 @@ const Admin=()=> {
       case 'overview':
         return (
           <>
-            <h2 className="text-xl font-bold text-neutral-900 mb-4">Communication Organizer</h2>
             <ManagePage
               announcements={happenings.activeAnnouncements}
               today={happenings.today}
