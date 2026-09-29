@@ -8,8 +8,9 @@ import supabase from '../lib/supabase';
 import StandardButton from '../components/StandardButton';
 import {sanitizeHtml} from '../utils/sanitizeHtml';
 import {plainTextToHtml} from '../lib/textToHtml';
-import {formatDate,formatTime} from '../utils/dateFormat';
+import {formatDate,formatTime,getTodayDateString} from '../utils/dateFormat';
 import AddToCalendarButton from '../components/AddToCalendarButton';
+import {isArchived} from '../staffComms/lib/helpers';
 
 const {FiCalendar,FiHome,FiExternalLink}=FiIcons;
 
@@ -34,7 +35,12 @@ const EventRegistration=()=> {
         .order('event_date',{ascending: true,nullsFirst: false});
 
       if (error) throw error;
-      setEvents(data || []);
+      // Unlike ClassRegistration's grace window, an event drops off the
+      // instant its date passes - there's no "you can still join Sunday
+      // after it started" case for a one-time event. isArchived also
+      // correctly keeps recurring/multi-date events listed.
+      const today=getTodayDateString();
+      setEvents((data || []).filter(e=> !isArchived(e,today)));
     } catch (error) {
       console.error('Error fetching events:',error);
     } finally {
