@@ -519,7 +519,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
 
           <div style={fg}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
-              <label style={labelBase}>Full Description <span style={{ fontWeight: 400, textTransform: 'none' }}>(The Happenings email)</span></label>
+              <label style={labelBase}>Full Description <span style={{ fontWeight: 400, textTransform: 'none' }}>(Events/Classes pages & Calendar - used for The Happenings only if Short Description below is blank)</span></label>
               <AIWriteButton label="Draft" loading={aiLoading.body} onClick={generateBody} disabled={!hasEnoughForAI} />
             </div>
             <textarea
@@ -533,7 +533,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
           <div style={fg}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
               <div>
-                <label style={labelBase}>Short Description <span style={{ fontWeight: 400, textTransform: 'none' }}>(Monthly Flyer, Monthly Bulletin & printed Invite)</span></label>
+                <label style={labelBase}>Short Description <span style={{ fontWeight: 400, textTransform: 'none' }}>(The Happenings email, Monthly Flyer, Monthly Bulletin & printed Invite)</span></label>
                 <div style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, marginTop: 1 }}>max 50 words - also the body copy on the printed Invite (Invite button, back on the list)</div>
               </div>
               <AIWriteButton label="Draft" loading={aiLoading.flyer} onClick={generateFlyer} disabled={!hasEnoughForAI} />

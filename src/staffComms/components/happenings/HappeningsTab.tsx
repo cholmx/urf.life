@@ -26,17 +26,18 @@ function whenLabel(a: Announcement): string {
 }
 
 // Assembles this week's active items into the Happenings update HTML,
-// verbatim - each item's own Full Description (the same long-form copy
-// written specifically for the Happenings email) becomes its body text
-// unchanged, with only the title (Title format) and when/where (Bold
-// format) added around it. No AI rewriting: what staff already wrote for
-// the item is what goes out.
+// verbatim - each item's own Short Description (the same medium-length
+// copy written for the Monthly Flyer/Bulletin and printed Invite) becomes
+// its body text unchanged, with only the title (Title format) and
+// when/where (Bold format) added around it. No AI rewriting: what staff
+// already wrote for the item is what goes out. Falls back to the Full
+// Description only if Short Description was never filled in.
 function buildAssembledScript(items: Announcement[]): string {
   if (items.length === 0) {
     return scriptTextToHtml(`Nothing officially scheduled this week, but we'd still love to see you. Check urf.life for anything that might come up.`);
   }
   const sections = items.map(a => {
-    const description = (a.body || a.flyer_text || a.short_version || '').trim();
+    const description = (a.flyer_text || a.body || a.short_version || '').trim();
     const whenWhere = [
       [whenLabel(a), a.event_time ? formatTime12h(a.event_time) : ''].filter(Boolean).join(' · '),
       a.event_location || '',
