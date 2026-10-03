@@ -522,23 +522,10 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
               <AIWriteButton label="Draft" loading={aiLoading.slide} onClick={generateSlide} disabled={!hasEnoughForAI} />
             </div>
             <input
-              style={{ ...inputBase, fontFamily: font.mono, fontSize: 12 }}
+              style={inputBase}
               value={f.slide_override}
               onChange={e => { set('slide_override', e.target.value); set('short_version', e.target.value); }}
               placeholder="Men's Bible Study | May 6 | 7 PM | Fellowship Hall"
-            />
-          </div>
-
-          <div>
-            <label style={labelBase}>Stage Notes <span style={{ fontWeight: 400, textTransform: 'none' }}>(optional)</span></label>
-            <div style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, marginTop: 1, marginBottom: 5 }}>
-              A short line of tone guidance for whoever reads the Stage Script live, and the quoted line printed on the Invite. Leave blank for neither.
-            </div>
-            <input
-              style={inputBase}
-              value={f.stage_notes}
-              onChange={e => set('stage_notes', e.target.value)}
-              placeholder={`e.g. "Come as you are."`}
             />
           </div>
         </Section>
