@@ -233,7 +233,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
       return relabel({ ...p, recurrence_week_of_month: WEEK_POSITIONS.filter(x => updated.includes(x)).join(',') });
     });
 
-  const { aiLoading, hasEnoughForAI, generateSlide, generateFlyer, generateAll, parsingDraft, parseDraft } =
+  const { aiLoading, hasEnoughForAI, generateSlide, generateFlyer, parsingDraft, parseDraft } =
     useAnnouncementAI(f, set, onError);
 
   // Fires generateFlyer once the fields handleFillAndWrite just set() have
@@ -366,7 +366,6 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
           </span>
         </div>
         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          <AIWriteButton label="Write All" loading={aiLoading.all} onClick={generateAll} disabled={!hasEnoughForAI} />
           <button
             type="button"
             onClick={() => set('is_published', !f.is_published)}

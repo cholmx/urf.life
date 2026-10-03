@@ -12,17 +12,6 @@ const corsHeaders = {
 const MODEL = "claude-opus-5";
 const MAX_TOKENS = 8192; // script generation token budget
 
-// Schema for the Communication Organizer's "Write All" call, which asks for
-// the slide line and description together in one response. Structured
-// outputs make this a hard schema-validity guarantee
-// from Claude's side, instead of a "please return only JSON" instruction we
-// then hope holds - the previous provider's occasional malformed/truncated
-// JSON was exactly how garbled text ended up in the announcement form.
-const WriteAllSchema = z.object({
-  slide: z.string(),
-  flyer: z.string(),
-});
-
 // Schema for "Fill In From Notes" - Claude reads a staffer's rough,
 // unstructured notes about something happening and extracts the actual
 // scheduling fields, so staff only have to review what it guessed rather
@@ -46,7 +35,6 @@ const ParseDraftSchema = z.object({
 });
 
 const SCHEMAS: Record<string, z.ZodTypeAny> = {
-  writeAll: WriteAllSchema,
   parseDraft: ParseDraftSchema,
 };
 
@@ -91,7 +79,10 @@ Deno.serve(async (req: Request) => {
 
     if (body._direct && body.systemPrompt && body.userPrompt) {
       if (body._json) {
-        const schema = SCHEMAS[body._schema as string] ?? WriteAllSchema;
+        const schema = SCHEMAS[body._schema as string];
+        if (!schema) {
+          throw new Error(`Unknown or missing AI response schema: ${body._schema}`);
+        }
         const response = await client.messages.parse({
           model: MODEL,
           max_tokens: MAX_TOKENS,
