@@ -115,7 +115,6 @@ function ArchiveCard({ a, onDelete, onCopy }: { a: Announcement; onDelete: (id: 
           {a.description && <DetailRow label="Notes for AI" value={a.description} />}
           {a.short_version && <DetailRow label="Short version" value={a.short_version} />}
           {a.flyer_text && <DetailRow label="Description" value={a.flyer_text} />}
-          {a.stage_notes && <DetailRow label="Stage notes" value={a.stage_notes} />}
           {allDates && <DetailRow label="Date(s)" value={allDates} />}
           {a.event_location && <DetailRow label="Location" value={a.event_location} />}
           {(a.contact_name || a.contact_info) && (

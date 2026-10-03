@@ -145,7 +145,6 @@ Deno.serve(async (req: Request) => {
       } else {
         lines.push("Ongoing");
       }
-      if (a.stage_notes) lines.push(`Tone Notes: ${a.stage_notes}`);
       const contact = [a.contact_name, a.contact_info].filter(Boolean).join(" | ");
       if (contact) lines.push(`Contact: ${contact}`);
       return lines.join("\n");

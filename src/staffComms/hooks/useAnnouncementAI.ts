@@ -30,7 +30,6 @@ function buildContext(f: FormData): string {
   if (f.event_location) parts.push(`Location: ${f.event_location}`);
   if (f.contact_name) parts.push(`Contact: ${f.contact_name}`);
   if (f.contact_info) parts.push(`Contact info: ${f.contact_info}`);
-  if (f.stage_notes) parts.push(`Tone notes: ${f.stage_notes}`);
   return parts.join('\n');
 }
 

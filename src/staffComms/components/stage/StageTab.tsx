@@ -50,7 +50,6 @@ export function StageTab({ announcements, today, onError }: StageTabProps) {
         s += '\n';
       }
       if (a.contact_name || a.contact_info) s += `Contact: ${[a.contact_name, a.contact_info].filter(Boolean).join(' | ')}\n`;
-      if (a.stage_notes) s += `[Tone: ${a.stage_notes}]\n`;
       s += '\n';
     });
     return s.trim();
