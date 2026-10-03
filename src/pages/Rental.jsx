@@ -21,6 +21,20 @@ const STEPS=[
 
 const todayStr=()=> new Date().toISOString().split('T')[0];
 
+// 15-minute increments only - a native <input type="time"> still lets you
+// scroll/type any minute even with a step attribute, so we use a plain
+// select instead to actually limit the choices.
+const TIME_OPTIONS=Array.from({length: 24 * 4},(_,i)=> {
+  const totalMinutes=i * 15;
+  const hour24=Math.floor(totalMinutes / 60);
+  const minute=totalMinutes % 60;
+  const value=`${String(hour24).padStart(2,'0')}:${String(minute).padStart(2,'0')}`;
+  const hour12=hour24 % 12 === 0 ? 12 : hour24 % 12;
+  const period=hour24 < 12 ? 'AM' : 'PM';
+  const label=`${hour12}:${String(minute).padStart(2,'0')} ${period}`;
+  return {value,label};
+});
+
 const EMPTY_FORM={
   event_type: '',
   organization_name: '',
@@ -357,11 +371,17 @@ const Rental=()=> {
                     </div>
                     <div>
                       <label className="form-label">Event Beginning Time *</label>
-                      <input type="time" name="event_start_time" value={formData.event_start_time} onChange={handleChange} required step="900" className="form-input" />
+                      <select name="event_start_time" value={formData.event_start_time} onChange={handleChange} required className="form-input">
+                        <option value="" disabled>Select a time</option>
+                        {TIME_OPTIONS.map((t)=> <option key={t.value} value={t.value}>{t.label}</option>)}
+                      </select>
                     </div>
                     <div>
                       <label className="form-label">Event Ending Time *</label>
-                      <input type="time" name="event_end_time" value={formData.event_end_time} onChange={handleChange} required step="900" className="form-input" />
+                      <select name="event_end_time" value={formData.event_end_time} onChange={handleChange} required className="form-input">
+                        <option value="" disabled>Select a time</option>
+                        {TIME_OPTIONS.map((t)=> <option key={t.value} value={t.value}>{t.label}</option>)}
+                      </select>
                     </div>
                   </div>
                   <div>
@@ -384,11 +404,17 @@ const Rental=()=> {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="form-label">Setup Arrival Time *</label>
-                      <input type="time" name="setup_arrival_time" value={formData.setup_arrival_time} onChange={handleChange} required step="900" className="form-input" />
+                      <select name="setup_arrival_time" value={formData.setup_arrival_time} onChange={handleChange} required className="form-input">
+                        <option value="" disabled>Select a time</option>
+                        {TIME_OPTIONS.map((t)=> <option key={t.value} value={t.value}>{t.label}</option>)}
+                      </select>
                     </div>
                     <div>
                       <label className="form-label">Setup Departure Time *</label>
-                      <input type="time" name="setup_departure_time" value={formData.setup_departure_time} onChange={handleChange} required step="900" className="form-input" />
+                      <select name="setup_departure_time" value={formData.setup_departure_time} onChange={handleChange} required className="form-input">
+                        <option value="" disabled>Select a time</option>
+                        {TIME_OPTIONS.map((t)=> <option key={t.value} value={t.value}>{t.label}</option>)}
+                      </select>
                     </div>
                   </div>
                 </div>
