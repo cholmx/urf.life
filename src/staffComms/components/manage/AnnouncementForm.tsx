@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { C, font } from '../../lib/theme';
 import { CATEGORIES, SCOPE_OPTIONS, MINISTRY_OPTIONS, DEFAULT_ANNOUNCEMENT, HAPPENING_TYPE_OPTIONS, SIGNUP_MODE_OPTIONS } from '../../lib/constants';
 import { inputBase, labelBase, btnPrimary, btnGhost } from '../ui/inputs';
@@ -236,8 +236,17 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
   const { aiLoading, hasEnoughForAI, generateSlide, generateFlyer, generateAll, parsingDraft, parseDraft } =
     useAnnouncementAI(f, set, onError);
 
-  const [draftNotes, setDraftNotes] = useState('');
-  const [draftPanelOpen, setDraftPanelOpen] = useState(false);
+  // Fires generateFlyer once the fields handleFillAndWrite just set() have
+  // actually landed in f - set() calls queue a re-render rather than
+  // updating f in place, so calling generateFlyer() directly in the same
+  // synchronous block would still read the pre-parse f (missing the notes
+  // that just got copied into description, plus whatever else was parsed).
+  const [autoFlyerPending, setAutoFlyerPending] = useState(false);
+  useEffect(() => {
+    if (!autoFlyerPending) return;
+    setAutoFlyerPending(false);
+    generateFlyer();
+  }, [autoFlyerPending, generateFlyer]);
 
   // AI output is re-validated here, field by field, before it ever touches
   // form state - a wrong guess for event_time (say) should just be
@@ -259,48 +268,53 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
     return `${String(hh).padStart(2, '0')}:${String(rounded).padStart(2, '0')}`;
   }
 
-  const handleParseDraft = async () => {
-    const parsed = await parseDraft(draftNotes);
-    if (!parsed) return;
+  // One notes box drives both AI steps: parseDraft extracts the scheduling
+  // fields (type, dates, times, location) from the same rough notes that
+  // generateFlyer (triggered via autoFlyerPending once those fields have
+  // landed in f) then writes the Description from. Scheduling extraction
+  // failing isn't a reason to skip writing the description - they're
+  // independent AI calls - so field application only happens if parsed
+  // came back, but the description still gets written either way.
+  const handleFillAndWrite = async () => {
+    const notes = f.description.trim();
+    if (!notes) return;
+    const parsed = await parseDraft(notes);
 
-    if (parsed.title) set('title', parsed.title);
-    if (parsed.happening_type && HAPPENING_TYPE_VALUES.includes(parsed.happening_type)) {
-      set('happening_type', parsed.happening_type as Announcement['happening_type']);
+    if (parsed) {
+      if (parsed.title) set('title', parsed.title);
+      if (parsed.happening_type && HAPPENING_TYPE_VALUES.includes(parsed.happening_type)) {
+        set('happening_type', parsed.happening_type as Announcement['happening_type']);
+      }
+
+      const recurrenceType = (parsed.recurrence_type && RECURRENCE_TYPE_VALUES.includes(parsed.recurrence_type))
+        ? parsed.recurrence_type as RecurrenceType
+        : 'one_time';
+      set('recurrence_type', recurrenceType);
+
+      if (parsed.event_date && ISO_DATE_RE.test(parsed.event_date)) {
+        setPrimaryDate(parsed.event_date, false);
+      }
+      if (parsed.recurrence_end_date && ISO_DATE_RE.test(parsed.recurrence_end_date)) {
+        set('recurrence_end_date', parsed.recurrence_end_date);
+      }
+      if (parsed.recurrence_day && WEEKDAYS.includes(parsed.recurrence_day)) {
+        set('recurrence_day', parsed.recurrence_day);
+      }
+      if (parsed.recurrence_week_of_month && WEEK_POSITIONS.includes(parsed.recurrence_week_of_month as WeekPosition)) {
+        set('recurrence_week_of_month', parsed.recurrence_week_of_month);
+      }
+      if (parsed.event_time && TIME_RE.test(parsed.event_time)) {
+        set('event_time', roundTo5Min(parsed.event_time));
+      }
+      if (parsed.end_time && TIME_RE.test(parsed.end_time)) {
+        set('end_time', roundTo5Min(parsed.end_time));
+      }
+      if (parsed.event_location) set('event_location', parsed.event_location);
+
+      setTimingExpanded(true);
     }
 
-    const recurrenceType = (parsed.recurrence_type && RECURRENCE_TYPE_VALUES.includes(parsed.recurrence_type))
-      ? parsed.recurrence_type as RecurrenceType
-      : 'one_time';
-    set('recurrence_type', recurrenceType);
-
-    if (parsed.event_date && ISO_DATE_RE.test(parsed.event_date)) {
-      setPrimaryDate(parsed.event_date, false);
-    }
-    if (parsed.recurrence_end_date && ISO_DATE_RE.test(parsed.recurrence_end_date)) {
-      set('recurrence_end_date', parsed.recurrence_end_date);
-    }
-    if (parsed.recurrence_day && WEEKDAYS.includes(parsed.recurrence_day)) {
-      set('recurrence_day', parsed.recurrence_day);
-    }
-    if (parsed.recurrence_week_of_month && WEEK_POSITIONS.includes(parsed.recurrence_week_of_month as WeekPosition)) {
-      set('recurrence_week_of_month', parsed.recurrence_week_of_month);
-    }
-    if (parsed.event_time && TIME_RE.test(parsed.event_time)) {
-      set('event_time', roundTo5Min(parsed.event_time));
-    }
-    if (parsed.end_time && TIME_RE.test(parsed.end_time)) {
-      set('end_time', roundTo5Min(parsed.end_time));
-    }
-    if (parsed.event_location) set('event_location', parsed.event_location);
-
-    // The raw notes themselves are worth more than anything we'd re-derive
-    // from them - they carry the staffer's original phrasing for the
-    // Draft buttons to actually write from.
-    if (draftNotes.trim()) set('description', draftNotes.trim());
-
-    setTimingExpanded(true);
-    setDraftNotes('');
-    setDraftPanelOpen(false);
+    setAutoFlyerPending(true);
   };
 
   const isScheduledType = f.happening_type === 'event' || f.happening_type === 'class';
@@ -373,41 +387,21 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
       <div style={{ padding: '24px 24px 20px' }}>
 
         <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: 10, padding: '14px 18px', marginBottom: 20 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-            <div>
-              <div style={{ fontFamily: font.display, fontSize: 11, fontWeight: 700, color: '#1D4ED8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Quick Fill from Notes
-              </div>
-              <div style={{ fontFamily: font.mono, fontSize: 10, color: '#3B5FA8', marginTop: 3, lineHeight: 1.5 }}>
-                Paste rough notes - Claude fills in the type, dates, times, and recurrence below for you to review before saving.
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => setDraftPanelOpen(v => !v)}
-              style={{
-                fontFamily: font.display, fontSize: 10, fontWeight: 700, color: '#1D4ED8',
-                background: '#fff', border: '1px solid #BFDBFE', borderRadius: 5, padding: '6px 12px',
-                cursor: 'pointer', letterSpacing: '0.05em', textTransform: 'uppercase', flexShrink: 0,
-              }}
-            >
-              {draftPanelOpen ? 'Hide' : 'Paste Notes'}
-            </button>
+          <div style={{ fontFamily: font.display, fontSize: 11, fontWeight: 700, color: '#1D4ED8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Notes
           </div>
-          {draftPanelOpen && (
-            <div style={{ marginTop: 12 }}>
-              <textarea
-                style={{ ...inputBase, minHeight: 70, resize: 'vertical', fontSize: 13, background: '#fff' }}
-                value={draftNotes}
-                onChange={e => setDraftNotes(e.target.value)}
-                placeholder={`e.g. "Marriage class starts Sept 20, every other Wednesday at 7pm through November, room 2"`}
-                autoFocus
-              />
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
-                <AIWriteButton label="Fill In Fields" loading={parsingDraft} onClick={handleParseDraft} disabled={!draftNotes.trim()} />
-              </div>
-            </div>
-          )}
+          <div style={{ fontFamily: font.mono, fontSize: 10, color: '#3B5FA8', margin: '3px 0 10px', lineHeight: 1.5 }}>
+            Write rough notes - what's happening, who it's for, any dates/times/location. One click fills in the type, dates, times, and recurrence below, and writes the Description for you to review before saving.
+          </div>
+          <textarea
+            style={{ ...inputBase, minHeight: 70, resize: 'vertical', fontSize: 13, background: '#fff' }}
+            value={f.description}
+            onChange={e => set('description', e.target.value)}
+            placeholder={`e.g. "Marriage class starts Sept 20, every other Wednesday at 7pm through November, room 2"`}
+          />
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
+            <AIWriteButton label="Fill In & Write" loading={parsingDraft || autoFlyerPending || aiLoading.flyer} onClick={handleFillAndWrite} disabled={!f.description.trim()} />
+          </div>
         </div>
 
         <Section title="Basics">
@@ -504,19 +498,6 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
         </Section>
 
         <Section title="Description">
-          <div style={fg}>
-            <label style={labelBase}>Notes for AI <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(only feeds the drafts below)</span></label>
-            <div style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, marginBottom: 5, lineHeight: 1.5 }}>
-              This is never published or printed anywhere on its own - it's only here to give the AI something to work from. Write it as rough notes. What actually gets used is whatever ends up in Description and Short Line below.
-            </div>
-            <textarea
-              style={{ ...inputBase, minHeight: 68, resize: 'vertical', fontSize: 13, background: '#FFF8E7', border: '1px solid #E8C77D' }}
-              value={f.description}
-              onChange={e => set('description', e.target.value)}
-              placeholder="Brief summary: what's happening, who it's for, why it matters."
-            />
-          </div>
-
           <div style={fg}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
               <div>
