@@ -7,7 +7,7 @@ import supabase from '../lib/supabase';
 import {getTodayDateString} from '../utils/dateFormat';
 import {CLASS_LISTING_GRACE_DAYS} from '../staffComms/lib/helpers';
 
-const {FiPlay,FiMic,FiUsers,FiCreditCard,FiUserPlus,FiMail,FiCalendar,FiBookOpen,FiSettings,FiFacebook,FiInstagram,FiYoutube,FiGlobe,FiLogIn,FiExternalLink,FiFileText,FiHeadphones,FiTrendingUp,FiCheck,FiStar,FiKey}=FiIcons;
+const {FiPlay,FiMic,FiUsers,FiCreditCard,FiUserPlus,FiMail,FiCalendar,FiBookOpen,FiSettings,FiFacebook,FiInstagram,FiYoutube,FiGlobe,FiLogIn,FiExternalLink,FiFileText,FiHeadphones,FiTrendingUp,FiCheck,FiKey}=FiIcons;
 
 const Home=()=> {
   const [hasEvents,setHasEvents]=useState(false);
@@ -178,18 +178,6 @@ const Home=()=> {
                   {quickLinks.map((link, i) => (
                     <QuickLinkButton key={link.title} {...link} delay={1.0 + i * 0.1} />
                   ))}
-                  <motion.a
-                    href="https://g.page/r/CfHLfp3nAOi_EBM/review"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    initial={{opacity: 0, y: 12}}
-                    animate={{opacity: 1, y: 0}}
-                    transition={{duration: 0.4, delay: 1.3}}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accent-dark text-text-primary font-semibold text-sm font-gsans hover:bg-white transition-all duration-200 hover:scale-105 shadow-sm border border-text-light/10"
-                  >
-                    <SafeIcon icon={FiStar} className="h-4 w-4 text-yellow-500" />
-                    Leave a Review
-                  </motion.a>
                 </div>
               </section>
             </>
