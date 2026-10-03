@@ -40,7 +40,6 @@ export interface Announcement {
   slide_override: string;
   month_override: string;
   flyer_text: string;
-  stage_notes: string;
   slide_made: boolean;
   needs_signup: boolean;
   signup_mode: SignupMode;

@@ -11,7 +11,6 @@ interface InviteData {
   location: string;
   address: string;
   flyerText: string;
-  inviteNote: string;
   contactName: string;
   contactInfo: string;
   imageUrl: string;
@@ -55,7 +54,6 @@ function buildPostcardHTML(d: InviteData): string {
       ${timeLocationLine ? `<div style="font-family:'Caladea',Georgia,serif;font-style:italic;font-size:14pt;color:${ORANGE};margin-top:4pt;line-height:1.0;">${timeLocationLine}</div>` : ''}
       ${d.address ? `<div style="font-family:'Inter',sans-serif;font-size:10pt;color:#666;margin-top:2pt;line-height:1.0;">${d.address}</div>` : ''}
       ${d.flyerText ? `<div style="font-family:'Inter',sans-serif;font-size:10pt;color:#222;line-height:1.08;margin-top:7pt;max-width:4.2in;white-space:pre-wrap;">${d.flyerText}</div>` : ''}
-      ${d.inviteNote ? `<div style="font-family:'Caladea',Georgia,serif;font-style:italic;font-size:11pt;color:${ORANGE};margin-top:7pt;max-width:4.2in;line-height:1.0;">&ldquo;${d.inviteNote}&rdquo;</div>` : ''}
     </div>
     <div style="border-top:1pt solid #D5E8E2;padding-top:6pt;text-align:left;flex-shrink:0;margin-top:auto;">
       ${(d.contactName || d.contactInfo) ? `<div style="font-family:'Inter',sans-serif;font-size:9pt;font-weight:600;color:#666;margin-bottom:3pt;line-height:1.0;">Questions? ${d.contactName ? `${d.contactName}, ` : ''}${d.contactInfo}</div>` : ''}
@@ -150,7 +148,6 @@ export function buildInviteHTMLFromAnnouncement(a: Announcement): string {
     location: a.event_location || '',
     address: '',
     flyerText: a.flyer_text || '',
-    inviteNote: a.stage_notes || '',
     contactName: a.contact_name || '',
     contactInfo: a.contact_info || '',
     imageUrl: '',

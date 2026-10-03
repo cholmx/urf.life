@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { C, font } from '../../lib/theme';
 import { CATEGORIES, SCOPE_OPTIONS, MINISTRY_OPTIONS, DEFAULT_ANNOUNCEMENT, HAPPENING_TYPE_OPTIONS, SIGNUP_MODE_OPTIONS } from '../../lib/constants';
 import { inputBase, labelBase, btnPrimary, btnGhost } from '../ui/inputs';
@@ -126,16 +126,16 @@ interface AnnouncementFormProps {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div style={{ marginBottom: 20 }}>
+    <div style={{ marginBottom: 24 }}>
       <div style={{
         fontFamily: font.mono,
-        fontSize: 11,
+        fontSize: 14,
         fontWeight: 600,
         letterSpacing: '0.08em',
         textTransform: 'uppercase',
         color: C.textTer,
-        marginBottom: 10,
-        paddingBottom: 8,
+        marginBottom: 12,
+        paddingBottom: 10,
         borderBottom: `1px solid ${C.border}`,
       }}>
         {title}
@@ -233,11 +233,20 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
       return relabel({ ...p, recurrence_week_of_month: WEEK_POSITIONS.filter(x => updated.includes(x)).join(',') });
     });
 
-  const { aiLoading, hasEnoughForAI, generateSlide, generateFlyer, generateAll, parsingDraft, parseDraft } =
+  const { aiLoading, hasEnoughForAI, generateSlide, generateFlyer, parsingDraft, parseDraft } =
     useAnnouncementAI(f, set, onError);
 
-  const [draftNotes, setDraftNotes] = useState('');
-  const [draftPanelOpen, setDraftPanelOpen] = useState(false);
+  // Fires generateFlyer once the fields handleFillAndWrite just set() have
+  // actually landed in f - set() calls queue a re-render rather than
+  // updating f in place, so calling generateFlyer() directly in the same
+  // synchronous block would still read the pre-parse f (missing the notes
+  // that just got copied into description, plus whatever else was parsed).
+  const [autoFlyerPending, setAutoFlyerPending] = useState(false);
+  useEffect(() => {
+    if (!autoFlyerPending) return;
+    setAutoFlyerPending(false);
+    generateFlyer();
+  }, [autoFlyerPending, generateFlyer]);
 
   // AI output is re-validated here, field by field, before it ever touches
   // form state - a wrong guess for event_time (say) should just be
@@ -259,48 +268,53 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
     return `${String(hh).padStart(2, '0')}:${String(rounded).padStart(2, '0')}`;
   }
 
-  const handleParseDraft = async () => {
-    const parsed = await parseDraft(draftNotes);
-    if (!parsed) return;
+  // One notes box drives both AI steps: parseDraft extracts the scheduling
+  // fields (type, dates, times, location) from the same rough notes that
+  // generateFlyer (triggered via autoFlyerPending once those fields have
+  // landed in f) then writes the Description from. Scheduling extraction
+  // failing isn't a reason to skip writing the description - they're
+  // independent AI calls - so field application only happens if parsed
+  // came back, but the description still gets written either way.
+  const handleFillAndWrite = async () => {
+    const notes = f.description.trim();
+    if (!notes) return;
+    const parsed = await parseDraft(notes);
 
-    if (parsed.title) set('title', parsed.title);
-    if (parsed.happening_type && HAPPENING_TYPE_VALUES.includes(parsed.happening_type)) {
-      set('happening_type', parsed.happening_type as Announcement['happening_type']);
+    if (parsed) {
+      if (parsed.title) set('title', parsed.title);
+      if (parsed.happening_type && HAPPENING_TYPE_VALUES.includes(parsed.happening_type)) {
+        set('happening_type', parsed.happening_type as Announcement['happening_type']);
+      }
+
+      const recurrenceType = (parsed.recurrence_type && RECURRENCE_TYPE_VALUES.includes(parsed.recurrence_type))
+        ? parsed.recurrence_type as RecurrenceType
+        : 'one_time';
+      set('recurrence_type', recurrenceType);
+
+      if (parsed.event_date && ISO_DATE_RE.test(parsed.event_date)) {
+        setPrimaryDate(parsed.event_date, false);
+      }
+      if (parsed.recurrence_end_date && ISO_DATE_RE.test(parsed.recurrence_end_date)) {
+        set('recurrence_end_date', parsed.recurrence_end_date);
+      }
+      if (parsed.recurrence_day && WEEKDAYS.includes(parsed.recurrence_day)) {
+        set('recurrence_day', parsed.recurrence_day);
+      }
+      if (parsed.recurrence_week_of_month && WEEK_POSITIONS.includes(parsed.recurrence_week_of_month as WeekPosition)) {
+        set('recurrence_week_of_month', parsed.recurrence_week_of_month);
+      }
+      if (parsed.event_time && TIME_RE.test(parsed.event_time)) {
+        set('event_time', roundTo5Min(parsed.event_time));
+      }
+      if (parsed.end_time && TIME_RE.test(parsed.end_time)) {
+        set('end_time', roundTo5Min(parsed.end_time));
+      }
+      if (parsed.event_location) set('event_location', parsed.event_location);
+
+      setTimingExpanded(true);
     }
 
-    const recurrenceType = (parsed.recurrence_type && RECURRENCE_TYPE_VALUES.includes(parsed.recurrence_type))
-      ? parsed.recurrence_type as RecurrenceType
-      : 'one_time';
-    set('recurrence_type', recurrenceType);
-
-    if (parsed.event_date && ISO_DATE_RE.test(parsed.event_date)) {
-      setPrimaryDate(parsed.event_date, false);
-    }
-    if (parsed.recurrence_end_date && ISO_DATE_RE.test(parsed.recurrence_end_date)) {
-      set('recurrence_end_date', parsed.recurrence_end_date);
-    }
-    if (parsed.recurrence_day && WEEKDAYS.includes(parsed.recurrence_day)) {
-      set('recurrence_day', parsed.recurrence_day);
-    }
-    if (parsed.recurrence_week_of_month && WEEK_POSITIONS.includes(parsed.recurrence_week_of_month as WeekPosition)) {
-      set('recurrence_week_of_month', parsed.recurrence_week_of_month);
-    }
-    if (parsed.event_time && TIME_RE.test(parsed.event_time)) {
-      set('event_time', roundTo5Min(parsed.event_time));
-    }
-    if (parsed.end_time && TIME_RE.test(parsed.end_time)) {
-      set('end_time', roundTo5Min(parsed.end_time));
-    }
-    if (parsed.event_location) set('event_location', parsed.event_location);
-
-    // The raw notes themselves are worth more than anything we'd re-derive
-    // from them - they carry the staffer's original phrasing for the
-    // Draft buttons to actually write from.
-    if (draftNotes.trim()) set('description', draftNotes.trim());
-
-    setTimingExpanded(true);
-    setDraftNotes('');
-    setDraftPanelOpen(false);
+    setAutoFlyerPending(true);
   };
 
   const isScheduledType = f.happening_type === 'event' || f.happening_type === 'class';
@@ -337,29 +351,34 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
     try { await onSave(f); } finally { setSaving(false); }
   };
 
-  const fg: React.CSSProperties = { marginBottom: 14 };
+  const fg: React.CSSProperties = { marginBottom: 16 };
+
+  // Bigger than the shared inputBase - this form is the one place in the
+  // app people said felt cramped, so it gets its own larger scale rather
+  // than bumping the shared default (used by Calendar, Bulletin, Monthly,
+  // Printables, Stage, and the Manage list's search bar too).
+  const fieldInput: React.CSSProperties = { ...inputBase, fontSize: 16, padding: '11px 14px' };
 
   return (
-    <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, overflow: 'hidden', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
+    <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, overflow: 'hidden', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
       <style>{`@keyframes aispin { to { transform: rotate(360deg); } }`}</style>
 
       {/* Header bar */}
-      <div style={{ padding: '16px 24px', borderBottom: `1px solid ${C.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: C.bgSubtle }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+      <div style={{ padding: '18px 24px', borderBottom: `1px solid ${C.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: C.bgSubtle }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{ width: 3, height: 20, background: C.accent, borderRadius: 99 }} />
-          <span style={{ fontFamily: font.display, fontSize: 13, fontWeight: 800, color: C.text, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+          <span style={{ fontFamily: font.display, fontSize: 16, fontWeight: 800, color: C.text, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
             {announcement && announcement.id !== 'new' ? 'Edit Announcement' : 'New Announcement'}
           </span>
         </div>
-        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          <AIWriteButton label="Write All" loading={aiLoading.all} onClick={generateAll} disabled={!hasEnoughForAI} />
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <button
             type="button"
             onClick={() => set('is_published', !f.is_published)}
             title={f.is_published ? 'Won\'t appear on the public site once you Save' : 'Will appear on the public site once you Save'}
             style={{
-              fontFamily: font.display, fontSize: 10, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase',
-              padding: '6px 12px', borderRadius: 6, cursor: 'pointer', transition: 'all 0.15s',
+              fontFamily: font.display, fontSize: 13, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase',
+              padding: '8px 14px', borderRadius: 8, cursor: 'pointer', transition: 'all 0.15s',
               border: `1px solid ${f.is_published ? '#15803D' : C.borderMed}`,
               background: f.is_published ? 'rgba(22,163,74,0.12)' : C.card,
               color: f.is_published ? '#15803D' : C.textSec,
@@ -372,48 +391,28 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
 
       <div style={{ padding: '24px 24px 20px' }}>
 
-        <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: 10, padding: '14px 18px', marginBottom: 20 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-            <div>
-              <div style={{ fontFamily: font.display, fontSize: 11, fontWeight: 700, color: '#1D4ED8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Quick Fill from Notes
-              </div>
-              <div style={{ fontFamily: font.mono, fontSize: 10, color: '#3B5FA8', marginTop: 3, lineHeight: 1.5 }}>
-                Paste rough notes - Claude fills in the type, dates, times, and recurrence below for you to review before saving.
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => setDraftPanelOpen(v => !v)}
-              style={{
-                fontFamily: font.display, fontSize: 10, fontWeight: 700, color: '#1D4ED8',
-                background: '#fff', border: '1px solid #BFDBFE', borderRadius: 5, padding: '6px 12px',
-                cursor: 'pointer', letterSpacing: '0.05em', textTransform: 'uppercase', flexShrink: 0,
-              }}
-            >
-              {draftPanelOpen ? 'Hide' : 'Paste Notes'}
-            </button>
+        <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: 12, padding: '16px 20px', marginBottom: 24 }}>
+          <div style={{ fontFamily: font.display, fontSize: 14, fontWeight: 700, color: '#1D4ED8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Notes
           </div>
-          {draftPanelOpen && (
-            <div style={{ marginTop: 12 }}>
-              <textarea
-                style={{ ...inputBase, minHeight: 70, resize: 'vertical', fontSize: 13, background: '#fff' }}
-                value={draftNotes}
-                onChange={e => setDraftNotes(e.target.value)}
-                placeholder={`e.g. "Marriage class starts Sept 20, every other Wednesday at 7pm through November, room 2"`}
-                autoFocus
-              />
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
-                <AIWriteButton label="Fill In Fields" loading={parsingDraft} onClick={handleParseDraft} disabled={!draftNotes.trim()} />
-              </div>
-            </div>
-          )}
+          <div style={{ fontFamily: font.mono, fontSize: 13, color: '#3B5FA8', margin: '3px 0 10px', lineHeight: 1.5 }}>
+            Write rough notes - what's happening, who it's for, any dates/times/location. One click fills in the type, dates, times, and recurrence below, and writes the Description for you to review before saving.
+          </div>
+          <textarea
+            style={{ ...fieldInput, minHeight: 70, resize: 'vertical', fontSize: 16, background: '#fff' }}
+            value={f.description}
+            onChange={e => set('description', e.target.value)}
+            placeholder={`e.g. "Marriage class starts Sept 20, every other Wednesday at 7pm through November, room 2"`}
+          />
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 10 }}>
+            <AIWriteButton label="Fill In & Write" loading={parsingDraft || autoFlyerPending || aiLoading.flyer} onClick={handleFillAndWrite} disabled={!f.description.trim()} />
+          </div>
         </div>
 
         <Section title="Basics">
           <div style={fg}>
             <label style={labelBase}>Type</label>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
               {HAPPENING_TYPE_OPTIONS.map(opt => (
                 <button
                   key={opt.value}
@@ -422,10 +421,10 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
                   onClick={() => set('happening_type', opt.value)}
                   style={{
                     fontFamily: font.body,
-                    fontSize: 12,
+                    fontSize: 15,
                     fontWeight: 600,
-                    padding: '8px 14px',
-                    borderRadius: 6,
+                    padding: '10px 16px',
+                    borderRadius: 8,
                     border: `1px solid ${f.happening_type === opt.value ? C.accent : C.borderMed}`,
                     background: f.happening_type === opt.value ? C.accentBg : C.card,
                     color: f.happening_type === opt.value ? C.accent : C.textSec,
@@ -441,39 +440,34 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
           <div style={fg}>
             <label style={labelBase}>Title</label>
             <input
-              style={{ ...inputBase, fontFamily: font.display, fontWeight: 700, fontSize: 15 }}
+              style={{ ...fieldInput, fontFamily: font.display, fontWeight: 700, fontSize: 18 }}
               value={f.title}
               onChange={e => set('title', e.target.value)}
               placeholder="Announcement title"
             />
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
             <div>
               <label style={labelBase}>Category</label>
-              <select style={inputBase} value={f.category} onChange={e => set('category', e.target.value)}>
+              <select style={fieldInput} value={f.category} onChange={e => set('category', e.target.value)}>
                 {CATEGORIES.map(c => <option key={c}>{c}</option>)}
               </select>
             </div>
             <div>
               <label style={labelBase}>Scope</label>
-              <select style={inputBase} value={f.scope} onChange={e => set('scope', e.target.value as Announcement['scope'])}>
+              <select style={fieldInput} value={f.scope} onChange={e => set('scope', e.target.value as Announcement['scope'])}>
                 {SCOPE_OPTIONS.map(o => (
                   <option key={o.value} value={o.value}>{o.label} ({o.desc})</option>
                 ))}
               </select>
-              {f.scope === 'whole_church' && (
-                <div style={{ fontFamily: font.mono, fontSize: 10, color: C.accent, marginTop: 4, letterSpacing: '0.02em' }}>
-                  → eligible for Stage Script (see Destinations below)
-                </div>
-              )}
             </div>
           </div>
           {f.scope === 'ministry' && (
-            <div style={{ marginTop: 12 }}>
+            <div style={{ marginTop: 14 }}>
               <label style={labelBase}>Specific Ministry</label>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
                 <select
-                  style={{ ...inputBase, width: 'auto', minWidth: 160 }}
+                  style={{ ...fieldInput, width: 'auto', minWidth: 160 }}
                   value={ministryOther ? '__other' : (f.ministry || '')}
                   onChange={e => {
                     if (e.target.value === '__other') {
@@ -491,7 +485,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
                 </select>
                 {ministryOther && (
                   <input
-                    style={{ ...inputBase, flex: 1, minWidth: 180 }}
+                    style={{ ...fieldInput, flex: 1, minWidth: 180 }}
                     value={f.ministry}
                     onChange={e => set('ministry', e.target.value)}
                     placeholder="Type ministry name..."
@@ -505,28 +499,15 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
 
         <Section title="Description">
           <div style={fg}>
-            <label style={labelBase}>Notes for AI <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(only feeds the drafts below)</span></label>
-            <div style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, marginBottom: 5, lineHeight: 1.5 }}>
-              This is never published or printed anywhere on its own - it's only here to give the AI something to work from. Write it as rough notes. What actually gets used is whatever ends up in Description and Short Line below.
-            </div>
-            <textarea
-              style={{ ...inputBase, minHeight: 68, resize: 'vertical', fontSize: 13, background: '#FFF8E7', border: '1px solid #E8C77D' }}
-              value={f.description}
-              onChange={e => set('description', e.target.value)}
-              placeholder="Brief summary: what's happening, who it's for, why it matters."
-            />
-          </div>
-
-          <div style={fg}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
               <div>
                 <label style={labelBase}>Description <span style={{ fontWeight: 400, textTransform: 'none' }}>(used everywhere: The Happenings email, Monthly Flyer, Monthly Bulletin, printed Invite, the Events/Classes pages & Calendar)</span></label>
-                <div style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, marginTop: 1 }}>aim for under 60 words - only go longer if the real details need it</div>
+                <div style={{ fontFamily: font.mono, fontSize: 13, color: C.textMuted, marginTop: 1 }}>aim for under 60 words - only go longer if the real details need it</div>
               </div>
               <AIWriteButton label="Draft" loading={aiLoading.flyer} onClick={generateFlyer} disabled={!hasEnoughForAI} />
             </div>
             <textarea
-              style={{ ...inputBase, minHeight: 60, resize: 'vertical' }}
+              style={{ ...fieldInput, minHeight: 60, resize: 'vertical' }}
               value={f.flyer_text}
               onChange={e => set('flyer_text', e.target.value)}
               placeholder="The description for this announcement - AI can write this for you, or type your own."
@@ -534,57 +515,44 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
           </div>
 
           <div style={fg}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
               <div>
                 <label style={labelBase}>Short Line <span style={{ fontWeight: 400, textTransform: 'none' }}>(Slides & Email one-liner)</span></label>
-                <div style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, marginTop: 1 }}>one sentence, pipe-delimited</div>
+                <div style={{ fontFamily: font.mono, fontSize: 13, color: C.textMuted, marginTop: 1 }}>one sentence, pipe-delimited</div>
               </div>
               <AIWriteButton label="Draft" loading={aiLoading.slide} onClick={generateSlide} disabled={!hasEnoughForAI} />
             </div>
             <input
-              style={{ ...inputBase, fontFamily: font.mono, fontSize: 12 }}
+              style={fieldInput}
               value={f.slide_override}
               onChange={e => { set('slide_override', e.target.value); set('short_version', e.target.value); }}
               placeholder="Men's Bible Study | May 6 | 7 PM | Fellowship Hall"
-            />
-          </div>
-
-          <div>
-            <label style={labelBase}>Stage Notes <span style={{ fontWeight: 400, textTransform: 'none' }}>(optional)</span></label>
-            <div style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, marginTop: 1, marginBottom: 5 }}>
-              A short line of tone guidance for whoever reads the Stage Script live, and the quoted line printed on the Invite. Leave blank for neither.
-            </div>
-            <input
-              style={inputBase}
-              value={f.stage_notes}
-              onChange={e => set('stage_notes', e.target.value)}
-              placeholder={`e.g. "Come as you are."`}
             />
           </div>
         </Section>
 
         <Section title="Details">
           {isScheduledType ? (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
               <div style={{ gridColumn: '1 / -1' }}>
                 <label style={labelBase}>Location</label>
-                <input style={inputBase} value={f.event_location} onChange={e => set('event_location', e.target.value)} placeholder="e.g. Fellowship Hall, Room 201" />
+                <input style={fieldInput} value={f.event_location} onChange={e => set('event_location', e.target.value)} placeholder="e.g. Fellowship Hall, Room 201" />
               </div>
               <div style={{ gridColumn: '1 / -1' }}>
                 <label style={labelBase}>Registration Link <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></label>
-                <input type="url" style={inputBase} value={f.link} onChange={e => set('link', e.target.value)} placeholder="https://example.com/register" />
+                <input type="url" style={fieldInput} value={f.link} onChange={e => set('link', e.target.value)} placeholder="https://example.com/register" />
               </div>
               <div>
                 <label style={labelBase}>Contact Name</label>
-                <input style={inputBase} value={f.contact_name} onChange={e => set('contact_name', e.target.value)} placeholder="Optional" />
+                <input style={fieldInput} value={f.contact_name} onChange={e => set('contact_name', e.target.value)} placeholder="Optional" />
               </div>
               <div>
                 <label style={labelBase}>Contact Info</label>
-                <input style={inputBase} value={f.contact_info} onChange={e => set('contact_info', e.target.value)} placeholder="Email or phone" />
+                <input style={fieldInput} value={f.contact_info} onChange={e => set('contact_info', e.target.value)} placeholder="Email or phone" />
               </div>
             </div>
           ) : (
-            <div style={{ fontFamily: font.mono, fontSize: 11, color: C.textMuted }}>
+            <div style={{ fontFamily: font.mono, fontSize: 14, color: C.textMuted }}>
               Location, registration link, and contact info apply to Events and Classes.
             </div>
           )}
@@ -592,15 +560,15 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
           <button
             type="button"
             onClick={() => setShowAdvanced(v => !v)}
-            style={{ fontFamily: font.display, fontSize: 10, fontWeight: 700, color: C.textMuted, background: 'none', border: 'none', padding: 0, cursor: 'pointer', letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: isScheduledType ? 12 : 8 }}
+            style={{ fontFamily: font.display, fontSize: 13, fontWeight: 700, color: C.textMuted, background: 'none', border: 'none', padding: 0, cursor: 'pointer', letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: isScheduledType ? 12 : 8 }}
           >
             {showAdvanced ? '– Hide assignee' : '+ Assignee'}
           </button>
 
           {showAdvanced && (
-            <div style={{ marginTop: 10 }}>
+            <div style={{ marginTop: 12 }}>
               <label style={labelBase}>Assigned To</label>
-              <input style={inputBase} value={f.assigned_to} onChange={e => set('assigned_to', e.target.value)} placeholder="Who's responsible" />
+              <input style={fieldInput} value={f.assigned_to} onChange={e => set('assigned_to', e.target.value)} placeholder="Who's responsible" />
             </div>
           )}
         </Section>
@@ -610,7 +578,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
             <button
               type="button"
               onClick={() => setTimingExpanded(true)}
-              style={{ fontFamily: font.display, fontSize: 10, fontWeight: 700, color: C.accent, background: 'none', border: `1px solid ${C.accent}44`, borderRadius: 4, padding: '5px 12px', cursor: 'pointer', letterSpacing: '0.05em', textTransform: 'uppercase' }}
+              style={{ fontFamily: font.display, fontSize: 13, fontWeight: 700, color: C.accent, background: 'none', border: `1px solid ${C.accent}44`, borderRadius: 6, padding: '7px 14px', cursor: 'pointer', letterSpacing: '0.05em', textTransform: 'uppercase' }}
             >
               + Schedule for a specific date or window (optional)
             </button>
@@ -620,14 +588,14 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
             <button
               type="button"
               onClick={() => setTimingExpanded(false)}
-              style={{ fontFamily: font.display, fontSize: 10, fontWeight: 700, color: C.textMuted, background: 'none', border: 'none', padding: 0, cursor: 'pointer', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 12 }}
+              style={{ fontFamily: font.display, fontSize: 13, fontWeight: 700, color: C.textMuted, background: 'none', border: 'none', padding: 0, cursor: 'pointer', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 14 }}
             >
               – Hide scheduling
             </button>
           )}
           <div style={fg}>
             <label style={labelBase}>Event Type</label>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
               {RECURRENCE_OPTIONS.map(opt => (
                 <button
                   key={opt.value}
@@ -636,10 +604,10 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
                   onClick={() => set('recurrence_type', opt.value)}
                   style={{
                     fontFamily: font.body,
-                    fontSize: 12,
+                    fontSize: 15,
                     fontWeight: 600,
-                    padding: '8px 14px',
-                    borderRadius: 6,
+                    padding: '10px 16px',
+                    borderRadius: 8,
                     border: `1px solid ${f.recurrence_type === opt.value ? C.accent : C.borderMed}`,
                     background: f.recurrence_type === opt.value ? C.accentBg : C.card,
                     color: f.recurrence_type === opt.value ? C.accent : C.textSec,
@@ -655,33 +623,33 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
 
           {f.recurrence_type === 'one_time' && (
             <div style={fg}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                 <label style={labelBase}>Event Date{f.event_dates.length > 1 ? 's' : ''}</label>
                 <button
                   type="button"
                   onClick={addDate}
-                  style={{ fontFamily: font.display, fontSize: 10, fontWeight: 700, color: C.accent, background: 'none', border: `1px solid ${C.accent}44`, borderRadius: 4, padding: '3px 10px', cursor: 'pointer', letterSpacing: '0.05em', textTransform: 'uppercase' }}
+                  style={{ fontFamily: font.display, fontSize: 13, fontWeight: 700, color: C.accent, background: 'none', border: `1px solid ${C.accent}44`, borderRadius: 6, padding: '5px 12px', cursor: 'pointer', letterSpacing: '0.05em', textTransform: 'uppercase' }}
                 >
                   + Add Date
                 </button>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {f.event_dates.length === 0 && (
-                  <div style={{ fontFamily: font.mono, fontSize: 11, color: C.textMuted, padding: '6px 0' }}>
+                  <div style={{ fontFamily: font.mono, fontSize: 14, color: C.textMuted, padding: '6px 0' }}>
                     no dates set, runs until removed
                   </div>
                 )}
                 {f.event_dates.map((d, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <input
-                      style={{ ...inputBase, width: 160, fontFamily: font.mono, fontSize: 12 }}
+                      style={{ ...fieldInput, width: 180, fontFamily: font.mono, fontSize: 15 }}
                       type="date"
                       value={d}
                       onChange={e => updateDate(i, e.target.value)}
                     />
-                    <button type="button" onClick={() => removeDate(i)} style={{ fontFamily: font.body, fontSize: 12, color: C.textMuted, background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px', lineHeight: 1 }}>×</button>
+                    <button type="button" onClick={() => removeDate(i)} style={{ fontFamily: font.body, fontSize: 15, color: C.textMuted, background: 'none', border: 'none', cursor: 'pointer', padding: '4px 6px', lineHeight: 1 }}>×</button>
                     {d && d === f.event_date && f.event_dates.length > 1 && (
-                      <span style={{ fontFamily: font.mono, fontSize: 9, color: C.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>primary</span>
+                      <span style={{ fontFamily: font.mono, fontSize: 11, color: C.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>primary</span>
                     )}
                   </div>
                 ))}
@@ -690,12 +658,12 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
           )}
 
           {f.recurrence_type === 'date_range' && (
-            <div style={{ ...fg, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div style={{ ...fg, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
               <div>
                 <label style={labelBase}>Start Date *</label>
                 <input
                   type="date"
-                  style={{ ...inputBase, fontFamily: font.mono, fontSize: 12 }}
+                  style={{ ...fieldInput, fontFamily: font.mono, fontSize: 15 }}
                   value={f.event_date || ''}
                   onChange={e => setPrimaryDate(e.target.value || null)}
                 />
@@ -704,7 +672,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
                 <label style={labelBase}>End Date *</label>
                 <input
                   type="date"
-                  style={{ ...inputBase, fontFamily: font.mono, fontSize: 12 }}
+                  style={{ ...fieldInput, fontFamily: font.mono, fontSize: 15 }}
                   value={f.recurrence_end_date || ''}
                   onChange={e => set('recurrence_end_date', e.target.value || null)}
                 />
@@ -714,12 +682,12 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
 
           {(f.recurrence_type === 'weekly' || f.recurrence_type === 'biweekly') && (
             <>
-              <div style={{ ...fg, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div style={{ ...fg, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                 <div>
                   <label style={labelBase}>First Session *</label>
                   <input
                     type="date"
-                    style={{ ...inputBase, fontFamily: font.mono, fontSize: 12 }}
+                    style={{ ...fieldInput, fontFamily: font.mono, fontSize: 15 }}
                     value={f.event_date || ''}
                     onChange={e => setPrimaryDate(e.target.value || null, true)}
                   />
@@ -728,7 +696,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
                   <label style={labelBase}>Last Session (optional)</label>
                   <input
                     type="date"
-                    style={{ ...inputBase, fontFamily: font.mono, fontSize: 12 }}
+                    style={{ ...fieldInput, fontFamily: font.mono, fontSize: 15 }}
                     value={f.recurrence_end_date || ''}
                     onChange={e => set('recurrence_end_date', e.target.value || null)}
                   />
@@ -737,7 +705,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
               <div style={fg}>
                 <label style={labelBase}>Repeats On</label>
                 <select
-                  style={inputBase}
+                  style={fieldInput}
                   value={f.recurrence_day || weekdayOf(f.event_date || '') || ''}
                   onChange={e => set('recurrence_day', e.target.value)}
                 >
@@ -752,12 +720,12 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
             <>
               <div style={fg}>
                 <label style={labelBase}>Repeats By</label>
-                <div style={{ display: 'flex', gap: 8 }}>
+                <div style={{ display: 'flex', gap: 10 }}>
                   <button
                     type="button"
                     onClick={() => set('recurrence_week_of_month', '')}
                     style={{
-                      fontFamily: font.body, fontSize: 12, fontWeight: 600, padding: '8px 14px', borderRadius: 6,
+                      fontFamily: font.body, fontSize: 15, fontWeight: 600, padding: '10px 16px', borderRadius: 8,
                       border: `1px solid ${!f.recurrence_week_of_month ? C.accent : C.borderMed}`,
                       background: !f.recurrence_week_of_month ? C.accentBg : C.card,
                       color: !f.recurrence_week_of_month ? C.accent : C.textSec,
@@ -770,7 +738,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
                     type="button"
                     onClick={enableWeekdayMonthly}
                     style={{
-                      fontFamily: font.body, fontSize: 12, fontWeight: 600, padding: '8px 14px', borderRadius: 6,
+                      fontFamily: font.body, fontSize: 15, fontWeight: 600, padding: '10px 16px', borderRadius: 8,
                       border: `1px solid ${f.recurrence_week_of_month ? C.accent : C.borderMed}`,
                       background: f.recurrence_week_of_month ? C.accentBg : C.card,
                       color: f.recurrence_week_of_month ? C.accent : C.textSec,
@@ -781,12 +749,12 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
                   </button>
                 </div>
               </div>
-              <div style={{ ...fg, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div style={{ ...fg, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                 <div>
                   <label style={labelBase}>First Session *</label>
                   <input
                     type="date"
-                    style={{ ...inputBase, fontFamily: font.mono, fontSize: 12 }}
+                    style={{ ...fieldInput, fontFamily: font.mono, fontSize: 15 }}
                     value={f.event_date || ''}
                     onChange={e => setPrimaryDate(e.target.value || null, !!f.recurrence_week_of_month)}
                   />
@@ -795,7 +763,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
                   <label style={labelBase}>Last Session (optional)</label>
                   <input
                     type="date"
-                    style={{ ...inputBase, fontFamily: font.mono, fontSize: 12 }}
+                    style={{ ...fieldInput, fontFamily: font.mono, fontSize: 15 }}
                     value={f.recurrence_end_date || ''}
                     onChange={e => set('recurrence_end_date', e.target.value || null)}
                   />
@@ -806,7 +774,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
                 <>
                   <div style={fg}>
                     <label style={labelBase}>Which Week(s)</label>
-                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                       {WEEK_POSITIONS.map(pos => {
                         const active = f.recurrence_week_of_month.split(',').includes(pos);
                         return (
@@ -815,7 +783,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
                             type="button"
                             onClick={() => togglePosition(pos)}
                             style={{
-                              fontFamily: font.body, fontSize: 12, fontWeight: 600, padding: '6px 12px', borderRadius: 6,
+                              fontFamily: font.body, fontSize: 15, fontWeight: 600, padding: '8px 14px', borderRadius: 8,
                               border: `1px solid ${active ? C.accent : C.borderMed}`,
                               background: active ? C.accentBg : C.card,
                               color: active ? C.accent : C.textSec,
@@ -831,7 +799,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
                   <div style={fg}>
                     <label style={labelBase}>Repeats On</label>
                     <select
-                      style={inputBase}
+                      style={fieldInput}
                       value={f.recurrence_day || weekdayOf(f.event_date || '') || ''}
                       onChange={e => set('recurrence_day', e.target.value)}
                     >
@@ -842,7 +810,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
                 </>
               ) : (
                 f.event_date && (
-                  <div style={{ fontFamily: font.mono, fontSize: 11, color: C.textMuted, padding: '0 0 14px' }}>
+                  <div style={{ fontFamily: font.mono, fontSize: 14, color: C.textMuted, padding: '0 0 14px' }}>
                     Repeats on the {ordinal(new Date(f.event_date + 'T12:00:00').getDate())} of every month. In shorter months it falls on the last day.
                   </div>
                 )
@@ -850,11 +818,11 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
             </>
           )}
 
-          <div style={{ ...fg, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div style={{ ...fg, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
             <div>
               <label style={labelBase}>Start Time</label>
               <select
-                style={{ ...inputBase, fontFamily: font.mono, fontSize: 12 }}
+                style={{ ...fieldInput, fontFamily: font.mono, fontSize: 15 }}
                 value={f.event_time || ''}
                 onChange={e => set('event_time', e.target.value)}
               >
@@ -865,7 +833,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
             <div>
               <label style={labelBase}>End Time</label>
               <select
-                style={{ ...inputBase, fontFamily: font.mono, fontSize: 12 }}
+                style={{ ...fieldInput, fontFamily: font.mono, fontSize: 15 }}
                 value={f.end_time || ''}
                 onChange={e => set('end_time', e.target.value)}
               >
@@ -876,20 +844,20 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
           </div>
 
           {f.recurrence_label && (
-            <div style={{ fontFamily: font.body, fontSize: 12, color: C.accent, fontWeight: 600, padding: '6px 12px', background: C.accentBg, borderRadius: 6, border: `1px solid ${C.accent}33`, marginBottom: 14 }}>
+            <div style={{ fontFamily: font.body, fontSize: 15, color: C.accent, fontWeight: 600, padding: '8px 14px', background: C.accentBg, borderRadius: 8, border: `1px solid ${C.accent}33`, marginBottom: 16 }}>
               {f.recurrence_label}
             </div>
           )}
 
           {missingRequiredDate && (
-            <div style={{ fontFamily: font.body, fontSize: 12, color: C.warn, fontWeight: 600, padding: '6px 12px', background: C.warnBg, borderRadius: 6, marginBottom: 14 }}>
+            <div style={{ fontFamily: font.body, fontSize: 15, color: C.warn, fontWeight: 600, padding: '8px 14px', background: C.warnBg, borderRadius: 8, marginBottom: 16 }}>
               {f.recurrence_type === 'date_range' ? 'Start and End Date are required.' : 'First Session is required.'}
             </div>
           )}
 
           {f.event_date && (
-            <div style={{ background: C.bgSubtle, border: `1px solid ${C.border}`, borderRadius: 6, padding: '10px 14px', fontFamily: font.mono, fontSize: 11, color: C.textTer, lineHeight: 1.8 }}>
-              <div style={{ fontFamily: font.display, fontSize: 9, fontWeight: 700, color: C.textMuted, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>Auto schedule</div>
+            <div style={{ background: C.bgSubtle, border: `1px solid ${C.border}`, borderRadius: 8, padding: '12px 18px', fontFamily: font.mono, fontSize: 14, color: C.textTer, lineHeight: 1.8 }}>
+              <div style={{ fontFamily: font.display, fontSize: 11, fontWeight: 700, color: C.textMuted, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>Auto schedule</div>
               <div>
                 <span style={{ color: C.textMuted }}>active </span>
                 <span style={{ color: C.accent }}>
@@ -912,39 +880,34 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
         </Section>
 
         <Section title="Destinations">
-          <div style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, marginBottom: 10, letterSpacing: '0.02em' }}>
-            {f.scope === 'whole_church'
-              ? 'Whole Church scope makes this eligible for the Stage Script - Stage Announcement below decides if it actually goes on it'
-              : 'Only Whole Church scope items can go on the Stage Script'}
-          </div>
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             {[
               { key: 'show_on_slides' as const, label: 'Sunday Slides' },
               { key: 'show_in_happenings' as const, label: 'The Happenings' },
               { key: 'monthly_include' as const, label: 'Monthly Flyer & Bulletin' },
-              ...(f.scope === 'whole_church' ? [{ key: 'show_on_stage' as const, label: 'Stage Announcement' }] : []),
+              { key: 'show_on_stage' as const, label: 'Stage Announcement' },
             ].map(d => (
-              <label key={d.key} style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: font.body, fontSize: 13, color: C.textSec, cursor: 'pointer', padding: '6px 12px', border: `1px solid ${f[d.key] ? C.accent + '44' : C.border}`, borderRadius: 6, background: f[d.key] ? C.accentBg : C.card, transition: 'all 0.15s' }}>
+              <label key={d.key} style={{ display: 'flex', alignItems: 'center', gap: 8, fontFamily: font.body, fontSize: 16, color: C.textSec, cursor: 'pointer', padding: '8px 14px', border: `1px solid ${f[d.key] ? C.accent + '44' : C.border}`, borderRadius: 8, background: f[d.key] ? C.accentBg : C.card, transition: 'all 0.15s' }}>
                 <input
                   type="checkbox"
                   checked={f[d.key] as boolean}
                   onChange={e => set(d.key, e.target.checked)}
-                  style={{ accentColor: C.accent, width: 13, height: 13 }}
+                  style={{ accentColor: C.accent, width: 16, height: 16 }}
                 />
-                <span style={{ fontFamily: font.display, fontSize: 11, fontWeight: 600, letterSpacing: '0.02em' }}>{d.label}</span>
+                <span style={{ fontFamily: font.display, fontSize: 14, fontWeight: 600, letterSpacing: '0.02em' }}>{d.label}</span>
               </label>
             ))}
           </div>
 
           {isScheduledType ? (
-            <div style={{ marginTop: 14, fontFamily: font.mono, fontSize: 11, color: C.textMuted }}>
+            <div style={{ marginTop: 16, fontFamily: font.mono, fontSize: 14, color: C.textMuted }}>
               Events and Classes sign up through the Registration Link above (Realm, etc.) - no separate sign-up here.
             </div>
           ) : (
             <>
-              <div style={{ marginTop: 14 }}>
+              <div style={{ marginTop: 16 }}>
                 <label style={labelBase}>Sign-Up</label>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                   {SIGNUP_MODE_OPTIONS.map(opt => (
                     <button
                       key={opt.value}
@@ -952,10 +915,10 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
                       onClick={() => set('signup_mode', opt.value)}
                       style={{
                         fontFamily: font.body,
-                        fontSize: 12,
+                        fontSize: 15,
                         fontWeight: 600,
-                        padding: '8px 14px',
-                        borderRadius: 6,
+                        padding: '10px 16px',
+                        borderRadius: 8,
                         border: `1px solid ${f.signup_mode === opt.value ? C.accent : C.borderMed}`,
                         background: f.signup_mode === opt.value ? C.accentBg : C.card,
                         color: f.signup_mode === opt.value ? C.accent : C.textSec,
@@ -970,7 +933,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
               </div>
 
               {f.signup_mode === 'sheet' && (
-                <div style={{ marginTop: 14 }}>
+                <div style={{ marginTop: 16 }}>
                   <button
                     type="button"
                     disabled={!onOpenSignupSheet || !f.id}
@@ -978,7 +941,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
                     onClick={() => f.id && onOpenSignupSheet?.({ id: f.id, title: f.title, event_date: f.event_date })}
                     style={{
                       ...btnGhost,
-                      fontSize: 12,
+                      fontSize: 15,
                       fontWeight: 700,
                       opacity: !onOpenSignupSheet || !f.id ? 0.5 : 1,
                       cursor: !onOpenSignupSheet || !f.id ? 'default' : 'pointer',
@@ -992,17 +955,17 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
           )}
         </Section>
 
-        <div style={{ display: 'flex', gap: 8, paddingTop: 4 }}>
+        <div style={{ display: 'flex', gap: 10, paddingTop: 4 }}>
           <button
             onClick={handleSave}
             disabled={saving || !canSave}
-            style={{ ...btnPrimary, opacity: saving || !canSave ? 0.5 : 1 }}
+            style={{ ...btnPrimary, fontSize: 15, padding: '11px 22px', opacity: saving || !canSave ? 0.5 : 1 }}
             onMouseEnter={e => { if (!saving && canSave) (e.currentTarget as HTMLElement).style.background = C.accentHover; }}
             onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = C.accent}
           >
             {saving ? 'Saving...' : 'Save'}
           </button>
-          <button onClick={onCancel} style={btnGhost}>Cancel</button>
+          <button onClick={onCancel} style={{ ...btnGhost, fontSize: 15, padding: '11px 22px' }}>Cancel</button>
         </div>
       </div>
 
@@ -1017,6 +980,8 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
         title={canSave ? 'Save' : 'Add a title to save'}
         style={{
           ...btnPrimary,
+          fontSize: 15,
+          padding: '13px 26px',
           position: 'fixed',
           bottom: 24,
           right: 24,

@@ -52,7 +52,6 @@ function makeAnnouncement(overrides: Partial<Announcement> = {}): Announcement {
     slide_override: '',
     month_override: '',
     flyer_text: 'Short flyer copy for this item.',
-    stage_notes: '',
     slide_made: false,
     needs_signup: false,
     signup_mode: 'none',

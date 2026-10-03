@@ -74,6 +74,53 @@ export const submitRealmSignup = async (formData) => {
   }
 };
 
+export const submitFacilityRentalRequest = async (formData) => {
+  try {
+    // See submitContactForm - no .select() for the same RLS-on-RETURNING reason.
+    const { error } = await supabase
+      .from('facility_rental_requests_portal123')
+      .insert([{
+        event_type: formData.event_type,
+        organization_name: formData.organization_name || null,
+        event_name: formData.event_name,
+        purpose: formData.purpose,
+        guest_count: formData.guest_count,
+        event_date: formData.event_date,
+        event_start_time: formData.event_start_time,
+        event_end_time: formData.event_end_time,
+        setup_schedule: formData.setup_schedule,
+        setup_arrival_time: formData.setup_arrival_time,
+        setup_departure_time: formData.setup_departure_time,
+        is_member: formData.is_member,
+        rooms_requested: formData.rooms_requested,
+        additional_services: formData.additional_services,
+        calculated_total: formData.calculated_total,
+        responsible_first_name: formData.responsible_first_name,
+        responsible_last_name: formData.responsible_last_name,
+        responsible_email: formData.responsible_email,
+        responsible_phone: formData.responsible_phone,
+        return_address: formData.return_address,
+        signature_name: formData.signature_name,
+        signature_date: formData.signature_date,
+        agreed_to_terms: formData.agreed_to_terms
+      }]);
+
+    if (error) throw error;
+
+    // Formspree can't email an arbitrary recipient (the renter) or route to
+    // a configurable address, so this one form uses its own edge function +
+    // Resend instead of sendEmail/Formspree - see send-rental-email.
+    supabase.functions.invoke('send-rental-email', { body: formData }).catch(err =>
+      console.error('Facility rental notification email failed:', err)
+    );
+
+    return { data: null, error: null };
+  } catch (error) {
+    console.error('Error submitting facility rental request:', error);
+    return { data: null, error: error.message };
+  }
+};
+
 export const submitTableGroupSignup = async (formData) => {
   try {
     // See submitContactForm - no .select() for the same RLS-on-RETURNING reason.
