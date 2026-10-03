@@ -168,39 +168,31 @@ export function AnnouncementCard({ a, today, onEdit, onDelete, onTogglePublish, 
           {/* Where this shows up - all four, checked or not, so it reads
               as the full picture of what's possible, not just what
               happens to apply to this one. Click one to flip it right
-              here, no need to open Edit. Stage only actually does
-              anything for Whole Church scope (isStageActive requires
-              both), so it's disabled rather than hidden on other cards -
-              shown, but can't be falsely checked into a state that
-              wouldn't happen. */}
+              here, no need to open Edit. */}
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {[...DEST_LABELS, STAGE_DEST].map(d => {
               const on = !!a[d.key];
               const toggling = togglingKeys.has(d.key);
-              const applicable = d.key !== 'show_on_stage' || a.scope === 'whole_church';
-              const disabled = toggling || !applicable;
               return (
                 <button
                   key={d.key}
                   type="button"
-                  onClick={() => applicable && handleToggleDestination(d.key)}
-                  disabled={disabled}
-                  title={applicable
-                    ? `Click to ${on ? 'remove from' : 'include in'} ${d.short}`
-                    : 'Only Whole Church scope items can go on the Stage Script'}
+                  onClick={() => handleToggleDestination(d.key)}
+                  disabled={toggling}
+                  title={`Click to ${on ? 'remove from' : 'include in'} ${d.short}`}
                   style={{
                     display: 'inline-flex', alignItems: 'center', gap: 5,
                     fontFamily: font.display, fontSize: 12, fontWeight: 700, letterSpacing: '0.03em', textTransform: 'uppercase',
-                    color: !applicable ? C.textMuted : (on ? C.accent : C.textMuted),
-                    opacity: !applicable ? 0.35 : (toggling ? 0.5 : 1),
-                    background: applicable && on ? C.accentBg : C.card,
-                    border: `1px solid ${applicable && on ? C.accent + '55' : C.border}`,
+                    color: on ? C.accent : C.textMuted,
+                    opacity: toggling ? 0.5 : 1,
+                    background: on ? C.accentBg : C.card,
+                    border: `1px solid ${on ? C.accent + '55' : C.border}`,
                     borderRadius: 6, padding: '4px 10px', margin: 0,
-                    cursor: disabled ? 'default' : 'pointer',
+                    cursor: toggling ? 'default' : 'pointer',
                     transition: 'all 0.15s',
                   }}
                 >
-                  <span style={{ fontSize: 13, lineHeight: 1 }}>{toggling ? '···' : (applicable && on ? '✓' : '–')}</span>
+                  <span style={{ fontSize: 13, lineHeight: 1 }}>{toggling ? '···' : (on ? '✓' : '–')}</span>
                   {d.short}
                 </button>
               );
