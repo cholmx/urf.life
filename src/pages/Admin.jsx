@@ -28,18 +28,16 @@ const AdminCapitalCampaign = lazy(() => import('../components/AdminCapitalCampai
 const AdminComments = lazy(() => import('../components/AdminComments'));
 const AdminDashboard = lazy(() => import('../components/AdminDashboard'));
 const AdminSubmissions = lazy(() => import('../components/AdminSubmissions'));
-const AdminRentals = lazy(() => import('../components/AdminRentals'));
 const SlideMaker = lazy(() => import('../staffTools/slideMaker/SlideMaker'));
 const SignupSheetMaker = lazy(() => import('../staffTools/signupSheet/SignupSheetMaker'));
 
-const {FiPlay,FiBookOpen,FiHome,FiLock,FiStar,FiHeart,FiUsers,FiTrendingUp,FiMessageSquare,FiGrid,FiLogOut,FiInbox,FiMic,FiPrinter,FiCalendar,FiArchive,FiMail,FiImage,FiClipboard,FiMenu,FiX,FiKey}=FiIcons;
+const {FiPlay,FiBookOpen,FiHome,FiLock,FiStar,FiHeart,FiUsers,FiTrendingUp,FiMessageSquare,FiGrid,FiLogOut,FiInbox,FiMic,FiPrinter,FiCalendar,FiArchive,FiMail,FiImage,FiClipboard,FiMenu,FiX}=FiIcons;
 
 const NAV_SECTIONS=[
   {
     items: [
       {id: 'overview',label: 'Dashboard',icon: FiGrid},
       {id: 'submissions',label: 'Submissions',icon: FiInbox},
-      {id: 'rentals',label: 'Rentals',icon: FiKey},
     ],
   },
   {
@@ -207,8 +205,6 @@ const Admin=()=> {
         );
       case 'submissions':
         return <AdminSubmissions />;
-      case 'rentals':
-        return <AdminRentals />;
       case 'calendar':
         return (
           <CalendarPage

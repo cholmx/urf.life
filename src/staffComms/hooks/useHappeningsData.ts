@@ -68,6 +68,7 @@ export function useHappeningsData(enabled: boolean, onNavigateToManage?: () => v
       slide_override: f.slide_override,
       month_override: f.month_override,
       flyer_text: f.flyer_text,
+      stage_notes: f.stage_notes,
       needs_signup: f.needs_signup,
       // Events and Classes sign up externally (Realm, etc.) via the Link
       // field, not this app's built-in sign-up - enforced here too in case

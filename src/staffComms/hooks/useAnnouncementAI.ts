@@ -30,12 +30,14 @@ function buildContext(f: FormData): string {
   if (f.event_location) parts.push(`Location: ${f.event_location}`);
   if (f.contact_name) parts.push(`Contact: ${f.contact_name}`);
   if (f.contact_info) parts.push(`Contact info: ${f.contact_info}`);
+  if (f.stage_notes) parts.push(`Tone notes: ${f.stage_notes}`);
   return parts.join('\n');
 }
 
 interface AILoadingState {
   slide: boolean;
   flyer: boolean;
+  all: boolean;
 }
 
 // Every field nullable and unvalidated on purpose - this is exactly what
@@ -60,6 +62,7 @@ interface UseAnnouncementAIReturn {
   hasEnoughForAI: boolean;
   generateSlide: () => Promise<void>;
   generateFlyer: () => Promise<void>;
+  generateAll: () => Promise<void>;
   parsingDraft: boolean;
   parseDraft: (draftText: string) => Promise<ParsedDraft | null>;
 }
@@ -69,7 +72,7 @@ export function useAnnouncementAI(
   set: Setter,
   onError: (msg: string) => void,
 ): UseAnnouncementAIReturn {
-  const [aiLoading, setAiLoading] = useState<AILoadingState>({ slide: false, flyer: false });
+  const [aiLoading, setAiLoading] = useState<AILoadingState>({ slide: false, flyer: false, all: false });
 
   const hasEnoughForAI = f.title.length > AI_THRESHOLD || f.description.length > AI_THRESHOLD;
 
@@ -104,6 +107,40 @@ export function useAnnouncementAI(
       onError(e instanceof Error ? e.message : 'AI generation failed');
     } finally {
       setAiLoading(p => ({ ...p, flyer: false }));
+    }
+  };
+
+  const generateAll = async () => {
+    if (!f.title) return;
+    setAiLoading({ slide: true, flyer: true, all: true });
+    try {
+      const result = await callAI(
+        SYS_BASE + ` You help write all versions of a church announcement at once. Provide two fields: "slide" (a single short phrase, not a full sentence, in normal sentence case, no pipe characters, under 12 words; include the event's exact name, dates, time, and location, think billboard, not sentence), and "flyer" (the description - the only one written, used everywhere: the weekly "Happenings" email, the monthly printed flyer and bulletin, printed invites, the public Events/Classes pages, and the calendar; aim for under 60 words, only go longer if the real details genuinely don't fit in fewer words; 2-4 short sentences; one to two on why it matters and what to expect, one on the key practical details or next step, naming the event and its date/time/location; tight, not padded).`,
+        `Write all versions for this announcement:\n\n${buildContext(f)}`,
+        { json: true },
+      );
+      const sd = (s: string) => stripEmDash(s);
+      const cleaned = result.trim().replace(/```json|```/g, '').trim();
+      let parsed: { slide?: string; flyer?: string };
+      try {
+        parsed = JSON.parse(cleaned);
+      } catch {
+        // A malformed/truncated response used to get dumped straight into
+        // the description field as a last resort, which is how half a JSON
+        // blob ended up looking like "weird, cut-off" announcement text.
+        // Surface an error instead of ever writing that into the form.
+        throw new Error('AI returned an unexpected format. Try again, or use the individual Draft buttons instead.');
+      }
+      if (parsed.slide) {
+        const slideClean = sd(parsed.slide.replace(/^["']|["']$/g, ''));
+        set('slide_override', slideClean);
+        set('short_version', slideClean);
+      }
+      if (parsed.flyer) set('flyer_text', sd(parsed.flyer));
+    } catch (e) {
+      onError(e instanceof Error ? e.message : 'AI generation failed');
+    } finally {
+      setAiLoading({ slide: false, flyer: false, all: false });
     }
   };
 
@@ -145,5 +182,5 @@ If a detail isn't stated or you aren't confident about it, return null for that 
     }
   };
 
-  return { aiLoading, hasEnoughForAI, generateSlide, generateFlyer, parsingDraft, parseDraft };
+  return { aiLoading, hasEnoughForAI, generateSlide, generateFlyer, generateAll, parsingDraft, parseDraft };
 }

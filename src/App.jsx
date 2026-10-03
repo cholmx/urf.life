@@ -23,7 +23,6 @@ const TableGroupSignup = lazy(() => import('./pages/TableGroupSignup'))
 const EventRegistration = lazy(() => import('./pages/EventRegistration'))
 const ClassRegistration = lazy(() => import('./pages/ClassRegistration'))
 const JoinRealm = lazy(() => import('./pages/JoinRealm'))
-const Rental = lazy(() => import('./pages/Rental'))
 const Resources = lazy(() => import('./pages/Resources'))
 const DailyDevotionals = lazy(() => import('./pages/DailyDevotionals'))
 const Search = lazy(() => import('./pages/Search'))
@@ -81,7 +80,6 @@ const AnimatedRoutes = () => {
             <Route path="/event-registration" element={<EventRegistration />} />
             <Route path="/class-registration" element={<ClassRegistration />} />
             <Route path="/join-realm" element={<JoinRealm />} />
-            <Route path="/rental" element={<Rental />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/yellow" element={<Yellow />} />
             <Route path="/green" element={<Green />} />

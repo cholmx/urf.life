@@ -36,7 +36,7 @@ export function StageTab({ announcements, today, onError }: StageTabProps) {
   const stageItems = announcements.filter(a => isStageActive(a, today));
 
   const buildRawNotes = useCallback(() => {
-    if (stageItems.length === 0) return 'No announcements active for this Sunday.';
+    if (stageItems.length === 0) return 'No whole-church announcements active for this Sunday.';
     let s = '';
     stageItems.forEach((a, i) => {
       const wks = weeksUntil(a.event_date, today);
@@ -50,6 +50,7 @@ export function StageTab({ announcements, today, onError }: StageTabProps) {
         s += '\n';
       }
       if (a.contact_name || a.contact_info) s += `Contact: ${[a.contact_name, a.contact_info].filter(Boolean).join(' | ')}\n`;
+      if (a.stage_notes) s += `[Tone: ${a.stage_notes}]\n`;
       s += '\n';
     });
     return s.trim();
@@ -116,10 +117,10 @@ export function StageTab({ announcements, today, onError }: StageTabProps) {
           Stage Script
         </h2>
         <p style={{ fontFamily: font.mono, fontSize: 11, color: C.textMuted, margin: '0 0 2px', letterSpacing: '0.03em' }}>
-          {stageItems.length} announcement{stageItems.length === 1 ? '' : 's'} · {formatDateLong(today)}
+          {stageItems.length} whole-church · {formatDateLong(today)}
         </p>
         <p style={{ fontFamily: font.body, fontSize: 12, color: C.textTer, margin: 0 }}>
-          Only announcements with Stage Announcement checked appear here. Use Raw Notes for reference, or Generate Script for a ready-to-read version you can edit right here - it's saved automatically.
+          Only "Whole Church" scope announcements appear here. Use Raw Notes for reference, or Generate Script for a ready-to-read version you can edit right here - it's saved automatically.
         </p>
       </div>
 

@@ -16,9 +16,9 @@ export const inputBase: React.CSSProperties = {
 
 export const labelBase: React.CSSProperties = {
   display: 'block',
-  fontSize: 13,
+  fontSize: 11,
   fontWeight: 600,
-  letterSpacing: '0.05em',
+  letterSpacing: '0.07em',
   textTransform: 'uppercase',
   color: C.textSec,
   marginBottom: 6,
