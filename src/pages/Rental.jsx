@@ -8,7 +8,7 @@ import {useToast} from '../hooks/useToast';
 import {formatTime} from '../utils/dateFormat';
 import {ROOM_OPTIONS,SERVICE_OPTIONS,DEPOSIT_AMOUNT,calculateRentalTotal,roomLabel,serviceLabel} from '../lib/rentalPricing';
 
-const {FiKey,FiHome,FiCheckCircle,FiArrowRight,FiArrowLeft,FiAlertTriangle,FiPhone,FiMail,FiClock,FiUser,FiExternalLink,FiDollarSign}=FiIcons;
+const {FiKey,FiHome,FiCheckCircle,FiArrowRight,FiArrowLeft,FiPhone,FiMail,FiClock,FiUser,FiExternalLink,FiDollarSign}=FiIcons;
 
 const REALM_GIVE_URL='https://onrealm.org/urfellowship/-/form/give/now';
 
@@ -259,16 +259,6 @@ const Rental=()=> {
           </motion.p>
         </div>
 
-        {/* Mobile notice */}
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6 flex items-start gap-3">
-          <SafeIcon icon={FiAlertTriangle} className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-amber-800">
-            For the best experience, please complete this form on a computer (desktop or laptop) rather than
-            a phone or tablet. Certain fields may not display or function correctly on mobile devices. Thank
-            you for your understanding!
-          </p>
-        </div>
-
         {/* Step indicator */}
         <div className="flex items-center justify-between mb-8 px-1">
           {STEPS.map((s,i)=> (
@@ -367,11 +357,11 @@ const Rental=()=> {
                     </div>
                     <div>
                       <label className="form-label">Event Beginning Time *</label>
-                      <input type="time" name="event_start_time" value={formData.event_start_time} onChange={handleChange} required className="form-input" />
+                      <input type="time" name="event_start_time" value={formData.event_start_time} onChange={handleChange} required step="900" className="form-input" />
                     </div>
                     <div>
                       <label className="form-label">Event Ending Time *</label>
-                      <input type="time" name="event_end_time" value={formData.event_end_time} onChange={handleChange} required className="form-input" />
+                      <input type="time" name="event_end_time" value={formData.event_end_time} onChange={handleChange} required step="900" className="form-input" />
                     </div>
                   </div>
                   <div>
@@ -394,11 +384,11 @@ const Rental=()=> {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="form-label">Setup Arrival Time *</label>
-                      <input type="time" name="setup_arrival_time" value={formData.setup_arrival_time} onChange={handleChange} required className="form-input" />
+                      <input type="time" name="setup_arrival_time" value={formData.setup_arrival_time} onChange={handleChange} required step="900" className="form-input" />
                     </div>
                     <div>
                       <label className="form-label">Setup Departure Time *</label>
-                      <input type="time" name="setup_departure_time" value={formData.setup_departure_time} onChange={handleChange} required className="form-input" />
+                      <input type="time" name="setup_departure_time" value={formData.setup_departure_time} onChange={handleChange} required step="900" className="form-input" />
                     </div>
                   </div>
                 </div>
