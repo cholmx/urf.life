@@ -77,13 +77,13 @@ const Home=()=> {
     {title: 'Sermon Podcast',description: 'Listen to recordings',icon: FiHeadphones,path: '/sermon-podcast',isInternal: true},
     {title: 'Give',description: 'Support our ministry',icon: FiCreditCard,path: 'https://onrealm.org/urfellowship/-/form/give/now',isInternal: false},
     {title: 'Table Group Sign-Up',description: 'Join a small group',icon: FiUsers,path: '/table-group-signup',isInternal: true},
-    {title: 'Facility Rental',description: 'Request to use our space',icon: FiKey,path: '/rental',isInternal: true},
     ...(hasResources ? [{title: 'Resources',description: 'Helpful materials',icon: FiBookOpen,path: '/resources',isInternal: true}] : []),
     {title: 'Join Realm',description: 'Our online community',icon: FiUserPlus,path: '/join-realm',isInternal: true}
   ];
 
   const quickLinks=[
     {title: 'Contact',icon: FiMail,path: '/contact',isInternal: true},
+    {title: 'Facility Rental',icon: FiKey,path: '/rental',isInternal: true},
     {title: 'Realm Login',icon: FiLogIn,path: 'https://onrealm.org/urfellowship/'},
     {title: 'Website',icon: FiGlobe,path: 'https://urfellowship.com'}
   ];
