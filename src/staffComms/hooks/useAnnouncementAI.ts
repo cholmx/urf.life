@@ -18,8 +18,7 @@ function buildContext(f: FormData): string {
   const parts = [`Title: ${f.title || '(none yet)'}`];
   if (f.description) parts.push(`Description: ${f.description}`);
   if (f.short_version) parts.push(`Short version: ${f.short_version}`);
-  if (f.body) parts.push(`Full description: ${f.body}`);
-  if (f.flyer_text) parts.push(`Flyer text: ${f.flyer_text}`);
+  if (f.flyer_text) parts.push(`Description: ${f.flyer_text}`);
   if (f.event_dates && f.event_dates.filter(Boolean).length > 0) {
     parts.push(`Event dates: ${f.event_dates.filter(Boolean).sort().map(formatDateNice).join(', ')}`);
   } else if (f.event_date) {
@@ -36,7 +35,6 @@ function buildContext(f: FormData): string {
 }
 
 interface AILoadingState {
-  body: boolean;
   slide: boolean;
   flyer: boolean;
   all: boolean;
@@ -62,7 +60,6 @@ export interface ParsedDraft {
 interface UseAnnouncementAIReturn {
   aiLoading: AILoadingState;
   hasEnoughForAI: boolean;
-  generateBody: () => Promise<void>;
   generateSlide: () => Promise<void>;
   generateFlyer: () => Promise<void>;
   generateAll: () => Promise<void>;
@@ -75,26 +72,11 @@ export function useAnnouncementAI(
   set: Setter,
   onError: (msg: string) => void,
 ): UseAnnouncementAIReturn {
-  const [aiLoading, setAiLoading] = useState<AILoadingState>({ body: false, slide: false, flyer: false, all: false });
+  const [aiLoading, setAiLoading] = useState<AILoadingState>({ slide: false, flyer: false, all: false });
 
   const hasEnoughForAI = f.title.length > AI_THRESHOLD || f.description.length > AI_THRESHOLD;
 
   const stripEmDash = (s: string) => s.replace(/\u2014/g, '-').replace(/\u2013/g, '-');
-
-  const generateBody = async () => {
-    setAiLoading(p => ({ ...p, body: true }));
-    try {
-      const result = await callAI(
-        SYS_BASE + ` You write church announcement descriptions for a weekly email called "The Happenings." Write a full paragraph, 5-7 sentences. Open with the plain fact of what it is (name and a one-line description). Then give the full practical picture: date, time, location, and who it's for, worked into plain sentences, not a list. If there's a genuine reason it matters, state it in one short, plain sentence - not an opening reflection. End with one clear, specific action, tell them exactly what to do next.`,
-        `Write the full description for this church announcement. Return ONLY the description text, nothing else.\n\n${buildContext(f)}`,
-      );
-      set('body', stripEmDash(result.trim()));
-    } catch (e) {
-      onError(e instanceof Error ? e.message : 'AI generation failed');
-    } finally {
-      setAiLoading(p => ({ ...p, body: false }));
-    }
-  };
 
   const generateSlide = async () => {
     setAiLoading(p => ({ ...p, slide: true }));
@@ -117,8 +99,8 @@ export function useAnnouncementAI(
     setAiLoading(p => ({ ...p, flyer: true }));
     try {
       const result = await callAI(
-        SYS_BASE + ` You write a short description for a monthly printed church flyer and for printed invites. Write 2-3 short sentences, maximum 50 words total. Be tight and punchy, noticeably shorter than the email description, but still give real substance, not just a title restated. One to two sentences on what makes it worth showing up for and what to expect, plus one sentence with the key practical details (when, where, who it's for) or the next step. No flowery language. No filler. Every word must earn its place on a printed page.`,
-        `Write the short description for this announcement (used on the flyer and on printed invites). Return ONLY the text, nothing else.\n\n${buildContext(f)}`,
+        SYS_BASE + ` You write the description for a church announcement - this is the only description written for it, used everywhere: the weekly "Happenings" email, the monthly printed flyer and bulletin, printed invites, the public Events/Classes pages, and the calendar. Aim for under 60 words. Only go longer than that if the real, necessary details genuinely don't fit in fewer words - never pad to fill space, and never cut a real detail (date, time, location, who it's for) just to stay under the target. Write 2-4 short sentences. Be tight, not padded, but give real substance, not just a title restated. One to two sentences on what it is and what makes it worth showing up for, plus one sentence with the key practical details (when, where, who it's for) or the next step. No flowery language. No filler. Every word must earn its place.`,
+        `Write the description for this announcement. Return ONLY the text, nothing else.\n\n${buildContext(f)}`,
       );
       set('flyer_text', stripEmDash(result.trim()));
     } catch (e) {
@@ -130,16 +112,16 @@ export function useAnnouncementAI(
 
   const generateAll = async () => {
     if (!f.title) return;
-    setAiLoading({ body: true, slide: true, flyer: true, all: true });
+    setAiLoading({ slide: true, flyer: true, all: true });
     try {
       const result = await callAI(
-        SYS_BASE + ` You help write all versions of a church announcement at once. Provide three fields: "body" (5-7 sentence weekly email description, a full paragraph; open with the plain fact of what it is, name and a one-line description, then work in date, time, location, and who it's for in plain sentences, one short plain sentence on why it matters if there's a genuine reason, end with one clear action step), "slide" (a single short phrase, not a full sentence, in normal sentence case, no pipe characters, under 12 words; include the event's exact name, dates, time, and location, think billboard, not sentence), and "flyer" (2-3 short sentences, max 50 words, a short description for the printed monthly flyer and printed invites; real substance but noticeably shorter than the email description; one to two sentences on why it matters and what to expect, one on the key practical details or next step, naming the event and its date/time/location; tight and punchy).`,
+        SYS_BASE + ` You help write all versions of a church announcement at once. Provide two fields: "slide" (a single short phrase, not a full sentence, in normal sentence case, no pipe characters, under 12 words; include the event's exact name, dates, time, and location, think billboard, not sentence), and "flyer" (the description - the only one written, used everywhere: the weekly "Happenings" email, the monthly printed flyer and bulletin, printed invites, the public Events/Classes pages, and the calendar; aim for under 60 words, only go longer if the real details genuinely don't fit in fewer words; 2-4 short sentences; one to two on why it matters and what to expect, one on the key practical details or next step, naming the event and its date/time/location; tight, not padded).`,
         `Write all versions for this announcement:\n\n${buildContext(f)}`,
         { json: true },
       );
       const sd = (s: string) => stripEmDash(s);
       const cleaned = result.trim().replace(/```json|```/g, '').trim();
-      let parsed: { body?: string; slide?: string; flyer?: string };
+      let parsed: { slide?: string; flyer?: string };
       try {
         parsed = JSON.parse(cleaned);
       } catch {
@@ -149,7 +131,6 @@ export function useAnnouncementAI(
         // Surface an error instead of ever writing that into the form.
         throw new Error('AI returned an unexpected format. Try again, or use the individual Draft buttons instead.');
       }
-      if (parsed.body) set('body', sd(parsed.body));
       if (parsed.slide) {
         const slideClean = sd(parsed.slide.replace(/^["']|["']$/g, ''));
         set('slide_override', slideClean);
@@ -159,7 +140,7 @@ export function useAnnouncementAI(
     } catch (e) {
       onError(e instanceof Error ? e.message : 'AI generation failed');
     } finally {
-      setAiLoading({ body: false, slide: false, flyer: false, all: false });
+      setAiLoading({ slide: false, flyer: false, all: false });
     }
   };
 
@@ -201,5 +182,5 @@ If a detail isn't stated or you aren't confident about it, return null for that 
     }
   };
 
-  return { aiLoading, hasEnoughForAI, generateBody, generateSlide, generateFlyer, generateAll, parsingDraft, parseDraft };
+  return { aiLoading, hasEnoughForAI, generateSlide, generateFlyer, generateAll, parsingDraft, parseDraft };
 }

@@ -233,7 +233,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
       return relabel({ ...p, recurrence_week_of_month: WEEK_POSITIONS.filter(x => updated.includes(x)).join(',') });
     });
 
-  const { aiLoading, hasEnoughForAI, generateBody, generateSlide, generateFlyer, generateAll, parsingDraft, parseDraft } =
+  const { aiLoading, hasEnoughForAI, generateSlide, generateFlyer, generateAll, parsingDraft, parseDraft } =
     useAnnouncementAI(f, set, onError);
 
   const [draftNotes, setDraftNotes] = useState('');
@@ -507,7 +507,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
           <div style={fg}>
             <label style={labelBase}>Notes for AI <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(only feeds the drafts below)</span></label>
             <div style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, marginBottom: 5, lineHeight: 1.5 }}>
-              This is never published or printed anywhere on its own - it's only here to give the AI something to work from. Write it as rough notes. What actually gets used is whatever ends up in Full Description, Short Description, and Short Line below.
+              This is never published or printed anywhere on its own - it's only here to give the AI something to work from. Write it as rough notes. What actually gets used is whatever ends up in Description and Short Line below.
             </div>
             <textarea
               style={{ ...inputBase, minHeight: 68, resize: 'vertical', fontSize: 13, background: '#FFF8E7', border: '1px solid #E8C77D' }}
@@ -519,22 +519,9 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
 
           <div style={fg}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
-              <label style={labelBase}>Full Description <span style={{ fontWeight: 400, textTransform: 'none' }}>(Events/Classes pages & Calendar - used for The Happenings only if Short Description below is blank)</span></label>
-              <AIWriteButton label="Draft" loading={aiLoading.body} onClick={generateBody} disabled={!hasEnoughForAI} />
-            </div>
-            <textarea
-              style={{ ...inputBase, minHeight: 80, resize: 'vertical' }}
-              value={f.body}
-              onChange={e => set('body', e.target.value)}
-              placeholder="Full email copy. AI can write this for you, or type your own - useful even if this isn't going anywhere yet, e.g. to print an invite."
-            />
-          </div>
-
-          <div style={fg}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
               <div>
-                <label style={labelBase}>Short Description <span style={{ fontWeight: 400, textTransform: 'none' }}>(The Happenings email, Monthly Flyer, Monthly Bulletin & printed Invite)</span></label>
-                <div style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, marginTop: 1 }}>max 50 words - also the body copy on the printed Invite (Invite button, back on the list)</div>
+                <label style={labelBase}>Description <span style={{ fontWeight: 400, textTransform: 'none' }}>(used everywhere: The Happenings email, Monthly Flyer, Monthly Bulletin, printed Invite, the Events/Classes pages & Calendar)</span></label>
+                <div style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, marginTop: 1 }}>aim for under 60 words - only go longer if the real details need it</div>
               </div>
               <AIWriteButton label="Draft" loading={aiLoading.flyer} onClick={generateFlyer} disabled={!hasEnoughForAI} />
             </div>
@@ -542,7 +529,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
               style={{ ...inputBase, minHeight: 60, resize: 'vertical' }}
               value={f.flyer_text}
               onChange={e => set('flyer_text', e.target.value)}
-              placeholder="Short copy for the printed monthly flyer and invite."
+              placeholder="The description for this announcement - AI can write this for you, or type your own."
             />
           </div>
 

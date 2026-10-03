@@ -121,7 +121,7 @@ const PublicCalendar=()=> {
       upcomingItems.map(a=> ({
         uid: `${a.id}-${a.occurrenceDate}`,
         title: a.title,
-        description: a.body,
+        description: a.flyer_text,
         date: a.occurrenceDate,
         startTime: a.event_time,
         endTime: a.end_time,
@@ -380,7 +380,7 @@ const PublicCalendar=()=> {
                         <div className="flex flex-wrap items-center gap-4">
                           <AddToCalendarButton
                             title={a.title}
-                            description={a.body}
+                            description={a.flyer_text}
                             date={selectedDay}
                             startTime={a.event_time}
                             endTime={a.end_time}

@@ -42,7 +42,7 @@ export function StageTab({ announcements, today, onError }: StageTabProps) {
       const wks = weeksUntil(a.event_date, today);
       const classAlreadyStarted = a.happening_type === 'class' && !!a.event_date && a.event_date < today;
       s += `── ${i + 1}. ${a.title.toUpperCase()} ──\n`;
-      s += a.body + '\n';
+      s += a.flyer_text + '\n';
       if (a.event_date) {
         s += `Date: ${formatDateNice(a.event_date)}`;
         if (classAlreadyStarted) s += ' (already started - mention it\'s not too late to join)';

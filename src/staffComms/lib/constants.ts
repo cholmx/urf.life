@@ -46,7 +46,6 @@ export const PRINTABLES_TABS = [
 export const DEFAULT_ANNOUNCEMENT = {
   title: '',
   description: '',
-  body: '',
   short_version: '',
   category: 'General Info',
   scope: 'ministry' as const,

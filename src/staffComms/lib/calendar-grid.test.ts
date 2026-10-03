@@ -7,7 +7,6 @@ function makeAnnouncement(overrides: Partial<Announcement>): Announcement {
     id: 'a1',
     title: 'Test',
     description: '',
-    body: '',
     short_version: '',
     category: 'General Info',
     scope: 'informational',

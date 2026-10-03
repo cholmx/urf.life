@@ -113,9 +113,8 @@ function ArchiveCard({ a, onDelete, onCopy }: { a: Announcement; onDelete: (id: 
       {expanded && (
         <div style={{ borderTop: `1px solid ${C.border}`, padding: '14px 14px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
           {a.description && <DetailRow label="Notes for AI" value={a.description} />}
-          {a.body && <DetailRow label="Full text" value={a.body} />}
           {a.short_version && <DetailRow label="Short version" value={a.short_version} />}
-          {a.flyer_text && <DetailRow label="Short description" value={a.flyer_text} />}
+          {a.flyer_text && <DetailRow label="Description" value={a.flyer_text} />}
           {a.stage_notes && <DetailRow label="Stage notes" value={a.stage_notes} />}
           {allDates && <DetailRow label="Date(s)" value={allDates} />}
           {a.event_location && <DetailRow label="Location" value={a.event_location} />}
@@ -138,7 +137,7 @@ export function ArchiveTab({ announcements, onDelete, onCopy }: ArchiveTabProps)
   const q = query.trim().toLowerCase();
   const filtered = q
     ? sorted.filter(a =>
-        [a.title, a.body, a.description, a.category, a.ministry, a.event_location, a.contact_name, a.contact_info]
+        [a.title, a.flyer_text, a.description, a.category, a.ministry, a.event_location, a.contact_name, a.contact_info]
           .filter(Boolean)
           .some(v => v!.toLowerCase().includes(q))
       )

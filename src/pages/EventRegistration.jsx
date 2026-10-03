@@ -129,7 +129,7 @@ const EventRegistration=()=> {
                 )}
                 <div
                   className="text-text-primary mb-6 prose prose-sm max-w-none rendered-content"
-                  dangerouslySetInnerHTML={{__html: sanitizeHtml(plainTextToHtml(event.body))}}
+                  dangerouslySetInnerHTML={{__html: sanitizeHtml(plainTextToHtml(event.flyer_text))}}
                 />
                 <div className="flex flex-wrap items-center gap-4">
                   {event.link && (
@@ -142,7 +142,7 @@ const EventRegistration=()=> {
                   )}
                   <AddToCalendarButton
                     title={event.title}
-                    description={event.body}
+                    description={event.flyer_text}
                     date={event.event_date}
                     startTime={event.event_time}
                     endTime={event.end_time}

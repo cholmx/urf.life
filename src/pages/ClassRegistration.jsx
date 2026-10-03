@@ -128,7 +128,7 @@ const ClassRegistration=()=> {
                 )}
                 <div
                   className="text-text-primary mb-6 prose prose-sm max-w-none rendered-content"
-                  dangerouslySetInnerHTML={{__html: sanitizeHtml(plainTextToHtml(classItem.body))}}
+                  dangerouslySetInnerHTML={{__html: sanitizeHtml(plainTextToHtml(classItem.flyer_text))}}
                 />
                 <div className="flex flex-wrap items-center gap-4">
                   {classItem.link && (
@@ -141,7 +141,7 @@ const ClassRegistration=()=> {
                   )}
                   <AddToCalendarButton
                     title={classItem.title}
-                    description={classItem.body}
+                    description={classItem.flyer_text}
                     date={classItem.event_date}
                     startTime={classItem.event_time}
                     endTime={classItem.end_time}

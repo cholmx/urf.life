@@ -34,7 +34,7 @@ function announcementDateLabel(a: Announcement): string {
 }
 
 function getAnnouncementBody(a: Announcement): string {
-  const raw = a.flyer_text || a.short_version || a.body || '';
+  const raw = a.flyer_text || a.short_version || '';
   return stripLeadingTitle(raw, a.title);
 }
 
@@ -429,7 +429,7 @@ function BackSection({ title, color, body, scale }: { title: string; color: stri
 
 function buildItemHTML(a: Announcement, scale: BulletinScale): string {
   const dateLabel = escapeHtml(announcementDateLabel(a));
-  const raw = a.flyer_text || a.short_version || a.body || '';
+  const raw = a.flyer_text || a.short_version || '';
   const text = escapeHtml(stripLeadingTitle(raw, a.title));
   const title = escapeHtml(a.title);
   const ministry = escapeHtml(a.ministry);

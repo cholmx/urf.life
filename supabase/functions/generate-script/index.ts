@@ -13,13 +13,12 @@ const MODEL = "claude-opus-5";
 const MAX_TOKENS = 8192; // script generation token budget
 
 // Schema for the Communication Organizer's "Write All" call, which asks for
-// the email description, slide line, and flyer copy together in one
-// response. Structured outputs make this a hard schema-validity guarantee
+// the slide line and description together in one response. Structured
+// outputs make this a hard schema-validity guarantee
 // from Claude's side, instead of a "please return only JSON" instruction we
 // then hope holds - the previous provider's occasional malformed/truncated
 // JSON was exactly how garbled text ended up in the announcement form.
 const WriteAllSchema = z.object({
-  body: z.string(),
   slide: z.string(),
   flyer: z.string(),
 });
@@ -136,7 +135,7 @@ Deno.serve(async (req: Request) => {
     const itemsContext = announcements.map((a: Record<string, unknown>, i: number) => {
       const lines: string[] = [
         `ANNOUNCEMENT ${i + 1}: "${a.title}"`,
-        `Details: ${a.body}`,
+        `Details: ${a.flyer_text}`,
       ];
       if (a.event_date) {
         const d = new Date((a.event_date as string) + "T12:00:00");

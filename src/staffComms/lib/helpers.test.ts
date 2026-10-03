@@ -15,7 +15,6 @@ function makeAnnouncement(overrides: Partial<Announcement> = {}): Announcement {
     id: `a${nextId}`,
     title: `Test ${nextId}`,
     description: '',
-    body: '',
     short_version: '',
     category: 'General Info',
     scope: 'ministry',

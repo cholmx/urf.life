@@ -42,7 +42,6 @@ export function useHappeningsData(enabled: boolean, onNavigateToManage?: () => v
     const announcementLike = { ...f, id: f.id ?? '' } as Announcement;
     const payload = {
       title: f.title,
-      body: f.body,
       description: f.description,
       short_version: f.short_version,
       category: f.category,

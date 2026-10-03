@@ -109,7 +109,7 @@ function buildFlyerHTML(items: Announcement[], today: string, bathroomVariant: b
   const itemsHTML = active.length === 0
     ? `<div style="color:#999;padding:0.5in 0;text-align:center;font-size:11pt;">No announcements for this month.</div>`
     : active.map((a, i) => {
-        const rawText = a.flyer_text || a.month_override || a.body || a.short_version || '';
+        const rawText = a.flyer_text || a.month_override || a.short_version || '';
         const text = escapeHtml(stripLeadingTitle(rawText, a.title));
         const title = escapeHtml(a.title);
         const ministry = escapeHtml(a.ministry);
@@ -197,7 +197,7 @@ function FlyerPagePreview({ announcements, today, bathroomVariant }: {
           </div>
         )}
         {active.map((a, i) => {
-          const rawText = a.flyer_text || a.month_override || a.body || a.short_version || '';
+          const rawText = a.flyer_text || a.month_override || a.short_version || '';
           const text = stripLeadingTitle(rawText, a.title);
           const barColor = a.scope === 'whole_church' ? ORANGE : TEAL;
           return (

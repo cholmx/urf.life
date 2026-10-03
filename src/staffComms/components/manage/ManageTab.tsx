@@ -32,7 +32,7 @@ export function ManageTab({ announcements, today, onSave, onDelete, onTogglePubl
     if (!q) return announcements;
     return announcements.filter(a =>
       a.title.toLowerCase().includes(q) ||
-      (a.body || '').toLowerCase().includes(q) ||
+      (a.flyer_text || '').toLowerCase().includes(q) ||
       (a.description || '').toLowerCase().includes(q) ||
       (a.assigned_to || '').toLowerCase().includes(q) ||
       a.category.toLowerCase().includes(q)

@@ -168,9 +168,9 @@ export function AnnouncementCard({ a, today, onEdit, onDelete, onTogglePublish, 
         <h4 style={{ fontFamily: font.display, fontSize: 14, fontWeight: 800, color: C.text, margin: 0, letterSpacing: '-0.01em', lineHeight: 1.3 }}>
           {a.title}
         </h4>
-        {(a.short_version || a.body) && (
+        {(a.short_version || a.flyer_text) && (
           <p style={{ fontFamily: font.body, fontSize: 12, color: C.textSec, margin: '2px 0 0', lineHeight: 1.4, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' }}>
-            {a.short_version || a.body.slice(0, 120)}
+            {a.short_version || a.flyer_text}
           </p>
         )}
       </div>

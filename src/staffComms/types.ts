@@ -16,7 +16,6 @@ export interface Announcement {
   id: string;
   title: string;
   description: string;
-  body: string;
   short_version: string;
   category: string;
   scope: 'whole_church' | 'ministry' | 'informational';
