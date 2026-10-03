@@ -13,6 +13,10 @@
   than building generic settings infrastructure nothing else needs yet).
   No anon access at all: this isn't a public form, and the edge function
   reads it with the service role key, which bypasses RLS entirely.
+
+  notification_email holds a comma-separated list of addresses (not a
+  separate table/array column) so the admin UI stays a single text input -
+  the edge function splits on "," and sends to every address.
 */
 
 CREATE TABLE IF NOT EXISTS facility_rental_settings_portal123 (

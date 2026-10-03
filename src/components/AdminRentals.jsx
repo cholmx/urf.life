@@ -146,14 +146,21 @@ const AdminRentals = () => {
 
   const saveSettings = async () => {
     if (!settingsId) return;
+    const emails = notificationEmail.split(',').map((e) => e.trim()).filter(Boolean);
+    if (emails.length === 0 || emails.some((e) => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e))) {
+      toast.error('Enter one or more valid email addresses, separated by commas.');
+      return;
+    }
+    const normalized = emails.join(', ');
     setSavingSettings(true);
     try {
       const { error } = await supabase
         .from('facility_rental_settings_portal123')
-        .update({ notification_email: notificationEmail, updated_at: new Date().toISOString() })
+        .update({ notification_email: normalized, updated_at: new Date().toISOString() })
         .eq('id', settingsId);
       if (error) throw error;
-      toast.success('Notification email updated.');
+      setNotificationEmail(normalized);
+      toast.success('Notification emails updated.');
     } catch (err) {
       console.error('Error saving rental settings:', err);
       toast.error('Failed to save: ' + err.message);
@@ -202,20 +209,23 @@ const AdminRentals = () => {
 
       {/* Where the /rental form's internal notification email goes - the
           renter's own confirmation always goes to the address they entered,
-          this only controls the staff-facing copy. */}
+          this only controls the staff-facing copy. Multiple addresses are
+          comma-separated and all receive the same notification. */}
       <div className="admin-card">
-        <p className="admin-label">Notification Email</p>
-        <p className="text-sm text-neutral-500 mb-3">New rental request notifications are sent here.</p>
+        <p className="admin-label">Notification Emails</p>
+        <p className="text-sm text-neutral-500 mb-3">
+          New rental request notifications are sent to these addresses. Separate multiple with commas.
+        </p>
         {loadingSettings ? (
           <SkeletonBox width="w-64" height="h-10" />
         ) : (
           <div className="flex gap-2 max-w-md">
             <input
-              type="email"
+              type="text"
               value={notificationEmail}
               onChange={(e) => setNotificationEmail(e.target.value)}
               className="admin-input"
-              placeholder="info@urfellowship.com"
+              placeholder="info@urfellowship.com, rentals@urfellowship.com"
             />
             <button onClick={saveSettings} disabled={savingSettings} className="admin-btn-primary flex-shrink-0">
               <SafeIcon icon={FiSave} className="h-4 w-4" />

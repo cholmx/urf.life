@@ -175,7 +175,7 @@ function buildPolicyHtml(): string {
   `).join('');
 }
 
-async function sendViaResend(apiKey: string, from: string, to: string, subject: string, html: string) {
+async function sendViaResend(apiKey: string, from: string, to: string | string[], subject: string, html: string) {
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
@@ -223,7 +223,10 @@ Deno.serve(async (req: Request) => {
       .select('notification_email')
       .limit(1)
       .maybeSingle();
-    const notificationEmail = settings?.notification_email || 'info@urfellowship.com';
+    const notificationEmails = (settings?.notification_email || 'info@urfellowship.com')
+      .split(',')
+      .map((e: string) => e.trim())
+      .filter(Boolean);
 
     const summaryTable = buildSummaryTable(rental);
 
@@ -254,7 +257,7 @@ Deno.serve(async (req: Request) => {
 
     await Promise.all([
       sendViaResend(apiKey, from, rental.responsible_email, `Your Facilities Use Request - ${rental.event_name}`, confirmationHtml),
-      sendViaResend(apiKey, from, notificationEmail, `New Facility Rental Request: ${rental.event_name} (${rental.event_date})`, notificationHtml),
+      sendViaResend(apiKey, from, notificationEmails, `New Facility Rental Request: ${rental.event_name} (${rental.event_date})`, notificationHtml),
     ]);
 
     return new Response(
