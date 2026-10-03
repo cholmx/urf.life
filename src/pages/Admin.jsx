@@ -163,6 +163,15 @@ const Admin=()=> {
   };
 
   const selectTab=(id)=> {
+    // Editing an announcement doesn't change tabs - it swaps the Dashboard
+    // tab's list for its form in place - so clicking Dashboard while
+    // editing was a no-op (activeTab was already 'overview') and left the
+    // form stuck open. Any nav click now discards an in-progress edit,
+    // same as the form's own Cancel button already does with no confirm.
+    if (happenings.editing) {
+      happenings.setEditing(null);
+      happenings.setCopySource(null);
+    }
     setActiveTab(id);
     setSidebarOpen(false);
   };
