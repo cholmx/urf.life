@@ -88,13 +88,21 @@ export function HappeningsTab({ announcements, today }: HappeningsTabProps) {
       .eq('week_date', weekStartDate)
       .maybeSingle()
       .then(({ data }) => {
+        setLoadingScript(false);
         if (data?.content) {
           // Scripts saved before the rich-text editor was added are plain
           // text, not HTML - convert on the way in so they still render
           // (and format) correctly in ScriptEditor.
           setScript(looksLikeHtml(data.content) ? data.content : scriptTextToHtml(data.content));
+        } else {
+          // Nothing drafted yet for this week - draft it automatically
+          // from this week's active items instead of making staff open
+          // the tab to an empty page and have to click Build Update
+          // themselves. Still just the same deterministic assembly
+          // (no AI) runAssemble always did - editing or rebuilding from
+          // here on works exactly as before.
+          runAssemble();
         }
-        setLoadingScript(false);
       });
   }, [weekStartDate]);
 
