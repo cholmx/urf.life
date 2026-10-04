@@ -63,11 +63,18 @@ function CalendarInner({ announcements, today, onSave, onDelete, onPreviewDateCh
   };
 
   const goToToday = () => {
-    const t = new Date(today + 'T12:00:00');
+    // Not the same as the `today` prop - that's the admin's preview date,
+    // which drifts away from the real date as soon as they click any other
+    // day on the calendar (handleDayClick below calls onPreviewDateChange
+    // for whatever day was clicked). The Today button needs the actual
+    // current date, computed fresh, not whatever the preview has drifted to.
+    const now = new Date();
+    const realToday = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const t = new Date(realToday + 'T12:00:00');
     setViewYear(t.getFullYear());
     setViewMonth(t.getMonth());
-    setSelectedDay(today);
-    onPreviewDateChange(today);
+    setSelectedDay(realToday);
+    onPreviewDateChange(realToday);
   };
 
   const handleDayClick = (day: string) => {
