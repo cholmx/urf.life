@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { C, font } from '../../lib/theme';
 import { btnGhost } from '../ui/inputs';
 import { getActiveMonthlyItems, formatDateNice, escapeHtml, stripLeadingTitle } from '../../lib/helpers';
@@ -146,13 +147,49 @@ export function BulletinTab({ announcements, today }: BulletinTabProps) {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center' }}>
-        <BulletinPreview items={monthItems} scale={bulletinScale} monthLabel={monthLabel} />
+        <ScaledPreview>
+          <BulletinPreview items={monthItems} scale={bulletinScale} monthLabel={monthLabel} />
+        </ScaledPreview>
       </div>
     </div>
   );
 }
 
 /* ── Preview wrapper ─────────────────────────────────────────────── */
+
+// The actual preview below is a fixed 11x8.5in (at 96dpi) so it matches
+// the real printed page exactly - this scales that fixed-size box down to
+// whatever width the admin panel actually has, so it never forces the
+// page into horizontal scrolling the way a bare 11in-wide element would
+// in a narrower sidebar-and-content layout.
+const PREVIEW_NATIVE_WIDTH = 11 * 96;
+const PREVIEW_NATIVE_HEIGHT = 8.5 * 96;
+
+function ScaledPreview({ children }: { children: ReactNode }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const update = () => {
+      const width = el.clientWidth;
+      setScale(width > 0 ? Math.min(1, width / PREVIEW_NATIVE_WIDTH) : 1);
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={containerRef} style={{ width: '100%', maxWidth: PREVIEW_NATIVE_WIDTH, height: PREVIEW_NATIVE_HEIGHT * scale }}>
+      <div style={{ width: PREVIEW_NATIVE_WIDTH, height: PREVIEW_NATIVE_HEIGHT, transform: `scale(${scale})`, transformOrigin: 'top left' }}>
+        {children}
+      </div>
+    </div>
+  );
+}
 
 function BulletinPreview({ items, scale, monthLabel }: { items: Announcement[]; scale: BulletinScale; monthLabel: string }) {
   return (
@@ -230,7 +267,7 @@ function BulletinContent({ items, scale, monthLabel }: { items: Announcement[]; 
       </div>
       <div style={{ borderTop: `2.5pt solid ${ORANGE}`, marginTop: 10, marginBottom: 14, flexShrink: 0 }} />
 
-      <div style={{ flex: 1, overflow: 'hidden' }}>
+      <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'space-evenly' }}>
         {items.length === 0 && (
           <div style={{ color: '#000', padding: '40px 0', textAlign: 'center', fontSize: 13 }}>
             No announcements for this month.
@@ -354,7 +391,7 @@ function buildPrintBulletin(itemsHTML: string, monthLabel: string): string {
     </div>
     <div style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:10pt;font-weight:600;color:${ORANGE};letter-spacing:0.1em;margin-bottom:4px;">${monthLabel}</div>
     <div style="border-top:2.5pt solid ${ORANGE};margin-top:10px;margin-bottom:14px;flex-shrink:0;"></div>
-    <div style="flex:1;overflow:hidden;">
+    <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;justify-content:space-evenly;">
       ${itemsHTML}
     </div>
     <div style="border-top:1.5pt solid ${ORANGE};padding-top:9px;text-align:center;flex-shrink:0;margin-top:10px;">
