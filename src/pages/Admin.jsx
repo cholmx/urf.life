@@ -14,6 +14,7 @@ import {StageScriptPage} from '../staffComms/components/stage/StageScriptPage';
 import {PrintablesPage} from '../staffComms/components/printables/PrintablesPage';
 import {ArchivePage} from '../staffComms/components/archive/ArchivePage';
 import {HappeningsPage} from '../staffComms/components/happenings/HappeningsPage';
+import NotificationBell from '../components/admin-submissions/NotificationBell';
 
 // Each of these is only ever needed once its own nav section is opened -
 // eagerly importing them here used to pull all ten (SlideMaker and
@@ -117,6 +118,7 @@ const Admin=()=> {
   const [loading,setLoading]=useState(false);
   const [sidebarOpen,setSidebarOpen]=useState(false);
   const [signupSheetTarget,setSignupSheetTarget]=useState(null);
+  const [submissionsInitialTab,setSubmissionsInitialTab]=useState(null);
 
   // Shared across the Dashboard's embedded Manage section, Calendar,
   // Stage Script, Printables, and Archive pages - one fetch, one preview
@@ -174,7 +176,24 @@ const Admin=()=> {
       happenings.setEditing(null);
       happenings.setCopySource(null);
     }
+    // A normal nav click always opens Submissions on its default sub-tab -
+    // only the notification bell (handleBellSelect) deep-links to a specific one.
+    setSubmissionsInitialTab(null);
     setActiveTab(id);
+    setSidebarOpen(false);
+  };
+
+  const handleBellSelect=(key)=> {
+    if (happenings.editing) {
+      happenings.setEditing(null);
+      happenings.setCopySource(null);
+    }
+    if (key==='rentals') {
+      setActiveTab('rentals');
+    } else {
+      setSubmissionsInitialTab(key==='tableGroups' ? 'table-groups' : key);
+      setActiveTab('submissions');
+    }
     setSidebarOpen(false);
   };
 
@@ -206,7 +225,7 @@ const Admin=()=> {
           </>
         );
       case 'submissions':
-        return <AdminSubmissions />;
+        return <AdminSubmissions initialTab={submissionsInitialTab} />;
       case 'rentals':
         return <AdminRentals />;
       case 'calendar':
@@ -400,9 +419,12 @@ const Admin=()=> {
           Site"/"Log Out" stay reachable without scrolling the whole page -
           the main content column can run much taller than one screen. */}
       <aside className="hidden md:flex md:flex-col md:w-64 md:flex-shrink-0 md:sticky md:top-0 md:h-screen bg-neutral-900">
-        <div className="px-5 py-5 border-b border-white/10">
-          <div className="text-white font-bold text-lg leading-tight">Admin</div>
-          <div className="text-white/40 text-xs">Upper Room Fellowship</div>
+        <div className="px-5 py-5 border-b border-white/10 flex items-center justify-between">
+          <div>
+            <div className="text-white font-bold text-lg leading-tight">Admin</div>
+            <div className="text-white/40 text-xs">Upper Room Fellowship</div>
+          </div>
+          <NotificationBell onSelect={handleBellSelect} />
         </div>
         <NavList />
         <div className="px-3 py-4 border-t border-white/10 space-y-0.5">
@@ -429,9 +451,12 @@ const Admin=()=> {
           <SafeIcon icon={FiMenu} className="h-5 w-5" />
         </button>
         <span className="font-semibold text-sm truncate">{activeLabel}</span>
-        <Link to="/" className="p-2 -mr-2 !text-white" title="Back to Home">
-          <SafeIcon icon={FiHome} className="h-5 w-5" />
-        </Link>
+        <div className="flex items-center">
+          <NotificationBell onSelect={handleBellSelect} />
+          <Link to="/" className="p-2 -mr-2 !text-white" title="Back to Home">
+            <SafeIcon icon={FiHome} className="h-5 w-5" />
+          </Link>
+        </div>
       </div>
 
       {/* Mobile sidebar drawer */}

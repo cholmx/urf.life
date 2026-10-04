@@ -11,8 +11,8 @@ const tabs = [
   { id: 'table-groups', label: 'Table Groups', icon: FiUsers },
 ];
 
-const AdminSubmissions = () => {
-  const [activeTab, setActiveTab] = useState('contact');
+const AdminSubmissions = ({ initialTab }) => {
+  const [activeTab, setActiveTab] = useState(initialTab || 'contact');
 
   return (
     <div className="space-y-6">
