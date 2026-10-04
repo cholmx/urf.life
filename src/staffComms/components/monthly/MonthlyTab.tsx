@@ -48,7 +48,6 @@ export interface ScaleParams {
   contactMarginTop: number;
   titleMarginBottom: number;
   gap: number;
-  barMinH: number;
   subtitleFontSize: number;
   orgFontSize: number;
   monthFontSize: number;
@@ -63,35 +62,35 @@ export function getScaleParams(count: number, hasBathroom: boolean): ScaleParams
       headerFontSize: 50, headerPadV: 0.65, bodyPadV: 0.45, bodyPadH: 0.5,
       itemPadV: 0.22, titleFontSize: 18, dateFontSize: 12, bodyFontSize: 11,
       contactFontSize: 9, contactMarginTop: 5, titleMarginBottom: 5,
-      gap: 0.18, barMinH: 0.3, subtitleFontSize: 11, orgFontSize: 9, monthFontSize: 50,
+      gap: 0.18, subtitleFontSize: 11, orgFontSize: 9, monthFontSize: 50,
     };
   } else if (n <= 6) {
     return {
       headerFontSize: 44, headerPadV: 0.5, bodyPadV: 0.35, bodyPadH: 0.5,
       itemPadV: 0.17, titleFontSize: 16, dateFontSize: 11, bodyFontSize: 10.5,
       contactFontSize: 8.5, contactMarginTop: 4, titleMarginBottom: 4,
-      gap: 0.15, barMinH: 0.25, subtitleFontSize: 10.5, orgFontSize: 8.5, monthFontSize: 44,
+      gap: 0.15, subtitleFontSize: 10.5, orgFontSize: 8.5, monthFontSize: 44,
     };
   } else if (n <= 8) {
     return {
       headerFontSize: 38, headerPadV: 0.38, bodyPadV: 0.28, bodyPadH: 0.5,
       itemPadV: 0.13, titleFontSize: 15, dateFontSize: 10.5, bodyFontSize: 10,
       contactFontSize: 8, contactMarginTop: 3, titleMarginBottom: 3,
-      gap: 0.13, barMinH: 0.22, subtitleFontSize: 10, orgFontSize: 8, monthFontSize: 38,
+      gap: 0.13, subtitleFontSize: 10, orgFontSize: 8, monthFontSize: 38,
     };
   } else if (n <= 11) {
     return {
       headerFontSize: 32, headerPadV: 0.28, bodyPadV: 0.2, bodyPadH: 0.5,
       itemPadV: 0.1, titleFontSize: 13, dateFontSize: 10, bodyFontSize: 9.5,
       contactFontSize: 7.5, contactMarginTop: 2, titleMarginBottom: 2,
-      gap: 0.11, barMinH: 0.18, subtitleFontSize: 9.5, orgFontSize: 7.5, monthFontSize: 32,
+      gap: 0.11, subtitleFontSize: 9.5, orgFontSize: 7.5, monthFontSize: 32,
     };
   } else {
     return {
       headerFontSize: 26, headerPadV: 0.2, bodyPadV: 0.15, bodyPadH: 0.5,
       itemPadV: 0.08, titleFontSize: 12, dateFontSize: 9.5, bodyFontSize: 9,
       contactFontSize: 7, contactMarginTop: 2, titleMarginBottom: 2,
-      gap: 0.09, barMinH: 0.15, subtitleFontSize: 9, orgFontSize: 7, monthFontSize: 26,
+      gap: 0.09, subtitleFontSize: 9, orgFontSize: 7, monthFontSize: 26,
     };
   }
 }
@@ -116,7 +115,6 @@ function buildFlyerHTML(items: Announcement[], today: string, bathroomVariant: b
         const contactName = escapeHtml(a.contact_name);
         const contactInfo = escapeHtml(a.contact_info);
         const isWC = a.scope === 'whole_church';
-        const barColor = isWC ? ORANGE : TEAL;
         const dateLabel = escapeHtml(formatDateList(a));
         const dateSpan = dateLabel
           ? `<span style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:${s.dateFontSize}pt;font-weight:700;color:${ORANGE};letter-spacing:0.05em;white-space:nowrap;flex-shrink:0;">${dateLabel}</span>`
@@ -130,7 +128,6 @@ function buildFlyerHTML(items: Announcement[], today: string, bathroomVariant: b
         const border = i < active.length - 1 ? `border-bottom:1pt solid #E8E8E8;` : '';
         return `
           <div style="display:flex;gap:${s.gap}in;padding:${s.itemPadV}in 0;${border}align-items:flex-start;">
-            <div style="width:3pt;align-self:stretch;min-height:${s.barMinH}in;background:${barColor};border-radius:3pt;flex-shrink:0;"></div>
             <div style="flex:1;min-width:0;">
               <div style="margin-bottom:${s.titleMarginBottom}pt;">
                 <div style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:${s.titleFontSize}pt;font-weight:900;color:${TEAL};letter-spacing:0.02em;line-height:1.1;text-transform:uppercase;">${title}</div>
@@ -199,10 +196,8 @@ function FlyerPagePreview({ announcements, today, bathroomVariant }: {
         {active.map((a, i) => {
           const rawText = a.flyer_text || a.month_override || a.short_version || '';
           const text = stripLeadingTitle(rawText, a.title);
-          const barColor = a.scope === 'whole_church' ? ORANGE : TEAL;
           return (
             <div key={a.id} style={{ display: 'flex', gap: `${s.gap}in`, padding: `${s.itemPadV}in 0`, borderBottom: i < active.length - 1 ? `1pt solid #E8E8E8` : 'none', alignItems: 'flex-start' }}>
-              <div style={{ width: '3pt', alignSelf: 'stretch', minHeight: `${s.barMinH}in`, background: barColor, borderRadius: '3pt', flexShrink: 0 }} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ marginBottom: `${s.titleMarginBottom}pt` }}>
                   <div style={{ fontFamily: FLYER_FONT, fontSize: `${s.titleFontSize}pt`, fontWeight: 900, color: TEAL, letterSpacing: '0.02em', lineHeight: 1.1, textTransform: 'uppercase' }}>

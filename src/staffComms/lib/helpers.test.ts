@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isArchived, isClassListingActive, getLastRelevantDate } from './helpers';
+import { isArchived, isClassListingActive, getLastRelevantDate, isMonthlyActive } from './helpers';
 import type { Announcement } from '../types';
 
 // These exist because a real bug shipped here: a multi-week recurring
@@ -149,5 +149,58 @@ describe('isArchived', () => {
       event_date: '2026-09-25', recurrence_end_date: null,
     });
     expect(isArchived(a, TODAY)).toBe(false); // +4 days, still in grace
+  });
+});
+
+// These exist because a real bug shipped here: a one-time item's monthly-
+// flyer window used the same multi-week Happenings promotion lead time as
+// the weekly email, so a whole-church event in mid/late next month could
+// already be "monthly active" this month too, and show up on both months'
+// flyers. Only a few days into next month should carry over.
+describe('isMonthlyActive', () => {
+  const OCT_TODAY = '2026-10-15';
+
+  it('includes a one-time event happening this month', () => {
+    const a = makeAnnouncement({ monthly_include: true, event_date: '2026-10-25' });
+    expect(isMonthlyActive(a, OCT_TODAY)).toBe(true);
+  });
+
+  it('includes a one-time event in the first week of next month', () => {
+    const a = makeAnnouncement({ monthly_include: true, event_date: '2026-11-07', scope: 'whole_church' });
+    expect(isMonthlyActive(a, OCT_TODAY)).toBe(true);
+  });
+
+  it('excludes a one-time event past the first week of next month, even with a long lead-time scope', () => {
+    const a = makeAnnouncement({ monthly_include: true, event_date: '2026-11-15', scope: 'whole_church' });
+    expect(isMonthlyActive(a, OCT_TODAY)).toBe(false);
+  });
+
+  it('excludes a one-time event from last month', () => {
+    const a = makeAnnouncement({ monthly_include: true, event_date: '2026-09-25' });
+    expect(isMonthlyActive(a, OCT_TODAY)).toBe(false);
+  });
+
+  it('uses the earliest of multiple event dates', () => {
+    const a = makeAnnouncement({ monthly_include: true, event_date: null, event_dates: ['2026-11-07', '2026-11-20'] });
+    expect(isMonthlyActive(a, OCT_TODAY)).toBe(true);
+  });
+
+  it('always includes a dateless one-time (ongoing) item', () => {
+    const a = makeAnnouncement({ monthly_include: true, event_date: null, event_dates: [] });
+    expect(isMonthlyActive(a, OCT_TODAY)).toBe(true);
+  });
+
+  it('excludes anything with monthly_include off', () => {
+    const a = makeAnnouncement({ monthly_include: false, event_date: '2026-10-25' });
+    expect(isMonthlyActive(a, OCT_TODAY)).toBe(false);
+  });
+
+  it('keeps recurring items on their own admin-set active range, unaffected by the date-window change', () => {
+    const a = makeAnnouncement({
+      monthly_include: true, is_recurring: true,
+      happenings_start_date: '2026-10-01', happenings_end_date: '2026-12-31',
+    });
+    expect(isMonthlyActive(a, OCT_TODAY)).toBe(true);
+    expect(isMonthlyActive(a, '2026-09-29')).toBe(false);
   });
 });

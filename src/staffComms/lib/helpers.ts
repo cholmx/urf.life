@@ -62,12 +62,32 @@ export function isHappeningsActive(a: Announcement, today: string): boolean {
 
 export function isMonthlyActive(a: Announcement, today: string): boolean {
   if (!a.monthly_include) return false;
-  const cm = today.slice(0, 7);
-  const startDate = getAutoHappeningsStartDate(a, today);
-  const endDate = getAutoHappeningsEndDate(a) || a.event_date;
-  const sm = (startDate || '2000-01').slice(0, 7);
-  const em = (endDate || '2099-12').slice(0, 7);
-  return sm <= cm && em >= cm;
+
+  // Recurring items use their own admin-set active range (happenings_start/
+  // end_date), same as before - unaffected by the one-time-item change below.
+  if (a.is_recurring) {
+    const cm = today.slice(0, 7);
+    const start = a.happenings_start_date || '2000-01-01';
+    const end = a.happenings_end_date || '2099-12-31';
+    return start.slice(0, 7) <= cm && end.slice(0, 7) >= cm;
+  }
+
+  // A one-time item with no date at all is "ongoing" (runs until removed) -
+  // always include it, same as before.
+  const eventDate = earliestEventDate(a);
+  if (!eventDate) return true;
+
+  // Only the displayed month, plus the first week of the next month - not
+  // the full multi-week Happenings promotion lead time the weekly email
+  // uses, which used to pull a mid-next-month event onto this month's
+  // flyer too. A few days' heads-up into next month is useful; weeks of it
+  // just means the same event shows up twice.
+  const [y, m] = today.split('-').map(Number);
+  const monthStart = `${y}-${String(m).padStart(2, '0')}-01`;
+  const cutoffDate = new Date(y, m, 7); // month is 1-based `m` as Date's 0-based arg = next month
+  const cutoff = `${cutoffDate.getFullYear()}-${String(cutoffDate.getMonth() + 1).padStart(2, '0')}-${String(cutoffDate.getDate()).padStart(2, '0')}`;
+
+  return eventDate >= monthStart && eventDate <= cutoff;
 }
 
 function earliestEventDate(a: Announcement): string | null {
