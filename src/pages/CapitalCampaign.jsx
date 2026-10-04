@@ -292,7 +292,7 @@ const CapitalCampaign = () => {
         <Link
           to="/"
           className="inline-flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105"
-          style={{ backgroundColor: '#83A682' }}
+          style={{ backgroundColor: '#cc4733' }}
           title="Back to Home"
         >
           <SafeIcon icon={FiHome} className="h-5 w-5 text-white" />
