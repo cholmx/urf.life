@@ -62,7 +62,7 @@ function getAnnouncementBody(a: Announcement): string {
    One-sided bulletin: every active item renders once on a single
    5.5x8.5in half-page (same text printed twice on the landscape sheet,
    cut down the middle, for two copies). Text shrinks in tiers as the
-   month gets busier, same idea as the Monthly Flyer's getScaleParams,
+   month gets busier, same idea as the Monthly Flyer's pickFlyerScale,
    so everything still fits on the one side instead of needing a back
    page. */
 
@@ -87,9 +87,8 @@ export interface BulletinScale {
 }
 
 // Ordered largest to smallest - pickBulletinScale walks these to find the
-// largest one where every item actually fits on the one side, rather than
-// just guessing from item count the way getScaleParams does for the
-// Monthly Flyer.
+// largest one where every item actually fits on the one side, same idea
+// as the Monthly Flyer's pickFlyerScale.
 export const BULLETIN_SCALE_TIERS: BulletinScale[] = [
   { titleFontSize: 11.5, dateFontSize: 9, bodyFontSize: 9.5, contactFontSize: 7.5, itemPadV: 11 },
   { titleFontSize: 10.5, dateFontSize: 8.5, bodyFontSize: 9, contactFontSize: 7, itemPadV: 8 },

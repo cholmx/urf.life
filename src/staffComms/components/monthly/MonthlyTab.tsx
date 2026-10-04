@@ -79,46 +79,118 @@ export interface ScaleParams {
   monthFontSize: number;
 }
 
-export function getScaleParams(count: number, hasBathroom: boolean): ScaleParams {
-  const extra = hasBathroom ? 2 : 0;
-  const n = count + extra;
+// Ordered largest to smallest - pickFlyerScale (below) walks these to find
+// the largest one where the header, items, and (when printing the
+// bathroom-note variant) the bathroom box all actually fit on the one
+// 8.5x11in page, rather than guessing from item count alone the way this
+// used to (see pickFlyerScale's comment for why that broke).
+export const FLYER_SCALE_TIERS: ScaleParams[] = [
+  {
+    headerFontSize: 50, headerPadV: 0.65, bodyPadV: 0.45, bodyPadH: 0.5,
+    itemPadV: 0.22, titleFontSize: 18, dateFontSize: 12, bodyFontSize: 11,
+    contactFontSize: 9, contactMarginTop: 5, titleMarginBottom: 5,
+    gap: 0.18, subtitleFontSize: 11, orgFontSize: 9, monthFontSize: 50,
+  },
+  {
+    headerFontSize: 44, headerPadV: 0.5, bodyPadV: 0.35, bodyPadH: 0.5,
+    itemPadV: 0.17, titleFontSize: 16, dateFontSize: 11, bodyFontSize: 10.5,
+    contactFontSize: 8.5, contactMarginTop: 4, titleMarginBottom: 4,
+    gap: 0.15, subtitleFontSize: 10.5, orgFontSize: 8.5, monthFontSize: 44,
+  },
+  {
+    headerFontSize: 38, headerPadV: 0.38, bodyPadV: 0.28, bodyPadH: 0.5,
+    itemPadV: 0.13, titleFontSize: 15, dateFontSize: 10.5, bodyFontSize: 10,
+    contactFontSize: 8, contactMarginTop: 3, titleMarginBottom: 3,
+    gap: 0.13, subtitleFontSize: 10, orgFontSize: 8, monthFontSize: 38,
+  },
+  {
+    headerFontSize: 32, headerPadV: 0.28, bodyPadV: 0.2, bodyPadH: 0.5,
+    itemPadV: 0.1, titleFontSize: 13, dateFontSize: 10, bodyFontSize: 9.5,
+    contactFontSize: 7.5, contactMarginTop: 2, titleMarginBottom: 2,
+    gap: 0.11, subtitleFontSize: 9.5, orgFontSize: 7.5, monthFontSize: 32,
+  },
+  {
+    headerFontSize: 26, headerPadV: 0.2, bodyPadV: 0.15, bodyPadH: 0.5,
+    itemPadV: 0.08, titleFontSize: 12, dateFontSize: 9.5, bodyFontSize: 9,
+    contactFontSize: 7, contactMarginTop: 2, titleMarginBottom: 2,
+    gap: 0.09, subtitleFontSize: 9, orgFontSize: 7, monthFontSize: 26,
+  },
+  {
+    headerFontSize: 22, headerPadV: 0.16, bodyPadV: 0.12, bodyPadH: 0.5,
+    itemPadV: 0.06, titleFontSize: 11, dateFontSize: 9, bodyFontSize: 8.5,
+    contactFontSize: 6.5, contactMarginTop: 2, titleMarginBottom: 2,
+    gap: 0.07, subtitleFontSize: 8.5, orgFontSize: 6.5, monthFontSize: 22,
+  },
+  {
+    headerFontSize: 18, headerPadV: 0.12, bodyPadV: 0.1, bodyPadH: 0.5,
+    itemPadV: 0.05, titleFontSize: 10, dateFontSize: 8.5, bodyFontSize: 8,
+    contactFontSize: 6, contactMarginTop: 1, titleMarginBottom: 1,
+    gap: 0.06, subtitleFontSize: 8, orgFontSize: 6, monthFontSize: 18,
+  },
+];
 
-  if (n <= 4) {
-    return {
-      headerFontSize: 50, headerPadV: 0.65, bodyPadV: 0.45, bodyPadH: 0.5,
-      itemPadV: 0.22, titleFontSize: 18, dateFontSize: 12, bodyFontSize: 11,
-      contactFontSize: 9, contactMarginTop: 5, titleMarginBottom: 5,
-      gap: 0.18, subtitleFontSize: 11, orgFontSize: 9, monthFontSize: 50,
-    };
-  } else if (n <= 6) {
-    return {
-      headerFontSize: 44, headerPadV: 0.5, bodyPadV: 0.35, bodyPadH: 0.5,
-      itemPadV: 0.17, titleFontSize: 16, dateFontSize: 11, bodyFontSize: 10.5,
-      contactFontSize: 8.5, contactMarginTop: 4, titleMarginBottom: 4,
-      gap: 0.15, subtitleFontSize: 10.5, orgFontSize: 8.5, monthFontSize: 44,
-    };
-  } else if (n <= 8) {
-    return {
-      headerFontSize: 38, headerPadV: 0.38, bodyPadV: 0.28, bodyPadH: 0.5,
-      itemPadV: 0.13, titleFontSize: 15, dateFontSize: 10.5, bodyFontSize: 10,
-      contactFontSize: 8, contactMarginTop: 3, titleMarginBottom: 3,
-      gap: 0.13, subtitleFontSize: 10, orgFontSize: 8, monthFontSize: 38,
-    };
-  } else if (n <= 11) {
-    return {
-      headerFontSize: 32, headerPadV: 0.28, bodyPadV: 0.2, bodyPadH: 0.5,
-      itemPadV: 0.1, titleFontSize: 13, dateFontSize: 10, bodyFontSize: 9.5,
-      contactFontSize: 7.5, contactMarginTop: 2, titleMarginBottom: 2,
-      gap: 0.11, subtitleFontSize: 9.5, orgFontSize: 7.5, monthFontSize: 32,
-    };
-  } else {
-    return {
-      headerFontSize: 26, headerPadV: 0.2, bodyPadV: 0.15, bodyPadH: 0.5,
-      itemPadV: 0.08, titleFontSize: 12, dateFontSize: 9.5, bodyFontSize: 9,
-      contactFontSize: 7, contactMarginTop: 2, titleMarginBottom: 2,
-      gap: 0.09, subtitleFontSize: 9, orgFontSize: 7, monthFontSize: 26,
-    };
+// 8.5x11in page, 0.5in outer padding on every side, 0.5in bodyPadH on both
+// sides of the item column (constant across every tier) - what's left is
+// the width item text actually wraps within, and the height everything
+// (header + items + bathroom box) has to fit inside vertically.
+const PAGE_CONTENT_WIDTH_PT = (8.5 - 0.5 * 2 - 0.5 * 2) * 72;
+const PAGE_CONTENT_HEIGHT_PT = (11 - 0.5 * 2) * 72;
+
+function estimateWrappedLines(text: string, fontSizePt: number, widthPt: number): number {
+  if (!text) return 0;
+  const charsPerLine = Math.max(1, Math.floor(widthPt / (fontSizePt * 0.46)));
+  return Math.max(1, Math.ceil(text.length / charsPerLine));
+}
+
+function estimateHeaderHeightPt(s: ScaleParams): number {
+  const padding = s.headerPadV * 72 * 1.54; // headerPadV top + headerPadV*0.54 bottom
+  const orgLine = s.orgFontSize * 1.2 + 8;
+  const monthLine = s.monthFontSize + 8;
+  const subtitleLine = s.subtitleFontSize * 1.2;
+  const border = 3;
+  return padding + orgLine + monthLine + subtitleLine + border;
+}
+
+function estimateBathroomHeightPt(s: ScaleParams): number {
+  const padding = (0.3 + 0.45) * 72;
+  const border = 2;
+  const lines = (s.bodyFontSize + 1) * 1.5 * 2 + (s.bodyFontSize + 1.5) * 1.5;
+  return padding + border + lines;
+}
+
+function estimateFlyerItemHeightPt(a: Announcement, s: ScaleParams): number {
+  const rawText = a.flyer_text || a.month_override || a.short_version || '';
+  const text = stripLeadingTitle(rawText, a.title);
+  const dateLabel = formatDateTimeList(a);
+
+  let h = s.titleFontSize * 1.1 + s.titleMarginBottom;
+  if (dateLabel || a.ministry) h += Math.max(s.dateFontSize, s.contactFontSize) * 1.1 + 1;
+  if (text) h += estimateWrappedLines(text, s.bodyFontSize, PAGE_CONTENT_WIDTH_PT) * s.bodyFontSize * 1.4;
+  if (a.contact_info) h += s.contactFontSize * 1.2 + s.contactMarginTop;
+  h += s.itemPadV * 72 * 2; // top + bottom item padding
+  h += 1; // border-bottom hairline between items
+  return h;
+}
+
+// Used to pick n <= 4/6/8/11 buckets purely from item count, with no idea
+// how much text was actually in each one - a month with only 3 items could
+// still run off the page if those 3 had long descriptions or (since
+// date/time and multi-day ranges got added to the date line) a long date
+// label, while the text sat at this function's largest, most spacious
+// tier regardless. This instead estimates the real rendered height of the
+// header, every item, and the bathroom box (when printing that variant)
+// at each tier, and picks the largest tier where it all actually fits -
+// falling back to the smallest tier, same as before, if even that doesn't.
+export function pickFlyerScale(items: Announcement[], hasBathroom: boolean): ScaleParams {
+  for (const s of FLYER_SCALE_TIERS) {
+    const headerH = estimateHeaderHeightPt(s);
+    const bathroomH = hasBathroom ? estimateBathroomHeightPt(s) : 0;
+    const bodyPadding = s.bodyPadV * 72 * 1.67; // bodyPadV top + bodyPadV*0.67 bottom
+    const budget = PAGE_CONTENT_HEIGHT_PT - headerH - bodyPadding - bathroomH;
+    const used = items.reduce((sum, a) => sum + estimateFlyerItemHeightPt(a, s), 0);
+    if (used <= budget) return s;
   }
+  return FLYER_SCALE_TIERS[FLYER_SCALE_TIERS.length - 1];
 }
 
 // This builds the same layout as the React preview below (FlyerPagePreview),
@@ -129,7 +201,7 @@ export function getScaleParams(count: number, hasBathroom: boolean): ScaleParams
 function buildFlyerHTML(items: Announcement[], today: string, bathroomVariant: boolean): string {
   const active = getActiveMonthlyItems(items, today);
   const monthLabel = new Date(today + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-  const s = getScaleParams(active.length, bathroomVariant);
+  const s = pickFlyerScale(active, bathroomVariant);
 
   const itemsHTML = active.length === 0
     ? `<div style="color:#999;padding:0.5in 0;text-align:center;font-size:11pt;">No announcements for this month.</div>`
@@ -196,7 +268,7 @@ function FlyerPagePreview({ announcements, today, bathroomVariant }: {
 }) {
   const active = getActiveMonthlyItems(announcements, today);
   const monthLabel = new Date(today + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-  const s = getScaleParams(active.length, bathroomVariant);
+  const s = pickFlyerScale(active, bathroomVariant);
 
   return (
     <div style={{ width: '8.5in', minHeight: '11in', background: '#ffffff', fontFamily: font.body, display: 'flex', flexDirection: 'column', boxSizing: 'border-box', padding: '0.5in' }}>
