@@ -39,7 +39,20 @@ function formatDateList(a: Announcement): string {
 // start-end range, when an end_time is set) applies across every date in
 // the list, since multi-date items are the same recurring time slot on
 // different days, not different times per date.
+//
+// A date_range item (e.g. a multi-day retreat) is a different shape
+// entirely - event_date/event_time is the start, recurrence_end_date/
+// end_time is the end, and allEventDates doesn't even look at
+// recurrence_end_date, so without this it silently dropped the end date.
 function formatDateTimeList(a: Announcement): string {
+  if (a.recurrence_type === 'date_range' && a.event_date && a.recurrence_end_date) {
+    const startDate = formatDateNice(a.event_date);
+    const endDate = formatDateNice(a.recurrence_end_date);
+    const start = a.event_time ? `${startDate}, ${formatTime12h(a.event_time)}` : startDate;
+    const end = a.end_time ? `${endDate}, ${formatTime12h(a.end_time)}` : endDate;
+    return `${start} – ${end}`;
+  }
+
   const dateLabel = formatDateList(a);
   if (!dateLabel) return '';
   if (!a.event_time) return dateLabel;
