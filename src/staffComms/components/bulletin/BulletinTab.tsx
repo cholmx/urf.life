@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { C, font } from '../../lib/theme';
 import { btnGhost } from '../ui/inputs';
-import { getActiveMonthlyItems, formatDateNice, escapeHtml, stripLeadingTitle } from '../../lib/helpers';
+import { getActiveMonthlyItems, formatDateNice, formatTime12h, escapeHtml, stripLeadingTitle } from '../../lib/helpers';
 import type { Announcement } from '../../types';
 import type { ReactNode } from 'react';
 
@@ -24,14 +24,33 @@ function getMonthLabel(today: string): string {
   return new Date(today + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 }
 
+// A date_range item (e.g. a multi-day retreat) stores its start in
+// event_date/event_time and its end in recurrence_end_date/end_time - its
+// own recurrence_label is date-only, so this builds a start-end
+// date+time label directly instead ('Oct 9, 5:00 PM - Oct 10, 12:00 PM').
+// Everything else gets its usual date label with the event's time (or a
+// start-end time range, when an end_time is set) appended.
 function announcementDateLabel(a: Announcement): string {
-  if (a.recurrence_type === 'weekly' && a.recurrence_label) return a.recurrence_label;
-  if (a.recurrence_type === 'biweekly' && a.recurrence_label) return a.recurrence_label;
-  if (a.recurrence_type === 'monthly' && a.recurrence_label) return a.recurrence_label;
-  if (a.recurrence_type === 'date_range' && a.recurrence_label) return a.recurrence_label;
-  if (a.event_date) return formatDateNice(a.event_date);
-  if (a.event_dates?.length) return a.event_dates.map(formatDateNice).join(', ');
-  return '';
+  if (a.recurrence_type === 'date_range' && a.event_date && a.recurrence_end_date) {
+    const startDate = formatDateNice(a.event_date);
+    const endDate = formatDateNice(a.recurrence_end_date);
+    const start = a.event_time ? `${startDate}, ${formatTime12h(a.event_time)}` : startDate;
+    const end = a.end_time ? `${endDate}, ${formatTime12h(a.end_time)}` : endDate;
+    return `${start} – ${end}`;
+  }
+
+  let base = '';
+  if (a.recurrence_type === 'weekly' && a.recurrence_label) base = a.recurrence_label;
+  else if (a.recurrence_type === 'biweekly' && a.recurrence_label) base = a.recurrence_label;
+  else if (a.recurrence_type === 'monthly' && a.recurrence_label) base = a.recurrence_label;
+  else if (a.event_date) base = formatDateNice(a.event_date);
+  else if (a.event_dates?.length) base = a.event_dates.map(formatDateNice).join(', ');
+
+  if (!base) return '';
+  if (!a.event_time) return base;
+  const start = formatTime12h(a.event_time);
+  const timeLabel = a.end_time ? `${start}–${formatTime12h(a.end_time)}` : start;
+  return `${base}, ${timeLabel}`;
 }
 
 function getAnnouncementBody(a: Announcement): string {
