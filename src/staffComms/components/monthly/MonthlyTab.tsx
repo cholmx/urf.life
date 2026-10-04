@@ -1,6 +1,6 @@
 import { C, font } from '../../lib/theme';
 import { btnGhost } from '../ui/inputs';
-import { getActiveMonthlyItems, formatDateNice, escapeHtml, stripLeadingTitle } from '../../lib/helpers';
+import { getActiveMonthlyItems, formatDateNice, formatTime12h, escapeHtml, stripLeadingTitle } from '../../lib/helpers';
 import type { Announcement } from '../../types';
 
 interface MonthlyTabProps {
@@ -33,6 +33,19 @@ function formatDateList(a: Announcement): string {
   const dates = allEventDates(a);
   if (!dates.length) return '';
   return dates.map(formatDateNice).join(' + ');
+}
+
+// Same date list, with the event's time appended - a single time (or a
+// start-end range, when an end_time is set) applies across every date in
+// the list, since multi-date items are the same recurring time slot on
+// different days, not different times per date.
+function formatDateTimeList(a: Announcement): string {
+  const dateLabel = formatDateList(a);
+  if (!dateLabel) return '';
+  if (!a.event_time) return dateLabel;
+  const start = formatTime12h(a.event_time);
+  const timeLabel = a.end_time ? `${start}–${formatTime12h(a.end_time)}` : start;
+  return `${dateLabel}, ${timeLabel}`;
 }
 
 export interface ScaleParams {
@@ -115,7 +128,7 @@ function buildFlyerHTML(items: Announcement[], today: string, bathroomVariant: b
         const contactName = escapeHtml(a.contact_name);
         const contactInfo = escapeHtml(a.contact_info);
         const isWC = a.scope === 'whole_church';
-        const dateLabel = escapeHtml(formatDateList(a));
+        const dateLabel = escapeHtml(formatDateTimeList(a));
         const dateSpan = dateLabel
           ? `<span style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:${s.dateFontSize}pt;font-weight:700;color:${ORANGE};letter-spacing:0.05em;white-space:nowrap;flex-shrink:0;">${dateLabel}</span>`
           : '';
@@ -203,11 +216,11 @@ function FlyerPagePreview({ announcements, today, bathroomVariant }: {
                   <div style={{ fontFamily: FLYER_FONT, fontSize: `${s.titleFontSize}pt`, fontWeight: 900, color: TEAL, letterSpacing: '0.02em', lineHeight: 1.1, textTransform: 'uppercase' }}>
                     {a.title}
                   </div>
-                  {(formatDateList(a) || a.ministry) && (
+                  {(formatDateTimeList(a) || a.ministry) && (
                     <div style={{ marginTop: '1pt', lineHeight: 1.1, display: 'flex', gap: '4pt', alignItems: 'center', flexWrap: 'wrap' }}>
-                      {formatDateList(a) && (
+                      {formatDateTimeList(a) && (
                         <span style={{ fontFamily: FLYER_FONT, fontSize: `${s.dateFontSize}pt`, fontWeight: 700, color: ORANGE, letterSpacing: '0.05em' }}>
-                          {formatDateList(a)}
+                          {formatDateTimeList(a)}
                         </span>
                       )}
                       {a.ministry && (
