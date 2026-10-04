@@ -424,7 +424,7 @@ const Admin=()=> {
             <div className="text-white font-bold text-lg leading-tight">Admin</div>
             <div className="text-white/40 text-xs">Upper Room Fellowship</div>
           </div>
-          <NotificationBell onSelect={handleBellSelect} />
+          <NotificationBell onSelect={handleBellSelect} align="left" />
         </div>
         <NavList />
         <div className="px-3 py-4 border-t border-white/10 space-y-0.5">
