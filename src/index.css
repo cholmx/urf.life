@@ -111,17 +111,30 @@
 
 /* Glassmorphism for public-page cards - replaces a plain bg-white on a
    card container (keeping its existing rounded/shadow/padding utilities
-   as-is - no box-shadow here, since that would override each card's own
-   shadow-md/shadow-lg/shadow-modern utility class at the same
-   specificity, just by coming later in the stylesheet). A translucent
-   light panel over the site's dark teal page background is the classic
-   glass look; backdrop-blur does real work here since there's now an
-   actual dark backdrop to blur, not just a flat near-white one. */
+   as-is). A translucent light panel over the site's dark teal page
+   background is the classic glass look; backdrop-blur does real work
+   here since there's now an actual dark backdrop to blur, not just a
+   flat near-white one.
+
+   box-shadow below layers in var(--tw-shadow) (and the ring-shadow
+   vars) rather than setting box-shadow outright - each card's own
+   shadow-md/shadow-lg/shadow-modern utility class works by setting
+   those same custom properties on the element, so reading them back
+   here composes with whatever shadow utility the card already has
+   instead of silently replacing it (silently replacing it is exactly
+   what shipped here the first time this rule had its own box-shadow). */
 .card-glass {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(131, 166, 130, 0.22) 100%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(131, 166, 130, 0.55) 100%);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(131, 166, 130, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.65),
+    inset 0 -1px 0 rgba(5, 48, 48, 0.1),
+    0 12px 40px rgba(5, 48, 48, 0.45),
+    var(--tw-ring-offset-shadow, 0 0 #0000),
+    var(--tw-ring-shadow, 0 0 #0000),
+    var(--tw-shadow, 0 0 #0000);
 }
 
 /* The dark theme flips the site's default text color to light (see
