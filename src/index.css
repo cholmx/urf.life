@@ -142,20 +142,36 @@
    need !important to beat if it were the other way around - no
    !important needed here. The admin dashboard never themed its own
    background and was always relying on inheriting the public site's
-   text color by default, so it needs the same protection. */
-:is(.card-glass, .form-section, .bg-white, .bg-accent-dark, .bg-accent-light, .admin-shell) {
+   text color by default, so it needs the same protection.
+
+   The bg-white/bg-accent-dark/bg-accent-light/text-text-primary/
+   text-text-secondary/text-text-light tokens below are written as
+   [class~="..."] attribute selectors, not plain .bg-white-style class
+   selectors - Tailwind's v3 JIT has a real bug where a hand-written CSS
+   rule using the literal selector of a utility class that's ALSO
+   consumed via @apply elsewhere in this file (body's bg-accent/
+   text-text-primary, .form-input's text-text-primary, etc.) gets its
+   selector silently corrupted, rewritten to whatever element that other
+   @apply happened to target (this is exactly how the page background
+   shipped broken the first time - .bg-accent on body got silently
+   rewritten and lost). An attribute selector matches the same elements
+   but isn't a "class" node to Tailwind's @apply bookkeeping, so it's
+   immune. card-glass/form-section/admin-shell aren't real Tailwind
+   utilities (never @apply'd), so plain class selectors are fine for
+   those. */
+:is(.card-glass, .form-section, [class~="bg-white"], [class~="bg-accent-dark"], [class~="bg-accent-light"], .admin-shell) {
   color: #1E1E21;
 }
-:is(.card-glass, .form-section, .bg-white, .bg-accent-dark, .bg-accent-light, .admin-shell)
-  :is(h1, h2, h3, h4, h5, h6, .text-text-primary, .text-text-secondary) {
+:is(.card-glass, .form-section, [class~="bg-white"], [class~="bg-accent-dark"], [class~="bg-accent-light"], .admin-shell)
+  :is(h1, h2, h3, h4, h5, h6, [class~="text-text-primary"], [class~="text-text-secondary"]) {
   color: #1E1E21;
 }
 /* .text-text-light is the muted/secondary tone (now a light gray-teal
    tuned for the dark page background) - inside a light surface it needs
    its own muted-dark color, not the same #1E1E21 as headings/body text,
    or it loses the "this is secondary text" contrast it's there for. */
-:is(.card-glass, .form-section, .bg-white, .bg-accent-dark, .bg-accent-light, .admin-shell)
-  .text-text-light {
+:is(.card-glass, .form-section, [class~="bg-white"], [class~="bg-accent-dark"], [class~="bg-accent-light"], .admin-shell)
+  [class~="text-text-light"] {
   color: #6B6B6B;
 }
 
@@ -288,23 +304,30 @@
    directly in dozens of places. Rather than hand-editing every file (and
    risking missing spots), override those utilities' effect wherever they
    render inside the admin shell, so the whole area reads as dark gray and
-   white without touching the public site's own green/cream branding. */
-.admin-shell .text-primary { color: #1E1E21 !important; }
-.admin-shell .bg-primary { background-color: #1E1E21 !important; }
-.admin-shell .border-primary { border-color: #1E1E21 !important; }
-.admin-shell .ring-primary { --tw-ring-color: #1E1E21 !important; }
-.admin-shell .hover\:bg-primary:hover { background-color: #1E1E21 !important; }
-.admin-shell .hover\:border-primary:hover { border-color: #1E1E21 !important; }
-.admin-shell .hover\:text-primary:hover { color: #1E1E21 !important; }
-.admin-shell .group:hover .group-hover\:text-primary { color: #1E1E21 !important; }
-.admin-shell .focus\:ring-primary:focus { --tw-ring-color: #1E1E21 !important; }
-.admin-shell .focus\:border-primary:focus { border-color: #1E1E21 !important; }
+   white without touching the public site's own green/cream branding.
 
-.admin-shell .bg-accent { background-color: #F5F5F5 !important; }
-.admin-shell .bg-accent\/50 { background-color: rgba(245,245,245,0.5) !important; }
-.admin-shell .hover\:bg-accent\/50:hover { background-color: rgba(245,245,245,0.5) !important; }
-.admin-shell .border-accent { border-color: #E2E2E2 !important; }
-.admin-shell .border-accent-dark { border-color: #D0D0D0 !important; }
+   [class~="..."] attribute selectors, not plain .foo class selectors -
+   see the comment above the dark-theme :is() rules for why: these are
+   all real Tailwind utilities that are also @apply'd elsewhere in this
+   file (text-primary/bg-primary via the `a`/.prose rules, bg-accent via
+   body, etc.), and a literal class selector referencing the same token
+   gets silently corrupted by a Tailwind v3 JIT bug when that happens. */
+.admin-shell [class~="text-primary"] { color: #1E1E21 !important; }
+.admin-shell [class~="bg-primary"] { background-color: #1E1E21 !important; }
+.admin-shell [class~="border-primary"] { border-color: #1E1E21 !important; }
+.admin-shell [class~="ring-primary"] { --tw-ring-color: #1E1E21 !important; }
+.admin-shell [class~="hover:bg-primary"]:hover { background-color: #1E1E21 !important; }
+.admin-shell [class~="hover:border-primary"]:hover { border-color: #1E1E21 !important; }
+.admin-shell [class~="hover:text-primary"]:hover { color: #1E1E21 !important; }
+.admin-shell .group:hover [class~="group-hover:text-primary"] { color: #1E1E21 !important; }
+.admin-shell [class~="focus:ring-primary"]:focus { --tw-ring-color: #1E1E21 !important; }
+.admin-shell [class~="focus:border-primary"]:focus { border-color: #1E1E21 !important; }
+
+.admin-shell [class~="bg-accent"] { background-color: #F5F5F5 !important; }
+.admin-shell [class~="bg-accent/50"] { background-color: rgba(245,245,245,0.5) !important; }
+.admin-shell [class~="hover:bg-accent/50"]:hover { background-color: rgba(245,245,245,0.5) !important; }
+.admin-shell [class~="border-accent"] { border-color: #E2E2E2 !important; }
+.admin-shell [class~="border-accent-dark"] { border-color: #D0D0D0 !important; }
 
 /* Global input focus ring */
 input:focus, textarea:focus, select:focus {
