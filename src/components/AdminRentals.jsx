@@ -355,6 +355,21 @@ const AdminRentals = () => {
         </div>
       </div>
 
+      <LoadingTransition isLoading={loading} skeleton={<RentalsSkeleton />}>
+        {visible.length === 0 ? (
+          <div className="bg-white rounded-2xl shadow-modern p-12 text-center">
+            <SafeIcon icon={showPast ? FiCalendar : FiInbox} className="h-10 w-10 text-neutral-300 mx-auto mb-3" />
+            <p className="text-neutral-500">{showPast ? 'No past rentals.' : 'No upcoming rentals.'}</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {visible.map((r) => (
+              <RentalCard key={r.id} r={r} onDelete={handleDelete} onToggleArchive={handleToggleArchive} onSaveNotes={handleSaveNotes} />
+            ))}
+          </div>
+        )}
+      </LoadingTransition>
+
       {/* Where the /rental form's internal notification email goes - the
           renter's own confirmation always goes to the address they entered,
           this only controls the staff-facing copy. Multiple addresses are
@@ -382,21 +397,6 @@ const AdminRentals = () => {
           </div>
         )}
       </div>
-
-      <LoadingTransition isLoading={loading} skeleton={<RentalsSkeleton />}>
-        {visible.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-modern p-12 text-center">
-            <SafeIcon icon={showPast ? FiCalendar : FiInbox} className="h-10 w-10 text-neutral-300 mx-auto mb-3" />
-            <p className="text-neutral-500">{showPast ? 'No past rentals.' : 'No upcoming rentals.'}</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {visible.map((r) => (
-              <RentalCard key={r.id} r={r} onDelete={handleDelete} onToggleArchive={handleToggleArchive} onSaveNotes={handleSaveNotes} />
-            ))}
-          </div>
-        )}
-      </LoadingTransition>
     </div>
   );
 };
