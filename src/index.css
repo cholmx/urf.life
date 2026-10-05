@@ -30,12 +30,21 @@
   }
 }
 
-/* Prose styles for rendered HTML content */
+/* Prose styles for rendered HTML content - always rendered inside a
+   light card-clay surface in this app (sermon summaries, campaign
+   updates), so the text color is hardcoded dark rather than @apply'd
+   from text-text-primary: @apply bakes in whatever that utility
+   resolves to at build time (now the dark theme's light default)
+   without leaving the literal text-text-primary class on the element,
+   so it's invisible to the dark-theme :is() override below, which can
+   only catch an element actually wearing that class or an h1-h6 tag. */
 .prose {
-  @apply text-text-primary text-base leading-normal;
+  @apply text-base leading-normal;
+  color: #1E1E21;
 }
 .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
-  @apply text-text-primary font-heading mt-4 mb-2;
+  @apply font-heading mt-4 mb-2;
+  color: #1E1E21;
 }
 .prose h1 {
   @apply text-2xl font-bold;
@@ -50,7 +59,8 @@
   @apply mb-0.5 leading-normal;
 }
 .prose strong {
-  @apply font-bold text-text-primary;
+  @apply font-bold;
+  color: #1E1E21;
 }
 .prose em {
   @apply italic;
@@ -351,17 +361,34 @@ input:focus, textarea:focus, select:focus {
 }
 
 @layer components {
+  /* color is hardcoded rather than @apply'd from text-text-primary for
+     the same reason as .prose above - form-input/form-label are always
+     on a light surface (a white input, or a form-section/card-clay),
+     and @apply would bake in the dark theme's light default without
+     leaving a class the :is() override below can catch. */
   .form-input {
-    @apply w-full p-3 border border-accent-dark rounded-xl bg-white text-text-primary placeholder-text-light transition-all duration-200;
+    @apply w-full p-3 border border-accent-dark rounded-xl bg-white placeholder-text-light transition-all duration-200;
     @apply focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary;
+    color: #1E1E21;
   }
   .form-label {
-    @apply block text-sm font-semibold text-text-primary mb-1.5;
+    @apply block text-sm font-semibold mb-1.5;
+    color: #1E1E21;
   }
+  /* form-section is always nested inside a .card-clay container (never
+     directly on the dark page background), so it needs its own light,
+     solid surface rather than the translucent dark-teal + blur
+     treatment it had under glassmorphism - that combination, layered
+     over card-clay's cream background, composited into a muddy,
+     low-contrast olive-green wash. A slightly deeper cream than
+     card-clay's #F3F1E6, with an inset shadow, reads as a shallow
+     groove pressed into the clay instead. */
   .form-section {
-    @apply bg-accent/50 rounded-2xl p-5 space-y-4 border border-accent-dark/30;
-    backdrop-filter: blur(18px) saturate(160%);
-    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    @apply rounded-2xl p-5 space-y-4;
+    background: #EAE6D9;
+    box-shadow:
+      inset 2px 2px 5px rgba(5, 48, 48, 0.1),
+      inset -2px -2px 4px rgba(255, 255, 255, 0.7);
   }
   .form-section-title {
     @apply text-xs font-bold uppercase tracking-widest text-primary mb-0;
