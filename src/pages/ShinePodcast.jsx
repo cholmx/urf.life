@@ -135,7 +135,7 @@ const ShinePodcast=()=> {
           initial={{opacity: 0,y: 20}}
           animate={{opacity: 1,y: 0}}
           transition={{duration: 0.5,delay: 0.3}}
-          className="card-glass rounded-2xl shadow-modern p-4 mb-6"
+          className="card-clay rounded-2xl shadow-modern p-4 mb-6"
         >
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex items-center">
@@ -188,7 +188,7 @@ const ShinePodcast=()=> {
                   initial={{opacity: 0,y: 30}}
                   animate={{opacity: 1,y: 0}}
                   transition={{duration: 0.5,delay: index * 0.1}}
-                  className="card-glass rounded-2xl shadow-modern overflow-hidden hover:shadow-modern-lg hover:-translate-y-1 transition-all duration-300"
+                  className="card-clay rounded-2xl shadow-modern overflow-hidden hover:shadow-modern-lg hover:-translate-y-1 transition-all duration-300"
                 >
                   <div className="p-6">
                     <div className="flex items-start space-x-4">
@@ -316,7 +316,7 @@ const ShinePodcast=()=> {
             <motion.div
               initial={{opacity: 0,y: 30}}
               animate={{opacity: 1,y: 0}}
-              className="card-glass rounded-lg shadow-md p-12 text-center"
+              className="card-clay rounded-lg shadow-md p-12 text-center"
             >
               <SafeIcon icon={FiMic} className="h-16 w-16 text-text-light mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-text-primary mb-2 font-inter">

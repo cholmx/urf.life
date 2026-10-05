@@ -109,32 +109,24 @@
   @apply bg-accent-light rounded-2xl shadow-modern transition-all duration-300 hover:shadow-modern-lg hover:-translate-y-1;
 }
 
-/* Glassmorphism for public-page cards - replaces a plain bg-white on a
-   card container (keeping its existing rounded/shadow/padding utilities
-   as-is). A translucent light panel over the site's dark teal page
-   background is the classic glass look; backdrop-blur does real work
-   here since there's now an actual dark backdrop to blur, not just a
-   flat near-white one.
-
-   box-shadow below layers in var(--tw-shadow) (and the ring-shadow
-   vars) rather than setting box-shadow outright - each card's own
-   shadow-md/shadow-lg/shadow-modern utility class works by setting
-   those same custom properties on the element, so reading them back
-   here composes with whatever shadow utility the card already has
-   instead of silently replacing it (silently replacing it is exactly
-   what shipped here the first time this rule had its own box-shadow). */
-.card-glass {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(131, 166, 130, 0.55) 100%);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.45);
+/* Claymorphism for public-page cards - replaces the earlier glass look
+   with a single flat, solid color (no gradient, no blur) plus a soft
+   dual-direction shadow: a light highlight toward the upper-left, a
+   darker shadow toward the lower-right, and a thin inset rim on each
+   edge, reading as a soft, puffy 3D "clay" panel sitting on the dark
+   teal page. The box-shadow here intentionally REPLACES each card's
+   own shadow-md/shadow-lg/shadow-modern utility (rather than composing
+   with it the way the earlier glass version did) - the dual shadow IS
+   the whole effect, and layering a generic drop shadow underneath it
+   just muddies the edge. */
+.card-clay {
+  background: #F3F1E6;
+  border: none;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.65),
-    inset 0 -1px 0 rgba(5, 48, 48, 0.1),
-    0 12px 40px rgba(5, 48, 48, 0.45),
-    var(--tw-ring-offset-shadow, 0 0 #0000),
-    var(--tw-ring-shadow, 0 0 #0000),
-    var(--tw-shadow, 0 0 #0000);
+    -10px -10px 20px rgba(255, 255, 255, 0.8),
+    10px 10px 24px rgba(5, 48, 48, 0.35),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.6),
+    inset -1px -1px 3px rgba(5, 48, 48, 0.08);
 }
 
 /* The dark theme flips the site's default text color to light (see
@@ -169,13 +161,13 @@
    shipped broken the first time - .bg-accent on body got silently
    rewritten and lost). An attribute selector matches the same elements
    but isn't a "class" node to Tailwind's @apply bookkeeping, so it's
-   immune. card-glass/form-section/admin-shell aren't real Tailwind
+   immune. card-clay/form-section/admin-shell aren't real Tailwind
    utilities (never @apply'd), so plain class selectors are fine for
    those. */
-:is(.card-glass, .form-section, [class~="bg-white"], [class~="bg-accent-dark"], [class~="bg-accent-light"], .admin-shell) {
+:is(.card-clay, .form-section, [class~="bg-white"], [class~="bg-accent-dark"], [class~="bg-accent-light"], .admin-shell) {
   color: #1E1E21;
 }
-:is(.card-glass, .form-section, [class~="bg-white"], [class~="bg-accent-dark"], [class~="bg-accent-light"], .admin-shell)
+:is(.card-clay, .form-section, [class~="bg-white"], [class~="bg-accent-dark"], [class~="bg-accent-light"], .admin-shell)
   :is(h1, h2, h3, h4, h5, h6, [class~="text-text-primary"], [class~="text-text-secondary"]) {
   color: #1E1E21;
 }
@@ -183,7 +175,7 @@
    tuned for the dark page background) - inside a light surface it needs
    its own muted-dark color, not the same #1E1E21 as headings/body text,
    or it loses the "this is secondary text" contrast it's there for. */
-:is(.card-glass, .form-section, [class~="bg-white"], [class~="bg-accent-dark"], [class~="bg-accent-light"], .admin-shell)
+:is(.card-clay, .form-section, [class~="bg-white"], [class~="bg-accent-dark"], [class~="bg-accent-light"], .admin-shell)
   [class~="text-text-light"] {
   color: #6B6B6B;
 }

@@ -147,7 +147,7 @@ const About=()=> {
                 initial={{opacity: 0,y: 30}}
                 animate={{opacity: 1,y: 0}}
                 transition={{duration: 0.5,delay: index * 0.1}}
-                className="card-glass rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                className="card-clay rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
               >
                 <img src={member.image} alt={member.name} className="w-full h-64 object-cover" />
                 <div className="p-6">
