@@ -109,24 +109,35 @@
   @apply bg-accent-light rounded-2xl shadow-modern transition-all duration-300 hover:shadow-modern-lg hover:-translate-y-1;
 }
 
-/* Claymorphism for public-page cards - replaces the earlier glass look
-   with a single flat, solid color (no gradient, no blur) plus a soft
-   dual-direction shadow: a light highlight toward the upper-left, a
-   darker shadow toward the lower-right, and a thin inset rim on each
-   edge, reading as a soft, puffy 3D "clay" panel sitting on the dark
-   teal page. The box-shadow here intentionally REPLACES each card's
-   own shadow-md/shadow-lg/shadow-modern utility (rather than composing
-   with it the way the earlier glass version did) - the dual shadow IS
-   the whole effect, and layering a generic drop shadow underneath it
-   just muddies the edge. */
+/* Claymorphism for public-page cards - a single flat, solid color (no
+   gradient, no blur) plus a soft dual-direction shadow: a light
+   highlight toward the upper-left, a darker shadow toward the
+   lower-right, and a thin inset rim on each edge, reading as a soft,
+   puffy 3D "clay" panel sitting on the dark teal page.
+
+   The shadow lives in --clay-shadow so it can be reused on surfaces
+   that aren't the cream card-clay background (e.g. Home.jsx's colored
+   main buttons use .clay-shadow directly with their own bg-[...]).
+   It intentionally REPLACES each element's own shadow-md/shadow-lg/
+   shadow-modern utility (rather than composing with it the way the
+   earlier glass version did) - the dual shadow IS the whole effect,
+   and layering a generic drop shadow underneath it just muddies the
+   edge. */
+:root {
+  --clay-shadow:
+    -3px -3px 6px rgba(255, 255, 255, 0.2),
+    8px 8px 20px rgba(5, 48, 48, 0.55),
+    inset 1px 1px 1px rgba(255, 255, 255, 0.25),
+    inset -1px -1px 2px rgba(5, 48, 48, 0.12);
+}
 .card-clay {
   background: #F3F1E6;
   border: none;
-  box-shadow:
-    -5px -5px 10px rgba(255, 255, 255, 0.35),
-    6px 6px 14px rgba(5, 48, 48, 0.3),
-    inset 1px 1px 2px rgba(255, 255, 255, 0.5),
-    inset -1px -1px 3px rgba(5, 48, 48, 0.08);
+  box-shadow: var(--clay-shadow);
+}
+.clay-shadow {
+  border: none;
+  box-shadow: var(--clay-shadow);
 }
 
 /* The dark theme flips the site's default text color to light (see
