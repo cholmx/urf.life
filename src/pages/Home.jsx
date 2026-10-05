@@ -218,11 +218,11 @@ const Home=()=> {
 
 const HomeButton = ({ title, description, icon, path, isFeatured = false, isInternal = true, delay = 0, gradient = false, isYellow = false, isOrange = false, isLastOdd = false, stretch = false }) => {
   const baseClasses = isFeatured
-    ? "relative overflow-hidden p-4 md:p-5 rounded-2xl border border-white/10 shadow-modern hover:shadow-modern-lg transition-all duration-300 hover:-translate-y-1 block group w-full"
-    : `relative overflow-hidden p-5 rounded-2xl border border-white/10 shadow-modern hover:shadow-modern-lg transition-all duration-300 hover:-translate-y-1 block text-center group flex flex-col justify-center items-center w-full${stretch ? ' h-full' : ' min-h-[160px] md:min-h-[200px]'}`;
+    ? "relative overflow-hidden p-4 md:p-5 rounded-2xl clay-shadow transition-all duration-300 hover:-translate-y-1 block group w-full"
+    : `relative overflow-hidden p-5 rounded-2xl clay-shadow transition-all duration-300 hover:-translate-y-1 block text-center group flex flex-col justify-center items-center w-full${stretch ? ' h-full' : ' min-h-[160px] md:min-h-[200px]'}`;
 
   const featuredClasses = gradient ? "" : "text-white";
-  const mainClasses = "clay-shadow bg-[#637c62] text-white";
+  const mainClasses = "bg-[#637c62] text-white";
 
   const iconColor = (isYellow || isOrange) ? 'text-text-primary' : 'text-white';
   const textColor = (isYellow || isOrange) ? 'text-text-primary' : 'text-white';
