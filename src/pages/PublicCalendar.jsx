@@ -171,9 +171,9 @@ const PublicCalendar=()=> {
 
         <LoadingTransition
           isLoading={loading}
-          skeleton={<div className="bg-white rounded-2xl shadow-modern h-96 animate-pulse" />}
+          skeleton={<div className="card-glass rounded-2xl shadow-modern h-96 animate-pulse" />}
         >
-          <div className="bg-white rounded-2xl shadow-modern overflow-hidden">
+          <div className="card-glass rounded-2xl shadow-modern overflow-hidden">
             <div className="flex items-center justify-between px-6 py-5 border-b border-accent-dark">
               <h2 className="text-xl md:text-2xl font-semibold text-text-primary">{monthLabel}</h2>
               <div className="flex items-center gap-2">
@@ -251,7 +251,7 @@ const PublicCalendar=()=> {
             initial={{opacity: 0,y: 20}}
             animate={{opacity: 1,y: 0}}
             transition={{duration: 0.6,delay: 0.1}}
-            className="bg-white rounded-2xl shadow-modern overflow-hidden mt-6"
+            className="card-glass rounded-2xl shadow-modern overflow-hidden mt-6"
           >
             <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-5 border-b border-accent-dark">
               <div>
@@ -325,7 +325,7 @@ const PublicCalendar=()=> {
               animate={{opacity: 1,scale: 1,y: 0}}
               exit={{opacity: 0,scale: 0.96}}
               transition={{duration: 0.25}}
-              className="relative bg-white rounded-3xl shadow-modern-lg max-w-lg w-full max-h-[85vh] overflow-y-auto"
+              className="relative card-glass rounded-3xl shadow-modern-lg max-w-lg w-full max-h-[85vh] overflow-y-auto"
             >
               <div className="px-6 py-4 border-b border-accent-dark flex items-start justify-between sticky top-0 bg-white rounded-t-3xl">
                 <div>

@@ -207,7 +207,7 @@ const Rental=()=> {
           initial={{opacity: 0,scale: 0.92,y: 20}}
           animate={{opacity: 1,scale: 1,y: 0}}
           transition={{duration: 0.45}}
-          className="bg-white rounded-3xl shadow-modern-lg p-10 max-w-lg w-full text-center mx-4"
+          className="card-glass rounded-3xl shadow-modern-lg p-10 max-w-lg w-full text-center mx-4"
         >
           <motion.div
             initial={{scale: 0}}
@@ -301,7 +301,7 @@ const Rental=()=> {
             animate={{opacity: 1,y: 0}}
             exit={{opacity: 0,y: -20}}
             transition={{duration: 0.25}}
-            className="bg-white rounded-3xl shadow-modern p-6 sm:p-8"
+            className="card-glass rounded-3xl shadow-modern p-6 sm:p-8"
           >
             {step===1 && (
               <div className="space-y-6">

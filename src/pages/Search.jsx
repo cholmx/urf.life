@@ -112,7 +112,7 @@ const Search = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl shadow-modern p-16 text-center"
+            className="card-glass rounded-2xl shadow-modern p-16 text-center"
           >
             <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-5">
               <SafeIcon icon={FiInbox} className="h-9 w-9 text-primary" />
@@ -129,7 +129,7 @@ const Search = () => {
             {Object.entries(groupedResults).map(([label, items]) => (
               <div key={label}>
                 <h2 className="text-sm font-bold uppercase tracking-wide text-text-light mb-3">{label}</h2>
-                <div className="bg-white rounded-2xl shadow-modern divide-y divide-accent overflow-hidden">
+                <div className="card-glass rounded-2xl shadow-modern divide-y divide-accent overflow-hidden">
                   {items.map((item) => (
                     <Link
                       key={`${item.type}-${item.id}`}

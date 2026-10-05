@@ -89,7 +89,7 @@ const JoinRealm=()=> {
             transition={{duration: 0.45}}
             className="flex items-center justify-center min-h-[80vh] px-4"
           >
-            <div className="bg-white rounded-3xl shadow-modern-lg p-10 max-w-md w-full text-center">
+            <div className="card-glass rounded-3xl shadow-modern-lg p-10 max-w-md w-full text-center">
               <motion.div
                 initial={{scale: 0}}
                 animate={{scale: 1}}
@@ -152,7 +152,7 @@ const JoinRealm=()=> {
               initial={{opacity: 0,y: 30}}
               animate={{opacity: 1,y: 0}}
               transition={{duration: 0.8,delay: 0.4}}
-              className="bg-white rounded-3xl shadow-modern p-8"
+              className="card-glass rounded-3xl shadow-modern p-8"
             >
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Personal Info */}

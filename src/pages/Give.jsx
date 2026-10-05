@@ -52,7 +52,7 @@ const Give=()=> {
           initial={{opacity: 0,y: 30}}
           animate={{opacity: 1,y: 0}}
           transition={{duration: 0.8,delay: 0.4}}
-          className="bg-white rounded-lg shadow-lg overflow-hidden"
+          className="card-glass rounded-lg shadow-lg overflow-hidden"
         >
           <div className="p-8">
             <div className="text-center mb-8">

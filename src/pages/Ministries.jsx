@@ -130,7 +130,7 @@ const Ministries=()=> {
                 initial={{opacity: 0,y: 30}}
                 animate={{opacity: 1,y: 0}}
                 transition={{duration: 0.5,delay: index * 0.1}}
-                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                className="card-glass rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
               >
                 <div className="p-6 md:p-8">
                   {/* Ministry Header */}
@@ -203,7 +203,7 @@ const Ministries=()=> {
             initial={{opacity: 0,y: 30}}
             animate={{opacity: 1,y: 0}}
             transition={{duration: 0.8,delay: 0.5}}
-            className="mt-16 bg-white rounded-lg shadow-md p-8 text-center"
+            className="mt-16 card-glass rounded-lg shadow-md p-8 text-center"
           >
             <h2 className="text-2xl md:text-3xl font-bold text-text-primary mb-4">
               Ready to Get Involved?

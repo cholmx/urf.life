@@ -115,7 +115,7 @@ const Announcements=()=> {
             <motion.div
               initial={{opacity: 0,y: 20}}
               animate={{opacity: 1,y: 0}}
-              className="bg-white rounded-2xl shadow-modern p-16 text-center"
+              className="card-glass rounded-2xl shadow-modern p-16 text-center"
             >
               <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-5">
                 <SafeIcon icon={FiMail} className="h-9 w-9 text-primary" />
@@ -128,7 +128,7 @@ const Announcements=()=> {
               initial={{opacity: 0,y: 30}}
               animate={{opacity: 1,y: 0}}
               transition={{duration: 0.5}}
-              className="bg-white rounded-lg shadow-md overflow-hidden"
+              className="card-glass rounded-lg shadow-md overflow-hidden"
             >
               <div
                 className="happenings-script p-8 md:p-10 text-text-primary text-[17px]"

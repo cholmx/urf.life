@@ -109,6 +109,18 @@
   @apply bg-accent-light rounded-2xl shadow-modern transition-all duration-300 hover:shadow-modern-lg hover:-translate-y-1;
 }
 
+/* Subtle glassmorphism for public-page cards - replaces a plain bg-white on
+   a card container (keeping its existing rounded/shadow/padding utilities
+   as-is). Kept light (high opacity, modest blur) so text stays fully
+   legible; the blur mostly shows in the faint green radial gradient on
+   the page background, not as a strong frosted effect. */
+.card-glass {
+  background-color: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
 /* Specific overrides for rich text editor fields */
 .rendered-content *,
 .announcement-content * {
@@ -271,6 +283,8 @@ input:focus, textarea:focus, select:focus {
   }
   .form-section {
     @apply bg-accent/50 rounded-2xl p-5 space-y-4 border border-accent-dark/30;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
   .form-section-title {
     @apply text-xs font-bold uppercase tracking-widest text-primary mb-0;

@@ -87,7 +87,7 @@ const CapitalCampaign = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
-            className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+            className="card-glass rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
           >
             <div className="p-8">
               <div className="flex items-start justify-between mb-4">
@@ -161,7 +161,7 @@ const CapitalCampaign = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
-            className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+            className="card-glass rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
           >
             {item.image_url && (
               <div className="w-full h-64 overflow-hidden">
@@ -202,7 +202,7 @@ const CapitalCampaign = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: index * 0.05 }}
-            className="bg-white rounded-lg shadow-md overflow-hidden"
+            className="card-glass rounded-lg shadow-md overflow-hidden"
           >
             <button
               onClick={() => setOpenFaqId(openFaqId === faq.id ? null : faq.id)}
@@ -247,7 +247,7 @@ const CapitalCampaign = () => {
       return (
         <div className="space-y-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="bg-white rounded-lg shadow-md overflow-hidden px-6 py-5 flex items-center justify-between">
+            <div key={i} className="card-glass rounded-lg shadow-md overflow-hidden px-6 py-5 flex items-center justify-between">
               <div className="flex items-center space-x-3 flex-1 pr-4">
                 <SkeletonBox width="w-5" height="h-5" rounded="rounded-full" />
                 <SkeletonBox width="w-2/3" height="h-5" className="bg-gray-300" />
@@ -262,7 +262,7 @@ const CapitalCampaign = () => {
       return (
         <div className="space-y-8">
           {Array.from({ length: 2 }).map((_, i) => (
-            <div key={i} className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div key={i} className="card-glass rounded-lg shadow-md overflow-hidden">
               <SkeletonBox width="w-full" height="h-64" rounded="rounded-none" />
               <div className="p-8 space-y-3">
                 <SkeletonBox width="w-1/2" height="h-7" className="bg-gray-300" />

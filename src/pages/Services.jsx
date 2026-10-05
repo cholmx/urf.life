@@ -148,7 +148,7 @@ const Services = () => {
                 initial={{opacity: 0, y: 30}}
                 animate={{opacity: 1, y: 0}}
                 transition={{duration: 0.5, delay: index * 0.1}}
-                className="text-center p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow"
+                className="text-center p-6 card-glass rounded-lg shadow-md hover:shadow-lg transition-shadow"
               >
                 <SafeIcon icon={item.icon} className="h-12 w-12 text-primary mx-auto mb-4" />
                 <h3 className="text-xl mb-3 text-text-primary font-fraunces">{item.title}</h3>

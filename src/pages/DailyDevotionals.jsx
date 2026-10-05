@@ -175,7 +175,7 @@ const DailyDevotionals=()=> {
           <motion.div 
             initial={{opacity: 0,y: 30}} 
             animate={{opacity: 1,y: 0}} 
-            className="bg-white rounded-lg shadow-md p-12 text-center"
+            className="card-glass rounded-lg shadow-md p-12 text-center"
           >
             <SafeIcon icon={FiBookOpen} className="h-16 w-16 text-text-light mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-text-primary mb-2 font-inter"> 
@@ -189,7 +189,7 @@ const DailyDevotionals=()=> {
           <motion.div 
             initial={{opacity: 0,y: 30}} 
             animate={{opacity: 1,y: 0}} 
-            className="bg-white rounded-lg shadow-md overflow-hidden"
+            className="card-glass rounded-lg shadow-md overflow-hidden"
           >
             {/* Navigation Header */}
             <div className="bg-secondary text-white p-6">

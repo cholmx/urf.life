@@ -78,7 +78,7 @@ const Contact=()=> {
           initial={{opacity: 0,scale: 0.9}}
           animate={{opacity: 1,scale: 1}}
           transition={{duration: 0.5}}
-          className="bg-white rounded-lg shadow-lg p-8 max-w-md mx-auto text-center"
+          className="card-glass rounded-lg shadow-lg p-8 max-w-md mx-auto text-center"
         >
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <SafeIcon icon={FiCheck} className="h-8 w-8 text-green-600" />
@@ -165,7 +165,7 @@ const Contact=()=> {
                   initial={{opacity: 0,y: 20}}
                   animate={{opacity: 1,y: 0}}
                   transition={{duration: 0.5,delay: 0.4 + index * 0.1}}
-                  className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
+                  className="card-glass rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
                 >
                   <div className="flex items-start space-x-4">
                     <div className="flex-shrink-0">
@@ -210,7 +210,7 @@ const Contact=()=> {
           initial={{opacity: 0,y: 30}}
           animate={{opacity: 1,y: 0}}
           transition={{duration: 0.8,delay: 0.6}}
-          className="bg-white rounded-lg shadow-md p-8 max-w-2xl mx-auto"
+          className="card-glass rounded-lg shadow-md p-8 max-w-2xl mx-auto"
         >
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Name */}

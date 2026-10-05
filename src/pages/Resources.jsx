@@ -197,7 +197,7 @@ const Resources=()=> {
             initial={{opacity: 0,y: 30}}
             animate={{opacity: 1,y: 0}}
             transition={{duration: 0.8,delay: 0.4}}
-            className="bg-white rounded-lg shadow-md p-6 mb-8"
+            className="card-glass rounded-lg shadow-md p-6 mb-8"
           >
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center space-x-2">
@@ -256,7 +256,7 @@ const Resources=()=> {
           isLoading={loading}
           skeleton={
             resources.length===0 ? (
-              <div className="bg-white rounded-lg shadow-md p-12 text-center">
+              <div className="card-glass rounded-lg shadow-md p-12 text-center">
                 <SafeIcon
                   icon={FiBookOpen}
                   className="h-16 w-16 text-text-light mx-auto mb-4"
@@ -282,7 +282,7 @@ const Resources=()=> {
             <motion.div
               initial={{opacity: 0,y: 30}}
               animate={{opacity: 1,y: 0}}
-              className="bg-white rounded-lg shadow-md p-12 text-center"
+              className="card-glass rounded-lg shadow-md p-12 text-center"
             >
               <SafeIcon
                 icon={FiBookOpen}

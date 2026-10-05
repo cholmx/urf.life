@@ -145,7 +145,7 @@ const SermonBlog=()=> {
             initial={{opacity: 0,y: 30}}
             animate={{opacity: 1,y: 0}}
             transition={{duration: 0.8,delay: 0.4}}
-            className="bg-white rounded-2xl shadow-modern p-6 mb-8"
+            className="card-glass rounded-2xl shadow-modern p-6 mb-8"
           >
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center space-x-2">
@@ -223,7 +223,7 @@ const SermonBlog=()=> {
             <motion.div
               initial={{opacity: 0,y: 20}}
               animate={{opacity: 1,y: 0}}
-              className="bg-white rounded-2xl shadow-modern p-16 text-center"
+              className="card-glass rounded-2xl shadow-modern p-16 text-center"
             >
               <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-5">
                 <SafeIcon icon={FiPlay} className="h-9 w-9 text-primary" />
@@ -240,7 +240,7 @@ const SermonBlog=()=> {
                 initial={{opacity: 0,y: 30}}
                 animate={{opacity: 1,y: 0}}
                 transition={{duration: 0.5,delay: index * 0.1}}
-                className="bg-white rounded-2xl shadow-modern overflow-hidden hover:shadow-modern-lg hover:-translate-y-1 transition-all duration-300"
+                className="card-glass rounded-2xl shadow-modern overflow-hidden hover:shadow-modern-lg hover:-translate-y-1 transition-all duration-300"
               >
                 <div className="p-8">
                   {/* Sermon Header */}
