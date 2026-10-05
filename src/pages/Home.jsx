@@ -115,7 +115,7 @@ const Home=()=> {
             initial={{opacity: 0,y: 20}} animate={{opacity: 1,y: 0}} transition={{duration: 0.7}}
             className="font-gsans uppercase font-black text-2xl md:text-4xl text-text-primary tracking-tight flex items-center justify-center gap-2.5"
           >
-            <img src="/logonegtransblack%20copy.png" alt="" className="h-[1.35em] w-auto" />
+            <img src="/logonegtransblack%20copy.png" alt="" className="h-[1.35em] w-auto invert" />
             <span>Upper Room Fellowship</span>
           </motion.h1>
         </header>
@@ -249,7 +249,7 @@ const HomeButton = ({ title, description, icon, path, isFeatured = false, isInte
         </div>
       ) : (
         <div className="relative z-10 flex flex-col items-center">
-          <div className="p-2.5 rounded-xl bg-white/15 mb-2.5 md:mb-3 transition-transform duration-300 group-hover:scale-110">
+          <div className="p-2.5 rounded-xl bg-[#1d5656] mb-2.5 md:mb-3 transition-transform duration-300 group-hover:scale-110">
             <SafeIcon icon={icon} className="h-5 w-5 md:h-6 md:w-6" style={{color: '#E2BA49'}} />
           </div>
           <h3 className="text-sm md:text-base font-bold font-gsans leading-tight text-white">{title}</h3>
