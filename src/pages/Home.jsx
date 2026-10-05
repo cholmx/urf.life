@@ -249,8 +249,8 @@ const HomeButton = ({ title, description, icon, path, isFeatured = false, isInte
         </div>
       ) : (
         <div className="relative z-10 flex flex-col items-center">
-          <div className="p-2.5 rounded-xl bg-white mb-2.5 md:mb-3 transition-transform duration-300 group-hover:scale-110">
-            <SafeIcon icon={icon} className="h-5 w-5 md:h-6 md:w-6" style={{color: '#E2BA49'}} />
+          <div className="p-2.5 rounded-xl bg-[#6c876a] mb-2.5 md:mb-3 transition-transform duration-300 group-hover:scale-110">
+            <SafeIcon icon={icon} className="h-5 w-5 md:h-6 md:w-6 text-white" />
           </div>
           <h3 className="text-sm md:text-base font-bold font-gsans leading-tight text-white">{title}</h3>
           <p className="font-caladea italic text-xs leading-tight text-white/70 mt-0.5">{description}</p>
