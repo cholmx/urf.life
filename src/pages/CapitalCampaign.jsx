@@ -286,7 +286,7 @@ const CapitalCampaign = () => {
   };
 
   return (
-    <div className="min-h-screen py-12 relative" style={{ backgroundColor: '#fcfaf2' }}>
+    <div className="min-h-screen bg-accent py-12 relative">
       {/* Back to Home Button */}
       <div className="fixed top-6 right-6 z-50">
         <Link

@@ -109,16 +109,54 @@
   @apply bg-accent-light rounded-2xl shadow-modern transition-all duration-300 hover:shadow-modern-lg hover:-translate-y-1;
 }
 
-/* Subtle glassmorphism for public-page cards - replaces a plain bg-white on
-   a card container (keeping its existing rounded/shadow/padding utilities
-   as-is). Kept light (high opacity, modest blur) so text stays fully
-   legible; the blur mostly shows in the faint green radial gradient on
-   the page background, not as a strong frosted effect. */
+/* Glassmorphism for public-page cards - replaces a plain bg-white on a
+   card container (keeping its existing rounded/shadow/padding utilities
+   as-is - no box-shadow here, since that would override each card's own
+   shadow-md/shadow-lg/shadow-modern utility class at the same
+   specificity, just by coming later in the stylesheet). A translucent
+   light panel over the site's dark teal page background is the classic
+   glass look; backdrop-blur does real work here since there's now an
+   actual dark backdrop to blur, not just a flat near-white one. */
 .card-glass {
-  background-color: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(14px) saturate(160%);
-  -webkit-backdrop-filter: blur(14px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(131, 166, 130, 0.22) 100%);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(131, 166, 130, 0.4);
+}
+
+/* The dark theme flips the site's default text color to light (see
+   tailwind.config.js - text-primary/text-secondary), since most of the
+   page now sits directly on the dark teal background. But everything
+   that still has its own light-colored surface - the glass cards, plain
+   white cards not yet converted, the semi-transparent form sections, the
+   cream secondary-section backgrounds - needs its own text forced back
+   dark, or it would inherit (or, for anything with its own explicit
+   text-text-primary/text-text-secondary class rather than inheriting,
+   directly use) the page's new light color and disappear against its
+   own light background. Grouped with :is() rather than spelled out per
+   surface-class/element-or-utility-class combination - spelling it out
+   by hand is exactly how the first version of this rule shipped missing
+   .bg-white's .text-text-primary paragraphs. :is()'s specificity is its
+   most specific argument, so this still resolves to class+class (0,2,0),
+   same as the plain h1-h6/.text-text-primary rules it's overriding would
+   need !important to beat if it were the other way around - no
+   !important needed here. The admin dashboard never themed its own
+   background and was always relying on inheriting the public site's
+   text color by default, so it needs the same protection. */
+:is(.card-glass, .form-section, .bg-white, .bg-accent-dark, .bg-accent-light, .admin-shell) {
+  color: #1E1E21;
+}
+:is(.card-glass, .form-section, .bg-white, .bg-accent-dark, .bg-accent-light, .admin-shell)
+  :is(h1, h2, h3, h4, h5, h6, .text-text-primary, .text-text-secondary) {
+  color: #1E1E21;
+}
+/* .text-text-light is the muted/secondary tone (now a light gray-teal
+   tuned for the dark page background) - inside a light surface it needs
+   its own muted-dark color, not the same #1E1E21 as headings/body text,
+   or it loses the "this is secondary text" contrast it's there for. */
+:is(.card-glass, .form-section, .bg-white, .bg-accent-dark, .bg-accent-light, .admin-shell)
+  .text-text-light {
+  color: #6B6B6B;
 }
 
 /* Specific overrides for rich text editor fields */
@@ -283,8 +321,8 @@ input:focus, textarea:focus, select:focus {
   }
   .form-section {
     @apply bg-accent/50 rounded-2xl p-5 space-y-4 border border-accent-dark/30;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
   }
   .form-section-title {
     @apply text-xs font-bold uppercase tracking-widest text-primary mb-0;

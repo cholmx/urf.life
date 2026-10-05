@@ -21,7 +21,7 @@ const About=()=> {
   ];
 
   return (
-    <div className="min-h-screen relative" style={{backgroundColor: '#fcfaf2'}}>
+    <div className="min-h-screen bg-accent relative">
       {/* Back to Home Button - Top Right */}
       <div className="fixed top-6 right-6 z-50">
         <Link to="/" className="inline-flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105" style={{backgroundColor: '#cc4733'}} title="Back to Home">
@@ -79,7 +79,7 @@ const About=()=> {
       </section>
 
       {/* Mission & Vision */}
-      <section className="py-16" style={{backgroundColor: '#fcfaf2'}}>
+      <section className="py-16 bg-accent-dark">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             <motion.div
@@ -122,8 +122,7 @@ const About=()=> {
                 initial={{opacity: 0,y: 30}}
                 animate={{opacity: 1,y: 0}}
                 transition={{duration: 0.5,delay: index * 0.1}}
-                className="text-center p-6 rounded-lg hover:shadow-md transition-shadow"
-                style={{backgroundColor: '#fcfaf2'}}
+                className="text-center p-6 rounded-lg hover:shadow-md transition-shadow bg-accent-dark"
               >
                 <SafeIcon icon={value.icon} className="h-12 w-12 text-text-primary mx-auto mb-4" />
                 <h3 className="text-xl font-bold font-heading mb-3 text-text-primary">{value.title}</h3>
@@ -135,7 +134,7 @@ const About=()=> {
       </section>
 
       {/* Staff Section */}
-      <section className="py-16" style={{backgroundColor: '#fcfaf2'}}>
+      <section className="py-16 bg-accent-dark">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl mb-2">Meet Our Team</h2>
