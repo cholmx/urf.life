@@ -84,7 +84,7 @@ const Home=()=> {
   const quickLinks=[
     {title: 'Contact',icon: FiMail,path: '/contact',isInternal: true},
     ...(hasResources ? [{title: 'Resources',icon: FiBookOpen,path: '/resources',isInternal: true}] : []),
-    {title: 'Realm Login',icon: FiLogIn,path: 'https://onrealm.org/urfellowship/'},
+    {title: 'Realm',icon: FiLogIn,path: 'https://onrealm.org/urfellowship/'},
     {title: 'Website',icon: FiGlobe,path: 'https://urfellowship.com'}
   ];
 
