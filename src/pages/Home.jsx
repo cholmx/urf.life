@@ -41,7 +41,6 @@ const Home=()=> {
         supabase
           .from('featured_buttons_portal123')
           .select('*')
-          .eq('is_active',true)
           .order('display_order',{ascending: true})
       ]);
 
@@ -56,15 +55,27 @@ const Home=()=> {
     }
   };
 
+  // The growth campaign button's title/description/icon/path are still
+  // fixed here (its gradient styling and copy are special-cased, not
+  // driven by the row's own columns) - this row in featured_buttons_portal123
+  // exists purely so it can be toggled on/off from the same admin screen
+  // as the other featured buttons. Default to shown if the row hasn't
+  // been seeded yet (migration not applied), so the button doesn't
+  // disappear in the meantime.
+  const growthCampaignRow=featuredDbButtons.find(btn=> btn.button_type==='growth_campaign');
+  const showGrowthCampaign=growthCampaignRow ? growthCampaignRow.is_active : true;
+
   const featuredButtons=[
-    {title: 'Transforming Together Growth Campaign',description: 'Updates, vision, and ways to give and commit',icon: FiTrendingUp,path: '/capital-campaign',gradient: true},
-    ...featuredDbButtons.map(btn=> ({
-      title: btn.title,
-      description: btn.description || '',
-      icon: FiCheck,
-      path: btn.path,
-      isInternal: !(btn.path || '').startsWith('http')
-    })),
+    ...(showGrowthCampaign ? [{title: 'Transforming Together Growth Campaign',description: 'Updates, vision, and ways to give and commit',icon: FiTrendingUp,path: '/capital-campaign',gradient: true}] : []),
+    ...featuredDbButtons
+      .filter(btn=> btn.is_active && btn.button_type!=='growth_campaign')
+      .map(btn=> ({
+        title: btn.title,
+        description: btn.description || '',
+        icon: FiCheck,
+        path: btn.path,
+        isInternal: !(btn.path || '').startsWith('http')
+      })),
     ...(hasClasses ? [{title: 'Classes',description: 'Available church classes',icon: FiBookOpen,path: '/class-registration',isYellow: true}] : []),
     ...(hasEvents ? [{title: 'Events',description: 'Upcoming church events',icon: FiCalendar,path: '/event-registration',isOrange: true}] : [])
   ];

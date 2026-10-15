@@ -97,6 +97,16 @@ const AdminFeaturedButtons=()=> {
     }
   };
 
+  // The growth campaign button's title/description/path are fixed in
+  // Home.jsx (its gradient styling and copy are special-cased, not
+  // driven by this row's columns) - this row only exists so its
+  // visibility can be toggled here like any other featured button.
+  // Keep it out of the generic create/edit/delete list below (editing
+  // those fields wouldn't change what actually renders) and surface it
+  // as its own simple toggle instead.
+  const growthCampaignButton=buttons.find(b=> b.button_type==='growth_campaign');
+  const otherButtons=buttons.filter(b=> b.button_type!=='growth_campaign');
+
   const handleCancel=()=> {
     setFormData({
       title: '',
@@ -110,6 +120,29 @@ const AdminFeaturedButtons=()=> {
 
   return (
     <div className="space-y-6">
+      {!loading && (
+        <div className="admin-card">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-lg text-text-primary">Growth Campaign Button</h3>
+              <p className="text-sm text-text-light">
+                {growthCampaignButton
+                  ? 'Shows the "Transforming Together Growth Campaign" button at the top of the homepage.'
+                  : 'Not set up yet - defaults to shown. Ask your developer to run the pending migration.'}
+              </p>
+            </div>
+            <button
+              onClick={()=> growthCampaignButton && handleToggleActive(growthCampaignButton)}
+              disabled={!growthCampaignButton}
+              className={`p-2 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${growthCampaignButton?.is_active ? 'text-green-600 hover:bg-green-100' : 'text-gray-400 hover:bg-gray-100'}`}
+              title={growthCampaignButton?.is_active ? 'Deactivate' : 'Activate'}
+            >
+              <SafeIcon icon={growthCampaignButton?.is_active ? FiToggleRight : FiToggleLeft} className="h-6 w-6" />
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="flex justify-between items-center">
         <h2 className="text-2xl text-text-primary">Manage Featured Buttons</h2>
         <button
@@ -198,13 +231,13 @@ const AdminFeaturedButtons=()=> {
 
       <LoadingTransition isLoading={loading && !showForm} skeleton={<SkeletonTable rows={3} columns={3} />}>
         <div className="bg-white rounded-2xl shadow-modern overflow-hidden">
-          {buttons.length===0 ? (
+          {otherButtons.length===0 ? (
             <div className="p-8 text-center">
               <p className="text-text-primary">No featured buttons yet.</p>
             </div>
           ) : (
             <div className="divide-y divide-accent">
-              {buttons.map((button)=> (
+              {otherButtons.map((button)=> (
                 <div key={button.id} className="p-6">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
