@@ -1,4 +1,4 @@
-import { C, font, scopeChipColors } from '../../lib/theme';
+import { C, font, scopeChipColors, happeningTypeChipColors } from '../../lib/theme';
 
 interface PillProps {
   children: React.ReactNode;
@@ -39,6 +39,21 @@ export function ScopePill({ scope }: { scope: string }) {
   return (
     <Pill color={colors.text} bg={colors.bg} border={colors.border}>
       {labels[scope] ?? scope}
+    </Pill>
+  );
+}
+
+export function HappeningTypePill({ type }: { type: string }) {
+  const colors = happeningTypeChipColors[type] || happeningTypeChipColors.announcement;
+  const labels: Record<string, string> = {
+    announcement: 'Announcement',
+    event: 'Event',
+    class: 'Class',
+    general: 'General',
+  };
+  return (
+    <Pill color={colors.text} bg={colors.bg} border={colors.border}>
+      {labels[type] ?? type}
     </Pill>
   );
 }

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { C, font } from '../../lib/theme';
-import { ScopePill, Pill } from '../ui/Pill';
+import { C, font, recurringChipColor } from '../../lib/theme';
+import { ScopePill, HappeningTypePill, Pill } from '../ui/Pill';
 import { formatDateNice, weeksUntil } from '../../lib/helpers';
 import { getNextOccurrenceDate } from '../../lib/calendar-grid';
 import { buildInviteHTMLFromAnnouncement } from './invitePrinter';
@@ -102,7 +102,12 @@ export function AnnouncementCard({ a, today, onEdit, onDelete, onTogglePublish, 
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap', marginBottom: 2 }}>
             <ScopePill scope={a.scope} />
-            {a.is_recurring && <Pill>Recurring</Pill>}
+            <HappeningTypePill type={a.happening_type} />
+            {a.is_recurring && (
+              <Pill color={recurringChipColor.text} bg={recurringChipColor.bg} border={recurringChipColor.border}>
+                Recurring
+              </Pill>
+            )}
             {a.is_published && (
               <span style={{
                 fontFamily: font.display, fontSize: 9, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
