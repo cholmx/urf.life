@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { C, font, scopeRangeColors } from '../../lib/theme';
+import { C, font } from '../../lib/theme';
 import { ScopePill, Pill } from '../ui/Pill';
 import { formatDateNice, weeksUntil } from '../../lib/helpers';
 import { getNextOccurrenceDate } from '../../lib/calendar-grid';
@@ -61,7 +61,6 @@ export function AnnouncementCard({ a, today, onEdit, onDelete, onTogglePublish, 
   // exactly what left staff looking at a date that was months in the past.
   const displayDate = getNextOccurrenceDate(a, today);
   const wks = weeksUntil(displayDate, today);
-  const accentColor = scopeRangeColors[a.scope] || C.borderMed;
 
   const printInvite = () => {
     const html = buildInviteHTMLFromAnnouncement(a);
@@ -91,7 +90,6 @@ export function AnnouncementCard({ a, today, onEdit, onDelete, onTogglePublish, 
     <div style={{
       background: C.card,
       border: `1px solid ${expanded ? C.borderMed : C.border}`,
-      borderLeft: `3px solid ${accentColor}`,
       borderRadius: 8,
       overflow: 'hidden',
       transition: 'border-color 0.15s',
