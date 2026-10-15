@@ -70,6 +70,7 @@ export const DEFAULT_ANNOUNCEMENT = {
   slide_override: '',
   month_override: '',
   flyer_text: '',
+  flyer_text_date: null as string | null,
   needs_signup: false,
   signup_mode: 'none' as const,
   signup_sheet_config: null,

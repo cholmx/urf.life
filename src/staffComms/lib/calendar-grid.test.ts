@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getEventItems } from './calendar-grid';
+import { getEventItems, getNextOccurrenceDate } from './calendar-grid';
 import type { Announcement } from '../types';
 
 function makeAnnouncement(overrides: Partial<Announcement>): Announcement {
@@ -233,5 +233,92 @@ describe('getEventItems', () => {
     expect(getEventItems('2026-09-20', [a])).toEqual([a]);
     expect(getEventItems('2026-09-21', [a])).toEqual([]);
     expect(getEventItems('2026-09-17', [a])).toEqual([]);
+  });
+});
+
+describe('getNextOccurrenceDate', () => {
+  it('returns event_date as-is for a one-time item', () => {
+    const a = makeAnnouncement({ event_date: '2026-09-10', event_dates: ['2026-09-10'] });
+    expect(getNextOccurrenceDate(a, '2026-09-01')).toBe('2026-09-10');
+    // Even once that date is in the past - a one-time item doesn't recur.
+    expect(getNextOccurrenceDate(a, '2026-09-20')).toBe('2026-09-10');
+  });
+
+  it('returns the first session itself when it has not happened yet', () => {
+    // 2026-09-03 is a Thursday
+    const a = makeAnnouncement({
+      recurrence_type: 'weekly',
+      recurrence_day: 'Thursday',
+      event_date: '2026-09-03',
+      event_dates: ['2026-09-03'],
+    });
+    expect(getNextOccurrenceDate(a, '2026-09-01')).toBe('2026-09-03');
+  });
+
+  it('advances a weekly recurrence past the first session once it has passed', () => {
+    const a = makeAnnouncement({
+      recurrence_type: 'weekly',
+      recurrence_day: 'Thursday',
+      event_date: '2026-09-03',
+      event_dates: ['2026-09-03'],
+    });
+    expect(getNextOccurrenceDate(a, '2026-09-10')).toBe('2026-09-10'); // asking on the day itself
+    expect(getNextOccurrenceDate(a, '2026-09-11')).toBe('2026-09-17'); // the day after - next week's
+  });
+
+  it('advances a biweekly recurrence to the correct following occurrence, not just the next weekday', () => {
+    const a = makeAnnouncement({
+      recurrence_type: 'biweekly',
+      recurrence_day: 'Thursday',
+      event_date: '2026-09-03',
+      event_dates: ['2026-09-03'],
+    });
+    // 2026-09-10 is a Thursday but an off-week for this biweekly series.
+    expect(getNextOccurrenceDate(a, '2026-09-04')).toBe('2026-09-17');
+  });
+
+  it('returns null once recurrence_end_date has passed', () => {
+    const a = makeAnnouncement({
+      recurrence_type: 'weekly',
+      recurrence_day: 'Thursday',
+      event_date: '2026-09-03',
+      event_dates: ['2026-09-03'],
+      recurrence_end_date: '2026-09-10',
+    });
+    expect(getNextOccurrenceDate(a, '2026-09-11')).toBeNull();
+  });
+
+  it('advances a monthly weekday-position item to next month once this month\'s has passed', () => {
+    // "First Sunday" - 2026-09-06 is the first Sunday of September 2026.
+    const a = makeAnnouncement({
+      recurrence_type: 'monthly',
+      recurrence_day: 'Sunday',
+      recurrence_week_of_month: 'first',
+      event_date: '2026-09-06',
+      event_dates: ['2026-09-06'],
+    });
+    expect(getNextOccurrenceDate(a, '2026-09-01')).toBe('2026-09-06');
+    // 2026-10-04 is the first Sunday of October 2026.
+    expect(getNextOccurrenceDate(a, '2026-09-07')).toBe('2026-10-04');
+  });
+
+  it('advances a date-based monthly item (same day-of-month) to next month', () => {
+    const a = makeAnnouncement({
+      recurrence_type: 'monthly',
+      event_date: '2026-09-15',
+      event_dates: ['2026-09-15'],
+    });
+    expect(getNextOccurrenceDate(a, '2026-09-16')).toBe('2026-10-15');
+  });
+
+  it('returns the current day of a date_range item while it is still in progress', () => {
+    const a = makeAnnouncement({
+      recurrence_type: 'date_range',
+      event_date: '2026-09-18',
+      event_dates: ['2026-09-18'],
+      recurrence_end_date: '2026-09-20',
+    });
+    expect(getNextOccurrenceDate(a, '2026-09-19')).toBe('2026-09-19');
+    expect(getNextOccurrenceDate(a, '2026-09-21')).toBeNull();
   });
 });

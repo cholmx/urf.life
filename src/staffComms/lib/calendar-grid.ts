@@ -99,6 +99,44 @@ export function getEventItems(day: string, announcements: Announcement[]): Annou
   return announcements.filter(a => occursOn(a, day));
 }
 
+// The next date (today or later) a recurring item actually happens on,
+// derived from its recurrence pattern via occursOn rather than read off
+// event_date directly - weekly/biweekly/monthly items store only their
+// very first session in event_date (see occursOn's own comment above),
+// so that field goes stale the moment the first occurrence passes.
+// Anything that displays "when does this happen" for a recurring item
+// (as opposed to editing its stored first-session anchor, which should
+// keep reading event_date directly) should use this instead.
+//
+// Walks forward day by day rather than jumping by the recurrence's own
+// interval, since a monthly weekday-position pattern ("first Sunday")
+// doesn't land on a fixed day-of-month and is simplest to find by
+// scanning. Capped at just over a year out - long enough for every
+// supported pattern (including biweekly, whose occurrences are at most
+// 14 days apart) to find its next date, or correctly find none for an
+// item whose recurrence_end_date has already passed.
+const MAX_LOOKAHEAD_DAYS = 370;
+
+export function getNextOccurrenceDate(a: Announcement, today: string): string | null {
+  // Keyed off recurrence_type, same as occursOn itself, rather than the
+  // separate is_recurring flag - occursOn doesn't consult is_recurring
+  // at all, so an item whose flag drifted out of sync with its type
+  // would otherwise get treated differently by the two functions.
+  if (a.recurrence_type === 'one_time') return a.event_date;
+  if (!a.event_date) return null;
+  if (a.recurrence_end_date && a.recurrence_end_date < today) return null;
+
+  const start = today > a.event_date ? today : a.event_date;
+  const cursor = new Date(start + 'T12:00:00');
+  for (let i = 0; i < MAX_LOOKAHEAD_DAYS; i++) {
+    const iso = cursor.toISOString().split('T')[0];
+    if (a.recurrence_end_date && iso > a.recurrence_end_date) return null;
+    if (occursOn(a, iso)) return iso;
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return null;
+}
+
 export function getRangeItems(
   day: string,
   announcements: Announcement[],

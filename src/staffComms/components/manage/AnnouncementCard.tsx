@@ -3,6 +3,7 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 import { C, font, scopeRangeColors } from '../../lib/theme';
 import { ScopePill, Pill } from '../ui/Pill';
 import { formatDateNice, weeksUntil } from '../../lib/helpers';
+import { getNextOccurrenceDate } from '../../lib/calendar-grid';
 import { buildInviteHTMLFromAnnouncement } from './invitePrinter';
 import type { Announcement, DestinationKey } from '../../types';
 
@@ -55,7 +56,11 @@ export function AnnouncementCard({ a, today, onEdit, onDelete, onTogglePublish, 
       setPublishing(false);
     }
   };
-  const wks = weeksUntil(a.event_date, today);
+  // event_date only ever holds a recurring item's very first session (see
+  // getNextOccurrenceDate's own comment) - showing it directly here is
+  // exactly what left staff looking at a date that was months in the past.
+  const displayDate = getNextOccurrenceDate(a, today);
+  const wks = weeksUntil(displayDate, today);
   const accentColor = scopeRangeColors[a.scope] || C.borderMed;
 
   const printInvite = () => {
@@ -116,13 +121,13 @@ export function AnnouncementCard({ a, today, onEdit, onDelete, onTogglePublish, 
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-          {a.event_date && (
+          {displayDate && (
             <span style={{ fontFamily: font.mono, fontSize: 11, color: C.textMuted, letterSpacing: '0.02em' }}>
-              {formatDateNice(a.event_date)}
+              {formatDateNice(displayDate)}
               {wks !== null && wks > 0 && <span style={{ color: C.textMuted, opacity: 0.6 }}> · {wks}w</span>}
             </span>
           )}
-          {!a.event_date && a.is_recurring && (
+          {!displayDate && a.is_recurring && (
             <span style={{ fontFamily: font.mono, fontSize: 11, color: C.textMuted }}>recurring</span>
           )}
 

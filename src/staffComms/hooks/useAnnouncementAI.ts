@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { callAI } from '../lib/ai';
 import { formatDateNice } from '../lib/helpers';
+import { getNextOccurrenceDate } from '../lib/calendar-grid';
 import type { Announcement } from '../types';
 
 type FormData = Omit<Announcement, 'id' | 'created_at' | 'updated_at'> & { id?: string };
@@ -14,12 +15,24 @@ Open every piece of writing with a plain statement of what the event or class is
 
 Every piece of concrete information given below - the exact event title, every date, every time, the location, and any named contact or leader - must appear in what you write, stated specifically. Never omit, generalize, soften, or talk around any of these details for the sake of flow, brevity, or style, even if it makes the text longer. Always name the event by its exact title at least once - never refer to it only descriptively ("this gathering," "this opportunity") without ever stating its actual name.`;
 
-function buildContext(f: FormData): string {
+function buildContext(f: FormData, today: string): string {
   const parts = [`Title: ${f.title || '(none yet)'}`];
   if (f.description) parts.push(`Description: ${f.description}`);
   if (f.short_version) parts.push(`Short version: ${f.short_version}`);
   if (f.flyer_text) parts.push(`Description: ${f.flyer_text}`);
-  if (f.event_dates && f.event_dates.filter(Boolean).length > 0) {
+  // Recurring items (weekly/biweekly/monthly) only ever store their very
+  // first session in event_date - using it directly once that date is in
+  // the past is exactly how a flyer ends up saying "meets Sunday,
+  // October 4" long after that October 4th has come and gone. Pass the
+  // actual next occurrence instead, plus the recurrence pattern itself,
+  // so the AI can write something like "meets the first Sunday of every
+  // month; the next gathering is [date]" instead of a one-off-sounding
+  // single date with no "every month" framing.
+  if (f.recurrence_type !== 'one_time' && f.recurrence_label) {
+    parts.push(`Recurrence pattern: ${f.recurrence_label}`);
+    const next = getNextOccurrenceDate(f as Announcement, today);
+    if (next) parts.push(`Next occurrence: ${formatDateNice(next)}`);
+  } else if (f.event_dates && f.event_dates.filter(Boolean).length > 0) {
     parts.push(`Event dates: ${f.event_dates.filter(Boolean).sort().map(formatDateNice).join(', ')}`);
   } else if (f.event_date) {
     parts.push(`Event date: ${formatDateNice(f.event_date)}`);
@@ -70,6 +83,7 @@ export function useAnnouncementAI(
   onError: (msg: string) => void,
 ): UseAnnouncementAIReturn {
   const [aiLoading, setAiLoading] = useState<AILoadingState>({ slide: false, flyer: false });
+  const today = new Date().toISOString().split('T')[0];
 
   const hasEnoughForAI = f.title.length > AI_THRESHOLD || f.description.length > AI_THRESHOLD;
 
@@ -80,7 +94,7 @@ export function useAnnouncementAI(
     try {
       const result = await callAI(
         SYS_BASE + ` You write short one-liner text for a church pre-service slide. It must be a single phrase, not a full sentence, no subject, no verb, just the essential details someone needs to know at a glance. Normal sentence case (capitalize only the first word and proper nouns). No pipe characters. No em dashes. Include only: event name, date(s), time, and location if helpful. If multiple dates, list them with " + ". Keep it under 12 words total. Think billboard, not sentence. Example: "Men's Bible Study, May 6 + May 20, 7 PM, Fellowship Hall"`,
-        `Write the slide/short text for this announcement. Return ONLY the text line, nothing else.\n\n${buildContext(f)}`,
+        `Write the slide/short text for this announcement. Return ONLY the text line, nothing else.\n\n${buildContext(f, today)}`,
       );
       const clean = stripEmDash(result.trim()).replace(/^["']|["']$/g, '');
       set('slide_override', clean);
@@ -97,9 +111,17 @@ export function useAnnouncementAI(
     try {
       const result = await callAI(
         SYS_BASE + ` You write the description for a church announcement - this is the only description written for it, used everywhere: the weekly "Happenings" email, the monthly printed flyer and bulletin, printed invites, the public Events/Classes pages, and the calendar. Aim for under 60 words. Only go longer than that if the real, necessary details genuinely don't fit in fewer words - never pad to fill space, and never cut a real detail (date, time, location, who it's for) just to stay under the target. Write 2-4 short sentences. Be tight, not padded, but give real substance, not just a title restated. One to two sentences on what it is and what makes it worth showing up for, plus one sentence with the key practical details (when, where, who it's for) or the next step. No flowery language. No filler. Every word must earn its place.`,
-        `Write the description for this announcement. Return ONLY the text, nothing else.\n\n${buildContext(f)}`,
+        `Write the description for this announcement. Return ONLY the text, nothing else.\n\n${buildContext(f, today)}`,
       );
       set('flyer_text', stripEmDash(result.trim()));
+      // Stamps which occurrence this text was written for, so the form
+      // can tell later whether a recurring item's description still
+      // reflects the date it was generated for or has gone stale -
+      // see AnnouncementForm's regenerate-when-stale banner.
+      const generatedFor = f.recurrence_type !== 'one_time'
+        ? getNextOccurrenceDate(f as Announcement, today)
+        : f.event_date;
+      set('flyer_text_date', generatedFor);
     } catch (e) {
       onError(e instanceof Error ? e.message : 'AI generation failed');
     } finally {

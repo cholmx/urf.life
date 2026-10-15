@@ -40,6 +40,11 @@ export interface Announcement {
   slide_override: string;
   month_override: string;
   flyer_text: string;
+  // The occurrence date flyer_text was last AI-generated for (null if
+  // never AI-generated, or for a one-time item). Used to detect when a
+  // recurring item's description has gone stale relative to its actual
+  // next occurrence - see AnnouncementForm's regenerate-when-stale banner.
+  flyer_text_date: string | null;
   slide_made: boolean;
   needs_signup: boolean;
   signup_mode: SignupMode;

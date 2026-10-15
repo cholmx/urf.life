@@ -9,6 +9,7 @@ import {
   getAutoHappeningsEndDate,
   getScopeLeadWeeks,
 } from '../../lib/helpers';
+import { getNextOccurrenceDate } from '../../lib/calendar-grid';
 import { AIWriteButton } from './AIWriteButton';
 import { useAnnouncementAI } from '../../hooks/useAnnouncementAI';
 import type { Announcement, RecurrenceType } from '../../types';
@@ -326,6 +327,21 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
   const leadWeeks  = getScopeLeadWeeks(f.scope);
   const startsImmediately = f.event_date && autoStart === today;
 
+  // Recurring items only ever store their first session in event_date, so
+  // flyer_text's wording (e.g. "meets Sunday, October 4") goes stale the
+  // moment that occurrence passes - flyer_text_date records which
+  // occurrence it was last written for, so this just compares that
+  // against the real next one. Only fires for text that was actually
+  // AI-generated before (flyer_text_date set) - freshly hand-typed text
+  // has nothing to compare against and shouldn't be flagged.
+  const nextOccurrence = f.recurrence_type !== 'one_time' ? getNextOccurrenceDate(f as Announcement, today) : null;
+  const flyerTextStale = !!(
+    nextOccurrence &&
+    f.flyer_text_date &&
+    f.flyer_text_date !== nextOccurrence &&
+    f.flyer_text.trim()
+  );
+
   const syncDatesFromArray = (dates: string[]) => {
     const sorted = [...dates].filter(Boolean).sort();
     const primary = sorted[0] ?? null;
@@ -498,6 +514,12 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
         </Section>
 
         <Section title="Description">
+          {flyerTextStale && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, fontFamily: font.body, fontSize: 15, color: C.warn, fontWeight: 600, padding: '8px 14px', background: C.warnBg, borderRadius: 8, marginBottom: 16 }}>
+              <span>This description was written for {formatDateNice(f.flyer_text_date)} - the next occurrence is now {formatDateNice(nextOccurrence)}.</span>
+              <AIWriteButton label="Regenerate" loading={aiLoading.flyer} onClick={generateFlyer} disabled={false} />
+            </div>
+          )}
           <div style={fg}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
               <div>

@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { C, font } from '../../lib/theme';
 import { btnPrimary, btnGhost } from '../ui/inputs';
 import { isStageActive, formatDateNice, formatDateLong, weeksUntil } from '../../lib/helpers';
+import { getNextOccurrenceDate } from '../../lib/calendar-grid';
 import { generateStageScript } from '../../lib/ai';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { supabase } from '../../lib/supabase';
@@ -39,12 +40,20 @@ export function StageTab({ announcements, today, onError }: StageTabProps) {
     if (stageItems.length === 0) return 'No announcements active for this Sunday.';
     let s = '';
     stageItems.forEach((a, i) => {
-      const wks = weeksUntil(a.event_date, today);
-      const classAlreadyStarted = a.happening_type === 'class' && !!a.event_date && a.event_date < today;
+      // event_date only ever holds a recurring item's very first session
+      // (see getNextOccurrenceDate's own comment) - using it directly
+      // here is what made this script keep saying a weekly/monthly
+      // class "already started" or citing a months-old date long after
+      // its real first session, regardless of how long it had actually
+      // been running.
+      const displayDate = getNextOccurrenceDate(a, today);
+      const wks = weeksUntil(displayDate, today);
+      const classAlreadyStarted = a.happening_type === 'class' && !a.is_recurring && !!displayDate && displayDate < today;
       s += `── ${i + 1}. ${a.title.toUpperCase()} ──\n`;
       s += a.flyer_text + '\n';
-      if (a.event_date) {
-        s += `Date: ${formatDateNice(a.event_date)}`;
+      if (a.recurrence_type !== 'one_time' && a.recurrence_label) s += `Recurs: ${a.recurrence_label}\n`;
+      if (displayDate) {
+        s += `Date: ${formatDateNice(displayDate)}`;
         if (classAlreadyStarted) s += ' (already started - mention it\'s not too late to join)';
         else if (wks !== null && wks > 0) s += ` (${wks} weeks out)`;
         s += '\n';
