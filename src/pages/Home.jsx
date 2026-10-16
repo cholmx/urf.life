@@ -120,10 +120,6 @@ const Home=()=> {
 
   return (
     <div className="min-h-screen py-6 md:py-10 bg-accent">
-      {/* TEMPORARY sync-check marker - remove once the Bolt preview is confirmed up to date */}
-      <div style={{background: '#FF3B30', color: '#fff', textAlign: 'center', padding: '10px', fontWeight: 800, letterSpacing: '0.05em'}}>
-        SYNC CHECK — if you see this red bar, the preview is up to date
-      </div>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <header className="text-center mb-4 md:mb-6">
           <motion.h1

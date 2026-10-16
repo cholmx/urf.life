@@ -123,25 +123,34 @@
    gradient, no blur) plus a soft dual-direction shadow: a light
    highlight toward the upper-left, a darker shadow toward the
    lower-right, and a thin inset rim on each edge, reading as a soft,
-   puffy 3D "clay" panel sitting on the dark teal page.
+   puffy 3D "clay" panel sitting on the off-white page.
+
+   card-clay is plain white (not the page's own off-white accent) so a
+   card reads as distinct content sitting on the page chrome, rather
+   than nearly the same tone as its background - the two were close
+   enough to be hard to tell apart before this.
 
    The shadow lives in --clay-shadow so it can be reused on surfaces
-   that aren't the cream card-clay background (e.g. Home.jsx's colored
+   that aren't the white card-clay background (e.g. Home.jsx's colored
    main buttons use .clay-shadow directly with their own bg-[...]).
    It intentionally REPLACES each element's own shadow-md/shadow-lg/
    shadow-modern utility (rather than composing with it the way the
    earlier glass version did) - the dual shadow IS the whole effect,
    and layering a generic drop shadow underneath it just muddies the
-   edge. */
+   edge. Tuned much lighter than the dark-theme version - a 9px/22px/
+   65%-opacity shadow that read as a soft glow against a dark teal page
+   reads as a heavy dark smear against this light one, so the offset,
+   blur and opacity are all pulled back close to the site's existing
+   shadow-modern-lg utility (0 4px 16px/0 16px 32px, max 10% opacity). */
 :root {
   --clay-shadow:
-    -3px -3px 6px rgba(255, 255, 255, 0.13),
-    9px 9px 22px rgba(5, 48, 48, 0.65),
-    inset 1px 1px 1px rgba(255, 255, 255, 0.16),
-    inset -1px -1px 2px rgba(5, 48, 48, 0.16);
+    -2px -2px 5px rgba(255, 255, 255, 0.7),
+    4px 4px 12px rgba(30, 30, 33, 0.12),
+    inset 1px 1px 1px rgba(255, 255, 255, 0.4),
+    inset -1px -1px 1px rgba(30, 30, 33, 0.05);
 }
 .card-clay {
-  background: #F3F1E6;
+  background: #FFFFFF;
   border: none;
   box-shadow: var(--clay-shadow);
 }
@@ -383,14 +392,11 @@ input:focus, textarea:focus, select:focus {
     @apply block text-sm font-semibold mb-1.5;
     color: #1E1E21;
   }
-  /* form-section is always nested inside a .card-clay container (never
-     directly on the dark page background), so it needs its own light,
-     solid surface rather than the translucent dark-teal + blur
-     treatment it had under glassmorphism - that combination, layered
-     over card-clay's cream background, composited into a muddy,
-     low-contrast olive-green wash. A slightly deeper cream than
-     card-clay's #F3F1E6, with an inset shadow, reads as a shallow
-     groove pressed into the clay instead. */
+  /* form-section is always nested inside a .card-clay container, so it
+     needs its own light, solid surface rather than the translucent
+     blur treatment it had under glassmorphism. A deeper cream than
+     card-clay's white, with an inset shadow, reads as a shallow
+     groove pressed into the card instead. */
   .form-section {
     @apply rounded-2xl p-5 space-y-4;
     background: #EAE6D9;
