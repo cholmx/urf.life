@@ -235,7 +235,7 @@ const HomeButton = ({ title, description, icon, path, isFeatured = false, isInte
     : `relative overflow-hidden p-5 rounded-2xl clay-shadow transition-all duration-300 hover:-translate-y-1 active:scale-[0.97] block text-center group flex flex-col justify-center items-center w-full${stretch ? ' h-full' : ' min-h-[160px] md:min-h-[200px]'}`;
 
   const featuredClasses = gradient ? "" : "text-white";
-  const mainClasses = "bg-[#637c62] text-white";
+  const mainClasses = "bg-[#637c62] hover:bg-[#cc4733] text-white";
 
   const iconColor = (isYellow || isOrange) ? 'text-text-primary' : 'text-white';
   const textColor = (isYellow || isOrange) ? 'text-text-primary' : 'text-white';
