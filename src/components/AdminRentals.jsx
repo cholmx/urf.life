@@ -7,8 +7,9 @@ import { useToast } from '../hooks/useToast';
 import { useConfirm } from '../hooks/useConfirm';
 import { formatDate, getTodayDateString } from '../utils/dateFormat';
 import { SkeletonBox, LoadingTransition } from './LoadingSkeletons';
+import { findRoomConflicts } from './rentalConflicts';
 
-const { FiCalendar, FiUser, FiMail, FiPhone, FiDollarSign, FiMapPin, FiChevronDown, FiChevronUp, FiTrash2, FiSave, FiInbox, FiHome, FiPrinter, FiArchive, FiRotateCcw } = FiIcons;
+const { FiCalendar, FiUser, FiMail, FiPhone, FiDollarSign, FiMapPin, FiChevronDown, FiChevronUp, FiTrash2, FiSave, FiInbox, FiHome, FiPrinter, FiArchive, FiRotateCcw, FiAlertTriangle } = FiIcons;
 
 function escapeHtml(s) {
   return String(s ?? '')
@@ -104,7 +105,7 @@ function DetailRow({ label, value }) {
   );
 }
 
-function RentalCard({ r, onDelete, onToggleArchive, onSaveNotes }) {
+function RentalCard({ r, conflicts, onDelete, onToggleArchive, onSaveNotes }) {
   const [expanded, setExpanded] = useState(false);
   const [notesDraft, setNotesDraft] = useState(r.notes || '');
   const [savingNotes, setSavingNotes] = useState(false);
@@ -137,6 +138,12 @@ function RentalCard({ r, onDelete, onToggleArchive, onSaveNotes }) {
             {r.is_member && (
               <span className="text-xs font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-green-50 text-green-700">Member</span>
             )}
+            {conflicts.length > 0 && (
+              <span className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">
+                <SafeIcon icon={FiAlertTriangle} className="h-3 w-3" />
+                Room Conflict
+              </span>
+            )}
           </div>
           <h3 className="font-semibold text-neutral-900 truncate">{r.event_name}</h3>
           <p className="text-sm text-neutral-500">
@@ -166,6 +173,23 @@ function RentalCard({ r, onDelete, onToggleArchive, onSaveNotes }) {
               {r.additional_services?.length > 0 && <> &middot; {r.additional_services.join(', ')}</>}
             </p>
           </div>
+
+          {conflicts.length > 0 && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+              <div className="flex items-center gap-2 text-amber-800 font-semibold text-sm mb-2">
+                <SafeIcon icon={FiAlertTriangle} className="h-4 w-4" />
+                <span>Room conflict{conflicts.length > 1 ? 's' : ''}</span>
+              </div>
+              <ul className="space-y-1">
+                {conflicts.map((c) => (
+                  <li key={c.id} className="text-sm text-amber-900">
+                    {c.event_name} ({c.responsible_first_name} {c.responsible_last_name}) &middot; {c.event_start_time} - {c.event_end_time} &middot; {(c.rooms_requested || []).filter((room) => (r.rooms_requested || []).includes(room)).join(', ')}
+                    {c.archived ? ' · handled' : ''}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-neutral-100">
             <div className="flex items-center gap-2 text-sm text-neutral-700">
@@ -364,7 +388,7 @@ const AdminRentals = () => {
         ) : (
           <div className="space-y-3">
             {visible.map((r) => (
-              <RentalCard key={r.id} r={r} onDelete={handleDelete} onToggleArchive={handleToggleArchive} onSaveNotes={handleSaveNotes} />
+              <RentalCard key={r.id} r={r} conflicts={findRoomConflicts(r, items)} onDelete={handleDelete} onToggleArchive={handleToggleArchive} onSaveNotes={handleSaveNotes} />
             ))}
           </div>
         )}
