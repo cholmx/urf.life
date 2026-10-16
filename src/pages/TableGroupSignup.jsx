@@ -6,6 +6,7 @@ import SafeIcon from '../common/SafeIcon';
 import PageNav from '../common/PageNav';
 import {submitTableGroupSignup} from '../lib/contactStorage';
 import {useToast} from '../hooks/useToast';
+import {isValidEmail} from '../utils/validation';
 
 const {FiUsers,FiCheckCircle,FiUser,FiMail,FiHash,FiArrowRight,FiCalendar}=FiIcons;
 
@@ -22,10 +23,12 @@ const TableGroupSignup=()=> {
   });
   const [isSubmitting,setIsSubmitting]=useState(false);
   const [isSubmitted,setIsSubmitted]=useState(false);
+  const [errors,setErrors]=useState({});
 
   const handleInputChange=(e)=> {
     const {name,value}=e.target;
     setFormData(prev=> ({...prev,[name]: value}));
+    if (errors[name]) setErrors((prev)=> { const next={...prev}; delete next[name]; return next; });
   };
 
   const handleDayToggle=(day)=> {
@@ -37,8 +40,24 @@ const TableGroupSignup=()=> {
     }));
   };
 
+  const validate=()=> {
+    const errs={};
+    if (!formData.firstName.trim()) errs.firstName='First name is required.';
+    if (!formData.lastName.trim()) errs.lastName='Last name is required.';
+    if (!formData.email.trim()) errs.email='Email is required.';
+    else if (!isValidEmail(formData.email)) errs.email='Please enter a valid email address.';
+    if (!formData.partySize) errs.partySize='Number in party is required.';
+    return errs;
+  };
+
   const handleSubmit=async (e)=> {
     e.preventDefault();
+    const validationErrors=validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      document.getElementsByName(Object.keys(validationErrors)[0])[0]?.focus();
+      return;
+    }
     setIsSubmitting(true);
     try {
       const {error}=await submitTableGroupSignup({
@@ -136,7 +155,7 @@ const TableGroupSignup=()=> {
               transition={{duration: 0.8,delay: 0.4}}
               className="card-clay rounded-3xl shadow-modern p-8"
             >
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} noValidate className="space-y-6">
                 {/* Contact Info */}
                 <div className="form-section">
                   <p className="form-section-title">Your Information</p>
@@ -150,11 +169,11 @@ const TableGroupSignup=()=> {
                           name="firstName"
                           value={formData.firstName}
                           onChange={handleInputChange}
-                          required
-                          className="form-input pl-9"
+                          className={`form-input pl-9 ${errors.firstName ? 'form-input-error' : ''}`}
                           placeholder="First"
                         />
                       </div>
+                      {errors.firstName && <p className="form-error-text">{errors.firstName}</p>}
                     </div>
                     <div>
                       <label className="form-label">Last Name *</label>
@@ -165,11 +184,11 @@ const TableGroupSignup=()=> {
                           name="lastName"
                           value={formData.lastName}
                           onChange={handleInputChange}
-                          required
-                          className="form-input pl-9"
+                          className={`form-input pl-9 ${errors.lastName ? 'form-input-error' : ''}`}
                           placeholder="Last"
                         />
                       </div>
+                      {errors.lastName && <p className="form-error-text">{errors.lastName}</p>}
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -182,11 +201,11 @@ const TableGroupSignup=()=> {
                           name="email"
                           value={formData.email}
                           onChange={handleInputChange}
-                          required
-                          className="form-input pl-9"
+                          className={`form-input pl-9 ${errors.email ? 'form-input-error' : ''}`}
                           placeholder="your.email@example.com"
                         />
                       </div>
+                      {errors.email && <p className="form-error-text">{errors.email}</p>}
                     </div>
                     <div>
                       <label className="form-label">Number in Party *</label>
@@ -197,13 +216,13 @@ const TableGroupSignup=()=> {
                           name="partySize"
                           value={formData.partySize}
                           onChange={handleInputChange}
-                          required
                           min="1"
                           max="20"
-                          className="form-input pl-9"
+                          className={`form-input pl-9 ${errors.partySize ? 'form-input-error' : ''}`}
                           placeholder="1"
                         />
                       </div>
+                      {errors.partySize && <p className="form-error-text">{errors.partySize}</p>}
                     </div>
                   </div>
                 </div>

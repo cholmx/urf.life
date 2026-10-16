@@ -66,8 +66,15 @@ const Rental=()=> {
   const [formData,setFormData]=useState(EMPTY_FORM);
   const [isSubmitting,setIsSubmitting]=useState(false);
   const [isSubmitted,setIsSubmitted]=useState(false);
+  // Which field validateStep last complained about - lets the toast's
+  // message (e.g. "Event name is required.") also highlight the specific
+  // field, instead of leaving the reader to scan the whole step for it.
+  const [invalidField,setInvalidField]=useState(null);
 
-  const set=(key,value)=> setFormData((prev)=> ({...prev,[key]: value}));
+  const set=(key,value)=> {
+    setFormData((prev)=> ({...prev,[key]: value}));
+    setInvalidField((prev)=> prev===key ? null : prev);
+  };
   const handleChange=(e)=> set(e.target.name,e.target.value);
 
   const setRoom=(roomId,duration)=> {
@@ -81,6 +88,7 @@ const Rental=()=> {
       const additionalServices=rooms.sanctuary ? prev.additional_services : [];
       return {...prev,rooms,additional_services: additionalServices};
     });
+    setInvalidField((prev)=> prev==='rooms' ? null : prev);
   };
 
   const toggleService=(serviceId)=> {
@@ -102,29 +110,32 @@ const Rental=()=> {
 
   const validateStep=(current)=> {
     if (current===1) {
-      if (!formData.event_type) return 'Select an event type.';
-      if (!formData.event_name.trim()) return 'Event name is required.';
-      if (!formData.purpose.trim()) return 'Tell us the purpose of your event.';
-      if (!formData.guest_count) return 'Estimated number of guests is required.';
-      if (!formData.event_date) return 'Event date is required.';
-      if (formData.event_date < todayStr()) return 'Event date cannot be in the past.';
-      if (!formData.event_start_time || !formData.event_end_time) return 'Event start and end time are required.';
-      if (!formData.setup_schedule) return 'Select your setup schedule.';
-      if (!formData.setup_arrival_time || !formData.setup_departure_time) return 'Setup arrival and departure time are required.';
+      if (!formData.event_type) return {field: 'event_type',message: 'Select an event type.'};
+      if (!formData.event_name.trim()) return {field: 'event_name',message: 'Event name is required.'};
+      if (!formData.purpose.trim()) return {field: 'purpose',message: 'Tell us the purpose of your event.'};
+      if (!formData.guest_count) return {field: 'guest_count',message: 'Estimated number of guests is required.'};
+      if (!formData.event_date) return {field: 'event_date',message: 'Event date is required.'};
+      if (formData.event_date < todayStr()) return {field: 'event_date',message: 'Event date cannot be in the past.'};
+      if (!formData.event_start_time) return {field: 'event_start_time',message: 'Event start and end time are required.'};
+      if (!formData.event_end_time) return {field: 'event_end_time',message: 'Event start and end time are required.'};
+      if (!formData.setup_schedule) return {field: 'setup_schedule',message: 'Select your setup schedule.'};
+      if (!formData.setup_arrival_time) return {field: 'setup_arrival_time',message: 'Setup arrival and departure time are required.'};
+      if (!formData.setup_departure_time) return {field: 'setup_departure_time',message: 'Setup arrival and departure time are required.'};
       return null;
     }
     if (current===2) {
-      if (formData.is_member===null) return 'Let us know if you\'re a member.';
-      if (!hasRoomsSelected) return 'Select at least one room.';
+      if (formData.is_member===null) return {field: 'is_member',message: 'Let us know if you\'re a member.'};
+      if (!hasRoomsSelected) return {field: 'rooms',message: 'Select at least one room.'};
       return null;
     }
     if (current===4) {
-      if (!formData.responsible_first_name.trim() || !formData.responsible_last_name.trim()) return 'Full name is required.';
-      if (!formData.responsible_email.trim()) return 'Email is required.';
-      if (!formData.responsible_phone.trim()) return 'Phone number is required.';
-      if (!formData.return_address.trim()) return 'Return address for your deposit check is required.';
-      if (!formData.signature_name.trim()) return 'Type your name to sign.';
-      if (!formData.agreed_to_terms) return 'You must agree to the terms to submit.';
+      if (!formData.responsible_first_name.trim()) return {field: 'responsible_first_name',message: 'Full name is required.'};
+      if (!formData.responsible_last_name.trim()) return {field: 'responsible_last_name',message: 'Full name is required.'};
+      if (!formData.responsible_email.trim()) return {field: 'responsible_email',message: 'Email is required.'};
+      if (!formData.responsible_phone.trim()) return {field: 'responsible_phone',message: 'Phone number is required.'};
+      if (!formData.return_address.trim()) return {field: 'return_address',message: 'Return address for your deposit check is required.'};
+      if (!formData.signature_name.trim()) return {field: 'signature_name',message: 'Type your name to sign.'};
+      if (!formData.agreed_to_terms) return {field: 'agreed_to_terms',message: 'You must agree to the terms to submit.'};
       return null;
     }
     return null;
@@ -133,13 +144,16 @@ const Rental=()=> {
   const goNext=()=> {
     const error=validateStep(step);
     if (error) {
-      toast.error(error);
+      toast.error(error.message);
+      setInvalidField(error.field);
       return;
     }
+    setInvalidField(null);
     window.scrollTo({top: 0,behavior: 'smooth'});
     setStep((s)=> Math.min(s + 1,4));
   };
   const goBack=()=> {
+    setInvalidField(null);
     window.scrollTo({top: 0,behavior: 'smooth'});
     setStep((s)=> Math.max(s - 1,1));
   };
@@ -147,7 +161,8 @@ const Rental=()=> {
   const handleSubmit=async ()=> {
     const error=validateStep(4);
     if (error) {
-      toast.error(error);
+      toast.error(error.message);
+      setInvalidField(error.field);
       return;
     }
     setIsSubmitting(true);
@@ -322,7 +337,7 @@ const Rental=()=> {
                   <p className="form-section-title">Event Details</p>
                   <div>
                     <label className="form-label">Event Type *</label>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className={`grid grid-cols-2 gap-3 rounded-xl ${invalidField==='event_type' ? 'ring-2 ring-red-400 p-1' : ''}`}>
                       {[{value: 'personal',label: 'Personal Event'},{value: 'community',label: 'Community Event'}].map((opt)=> (
                         <button
                           key={opt.value}
@@ -336,6 +351,7 @@ const Rental=()=> {
                         </button>
                       ))}
                     </div>
+                    {invalidField==='event_type' && <p className="form-error-text">Select an event type.</p>}
                   </div>
                   <div>
                     <label className="form-label">Organization Name <span className="font-normal text-text-light">(if applicable)</span></label>
@@ -343,15 +359,18 @@ const Rental=()=> {
                   </div>
                   <div>
                     <label className="form-label">Event Name *</label>
-                    <input type="text" name="event_name" value={formData.event_name} onChange={handleChange} required className="form-input" placeholder="e.g. Baby shower" />
+                    <input type="text" name="event_name" value={formData.event_name} onChange={handleChange} className={`form-input ${invalidField==='event_name' ? 'form-input-error' : ''}`} placeholder="e.g. Baby shower" />
+                    {invalidField==='event_name' && <p className="form-error-text">Event name is required.</p>}
                   </div>
                   <div>
                     <label className="form-label">Purpose of Your Event *</label>
-                    <textarea name="purpose" value={formData.purpose} onChange={handleChange} required rows={3} className="form-input resize-none" placeholder="Briefly describe your event" />
+                    <textarea name="purpose" value={formData.purpose} onChange={handleChange} rows={3} className={`form-input resize-none ${invalidField==='purpose' ? 'form-input-error' : ''}`} placeholder="Briefly describe your event" />
+                    {invalidField==='purpose' && <p className="form-error-text">Tell us the purpose of your event.</p>}
                   </div>
                   <div>
                     <label className="form-label">Estimated Number of Guests Attending *</label>
-                    <input type="number" name="guest_count" value={formData.guest_count} onChange={handleChange} required min="1" className="form-input" placeholder="50" />
+                    <input type="number" name="guest_count" value={formData.guest_count} onChange={handleChange} min="1" className={`form-input ${invalidField==='guest_count' ? 'form-input-error' : ''}`} placeholder="50" />
+                    {invalidField==='guest_count' && <p className="form-error-text">Estimated number of guests is required.</p>}
                   </div>
                 </div>
 
@@ -360,26 +379,29 @@ const Rental=()=> {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <label className="form-label">Event Date *</label>
-                      <input type="date" name="event_date" value={formData.event_date} onChange={handleChange} required min={todayStr()} className="form-input" />
+                      <input type="date" name="event_date" value={formData.event_date} onChange={handleChange} min={todayStr()} className={`form-input ${invalidField==='event_date' ? 'form-input-error' : ''}`} />
+                      {invalidField==='event_date' && <p className="form-error-text">{formData.event_date ? 'Event date cannot be in the past.' : 'Event date is required.'}</p>}
                     </div>
                     <div>
                       <label className="form-label">Event Beginning Time *</label>
-                      <select name="event_start_time" value={formData.event_start_time} onChange={handleChange} required className="form-input">
+                      <select name="event_start_time" value={formData.event_start_time} onChange={handleChange} className={`form-input ${invalidField==='event_start_time' ? 'form-input-error' : ''}`}>
                         <option value="" disabled>Select a time</option>
                         {TIME_OPTIONS.map((t)=> <option key={t.value} value={t.value}>{t.label}</option>)}
                       </select>
+                      {invalidField==='event_start_time' && <p className="form-error-text">Event start and end time are required.</p>}
                     </div>
                     <div>
                       <label className="form-label">Event Ending Time *</label>
-                      <select name="event_end_time" value={formData.event_end_time} onChange={handleChange} required className="form-input">
+                      <select name="event_end_time" value={formData.event_end_time} onChange={handleChange} className={`form-input ${invalidField==='event_end_time' ? 'form-input-error' : ''}`}>
                         <option value="" disabled>Select a time</option>
                         {TIME_OPTIONS.map((t)=> <option key={t.value} value={t.value}>{t.label}</option>)}
                       </select>
+                      {invalidField==='event_end_time' && <p className="form-error-text">Event start and end time are required.</p>}
                     </div>
                   </div>
                   <div>
                     <label className="form-label">Event Setup Schedule *</label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className={`grid grid-cols-1 sm:grid-cols-2 gap-3 rounded-xl ${invalidField==='setup_schedule' ? 'ring-2 ring-red-400 p-1' : ''}`}>
                       {[{value: 'day_of',label: 'Setup on day of event'},{value: 'day_before',label: 'Setup needed day before event'}].map((opt)=> (
                         <button
                           key={opt.value}
@@ -393,21 +415,24 @@ const Rental=()=> {
                         </button>
                       ))}
                     </div>
+                    {invalidField==='setup_schedule' && <p className="form-error-text">Select your setup schedule.</p>}
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="form-label">Setup Arrival Time *</label>
-                      <select name="setup_arrival_time" value={formData.setup_arrival_time} onChange={handleChange} required className="form-input">
+                      <select name="setup_arrival_time" value={formData.setup_arrival_time} onChange={handleChange} className={`form-input ${invalidField==='setup_arrival_time' ? 'form-input-error' : ''}`}>
                         <option value="" disabled>Select a time</option>
                         {TIME_OPTIONS.map((t)=> <option key={t.value} value={t.value}>{t.label}</option>)}
                       </select>
+                      {invalidField==='setup_arrival_time' && <p className="form-error-text">Setup arrival and departure time are required.</p>}
                     </div>
                     <div>
                       <label className="form-label">Setup Departure Time *</label>
-                      <select name="setup_departure_time" value={formData.setup_departure_time} onChange={handleChange} required className="form-input">
+                      <select name="setup_departure_time" value={formData.setup_departure_time} onChange={handleChange} className={`form-input ${invalidField==='setup_departure_time' ? 'form-input-error' : ''}`}>
                         <option value="" disabled>Select a time</option>
                         {TIME_OPTIONS.map((t)=> <option key={t.value} value={t.value}>{t.label}</option>)}
                       </select>
+                      {invalidField==='setup_departure_time' && <p className="form-error-text">Setup arrival and departure time are required.</p>}
                     </div>
                   </div>
                 </div>
@@ -434,7 +459,7 @@ const Rental=()=> {
                 <div className="form-section">
                   <p className="form-section-title">Membership</p>
                   <label className="form-label">Are you a member of The Upper Room Fellowship? *</label>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className={`grid grid-cols-2 gap-3 rounded-xl ${invalidField==='is_member' ? 'ring-2 ring-red-400 p-1' : ''}`}>
                     {[{value: true,label: 'Yes'},{value: false,label: 'No'}].map((opt)=> (
                       <button
                         key={String(opt.value)}
@@ -448,9 +473,10 @@ const Rental=()=> {
                       </button>
                     ))}
                   </div>
+                  {invalidField==='is_member' && <p className="form-error-text">Let us know if you're a member.</p>}
                 </div>
 
-                <div className="form-section">
+                <div className={`form-section ${invalidField==='rooms' ? 'ring-2 ring-red-400' : ''}`}>
                   <p className="form-section-title">Rooms Requested *</p>
                   <p className="text-xs text-text-light -mt-2">Select a duration for each room you need. Click a selected option again to remove it.</p>
                   <div className="space-y-2">
@@ -474,6 +500,7 @@ const Rental=()=> {
                       </div>
                     ))}
                   </div>
+                  {invalidField==='rooms' && <p className="form-error-text">Select at least one room.</p>}
                 </div>
 
                 {sanctuaryDuration && (
@@ -614,15 +641,17 @@ const Rental=()=> {
                       <label className="form-label">First Name *</label>
                       <div className="relative">
                         <SafeIcon icon={FiUser} className="absolute left-3 top-3.5 h-4 w-4 text-text-light" />
-                        <input type="text" name="responsible_first_name" value={formData.responsible_first_name} onChange={handleChange} required className="form-input pl-9" placeholder="First" />
+                        <input type="text" name="responsible_first_name" value={formData.responsible_first_name} onChange={handleChange} className={`form-input pl-9 ${invalidField==='responsible_first_name' ? 'form-input-error' : ''}`} placeholder="First" />
                       </div>
+                      {invalidField==='responsible_first_name' && <p className="form-error-text">Full name is required.</p>}
                     </div>
                     <div>
                       <label className="form-label">Last Name *</label>
                       <div className="relative">
                         <SafeIcon icon={FiUser} className="absolute left-3 top-3.5 h-4 w-4 text-text-light" />
-                        <input type="text" name="responsible_last_name" value={formData.responsible_last_name} onChange={handleChange} required className="form-input pl-9" placeholder="Last" />
+                        <input type="text" name="responsible_last_name" value={formData.responsible_last_name} onChange={handleChange} className={`form-input pl-9 ${invalidField==='responsible_last_name' ? 'form-input-error' : ''}`} placeholder="Last" />
                       </div>
+                      {invalidField==='responsible_last_name' && <p className="form-error-text">Full name is required.</p>}
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -630,20 +659,23 @@ const Rental=()=> {
                       <label className="form-label">Email *</label>
                       <div className="relative">
                         <SafeIcon icon={FiMail} className="absolute left-3 top-3.5 h-4 w-4 text-text-light" />
-                        <input type="email" name="responsible_email" value={formData.responsible_email} onChange={handleChange} required className="form-input pl-9" placeholder="your.email@example.com" />
+                        <input type="email" name="responsible_email" value={formData.responsible_email} onChange={handleChange} className={`form-input pl-9 ${invalidField==='responsible_email' ? 'form-input-error' : ''}`} placeholder="your.email@example.com" />
                       </div>
+                      {invalidField==='responsible_email' && <p className="form-error-text">Email is required.</p>}
                     </div>
                     <div>
                       <label className="form-label">Phone Number *</label>
                       <div className="relative">
                         <SafeIcon icon={FiPhone} className="absolute left-3 top-3.5 h-4 w-4 text-text-light" />
-                        <input type="tel" name="responsible_phone" value={formData.responsible_phone} onChange={handleChange} required className="form-input pl-9" placeholder="(555) 123-4567" />
+                        <input type="tel" name="responsible_phone" value={formData.responsible_phone} onChange={handleChange} className={`form-input pl-9 ${invalidField==='responsible_phone' ? 'form-input-error' : ''}`} placeholder="(555) 123-4567" />
                       </div>
+                      {invalidField==='responsible_phone' && <p className="form-error-text">Phone number is required.</p>}
                     </div>
                   </div>
                   <div>
                     <label className="form-label">Return Address for Down Payment Check *</label>
-                    <textarea name="return_address" value={formData.return_address} onChange={handleChange} required rows={2} className="form-input resize-none" placeholder="Street, City, State, Zip" />
+                    <textarea name="return_address" value={formData.return_address} onChange={handleChange} rows={2} className={`form-input resize-none ${invalidField==='return_address' ? 'form-input-error' : ''}`} placeholder="Street, City, State, Zip" />
+                    {invalidField==='return_address' && <p className="form-error-text">Return address for your deposit check is required.</p>}
                   </div>
                 </div>
 
@@ -675,9 +707,10 @@ const Rental=()=> {
                   </p>
                   <div>
                     <label className="form-label">Type Your Full Name to Sign *</label>
-                    <input type="text" name="signature_name" value={formData.signature_name} onChange={handleChange} required className="form-input" placeholder="Your full legal name" />
+                    <input type="text" name="signature_name" value={formData.signature_name} onChange={handleChange} className={`form-input ${invalidField==='signature_name' ? 'form-input-error' : ''}`} placeholder="Your full legal name" />
+                    {invalidField==='signature_name' && <p className="form-error-text">Type your name to sign.</p>}
                   </div>
-                  <label className="flex items-start gap-3 cursor-pointer">
+                  <label className={`flex items-start gap-3 cursor-pointer rounded-xl ${invalidField==='agreed_to_terms' ? 'ring-2 ring-red-400 p-2 -m-2' : ''}`}>
                     <input
                       type="checkbox"
                       checked={formData.agreed_to_terms}
@@ -686,6 +719,7 @@ const Rental=()=> {
                     />
                     <span className="text-sm text-text-primary">I have read, understand, and agree to the Guidelines &amp; Policies and this entire agreement. *</span>
                   </label>
+                  {invalidField==='agreed_to_terms' && <p className="form-error-text">You must agree to the terms to submit.</p>}
                 </div>
               </div>
             )}

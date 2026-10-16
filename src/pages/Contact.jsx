@@ -8,6 +8,7 @@ import {submitContactForm} from '../lib/contactStorage';
 import StandardButton from '../components/StandardButton';
 import supabase from '../lib/supabase';
 import {useToast} from '../hooks/useToast';
+import {isValidEmail} from '../utils/validation';
 
 const {FiMail,FiCheck,FiUser,FiMessageSquare,FiPhone,FiUsers}=FiIcons;
 
@@ -24,6 +25,7 @@ const Contact=()=> {
   const [isSubmitted,setIsSubmitted]=useState(false);
   const [staffContacts,setStaffContacts]=useState([]);
   const [loadingStaff,setLoadingStaff]=useState(true);
+  const [errors,setErrors]=useState({});
 
   useEffect(()=> {
     fetchStaffContacts();
@@ -48,10 +50,27 @@ const Contact=()=> {
   const handleInputChange=(e)=> {
     const {name,value}=e.target;
     setFormData((prev)=> ({...prev,[name]: value}));
+    if (errors[name]) setErrors((prev)=> { const next={...prev}; delete next[name]; return next; });
+  };
+
+  const validate=()=> {
+    const errs={};
+    if (!formData.name.trim()) errs.name='Please enter your name.';
+    if (!formData.email.trim()) errs.email='Please enter your email.';
+    else if (!isValidEmail(formData.email)) errs.email='Please enter a valid email address.';
+    if (!formData.subject) errs.subject='Please select a subject.';
+    if (!formData.message.trim()) errs.message='Please enter a message.';
+    return errs;
   };
 
   const handleSubmit=async (e)=> {
     e.preventDefault();
+    const validationErrors=validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      document.getElementsByName(Object.keys(validationErrors)[0])[0]?.focus();
+      return;
+    }
     setIsSubmitting(true);
     try {
       const {error}=await submitContactForm(formData);
@@ -203,7 +222,7 @@ const Contact=()=> {
           transition={{duration: 0.8,delay: 0.6}}
           className="card-clay rounded-lg shadow-md p-8 max-w-2xl mx-auto"
         >
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} noValidate className="space-y-6">
             {/* Name */}
             <div>
               <label className="block text-sm font-medium text-text-primary mb-2">
@@ -219,11 +238,11 @@ const Contact=()=> {
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  required
-                  className="pl-10 w-full p-3 border border-accent-dark rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className={`pl-10 w-full p-3 border rounded-lg focus:ring-2 focus:border-transparent ${errors.name ? 'form-input-error' : 'border-accent-dark focus:ring-primary'}`}
                   placeholder="Your full name"
                 />
               </div>
+              {errors.name && <p className="form-error-text">{errors.name}</p>}
             </div>
 
             {/* Email */}
@@ -241,11 +260,11 @@ const Contact=()=> {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  required
-                  className="pl-10 w-full p-3 border border-accent-dark rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className={`pl-10 w-full p-3 border rounded-lg focus:ring-2 focus:border-transparent ${errors.email ? 'form-input-error' : 'border-accent-dark focus:ring-primary'}`}
                   placeholder="your.email@example.com"
                 />
               </div>
+              {errors.email && <p className="form-error-text">{errors.email}</p>}
             </div>
 
             {/* Phone */}
@@ -278,8 +297,7 @@ const Contact=()=> {
                 name="subject"
                 value={formData.subject}
                 onChange={handleInputChange}
-                required
-                className="w-full p-3 border border-accent-dark rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                className={`w-full p-3 border rounded-lg focus:ring-2 focus:border-transparent ${errors.subject ? 'form-input-error' : 'border-accent-dark focus:ring-primary'}`}
               >
                 <option value="">Select a subject</option>
                 <option value="general">General Inquiry</option>
@@ -291,6 +309,7 @@ const Contact=()=> {
                 <option value="technical">Technical Support</option>
                 <option value="other">Other</option>
               </select>
+              {errors.subject && <p className="form-error-text">{errors.subject}</p>}
             </div>
 
             {/* Message */}
@@ -307,12 +326,12 @@ const Contact=()=> {
                   name="message"
                   value={formData.message}
                   onChange={handleInputChange}
-                  required
                   rows={6}
-                  className="pl-10 w-full p-3 border border-accent-dark rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+                  className={`pl-10 w-full p-3 border rounded-lg focus:ring-2 focus:border-transparent resize-none ${errors.message ? 'form-input-error' : 'border-accent-dark focus:ring-primary'}`}
                   placeholder="How can we help you?"
                 />
               </div>
+              {errors.message && <p className="form-error-text">{errors.message}</p>}
             </div>
 
             <StandardButton

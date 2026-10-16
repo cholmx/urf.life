@@ -371,6 +371,14 @@ input:focus, textarea:focus, select:focus {
     @apply focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary;
     color: #1E1E21;
   }
+  .form-input-error {
+    @apply border-red-400;
+    @apply focus:ring-red-300 focus:border-red-400;
+  }
+  .form-error-text {
+    @apply text-xs mt-1 font-medium;
+    color: #BA1A1A;
+  }
   .form-label {
     @apply block text-sm font-semibold mb-1.5;
     color: #1E1E21;

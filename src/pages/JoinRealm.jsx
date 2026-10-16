@@ -7,6 +7,7 @@ import PageNav from '../common/PageNav';
 import {submitRealmSignup} from '../lib/contactStorage';
 import StandardButton from '../components/StandardButton';
 import {useToast} from '../hooks/useToast';
+import {isValidEmail} from '../utils/validation';
 
 const {FiUserPlus,FiCheckCircle,FiUser,FiMail,FiPhone,FiMapPin,FiCalendar,FiHeart,FiArrowRight}=FiIcons;
 
@@ -29,6 +30,7 @@ const JoinRealm=()=> {
   });
   const [isSubmitting,setIsSubmitting]=useState(false);
   const [isSubmitted,setIsSubmitted]=useState(false);
+  const [errors,setErrors]=useState({});
 
   const maritalStatusOptions=[
     {value: '',label: 'Select...'},
@@ -41,10 +43,32 @@ const JoinRealm=()=> {
   const handleInputChange=(e)=> {
     const {name,value}=e.target;
     setFormData((prev)=> ({...prev,[name]: value}));
+    if (errors[name]) setErrors((prev)=> { const next={...prev}; delete next[name]; return next; });
+  };
+
+  const validate=()=> {
+    const errs={};
+    if (!formData.firstName.trim()) errs.firstName='First name is required.';
+    if (!formData.lastName.trim()) errs.lastName='Last name is required.';
+    if (!formData.email.trim()) errs.email='Email is required.';
+    else if (!isValidEmail(formData.email)) errs.email='Please enter a valid email address.';
+    if (!formData.phone.trim()) errs.phone='Phone number is required.';
+    if (!formData.addressLine1.trim()) errs.addressLine1='Street address is required.';
+    if (!formData.city.trim()) errs.city='City is required.';
+    if (!formData.state.trim()) errs.state='State is required.';
+    if (!formData.zipCode.trim()) errs.zipCode='Zip code is required.';
+    if (!formData.country.trim()) errs.country='Country is required.';
+    return errs;
   };
 
   const handleSubmit=async (e)=> {
     e.preventDefault();
+    const validationErrors=validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      document.getElementsByName(Object.keys(validationErrors)[0])[0]?.focus();
+      return;
+    }
     setIsSubmitting(true);
     try {
       const {error}=await submitRealmSignup({
@@ -151,7 +175,7 @@ const JoinRealm=()=> {
               transition={{duration: 0.8,delay: 0.4}}
               className="card-clay rounded-3xl shadow-modern p-8"
             >
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} noValidate className="space-y-6">
                 {/* Personal Info */}
                 <div className="form-section">
                   <p className="form-section-title">Personal Information</p>
@@ -165,11 +189,11 @@ const JoinRealm=()=> {
                           name="firstName"
                           value={formData.firstName}
                           onChange={handleInputChange}
-                          required
-                          className="form-input pl-9"
+                          className={`form-input pl-9 ${errors.firstName ? 'form-input-error' : ''}`}
                           placeholder="First"
                         />
                       </div>
+                      {errors.firstName && <p className="form-error-text">{errors.firstName}</p>}
                     </div>
                     <div>
                       <label className="form-label">Last Name *</label>
@@ -180,11 +204,11 @@ const JoinRealm=()=> {
                           name="lastName"
                           value={formData.lastName}
                           onChange={handleInputChange}
-                          required
-                          className="form-input pl-9"
+                          className={`form-input pl-9 ${errors.lastName ? 'form-input-error' : ''}`}
                           placeholder="Last"
                         />
                       </div>
+                      {errors.lastName && <p className="form-error-text">{errors.lastName}</p>}
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -197,11 +221,11 @@ const JoinRealm=()=> {
                           name="email"
                           value={formData.email}
                           onChange={handleInputChange}
-                          required
-                          className="form-input pl-9"
+                          className={`form-input pl-9 ${errors.email ? 'form-input-error' : ''}`}
                           placeholder="your.email@example.com"
                         />
                       </div>
+                      {errors.email && <p className="form-error-text">{errors.email}</p>}
                     </div>
                     <div>
                       <label className="form-label">Phone Number *</label>
@@ -212,11 +236,11 @@ const JoinRealm=()=> {
                           name="phone"
                           value={formData.phone}
                           onChange={handleInputChange}
-                          required
-                          className="form-input pl-9"
+                          className={`form-input pl-9 ${errors.phone ? 'form-input-error' : ''}`}
                           placeholder="(555) 123-4567"
                         />
                       </div>
+                      {errors.phone && <p className="form-error-text">{errors.phone}</p>}
                     </div>
                   </div>
                 </div>
@@ -224,17 +248,19 @@ const JoinRealm=()=> {
                 {/* Address */}
                 <div className="form-section">
                   <p className="form-section-title">Home Address</p>
-                  <div className="relative">
-                    <SafeIcon icon={FiMapPin} className="absolute left-3 top-3.5 h-4 w-4 text-text-light" />
-                    <input
-                      type="text"
-                      name="addressLine1"
-                      value={formData.addressLine1}
-                      onChange={handleInputChange}
-                      required
-                      className="form-input pl-9"
-                      placeholder="Street address"
-                    />
+                  <div>
+                    <div className="relative">
+                      <SafeIcon icon={FiMapPin} className="absolute left-3 top-3.5 h-4 w-4 text-text-light" />
+                      <input
+                        type="text"
+                        name="addressLine1"
+                        value={formData.addressLine1}
+                        onChange={handleInputChange}
+                        className={`form-input pl-9 ${errors.addressLine1 ? 'form-input-error' : ''}`}
+                        placeholder="Street address"
+                      />
+                    </div>
+                    {errors.addressLine1 && <p className="form-error-text">{errors.addressLine1}</p>}
                   </div>
                   <input
                     type="text"
@@ -251,10 +277,10 @@ const JoinRealm=()=> {
                         name="city"
                         value={formData.city}
                         onChange={handleInputChange}
-                        required
-                        className="form-input"
+                        className={`form-input ${errors.city ? 'form-input-error' : ''}`}
                         placeholder="City"
                       />
+                      {errors.city && <p className="form-error-text">{errors.city}</p>}
                     </div>
                     <div>
                       <input
@@ -262,10 +288,10 @@ const JoinRealm=()=> {
                         name="state"
                         value={formData.state}
                         onChange={handleInputChange}
-                        required
-                        className="form-input"
+                        className={`form-input ${errors.state ? 'form-input-error' : ''}`}
                         placeholder="State"
                       />
+                      {errors.state && <p className="form-error-text">{errors.state}</p>}
                     </div>
                     <div>
                       <input
@@ -273,21 +299,23 @@ const JoinRealm=()=> {
                         name="zipCode"
                         value={formData.zipCode}
                         onChange={handleInputChange}
-                        required
-                        className="form-input"
+                        className={`form-input ${errors.zipCode ? 'form-input-error' : ''}`}
                         placeholder="Zip"
                       />
+                      {errors.zipCode && <p className="form-error-text">{errors.zipCode}</p>}
                     </div>
                   </div>
-                  <input
-                    type="text"
-                    name="country"
-                    value={formData.country}
-                    onChange={handleInputChange}
-                    required
-                    className="form-input"
-                    placeholder="Country"
-                  />
+                  <div>
+                    <input
+                      type="text"
+                      name="country"
+                      value={formData.country}
+                      onChange={handleInputChange}
+                      className={`form-input ${errors.country ? 'form-input-error' : ''}`}
+                      placeholder="Country"
+                    />
+                    {errors.country && <p className="form-error-text">{errors.country}</p>}
+                  </div>
                 </div>
 
                 {/* Life Details */}
