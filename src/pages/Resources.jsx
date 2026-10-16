@@ -3,12 +3,13 @@ import {Link} from 'react-router-dom';
 import {motion} from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
+import PageNav from '../common/PageNav';
 import BookCard from '../components/BookCard';
 import {SkeletonBookCard,LoadingTransition} from '../components/LoadingSkeletons';
 import supabase from '../lib/supabase';
 import StandardButton from '../components/StandardButton';
 
-const {FiBookOpen,FiHome,FiExternalLink,FiTag,FiFilter,FiLink}=FiIcons;
+const {FiBookOpen,FiExternalLink,FiTag,FiFilter,FiLink}=FiIcons;
 
 const Resources=()=> {
   const [resources,setResources]=useState([]);
@@ -136,12 +137,7 @@ const Resources=()=> {
   if (error) {
     return (
       <div className="min-h-screen bg-accent py-12 relative">
-        {/* Back to Home Button - Top Right */}
-        <div className="fixed top-6 right-6 z-50">
-          <Link to="/" className="inline-flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105" style={{backgroundColor: '#cc4733'}} title="Back to Home">
-            <SafeIcon icon={FiHome} className="h-5 w-5 text-white" />
-          </Link>
-        </div>
+        <PageNav />
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-red-50 border border-red-200 rounded-lg p-8 text-center">
             <p className="text-red-700 font-inter">{error}</p>
@@ -161,12 +157,7 @@ const Resources=()=> {
 
   return (
     <div className="min-h-screen bg-accent py-12 relative">
-      {/* Back to Home Button - Top Right */}
-      <div className="fixed top-6 right-6 z-50">
-        <Link to="/" className="inline-flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105" style={{backgroundColor: '#cc4733'}} title="Back to Home">
-          <SafeIcon icon={FiHome} className="h-5 w-5 text-white" />
-        </Link>
-      </div>
+      <PageNav />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12">

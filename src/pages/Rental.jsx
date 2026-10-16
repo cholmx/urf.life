@@ -3,12 +3,13 @@ import {Link} from 'react-router-dom';
 import {motion,AnimatePresence} from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
+import PageNav from '../common/PageNav';
 import {submitFacilityRentalRequest} from '../lib/contactStorage';
 import {useToast} from '../hooks/useToast';
 import {formatTime} from '../utils/dateFormat';
 import {ROOM_OPTIONS,SERVICE_OPTIONS,DEPOSIT_AMOUNT,calculateRentalTotal,roomLabel,serviceLabel} from '../lib/rentalPricing';
 
-const {FiKey,FiHome,FiCheckCircle,FiArrowRight,FiArrowLeft,FiPhone,FiMail,FiClock,FiUser,FiExternalLink,FiDollarSign}=FiIcons;
+const {FiKey,FiCheckCircle,FiArrowRight,FiArrowLeft,FiPhone,FiMail,FiClock,FiUser,FiExternalLink,FiDollarSign}=FiIcons;
 
 const REALM_GIVE_URL='https://onrealm.org/urfellowship/-/form/give/now';
 
@@ -198,11 +199,7 @@ const Rental=()=> {
   if (isSubmitted) {
     return (
       <div className="min-h-screen bg-accent py-12 flex items-center justify-center relative">
-        <div className="fixed top-6 right-6 z-50">
-          <Link to="/" className="inline-flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105" style={{backgroundColor: '#cc4733'}} title="Back to Home">
-            <SafeIcon icon={FiHome} className="h-5 w-5 text-white" />
-          </Link>
-        </div>
+        <PageNav />
         <motion.div
           initial={{opacity: 0,scale: 0.92,y: 20}}
           animate={{opacity: 1,scale: 1,y: 0}}
@@ -246,11 +243,7 @@ const Rental=()=> {
 
   return (
     <div className="min-h-screen bg-accent py-12 relative">
-      <div className="fixed top-6 right-6 z-50">
-        <Link to="/" className="inline-flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105" style={{backgroundColor: '#cc4733'}} title="Back to Home">
-          <SafeIcon icon={FiHome} className="h-5 w-5 text-white" />
-        </Link>
-      </div>
+      <PageNav />
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8">

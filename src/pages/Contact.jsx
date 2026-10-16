@@ -3,12 +3,13 @@ import {Link} from 'react-router-dom';
 import {motion} from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
+import PageNav from '../common/PageNav';
 import {submitContactForm} from '../lib/contactStorage';
 import StandardButton from '../components/StandardButton';
 import supabase from '../lib/supabase';
 import {useToast} from '../hooks/useToast';
 
-const {FiMail,FiCheck,FiUser,FiMessageSquare,FiPhone,FiHome,FiUsers}=FiIcons;
+const {FiMail,FiCheck,FiUser,FiMessageSquare,FiPhone,FiUsers}=FiIcons;
 
 const Contact=()=> {
   const toast=useToast();
@@ -68,12 +69,7 @@ const Contact=()=> {
   if (isSubmitted) {
     return (
       <div className="min-h-screen bg-accent py-12 flex items-center justify-center relative">
-        {/* Back to Home Button - Top Right */}
-        <div className="fixed top-6 right-6 z-50">
-          <Link to="/" className="inline-flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105" style={{backgroundColor: '#cc4733'}} title="Back to Home">
-            <SafeIcon icon={FiHome} className="h-5 w-5 text-white" />
-          </Link>
-        </div>
+        <PageNav />
         <motion.div
           initial={{opacity: 0,scale: 0.9}}
           animate={{opacity: 1,scale: 1}}
@@ -106,12 +102,7 @@ const Contact=()=> {
 
   return (
     <div className="min-h-screen bg-accent py-12 relative">
-      {/* Back to Home Button - Top Right */}
-      <div className="fixed top-6 right-6 z-50">
-        <Link to="/" className="inline-flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105" style={{backgroundColor: '#cc4733'}} title="Back to Home">
-          <SafeIcon icon={FiHome} className="h-5 w-5 text-white" />
-        </Link>
-      </div>
+      <PageNav />
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
