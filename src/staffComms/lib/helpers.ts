@@ -1,4 +1,5 @@
 import type { Announcement } from '../types';
+import { getNextOccurrenceDate } from './calendar-grid';
 
 export function getScopeLeadWeeks(scope: Announcement['scope']): number {
   if (scope === 'whole_church') return 6;
@@ -184,6 +185,26 @@ export function isArchived(a: Announcement, today: string): boolean {
   const last = getLastRelevantDate(a);
   if (last === null) return false;
   return last < today;
+}
+
+// Recurring items only ever store their first session in event_date, so
+// flyer_text's wording (e.g. "meets Sunday, October 4") goes stale the
+// moment that occurrence passes - flyer_text_date records which occurrence
+// it was last written for, so this just compares that against the real
+// next one. Only fires for text that was actually AI-generated before
+// (flyer_text_date set) - freshly hand-typed text has nothing to compare
+// against and shouldn't be flagged. Mirrors the same check AnnouncementForm
+// shows inline while editing, so the dashboard summary flags exactly what
+// that warning would.
+export function isFlyerTextStale(a: Announcement, today: string): boolean {
+  if (a.recurrence_type === 'one_time') return false;
+  const nextOccurrence = getNextOccurrenceDate(a, today);
+  return !!(
+    nextOccurrence &&
+    a.flyer_text_date &&
+    a.flyer_text_date !== nextOccurrence &&
+    a.flyer_text.trim()
+  );
 }
 
 export function formatDateNice(d: string | null | undefined): string {

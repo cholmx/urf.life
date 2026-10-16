@@ -8,6 +8,7 @@ import {
   getAutoHappeningsStartDate,
   getAutoHappeningsEndDate,
   getScopeLeadWeeks,
+  isFlyerTextStale,
 } from '../../lib/helpers';
 import { getNextOccurrenceDate } from '../../lib/calendar-grid';
 import { AIWriteButton } from './AIWriteButton';
@@ -335,12 +336,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
   // AI-generated before (flyer_text_date set) - freshly hand-typed text
   // has nothing to compare against and shouldn't be flagged.
   const nextOccurrence = f.recurrence_type !== 'one_time' ? getNextOccurrenceDate(f as Announcement, today) : null;
-  const flyerTextStale = !!(
-    nextOccurrence &&
-    f.flyer_text_date &&
-    f.flyer_text_date !== nextOccurrence &&
-    f.flyer_text.trim()
-  );
+  const flyerTextStale = isFlyerTextStale(f as Announcement, today);
 
   const syncDatesFromArray = (dates: string[]) => {
     const sorted = [...dates].filter(Boolean).sort();

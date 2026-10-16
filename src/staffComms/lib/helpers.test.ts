@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { isArchived, isClassListingActive, getLastRelevantDate, isMonthlyActive } from './helpers';
+import { isArchived, isClassListingActive, getLastRelevantDate, isMonthlyActive, isFlyerTextStale } from './helpers';
+import { getNextOccurrenceDate } from './calendar-grid';
 import type { Announcement } from '../types';
 
 // These exist because a real bug shipped here: a multi-week recurring
@@ -149,6 +150,43 @@ describe('isArchived', () => {
       event_date: '2026-09-25', recurrence_end_date: null,
     });
     expect(isArchived(a, TODAY)).toBe(false); // +4 days, still in grace
+  });
+});
+
+describe('isFlyerTextStale', () => {
+  const recurringWithText = (flyerTextDate: string | null) => makeAnnouncement({
+    is_recurring: true,
+    recurrence_type: 'weekly',
+    event_date: '2026-08-04',
+    flyer_text: 'Meets every Tuesday at 7pm.',
+    flyer_text_date: flyerTextDate,
+  });
+
+  it('is never stale for a one-time item', () => {
+    const a = makeAnnouncement({ flyer_text: 'Join us Saturday.', flyer_text_date: '2026-09-01' });
+    expect(isFlyerTextStale(a, TODAY)).toBe(false);
+  });
+
+  it('is not stale when flyer_text_date has never been set (hand-typed text)', () => {
+    const a = recurringWithText(null);
+    expect(isFlyerTextStale(a, TODAY)).toBe(false);
+  });
+
+  it('is not stale when flyer_text_date matches the real next occurrence', () => {
+    const a = recurringWithText(null);
+    const next = getNextOccurrenceDate(a, TODAY);
+    expect(isFlyerTextStale(recurringWithText(next), TODAY)).toBe(false);
+  });
+
+  it('is stale once the next occurrence has moved past flyer_text_date', () => {
+    const a = recurringWithText('2026-08-04');
+    expect(isFlyerTextStale(a, TODAY)).toBe(true);
+  });
+
+  it('is not stale when flyer_text is empty, even with a mismatched flyer_text_date', () => {
+    const a = recurringWithText('2026-08-04');
+    a.flyer_text = '';
+    expect(isFlyerTextStale(a, TODAY)).toBe(false);
   });
 });
 

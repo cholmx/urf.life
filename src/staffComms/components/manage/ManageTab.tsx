@@ -1,10 +1,11 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { C, font, scopeChipColors, happeningTypeChipColors, recurringChipColor } from '../../lib/theme';
 import { btnPrimary, btnGhost } from '../ui/inputs';
 import { AnnouncementCard } from './AnnouncementCard';
 import { AnnouncementForm } from './AnnouncementForm';
-import { isSlideActive } from '../../lib/helpers';
+import { isSlideActive, isFlyerTextStale } from '../../lib/helpers';
 import { HAPPENING_TYPE_OPTIONS, SCOPE_OPTIONS } from '../../lib/constants';
+import { supabase } from '../../lib/supabase';
 import type { Announcement, DestinationKey } from '../../types';
 
 interface ManageTabProps {
@@ -30,6 +31,23 @@ export function ManageTab({ announcements, today, onSave, onDelete, onTogglePubl
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
   const [scopeFilter, setScopeFilter] = useState<string | null>(null);
   const [recurringOnly, setRecurringOnly] = useState(false);
+  const [unpublishedOnly, setUnpublishedOnly] = useState(false);
+  const [staleOnly, setStaleOnly] = useState(false);
+  const [pendingRentals, setPendingRentals] = useState<number | null>(null);
+
+  // Independent of the announcements fetch above (rentals live in the
+  // older admin system's own table, with no shared data layer) - just a
+  // lightweight count so the dashboard can flag them without pulling in
+  // that whole admin page.
+  useEffect(() => {
+    supabase
+      .from('facility_rental_requests_portal123')
+      .select('id', { count: 'exact', head: true })
+      .eq('archived', false)
+      .then(({ count, error }) => {
+        if (!error && count !== null) setPendingRentals(count);
+      });
+  }, []);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -37,6 +55,8 @@ export function ManageTab({ announcements, today, onSave, onDelete, onTogglePubl
       if (typeFilter && a.happening_type !== typeFilter) return false;
       if (scopeFilter && a.scope !== scopeFilter) return false;
       if (recurringOnly && !a.is_recurring) return false;
+      if (unpublishedOnly && a.is_published) return false;
+      if (staleOnly && !isFlyerTextStale(a, today)) return false;
       if (!q) return true;
       return (
         a.title.toLowerCase().includes(q) ||
@@ -46,9 +66,12 @@ export function ManageTab({ announcements, today, onSave, onDelete, onTogglePubl
         a.category.toLowerCase().includes(q)
       );
     });
-  }, [announcements, search, typeFilter, scopeFilter, recurringOnly]);
+  }, [announcements, search, typeFilter, scopeFilter, recurringOnly, unpublishedOnly, staleOnly, today]);
 
-  const anyFilterActive = !!typeFilter || !!scopeFilter || recurringOnly;
+  const anyFilterActive = !!typeFilter || !!scopeFilter || recurringOnly || unpublishedOnly || staleOnly;
+
+  const unpublishedCount = useMemo(() => announcements.filter(a => !a.is_published).length, [announcements]);
+  const staleCount = useMemo(() => announcements.filter(a => isFlyerTextStale(a, today)).length, [announcements, today]);
 
   const slidesPending = useMemo(
     () => announcements.filter(a => isSlideActive(a, today) && !a.slide_made),
@@ -116,6 +139,27 @@ export function ManageTab({ announcements, today, onSave, onDelete, onTogglePubl
             sub={slidesPending.length > 0 ? 'Need making' : 'All caught up'}
             onClick={() => onNavigateTab?.('slideMaker')}
           />
+          <DashboardStat
+            label="Unpublished"
+            value={unpublishedCount}
+            accent={unpublishedCount > 0 ? '#B45309' : '#15803D'}
+            sub={unpublishedCount > 0 ? 'Not live yet' : 'All published'}
+            onClick={() => { setUnpublishedOnly(v => !v); setStaleOnly(false); }}
+          />
+          <DashboardStat
+            label="Stale Descriptions"
+            value={staleCount}
+            accent={staleCount > 0 ? '#B45309' : '#15803D'}
+            sub={staleCount > 0 ? 'Written for a past date' : 'All up to date'}
+            onClick={() => { setStaleOnly(v => !v); setUnpublishedOnly(false); }}
+          />
+          <DashboardStat
+            label="Rental Requests"
+            value={pendingRentals ?? 0}
+            accent={(pendingRentals ?? 0) > 0 ? '#B45309' : '#15803D'}
+            sub={pendingRentals === null ? 'Loading...' : pendingRentals > 0 ? 'Awaiting review' : 'All handled'}
+            onClick={() => onNavigateTab?.('rentals')}
+          />
         </div>
       )}
 
@@ -174,7 +218,7 @@ export function ManageTab({ announcements, today, onSave, onDelete, onTogglePubl
           />
           {anyFilterActive && (
             <button
-              onClick={() => { setTypeFilter(null); setScopeFilter(null); setRecurringOnly(false); }}
+              onClick={() => { setTypeFilter(null); setScopeFilter(null); setRecurringOnly(false); setUnpublishedOnly(false); setStaleOnly(false); }}
               style={{
                 fontFamily: font.display, fontSize: 10, fontWeight: 700, color: C.textMuted,
                 background: 'none', border: 'none', cursor: 'pointer', padding: '4px 6px', letterSpacing: '0.03em', textTransform: 'uppercase',
