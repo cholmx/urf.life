@@ -145,7 +145,7 @@ const SermonBlog=()=> {
                   className={`px-4 py-2 rounded-full text-sm font-medium transition-colors font-inter ${
                     selectedSeries===''
                       ? 'bg-primary text-white'
-                      : 'bg-accent text-white hover:bg-accent-dark hover:text-[#1E1E21]'
+                      : 'bg-accent text-text-primary hover:bg-accent-dark'
                   }`}
                 >
                   All Sermons
@@ -156,7 +156,7 @@ const SermonBlog=()=> {
                     className={`px-4 py-2 rounded-full text-sm font-medium transition-colors font-inter ${
                       selectedSeries==='standalone'
                         ? 'bg-primary text-white'
-                        : 'bg-accent text-white hover:bg-accent-dark hover:text-[#1E1E21]'
+                        : 'bg-accent text-text-primary hover:bg-accent-dark'
                     }`}
                   >
                     Standalone Sermons
@@ -169,7 +169,7 @@ const SermonBlog=()=> {
                     className={`px-4 py-2 rounded-full text-sm font-medium transition-colors font-inter ${
                       selectedSeries===series.id
                         ? 'bg-primary text-white'
-                        : 'bg-accent text-white hover:bg-accent-dark hover:text-[#1E1E21]'
+                        : 'bg-accent text-text-primary hover:bg-accent-dark'
                     }`}
                   >
                     {series.name}

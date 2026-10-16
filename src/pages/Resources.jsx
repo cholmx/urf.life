@@ -203,7 +203,7 @@ const Resources=()=> {
                   className={`px-4 py-2 rounded-full text-sm font-medium transition-colors font-inter ${
                     selectedCategory===''
                       ? 'bg-primary text-white'
-                      : 'bg-accent text-white hover:bg-accent-dark hover:text-[#1E1E21]'
+                      : 'bg-accent text-text-primary hover:bg-accent-dark'
                   }`}
                 >
                   All Resources
@@ -215,7 +215,7 @@ const Resources=()=> {
                     className={`px-4 py-2 rounded-full text-sm font-medium transition-colors font-inter flex items-center space-x-1 ${
                       selectedCategory===category.id
                         ? 'bg-primary text-white'
-                        : 'bg-accent text-white hover:bg-accent-dark hover:text-[#1E1E21]'
+                        : 'bg-accent text-text-primary hover:bg-accent-dark'
                     }`}
                   >
                     <SafeIcon
@@ -231,7 +231,7 @@ const Resources=()=> {
                     className={`px-4 py-2 rounded-full text-sm font-medium transition-colors font-inter ${
                       selectedCategory==='uncategorized'
                         ? 'bg-primary text-white'
-                        : 'bg-accent text-white hover:bg-accent-dark hover:text-[#1E1E21]'
+                        : 'bg-accent text-text-primary hover:bg-accent-dark'
                     }`}
                   >
                     Uncategorized

@@ -9,17 +9,13 @@ export default {
       colors: {
         primary: '#83A682', // A softer, modern green
         secondary: '#5F5F5A', // A warm gray for text and secondary elements
-        accent: '#053030', // Dark teal background (was a warm off-white)
+        accent: '#FCFAF2', // A warm, off-white background
         'accent-light': '#FFFFFF',
         'accent-dark': '#F3F1E6',
 
-        // Default text flips to the old cream background color, since
-        // it now sits on a dark page background instead of a light one.
-        // Text inside light-surfaced cards/sections is forced back dark
-        // via the scoped overrides in index.css.
-        'text-primary': '#FCFAF2',
-        'text-secondary': '#FCFAF2',
-        'text-light': '#A8B8B5',
+        'text-primary': '#1E1E21',
+        'text-secondary': '#1E1E21',
+        'text-light': '#888888',
 
         'brand-yellow': '#E2BA49',
         'brand-blue': '#2c4747',

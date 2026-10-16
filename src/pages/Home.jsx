@@ -106,15 +106,15 @@ const Home=()=> {
   ];
 
   const SkeletonButton=()=> (
-    <div className="bg-white/10 rounded-2xl animate-pulse w-full min-h-[160px] md:min-h-[200px] p-5 flex flex-col items-center justify-center">
-      <div className="w-8 h-8 bg-white/20 rounded-full mb-3"></div>
-      <div className="h-4 bg-white/20 rounded w-20 mb-2"></div>
-      <div className="h-3 bg-white/15 rounded w-24"></div>
+    <div className="bg-accent-dark rounded-2xl animate-pulse w-full min-h-[160px] md:min-h-[200px] p-5 flex flex-col items-center justify-center">
+      <div className="w-8 h-8 bg-accent rounded-full mb-3"></div>
+      <div className="h-4 bg-accent rounded w-20 mb-2"></div>
+      <div className="h-3 bg-accent rounded w-24"></div>
     </div>
   );
 
   const SkeletonQuickLink=()=> (
-    <div className="bg-white/10 rounded-xl animate-pulse w-[130px] h-[48px] md:w-[150px]">
+    <div className="bg-accent-dark rounded-xl animate-pulse w-[130px] h-[48px] md:w-[150px]">
     </div>
   );
 
@@ -126,7 +126,7 @@ const Home=()=> {
             initial={{opacity: 0,y: 20}} animate={{opacity: 1,y: 0}} transition={{duration: 0.7}}
             className="font-gsans uppercase font-black text-2xl md:text-4xl text-text-primary tracking-tight flex items-center justify-center gap-2.5"
           >
-            <img src="/logonegtransblack%20copy.png" alt="" className="h-[1.35em] w-auto invert" />
+            <img src="/logonegtransblack%20copy.png" alt="" className="h-[1.35em] w-auto" />
             <span>Upper Room Fellowship</span>
           </motion.h1>
         </header>
@@ -135,11 +135,11 @@ const Home=()=> {
           {loading ? (
             <div className="flex flex-col items-center gap-8">
               <div className="w-full max-w-[344px] md:max-w-[711px]">
-                <div className="bg-white/10 rounded-2xl animate-pulse w-full h-[100px] mb-4"></div>
+                <div className="bg-accent-dark rounded-2xl animate-pulse w-full h-[100px] mb-4"></div>
               </div>
               <div className="flex flex-col gap-4 w-full max-w-[344px] md:max-w-[711px]">
-                <div className="bg-white/10 rounded-2xl animate-pulse w-full h-[70px]"></div>
-                <div className="bg-white/10 rounded-2xl animate-pulse w-full h-[70px]"></div>
+                <div className="bg-accent-dark rounded-2xl animate-pulse w-full h-[70px]"></div>
+                <div className="bg-accent-dark rounded-2xl animate-pulse w-full h-[70px]"></div>
               </div>
               <div className="w-full max-w-[344px] md:max-w-[711px]">
                 <div className="hidden md:grid md:grid-cols-3 gap-4 w-full"> {Array(9).fill(0).map((_, i) => <SkeletonButton key={i} />)} </div>
