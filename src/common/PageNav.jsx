@@ -16,7 +16,7 @@ export default function PageNav({ hideSearch = false }) {
       {!hideSearch && (
         <Link
           to="/search"
-          className="inline-flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 bg-white"
+          className="inline-flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 active:scale-95 bg-white"
           title="Search"
         >
           <SafeIcon icon={FiSearch} className="h-5 w-5" style={{ color: '#cc4733' }} />
@@ -24,7 +24,7 @@ export default function PageNav({ hideSearch = false }) {
       )}
       <Link
         to="/"
-        className="inline-flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105"
+        className="inline-flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 active:scale-95"
         style={{ backgroundColor: '#cc4733' }}
         title="Back to Home"
       >

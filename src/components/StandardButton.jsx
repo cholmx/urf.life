@@ -10,7 +10,7 @@ const StandardButton = ({
   className = '',
   fullWidth = false
 }) => {
-  const baseClasses = "inline-flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-semibold font-heading uppercase tracking-wide transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed";
+  const baseClasses = "inline-flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-semibold font-heading uppercase tracking-wide transition-all duration-300 active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100";
   const colorClasses = "bg-brand-yellow text-gray-700 hover:bg-brand-blue hover:text-white";
   const widthClasses = fullWidth ? "w-full" : "";
 
