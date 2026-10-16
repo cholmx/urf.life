@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import PageNav from '../common/PageNav';
-import { LoadingSpinner } from '../components/LoadingSpinner';
+import { SkeletonEpisode, LoadingTransition } from '../components/LoadingSkeletons';
 import AudioPlayer from '../components/AudioPlayer';
 import yellowPodcastRSSService from '../lib/yellowPodcastRSS';
 import StandardButton from '../components/StandardButton';
@@ -87,17 +87,6 @@ const Yellow = () => {
   const displayedEpisodes = filteredEpisodes.slice(0, showMoreCount);
   const hasMoreEpisodes = filteredEpisodes.length > showMoreCount;
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-accent py-12 flex items-center justify-center">
-        <div className="text-center">
-          <LoadingSpinner size="lg" className="justify-center mb-4" />
-          <p className="text-text-primary font-inter">Loading episodes...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-accent py-12 relative">
       <PageNav />
@@ -171,6 +160,15 @@ const Yellow = () => {
         </motion.div>
 
         {/* Episodes List */}
+        <LoadingTransition
+          isLoading={loading}
+          skeleton={
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold text-text-primary font-inter">Episodes</h2>
+              {Array.from({ length: 5 }).map((_, i) => <SkeletonEpisode key={i} />)}
+            </div>
+          }
+        >
         {podcastData.episodes && podcastData.episodes.length > 0 && (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-text-primary font-inter">
@@ -313,6 +311,7 @@ const Yellow = () => {
             </p>
           </motion.div>
         )}
+        </LoadingTransition>
       </div>
 
       {/* Audio Player */}

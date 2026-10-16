@@ -4,7 +4,7 @@ import {motion} from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import PageNav from '../common/PageNav';
-import { LoadingSpinner } from '../components/LoadingSpinner';
+import {SkeletonCard,LoadingTransition} from '../components/LoadingSkeletons';
 import supabase from '../lib/supabase';
 import {parseLocalDate} from '../utils/dateFormat';
 
@@ -120,17 +120,6 @@ const DailyDevotionals=()=> {
     return currentIndex < availableDates.length - 1;
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-accent py-12 flex items-center justify-center">
-        <div className="text-center">
-          <LoadingSpinner size="lg" className="justify-center mb-4" />
-          <p className="text-text-primary font-inter">Loading devotionals...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-accent py-12 relative">
       <PageNav />
@@ -162,6 +151,10 @@ const DailyDevotionals=()=> {
         </div>
 
         {/* Main Content */}
+        <LoadingTransition
+          isLoading={loading}
+          skeleton={<SkeletonCard lines={6} showMeta={false} rounded="rounded-lg" shadow="shadow-md" padding="p-8" />}
+        >
         {devotionals.length===0 ? (
           <motion.div 
             initial={{opacity: 0,y: 30}} 
@@ -281,6 +274,7 @@ const DailyDevotionals=()=> {
             </div>
           </motion.div>
         )}
+        </LoadingTransition>
       </div>
     </div>
   );

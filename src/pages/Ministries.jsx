@@ -4,7 +4,7 @@ import {motion} from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import PageNav from '../common/PageNav';
-import { LoadingSpinner } from '../components/LoadingSpinner';
+import {SkeletonCard,LoadingTransition} from '../components/LoadingSkeletons';
 import supabase from '../lib/supabase';
 import {sanitizeHtml} from '../utils/sanitizeHtml';
 
@@ -61,17 +61,6 @@ const Ministries=()=> {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-accent py-12 flex items-center justify-center">
-        <div className="text-center">
-          <LoadingSpinner size="lg" className="justify-center mb-4" />
-          <p className="text-text-primary">Loading opportunities...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-accent py-12 relative">
       <PageNav />
@@ -104,6 +93,14 @@ const Ministries=()=> {
 
         {/* Ministries List */}
         <div className="space-y-8">
+          <LoadingTransition
+            isLoading={loading}
+            skeleton={
+              <div className="space-y-8">
+                {Array.from({length: 3}).map((_,i)=> <SkeletonCard key={i} lines={4} />)}
+              </div>
+            }
+          >
           {ministries.length===0 ? (
             <motion.div
               initial={{opacity: 0,y: 30}}
@@ -191,10 +188,11 @@ const Ministries=()=> {
               </motion.article>
             ))
           )}
+          </LoadingTransition>
         </div>
 
         {/* Get Involved Section */}
-        {ministries.length > 0 && (
+        {!loading && ministries.length > 0 && (
           <motion.div
             initial={{opacity: 0,y: 30}}
             animate={{opacity: 1,y: 0}}

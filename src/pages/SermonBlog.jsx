@@ -4,7 +4,7 @@ import {motion} from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import PageNav from '../common/PageNav';
-import { LoadingSpinner } from '../components/LoadingSpinner';
+import {SkeletonCard,LoadingTransition} from '../components/LoadingSkeletons';
 import {useCleanContent} from '../hooks/useCleanContent';
 import supabase from '../lib/supabase';
 import {formatDate} from '../utils/dateFormat';
@@ -93,17 +93,6 @@ const SermonBlog=()=> {
     setCurrentPage(pageNumber);
     window.scrollTo({top: 0,behavior: 'smooth'});
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-accent py-12 flex items-center justify-center">
-        <div className="text-center">
-          <LoadingSpinner size="lg" className="justify-center mb-4" />
-          <p className="text-text-primary font-inter">Loading sermons...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-accent py-12 relative">
@@ -215,6 +204,14 @@ const SermonBlog=()=> {
 
         {/* Sermons List */}
         <div className="space-y-12">
+          <LoadingTransition
+            isLoading={loading}
+            skeleton={
+              <div className="space-y-12">
+                {Array.from({length: 2}).map((_,i)=> <SkeletonCard key={i} showImage lines={4} rounded="rounded-2xl" padding="p-8" />)}
+              </div>
+            }
+          >
           {currentSermons.length===0 ? (
             <motion.div
               initial={{opacity: 0,y: 20}}
@@ -327,10 +324,11 @@ const SermonBlog=()=> {
               </motion.div>
             ))
           )}
+          </LoadingTransition>
         </div>
 
         {/* Pagination Controls */}
-        {filteredSermons.length > sermonsPerPage && (
+        {!loading && filteredSermons.length > sermonsPerPage && (
           <motion.div
             initial={{opacity: 0,y: 30}}
             animate={{opacity: 1,y: 0}}
