@@ -1,9 +1,10 @@
 import { useState, useMemo } from 'react';
-import { C, font } from '../../lib/theme';
+import { C, font, scopeChipColors, happeningTypeChipColors, recurringChipColor } from '../../lib/theme';
 import { btnPrimary, btnGhost } from '../ui/inputs';
 import { AnnouncementCard } from './AnnouncementCard';
 import { AnnouncementForm } from './AnnouncementForm';
 import { isSlideActive } from '../../lib/helpers';
+import { HAPPENING_TYPE_OPTIONS, SCOPE_OPTIONS } from '../../lib/constants';
 import type { Announcement, DestinationKey } from '../../types';
 
 interface ManageTabProps {
@@ -26,18 +27,28 @@ interface ManageTabProps {
 export function ManageTab({ announcements, today, onSave, onDelete, onTogglePublish, onToggleDestination, editing, setEditing, copySource, setCopySource, loading, onError, onOpenSignupSheet, onNavigateTab }: ManageTabProps) {
   const [search, setSearch] = useState('');
   const [justSaved, setJustSaved] = useState<Announcement | null>(null);
+  const [typeFilter, setTypeFilter] = useState<string | null>(null);
+  const [scopeFilter, setScopeFilter] = useState<string | null>(null);
+  const [recurringOnly, setRecurringOnly] = useState(false);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return announcements;
-    return announcements.filter(a =>
-      a.title.toLowerCase().includes(q) ||
-      (a.flyer_text || '').toLowerCase().includes(q) ||
-      (a.description || '').toLowerCase().includes(q) ||
-      (a.assigned_to || '').toLowerCase().includes(q) ||
-      a.category.toLowerCase().includes(q)
-    );
-  }, [announcements, search]);
+    return announcements.filter(a => {
+      if (typeFilter && a.happening_type !== typeFilter) return false;
+      if (scopeFilter && a.scope !== scopeFilter) return false;
+      if (recurringOnly && !a.is_recurring) return false;
+      if (!q) return true;
+      return (
+        a.title.toLowerCase().includes(q) ||
+        (a.flyer_text || '').toLowerCase().includes(q) ||
+        (a.description || '').toLowerCase().includes(q) ||
+        (a.assigned_to || '').toLowerCase().includes(q) ||
+        a.category.toLowerCase().includes(q)
+      );
+    });
+  }, [announcements, search, typeFilter, scopeFilter, recurringOnly]);
+
+  const anyFilterActive = !!typeFilter || !!scopeFilter || recurringOnly;
 
   const slidesPending = useMemo(
     () => announcements.filter(a => isSlideActive(a, today) && !a.slide_made),
@@ -110,7 +121,7 @@ export function ManageTab({ announcements, today, onSave, onDelete, onTogglePubl
 
       {/* Search bar */}
       {!loading && announcements.length > 0 && (
-        <div style={{ marginBottom: 16 }}>
+        <div style={{ marginBottom: 10 }}>
           <input
             type="text"
             placeholder="Search by title, text, assignee, category..."
@@ -129,6 +140,49 @@ export function ManageTab({ announcements, today, onSave, onDelete, onTogglePubl
               boxSizing: 'border-box',
             }}
           />
+        </div>
+      )}
+
+      {/* Filter chips */}
+      {!loading && announcements.length > 0 && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
+          {HAPPENING_TYPE_OPTIONS.map(opt => (
+            <FilterChip
+              key={opt.value}
+              label={opt.label}
+              active={typeFilter === opt.value}
+              colors={happeningTypeChipColors[opt.value]}
+              onClick={() => setTypeFilter(v => v === opt.value ? null : opt.value)}
+            />
+          ))}
+          <span style={{ width: 1, height: 16, background: C.border, margin: '0 2px' }} />
+          {SCOPE_OPTIONS.map(opt => (
+            <FilterChip
+              key={opt.value}
+              label={opt.label}
+              active={scopeFilter === opt.value}
+              colors={scopeChipColors[opt.value]}
+              onClick={() => setScopeFilter(v => v === opt.value ? null : opt.value)}
+            />
+          ))}
+          <span style={{ width: 1, height: 16, background: C.border, margin: '0 2px' }} />
+          <FilterChip
+            label="Recurring"
+            active={recurringOnly}
+            colors={recurringChipColor}
+            onClick={() => setRecurringOnly(v => !v)}
+          />
+          {anyFilterActive && (
+            <button
+              onClick={() => { setTypeFilter(null); setScopeFilter(null); setRecurringOnly(false); }}
+              style={{
+                fontFamily: font.display, fontSize: 10, fontWeight: 700, color: C.textMuted,
+                background: 'none', border: 'none', cursor: 'pointer', padding: '4px 6px', letterSpacing: '0.03em', textTransform: 'uppercase',
+              }}
+            >
+              Clear filters
+            </button>
+          )}
         </div>
       )}
 
@@ -151,7 +205,7 @@ export function ManageTab({ announcements, today, onSave, onDelete, onTogglePubl
 
       {!loading && filtered.length === 0 && announcements.length > 0 && (
         <div style={{ textAlign: 'center', padding: '48px 24px', color: C.textMuted, fontFamily: font.body, fontSize: 13 }}>
-          No announcements match your search.
+          No announcements match your search{anyFilterActive ? ' and filters' : ''}.
         </div>
       )}
 
@@ -224,6 +278,33 @@ function SavedNextSteps({ saved, onNavigateTab, onOpenSignupSheet, onDismiss }: 
         Dismiss
       </button>
     </div>
+  );
+}
+
+// Toggleable chip for the type/scope/recurring filter row - unselected
+// chips stay neutral outline so the active ones (using the same colors
+// as the badges on each card) are what draws the eye.
+function FilterChip({ label, active, colors, onClick }: {
+  label: string;
+  active: boolean;
+  colors: { bg: string; text: string; border: string };
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        fontFamily: font.display, fontSize: 11, fontWeight: 700, letterSpacing: '0.02em',
+        padding: '4px 10px', borderRadius: 999, cursor: 'pointer',
+        color: active ? colors.text : C.textMuted,
+        background: active ? colors.bg : C.card,
+        border: `1px solid ${active ? colors.border : C.border}`,
+        transition: 'all 0.15s',
+      }}
+    >
+      {label}
+    </button>
   );
 }
 
