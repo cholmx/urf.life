@@ -8,6 +8,7 @@ import { useConfirm } from '../hooks/useConfirm';
 import { formatDate, getTodayDateString } from '../utils/dateFormat';
 import { SkeletonBox, LoadingTransition } from './LoadingSkeletons';
 import { findRoomConflicts } from './rentalConflicts';
+import { ROOM_OPTIONS, SERVICE_OPTIONS, DEFAULT_PRICING, mergePricing } from '../lib/rentalPricing';
 
 const { FiCalendar, FiUser, FiMail, FiPhone, FiDollarSign, FiMapPin, FiChevronDown, FiChevronUp, FiTrash2, FiSave, FiInbox, FiHome, FiPrinter, FiArchive, FiRotateCcw, FiAlertTriangle } = FiIcons;
 
@@ -26,6 +27,27 @@ function printRow(label, value) {
   </tr>`;
 }
 
+// Expands a stored price_breakdown into the same per-line rows the admin
+// card and the price preview on the form itself show, for the printed
+// paper copy - falls back to just the one Estimated Total row for
+// requests submitted before price_breakdown existed.
+function breakdownPrintRows(r) {
+  const b = r.price_breakdown;
+  if (!b) return printRow('Estimated Total', `$${Number(r.calculated_total).toFixed(2)}`);
+  const rows = [printRow('Base Fee', `$${b.baseFee.toFixed(2)} (${b.isMember ? 'Member' : 'Non-Member'})`)];
+  for (const room of b.roomBreakdown) {
+    rows.push(printRow(`Room: ${room.label}`, `$${room.amount.toFixed(2)} (${room.duration === 'full' ? 'Full Day' : 'Half Day'})`));
+  }
+  if (b.isMember && b.roomTotal > 0) {
+    rows.push(printRow('Member Discount', `-$${(b.roomTotal - b.roomTotalAfterDiscount).toFixed(2)}`));
+  }
+  for (const svc of b.serviceBreakdown) {
+    rows.push(printRow(`Service: ${svc.label}`, `$${svc.amount.toFixed(2)}`));
+  }
+  rows.push(printRow('Total', `$${b.total.toFixed(2)}`));
+  return rows.join('');
+}
+
 // Hidden-iframe print pattern reused from AnnouncementCard.tsx's printInvite -
 // builds a plain printable summary of one rental request for staff to keep
 // a paper copy of (deposit tracking, coordinator handoff, etc.).
@@ -42,7 +64,7 @@ function printRentalDetails(r) {
     printRow('Member', r.is_member ? 'Yes' : 'No'),
     printRow('Rooms Requested', (r.rooms_requested || []).join(', ') || 'None'),
     printRow('Additional Services', (r.additional_services || []).join(', ') || 'None'),
-    printRow('Estimated Total', `$${Number(r.calculated_total).toFixed(2)}`),
+    breakdownPrintRows(r),
     printRow('Responsible Person', `${r.responsible_first_name} ${r.responsible_last_name}`),
     printRow('Email', r.responsible_email),
     printRow('Phone', r.responsible_phone),
@@ -95,12 +117,68 @@ function printRentalDetails(r) {
   }, 400);
 }
 
+function PriceField({ label, value, onChange, compact }) {
+  return (
+    <div>
+      {!compact && <span className="text-xs font-semibold uppercase tracking-wide text-neutral-400">{label}</span>}
+      <div className={`relative ${compact ? '' : 'mt-1'}`}>
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">$</span>
+        <input
+          type="number"
+          min="0"
+          step="0.01"
+          value={value}
+          onChange={(e) => onChange(Number(e.target.value) || 0)}
+          placeholder={compact ? label : undefined}
+          className="admin-input w-full pl-6"
+        />
+      </div>
+    </div>
+  );
+}
+
 function DetailRow({ label, value }) {
   if (!value) return null;
   return (
     <div>
       <span className="text-xs font-semibold uppercase tracking-wide text-neutral-400">{label}</span>
       <p className="text-sm text-neutral-900 whitespace-pre-wrap">{value}</p>
+    </div>
+  );
+}
+
+// Line-item view of a stored price_breakdown (see rentalPricing.js's
+// calculateRentalTotal) - what the renter was actually quoted at
+// submission time, independent of whatever prices happen to be now.
+function PriceBreakdown({ breakdown }) {
+  return (
+    <div className="bg-neutral-50 rounded-xl p-4 space-y-1.5 mt-2">
+      <div className="flex justify-between text-sm">
+        <span className="text-neutral-600">Base Fee ({breakdown.isMember ? 'Member' : 'Non-Member'})</span>
+        <span className="text-neutral-900 font-medium">${breakdown.baseFee.toFixed(2)}</span>
+      </div>
+      {breakdown.roomBreakdown.map((room) => (
+        <div key={room.id} className="flex justify-between text-sm">
+          <span className="text-neutral-600">{room.label} ({room.duration === 'full' ? 'Full Day' : 'Half Day'})</span>
+          <span className="text-neutral-900 font-medium">${room.amount.toFixed(2)}</span>
+        </div>
+      ))}
+      {breakdown.isMember && breakdown.roomTotal > 0 && (
+        <div className="flex justify-between text-sm text-green-700">
+          <span>Member Discount ({Math.round(breakdown.memberRoomDiscount * 100)}% off rooms)</span>
+          <span>-${(breakdown.roomTotal - breakdown.roomTotalAfterDiscount).toFixed(2)}</span>
+        </div>
+      )}
+      {breakdown.serviceBreakdown.map((svc) => (
+        <div key={svc.id} className="flex justify-between text-sm">
+          <span className="text-neutral-600">{svc.label}</span>
+          <span className="text-neutral-900 font-medium">${svc.amount.toFixed(2)}</span>
+        </div>
+      ))}
+      <div className="flex justify-between text-sm font-semibold pt-1.5 border-t border-neutral-200">
+        <span className="text-neutral-900">Total</span>
+        <span className="text-neutral-900">${breakdown.total.toFixed(2)}</span>
+      </div>
     </div>
   );
 }
@@ -168,10 +246,14 @@ function RentalCard({ r, conflicts, onDelete, onToggleArchive, onSaveNotes }) {
 
           <div>
             <span className="text-xs font-semibold uppercase tracking-wide text-neutral-400">Rooms &amp; Services</span>
-            <p className="text-sm text-neutral-900">
-              {(r.rooms_requested || []).join(', ') || 'None'}
-              {r.additional_services?.length > 0 && <> &middot; {r.additional_services.join(', ')}</>}
-            </p>
+            {r.price_breakdown ? (
+              <PriceBreakdown breakdown={r.price_breakdown} />
+            ) : (
+              <p className="text-sm text-neutral-900">
+                {(r.rooms_requested || []).join(', ') || 'None'}
+                {r.additional_services?.length > 0 && <> &middot; {r.additional_services.join(', ')}</>}
+              </p>
+            )}
           </div>
 
           {conflicts.length > 0 && (
@@ -273,6 +355,8 @@ const AdminRentals = () => {
   const [notificationEmail, setNotificationEmail] = useState('');
   const [loadingSettings, setLoadingSettings] = useState(true);
   const [savingSettings, setSavingSettings] = useState(false);
+  const [pricing, setPricing] = useState(DEFAULT_PRICING);
+  const [savingPricing, setSavingPricing] = useState(false);
 
   useEffect(() => {
     fetchSettings();
@@ -289,11 +373,46 @@ const AdminRentals = () => {
       if (data) {
         setSettingsId(data.id);
         setNotificationEmail(data.notification_email);
+        setPricing(mergePricing(data.pricing));
       }
     } catch (err) {
       console.error('Error fetching rental settings:', err);
     } finally {
       setLoadingSettings(false);
+    }
+  };
+
+  // Shallow-merges one field into pricing (or one room/service rate, via a
+  // dotted path like 'rooms.sanctuary.half') without touching the rest.
+  const updatePricingField = (path, value) => {
+    setPricing((prev) => {
+      const next = { ...prev, rooms: { ...prev.rooms }, services: { ...prev.services } };
+      const parts = path.split('.');
+      if (parts.length === 1) {
+        next[parts[0]] = value;
+      } else {
+        const [group, id, duration] = parts;
+        next[group] = { ...next[group], [id]: { ...next[group][id], [duration]: value } };
+      }
+      return next;
+    });
+  };
+
+  const savePricing = async () => {
+    if (!settingsId) return;
+    setSavingPricing(true);
+    try {
+      const { error } = await supabase
+        .from('facility_rental_settings_portal123')
+        .update({ pricing, updated_at: new Date().toISOString() })
+        .eq('id', settingsId);
+      if (error) throw error;
+      toast.success('Rental pricing updated.');
+    } catch (err) {
+      console.error('Error saving rental pricing:', err);
+      toast.error('Failed to save: ' + err.message);
+    } finally {
+      setSavingPricing(false);
     }
   };
 
@@ -417,6 +536,69 @@ const AdminRentals = () => {
             <button onClick={saveSettings} disabled={savingSettings} className="admin-btn-primary flex-shrink-0">
               <SafeIcon icon={FiSave} className="h-4 w-4" />
               <span>{savingSettings ? 'Saving...' : 'Save'}</span>
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Dollar amounts the /rental form's price preview and calculated_total
+          use. Room/service ids and labels stay fixed in rentalPricing.js -
+          only what each one costs lives here. */}
+      <div className="admin-card">
+        <p className="admin-label">Rental Pricing</p>
+        <p className="text-sm text-neutral-500 mb-4">
+          Changes apply to new requests only - past submissions keep the price breakdown they were quoted at.
+        </p>
+        {loadingSettings ? (
+          <SkeletonBox width="w-full" height="h-40" />
+        ) : (
+          <div className="space-y-5">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <PriceField label="Base Fee (Member)" value={pricing.baseFeeMember} onChange={(v) => updatePricingField('baseFeeMember', v)} />
+              <PriceField label="Base Fee (Non-Member)" value={pricing.baseFeeNonMember} onChange={(v) => updatePricingField('baseFeeNonMember', v)} />
+              <PriceField label="Deposit" value={pricing.depositAmount} onChange={(v) => updatePricingField('depositAmount', v)} />
+              <div>
+                <span className="text-xs font-semibold uppercase tracking-wide text-neutral-400">Member Room Discount (%)</span>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={Math.round(pricing.memberRoomDiscount * 100)}
+                  onChange={(e) => updatePricingField('memberRoomDiscount', (Number(e.target.value) || 0) / 100)}
+                  className="admin-input mt-1 w-full"
+                />
+              </div>
+            </div>
+
+            <div>
+              <span className="text-xs font-semibold uppercase tracking-wide text-neutral-400 block mb-2">Room Rates</span>
+              <div className="space-y-2">
+                {ROOM_OPTIONS.map((room) => (
+                  <div key={room.id} className="grid grid-cols-3 gap-3 items-center">
+                    <span className="text-sm text-neutral-700">{room.label}</span>
+                    <PriceField label="Half Day" value={pricing.rooms[room.id]?.half ?? 0} onChange={(v) => updatePricingField(`rooms.${room.id}.half`, v)} compact />
+                    <PriceField label="Full Day" value={pricing.rooms[room.id]?.full ?? 0} onChange={(v) => updatePricingField(`rooms.${room.id}.full`, v)} compact />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <span className="text-xs font-semibold uppercase tracking-wide text-neutral-400 block mb-2">Service Rates (Sanctuary rentals only)</span>
+              <div className="space-y-2">
+                {SERVICE_OPTIONS.map((svc) => (
+                  <div key={svc.id} className="grid grid-cols-3 gap-3 items-center">
+                    <span className="text-sm text-neutral-700">{svc.label}</span>
+                    <PriceField label="Half Day" value={pricing.services[svc.id]?.half ?? 0} onChange={(v) => updatePricingField(`services.${svc.id}.half`, v)} compact />
+                    <PriceField label="Full Day" value={pricing.services[svc.id]?.full ?? 0} onChange={(v) => updatePricingField(`services.${svc.id}.full`, v)} compact />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <button onClick={savePricing} disabled={savingPricing} className="admin-btn-primary">
+              <SafeIcon icon={FiSave} className="h-4 w-4" />
+              <span>{savingPricing ? 'Saving...' : 'Save Pricing'}</span>
             </button>
           </div>
         )}

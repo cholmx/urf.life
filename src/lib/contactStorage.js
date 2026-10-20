@@ -1,5 +1,6 @@
 import supabase from './supabase';
 import { sendEmail } from './emailService';
+import { mergePricing } from './rentalPricing';
 
 // Each submit function writes to Supabase first - that's now the durable
 // record an admin can see in /admin - then fires the email notification
@@ -95,6 +96,7 @@ export const submitFacilityRentalRequest = async (formData) => {
         rooms_requested: formData.rooms_requested,
         additional_services: formData.additional_services,
         calculated_total: formData.calculated_total,
+        price_breakdown: formData.price_breakdown || null,
         responsible_first_name: formData.responsible_first_name,
         responsible_last_name: formData.responsible_last_name,
         responsible_email: formData.responsible_email,
@@ -118,6 +120,27 @@ export const submitFacilityRentalRequest = async (formData) => {
   } catch (error) {
     console.error('Error submitting facility rental request:', error);
     return { data: null, error: error.message };
+  }
+};
+
+// The /rental form's live price preview needs current pricing before the
+// visitor has signed in to anything - this table's row is anon-readable
+// specifically for that. mergePricing falls back to (and fills in any
+// gaps against) rentalPricing.js's DEFAULT_PRICING, so a settings row
+// that's missing, still loading, or predates a newly added room/service
+// never leaves the form showing $0 for something.
+export const fetchRentalPricing = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('facility_rental_settings_portal123')
+      .select('pricing')
+      .limit(1)
+      .maybeSingle();
+    if (error) throw error;
+    return mergePricing(data?.pricing);
+  } catch (error) {
+    console.error('Error fetching rental pricing:', error);
+    return mergePricing(null);
   }
 };
 

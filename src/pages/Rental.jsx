@@ -1,13 +1,13 @@
-import React,{useState} from 'react';
+import React,{useState,useEffect} from 'react';
 import {Link} from 'react-router-dom';
 import {motion,AnimatePresence} from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import PageNav from '../common/PageNav';
-import {submitFacilityRentalRequest} from '../lib/contactStorage';
+import {submitFacilityRentalRequest,fetchRentalPricing} from '../lib/contactStorage';
 import {useToast} from '../hooks/useToast';
 import {formatTime} from '../utils/dateFormat';
-import {ROOM_OPTIONS,SERVICE_OPTIONS,DEPOSIT_AMOUNT,calculateRentalTotal,roomLabel,serviceLabel} from '../lib/rentalPricing';
+import {ROOM_OPTIONS,SERVICE_OPTIONS,DEFAULT_PRICING,calculateRentalTotal,roomLabel,serviceLabel} from '../lib/rentalPricing';
 
 const {FiKey,FiCheckCircle,FiArrowRight,FiArrowLeft,FiPhone,FiMail,FiClock,FiUser,FiExternalLink,FiDollarSign}=FiIcons;
 
@@ -70,6 +70,11 @@ const Rental=()=> {
   // message (e.g. "Event name is required.") also highlight the specific
   // field, instead of leaving the reader to scan the whole step for it.
   const [invalidField,setInvalidField]=useState(null);
+  const [pricingConfig,setPricingConfig]=useState(DEFAULT_PRICING);
+
+  useEffect(()=> {
+    fetchRentalPricing().then(setPricingConfig);
+  },[]);
 
   const set=(key,value)=> {
     setFormData((prev)=> ({...prev,[key]: value}));
@@ -104,6 +109,7 @@ const Rental=()=> {
     isMember: formData.is_member===true,
     rooms: formData.rooms,
     services: formData.additional_services,
+    pricing: pricingConfig,
   });
   const hasRoomsSelected=Object.keys(formData.rooms).length > 0;
   const sanctuaryDuration=formData.rooms.sanctuary;
@@ -186,6 +192,7 @@ const Rental=()=> {
         rooms_requested: roomsRequested,
         additional_services: additionalServices,
         calculated_total: pricing.total,
+        price_breakdown: pricing,
         responsible_first_name: formData.responsible_first_name,
         responsible_last_name: formData.responsible_last_name,
         responsible_email: formData.responsible_email,
@@ -493,7 +500,7 @@ const Rental=()=> {
                                 formData.rooms[room.id]===duration ? 'border-primary bg-primary/10 text-primary' : 'border-accent-dark bg-white text-text-light hover:border-primary/50'
                               }`}
                             >
-                              {duration==='half' ? 'Half Day' : 'Full Day'} ${room[duration].toFixed(2)}
+                              {duration==='half' ? 'Half Day' : 'Full Day'} ${(pricingConfig.rooms[room.id]?.[duration] ?? 0).toFixed(2)}
                             </button>
                           ))}
                         </div>
@@ -522,7 +529,7 @@ const Rental=()=> {
                             }`}
                           >
                             <span className="font-medium">{svc.label}</span>
-                            <span>${svc[sanctuaryDuration].toFixed(2)}</span>
+                            <span>${(pricingConfig.services[svc.id]?.[sanctuaryDuration] ?? 0).toFixed(2)}</span>
                           </button>
                         );
                       })}
@@ -547,7 +554,7 @@ const Rental=()=> {
                     <span>${pricing.total.toFixed(2)}</span>
                   </div>
                   <p className="text-xs text-text-light mt-2">
-                    Plus a separate ${DEPOSIT_AMOUNT.toFixed(2)} refundable security deposit, paid by check once approved.
+                    Plus a separate ${pricingConfig.depositAmount.toFixed(2)} refundable security deposit, paid by check once approved.
                   </p>
                 </div>
               </div>
@@ -615,7 +622,7 @@ const Rental=()=> {
                 <div className="form-section">
                   <p className="form-section-title">Deposit Information</p>
                   <ul className="text-sm text-text-primary space-y-1.5 list-disc list-inside">
-                    <li>A ${DEPOSIT_AMOUNT.toFixed(2)} refundable security deposit is required with your reservation form</li>
+                    <li>A ${pricingConfig.depositAmount.toFixed(2)} refundable security deposit is required with your reservation form</li>
                     <li>This deposit is SEPARATE from your rental fee/final payment</li>
                     <li>Submit deposit as a separate check made payable to Upper Room Fellowship, in person during office hours or by mail to:</li>
                   </ul>
