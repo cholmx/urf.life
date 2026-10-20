@@ -572,6 +572,11 @@ const AdminRentals = () => {
 
             <div>
               <span className="text-xs font-semibold uppercase tracking-wide text-neutral-400 block mb-2">Room Rates</span>
+              <div className="grid grid-cols-3 gap-3 mb-1.5">
+                <span></span>
+                <span className="text-xs font-semibold uppercase tracking-wide text-neutral-400">Half Day</span>
+                <span className="text-xs font-semibold uppercase tracking-wide text-neutral-400">Full Day</span>
+              </div>
               <div className="space-y-2">
                 {ROOM_OPTIONS.map((room) => (
                   <div key={room.id} className="grid grid-cols-3 gap-3 items-center">
@@ -585,6 +590,11 @@ const AdminRentals = () => {
 
             <div>
               <span className="text-xs font-semibold uppercase tracking-wide text-neutral-400 block mb-2">Service Rates (Sanctuary rentals only)</span>
+              <div className="grid grid-cols-3 gap-3 mb-1.5">
+                <span></span>
+                <span className="text-xs font-semibold uppercase tracking-wide text-neutral-400">Half Day</span>
+                <span className="text-xs font-semibold uppercase tracking-wide text-neutral-400">Full Day</span>
+              </div>
               <div className="space-y-2">
                 {SERVICE_OPTIONS.map((svc) => (
                   <div key={svc.id} className="grid grid-cols-3 gap-3 items-center">
