@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isArchived, isClassListingActive, getLastRelevantDate, isMonthlyActive, isFlyerTextStale } from './helpers';
+import { isArchived, isClassListingActive, getLastRelevantDate, isMonthlyActive, isFlyerTextStale, buildHappeningsScript } from './helpers';
 import { getNextOccurrenceDate } from './calendar-grid';
 import type { Announcement } from '../types';
 
@@ -240,5 +240,55 @@ describe('isMonthlyActive', () => {
     });
     expect(isMonthlyActive(a, OCT_TODAY)).toBe(true);
     expect(isMonthlyActive(a, '2026-09-29')).toBe(false);
+  });
+});
+
+// Shared by the admin Happenings tab's live preview and the public
+// /announcements page's live render - both must always produce identical
+// output for the same items, with no separate build/save step in between.
+describe('buildHappeningsScript', () => {
+  it('falls back to a friendly message when nothing is active', () => {
+    expect(buildHappeningsScript([])).toContain('Nothing officially scheduled this week');
+  });
+
+  it('includes the title, when/where, and description', () => {
+    const a = makeAnnouncement({
+      title: 'Men\'s Breakfast',
+      event_date: '2026-11-07',
+      event_time: '08:00',
+      event_location: 'Fellowship Hall',
+      flyer_text: 'Join us for food and fellowship.',
+    });
+    const html = buildHappeningsScript([a]);
+    expect(html).toContain('<h3>Men\'s Breakfast</h3>');
+    expect(html).toContain('Fellowship Hall');
+    expect(html).toContain('Join us for food and fellowship.');
+  });
+
+  it('prefers recurrence_label over the raw date for recurring items', () => {
+    const a = makeAnnouncement({
+      title: 'Wednesday Bible Study',
+      is_recurring: true,
+      recurrence_type: 'weekly',
+      recurrence_label: 'Every Wednesday',
+      event_date: '2026-11-04',
+    });
+    const html = buildHappeningsScript([a]);
+    expect(html).toContain('Every Wednesday');
+    expect(html).not.toContain('Nov 4');
+  });
+
+  it('links to the registration URL when the item has one', () => {
+    const a = makeAnnouncement({ title: 'Fall Retreat', link: 'https://example.com/retreat' });
+    const html = buildHappeningsScript([a]);
+    expect(html).toContain('href="https://example.com/retreat"');
+    expect(html).toContain('Register Here');
+  });
+
+  it('joins multiple items in order', () => {
+    const a = makeAnnouncement({ title: 'First Item' });
+    const b = makeAnnouncement({ title: 'Second Item' });
+    const html = buildHappeningsScript([a, b]);
+    expect(html.indexOf('First Item')).toBeLessThan(html.indexOf('Second Item'));
   });
 });

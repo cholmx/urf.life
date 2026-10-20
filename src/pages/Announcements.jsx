@@ -10,55 +10,56 @@ import supabase from '../lib/supabase';
 import {formatDate,getTodayDateString} from '../utils/dateFormat';
 import {ensureScriptHtml} from '../lib/textToHtml';
 import {sanitizeHtml} from '../utils/sanitizeHtml';
-import {getWeekStartDate} from '../staffComms/lib/helpers';
+import {getWeekStartDate,isHappeningsActive,buildHappeningsScript} from '../staffComms/lib/helpers';
 
 const {FiMail}=FiIcons;
 
 const Announcements=()=> {
-  const [script,setScript]=useState(null);
+  const [weekDate,setWeekDate]=useState(null);
+  const [html,setHtml]=useState('');
   const [loading,setLoading]=useState(true);
 
   // Use the custom hook to clean inline styles
   useCleanContent();
 
   useEffect(()=> {
-    fetchLatestScript();
+    fetchHappenings();
   },[]);
 
-  const fetchLatestScript=async ()=> {
+  const fetchHappenings=async ()=> {
     try {
-      // Prefer this calendar week's own script (keyed by its Sunday - see
-      // HappeningsTab). Falling back to "most recent by week_date" alone
-      // isn't safe: a row saved before week_date was Sunday-anchored can
-      // carry a date later in the week than this week's real Sunday (e.g.
-      // a Friday build outranking Sunday numerically), which would keep
-      // outranking this week's correct row forever. Only fall back to
-      // "most recent" when this week doesn't have its own row yet - staff
-      // would rather visitors see last week's than nothing at all.
-      const thisWeekSunday=getWeekStartDate(getTodayDateString());
-      const {data: thisWeek,error: thisWeekError}=await supabase
+      const today=getTodayDateString();
+      const thisWeekSunday=getWeekStartDate(today);
+
+      // The list itself is always live - same announcement data and the
+      // same assembly logic the admin Happenings tab previews, so this
+      // page never needs anyone to have "built" anything first.
+      const {data: items,error: itemsError}=await supabase
+        .from('staff_announcements_portal123')
+        .select('*')
+        .eq('is_published',true)
+        .eq('show_in_happenings',true);
+      if (itemsError) throw itemsError;
+      const active=(items || []).filter(a=> isHappeningsActive(a,today));
+      const assembledHtml=buildHappeningsScript(active);
+
+      // The Weekly Note is the one piece staff actually write and save -
+      // only shown if they've written one for this exact week, no
+      // fallback to a prior week's (that would read as stale/confusing
+      // next to an always-current list).
+      const {data: noteRow,error: noteError}=await supabase
         .from('staff_generated_scripts_portal123')
-        .select('content,week_date')
+        .select('content')
         .eq('type','happenings')
         .eq('week_date',thisWeekSunday)
         .maybeSingle();
-      if (thisWeekError) throw thisWeekError;
+      if (noteError) throw noteError;
+      const noteHtml=noteRow?.content ? ensureScriptHtml(noteRow.content) : '';
 
-      if (thisWeek) {
-        setScript(thisWeek);
-      } else {
-        const {data: fallback,error: fallbackError}=await supabase
-          .from('staff_generated_scripts_portal123')
-          .select('content,week_date')
-          .eq('type','happenings')
-          .order('week_date',{ascending: false})
-          .limit(1)
-          .maybeSingle();
-        if (fallbackError) throw fallbackError;
-        setScript(fallback || null);
-      }
+      setWeekDate(thisWeekSunday);
+      setHtml(noteHtml + assembledHtml);
     } catch (error) {
-      console.error('Error fetching the Happenings script:',error);
+      console.error('Error fetching the Happenings:',error);
     } finally {
       // Add minimum delay to show skeleton
       setTimeout(()=> setLoading(false),600);
@@ -88,7 +89,7 @@ const Announcements=()=> {
             transition={{duration: 0.8,delay: 0.2}}
             className="text-base page-subtitle"
           >
-            {script?.week_date ? `Week of ${formatDate(script.week_date)}` : 'What’s happening around the church'}
+            {weekDate ? `Week of ${formatDate(weekDate)}` : 'What’s happening around the church'}
           </motion.p>
         </div>
 
@@ -107,7 +108,7 @@ const Announcements=()=> {
             </div>
           }
         >
-          {!script?.content ? (
+          {!html ? (
             <motion.div
               initial={{opacity: 0,y: 20}}
               animate={{opacity: 1,y: 0}}
@@ -128,7 +129,7 @@ const Announcements=()=> {
             >
               <div
                 className="happenings-script p-8 md:p-10 text-text-primary text-[17px]"
-                dangerouslySetInnerHTML={{__html: sanitizeHtml(ensureScriptHtml(script.content))}}
+                dangerouslySetInnerHTML={{__html: sanitizeHtml(html)}}
               />
             </motion.div>
           )}

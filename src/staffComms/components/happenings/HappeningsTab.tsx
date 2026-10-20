@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { C, font } from '../../lib/theme';
 import { btnGhost, btnPrimary } from '../ui/inputs';
-import { isHappeningsActive, formatDateNice, formatTime12h, escapeHtml, scriptTextToHtml, scriptHtmlToText, looksLikeHtml, getWeekStartDate } from '../../lib/helpers';
+import { isHappeningsActive, formatDateNice, scriptHtmlToText, looksLikeHtml, getWeekStartDate, buildHappeningsScript } from '../../lib/helpers';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { supabase } from '../../lib/supabase';
+import { sanitizeHtml } from '../../../utils/sanitizeHtml';
 import { Radio } from 'lucide-react';
-import type { Announcement, RecurrenceType } from '../../types';
+import type { Announcement } from '../../types';
 import { ScriptEditor } from './ScriptEditor';
 
 interface HappeningsTabProps {
@@ -13,74 +14,32 @@ interface HappeningsTabProps {
   today: string;
 }
 
-const RECURRING_TYPES: RecurrenceType[] = ['weekly', 'biweekly', 'monthly', 'date_range'];
-
-// Mirrors the "when" label shown elsewhere (e.g. the printed weekly
-// bulletin) - prefer the human-written recurrence_label for anything that
-// repeats, otherwise fall back to the actual date(s).
-function whenLabel(a: Announcement): string {
-  if (RECURRING_TYPES.includes(a.recurrence_type) && a.recurrence_label) return a.recurrence_label;
-  if (a.event_date) return formatDateNice(a.event_date);
-  if (a.event_dates?.length) return a.event_dates.map(formatDateNice).join(', ');
-  return '';
-}
-
-// Assembles this week's active items into the Happenings update HTML,
-// verbatim - each item's own Description (the same copy used for the
-// Monthly Flyer/Bulletin and printed Invite) becomes its body text
-// unchanged, with only the title (Title format) and when/where (Bold
-// format) added around it. No AI rewriting: what staff already wrote for
-// the item is what goes out.
-function buildAssembledScript(items: Announcement[]): string {
-  if (items.length === 0) {
-    return scriptTextToHtml(`Nothing officially scheduled this week, but we'd still love to see you. Check urf.life for anything that might come up.`);
-  }
-  const sections = items.map(a => {
-    const description = (a.flyer_text || a.short_version || '').trim();
-    const whenWhere = [
-      [whenLabel(a), a.event_time ? formatTime12h(a.event_time) : ''].filter(Boolean).join(' · '),
-      a.event_location || '',
-    ].filter(Boolean).join(' · ');
-
-    let html = `<h3>${escapeHtml(a.title)}</h3>`;
-    if (whenWhere) html += `<p><strong>${escapeHtml(whenWhere)}</strong></p>`;
-    if (description) html += scriptTextToHtml(description);
-    if (a.link) html += `<p><a href="${escapeHtml(a.link)}" target="_blank" rel="noopener noreferrer">Register Here</a></p>`;
-    return html;
-  });
-  return sections.join('');
-}
-
+// The announcement list below is always live - computed fresh from
+// current data on every render, exactly like the public page does, so
+// there's nothing to build or go stale. The only thing staff actually
+// edit and save here is the Weekly Note, a few lines of free text that
+// isn't tied to any announcement (a greeting, a one-off heads-up, a
+// correction) which the public page prepends to that same live list.
 export function HappeningsTab({ announcements, today }: HappeningsTabProps) {
-  const [script, setScript] = useState('');
+  const [note, setNote] = useState('');
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [confirmRegenerate, setConfirmRegenerate] = useState(false);
-  const [building, setBuilding] = useState(false);
-  const [loadingScript, setLoadingScript] = useState(true);
-  const [buildError, setBuildError] = useState('');
+  const [loadingNote, setLoadingNote] = useState(true);
   const [copied, copy] = useCopyToClipboard();
 
   const active = announcements.filter(a => isHappeningsActive(a, today));
-  const grouped: Record<string, Announcement[]> = {};
-  active.forEach(a => {
-    if (!grouped[a.category]) grouped[a.category] = [];
-    grouped[a.category].push(a);
-  });
+  const assembledHtml = useMemo(() => buildHappeningsScript(active), [active]);
 
-  // Weeks run Sunday-Saturday - anchor the saved script to that week's
-  // Sunday, not the literal day it happens to be built on. Otherwise
-  // building on, say, a Friday saves under Friday's date: the public page
-  // shows "Week of [Friday]" instead of the week's actual Sunday, and
-  // rebuilding later in the same week (a different weekday) creates a
-  // whole separate row instead of updating this one.
+  // Weeks run Sunday-Saturday - anchor the saved note to that week's
+  // Sunday, not the literal day it happens to be edited on, so editing
+  // the note later in the same week updates the same row instead of
+  // creating a separate one (see the public page's own matching lookup).
   const weekStartDate = getWeekStartDate(today);
 
   useEffect(() => {
-    setScript('');
+    setNote('');
     setDirty(false);
-    setConfirmRegenerate(false);
-    setLoadingScript(true);
+    setLoadingNote(true);
     supabase
       .from('staff_generated_scripts_portal123')
       .select('content')
@@ -88,65 +47,30 @@ export function HappeningsTab({ announcements, today }: HappeningsTabProps) {
       .eq('week_date', weekStartDate)
       .maybeSingle()
       .then(({ data }) => {
-        setLoadingScript(false);
+        setLoadingNote(false);
         if (data?.content) {
-          // Scripts saved before the rich-text editor was added are plain
+          // Rows saved before the rich-text editor was added are plain
           // text, not HTML - convert on the way in so they still render
           // (and format) correctly in ScriptEditor.
-          setScript(looksLikeHtml(data.content) ? data.content : scriptTextToHtml(data.content));
-        } else {
-          // Nothing drafted yet for this week - draft it automatically
-          // from this week's active items instead of making staff open
-          // the tab to an empty page and have to click Build Update
-          // themselves. Still just the same deterministic assembly
-          // (no AI) runAssemble always did - editing or rebuilding from
-          // here on works exactly as before.
-          runAssemble();
+          setNote(looksLikeHtml(data.content) ? data.content : `<p>${data.content}</p>`);
         }
       });
   }, [weekStartDate]);
 
-  const saveScript = async (content: string) => {
-    await supabase.from('staff_generated_scripts_portal123').upsert(
-      { type: 'happenings', week_date: weekStartDate, content },
-      { onConflict: 'type,week_date,user_id' },
-    );
-  };
-
   const handleSave = async () => {
     setSaving(true);
     try {
-      await saveScript(script);
+      await supabase.from('staff_generated_scripts_portal123').upsert(
+        { type: 'happenings', week_date: weekStartDate, content: note },
+        { onConflict: 'type,week_date,user_id' },
+      );
       setDirty(false);
     } finally {
       setSaving(false);
     }
   };
 
-  const runAssemble = async () => {
-    const allItems = Object.values(grouped).flat();
-    setBuilding(true);
-    setBuildError('');
-    setConfirmRegenerate(false);
-    try {
-      const html = buildAssembledScript(allItems);
-      setScript(html);
-      setDirty(false);
-      await saveScript(html);
-    } catch (e) {
-      setBuildError(e instanceof Error ? e.message : 'Failed to save');
-    } finally {
-      setBuilding(false);
-    }
-  };
-
-  const handleBuildClick = () => {
-    if (dirty && script) {
-      setConfirmRegenerate(true);
-      return;
-    }
-    runAssemble();
-  };
+  const fullText = scriptHtmlToText(`${note}${assembledHtml}`);
 
   return (
     <div>
@@ -159,36 +83,32 @@ export function HappeningsTab({ announcements, today }: HappeningsTabProps) {
             <p style={{ fontFamily: font.mono, fontSize: 11, color: C.textMuted, margin: 0, letterSpacing: '0.03em' }}>
               {active.length} items · week of {formatDateNice(weekStartDate)}
             </p>
-            {script && (
-              <span style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 4,
-                fontFamily: font.mono,
-                fontSize: 10,
-                fontWeight: 600,
-                color: C.success,
-                background: C.successBg,
-                border: `1px solid ${C.success}30`,
-                borderRadius: 999,
-                padding: '2px 8px',
-                letterSpacing: '0.04em',
-              }}>
-                <Radio size={10} strokeWidth={2.5} />
-                Live on urf.life
-              </span>
-            )}
+            <span style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+              fontFamily: font.mono,
+              fontSize: 10,
+              fontWeight: 600,
+              color: C.success,
+              background: C.successBg,
+              border: `1px solid ${C.success}30`,
+              borderRadius: 999,
+              padding: '2px 8px',
+              letterSpacing: '0.04em',
+            }}>
+              <Radio size={10} strokeWidth={2.5} />
+              Always live on urf.life
+            </span>
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-          {script && !building && (
-            <button
-              onClick={() => copy(scriptHtmlToText(script))}
-              style={{ ...btnGhost, fontSize: 12, padding: '7px 14px', color: copied ? C.accent : C.textSec }}
-            >
-              {copied ? 'Copied!' : 'Copy Script'}
-            </button>
-          )}
+          <button
+            onClick={() => copy(fullText)}
+            style={{ ...btnGhost, fontSize: 12, padding: '7px 14px', color: copied ? C.accent : C.textSec }}
+          >
+            {copied ? 'Copied!' : 'Copy Full Text'}
+          </button>
           {dirty && (
             <button
               onClick={handleSave}
@@ -201,71 +121,50 @@ export function HappeningsTab({ announcements, today }: HappeningsTabProps) {
                 cursor: saving ? 'wait' : 'pointer',
               }}
             >
-              {saving ? 'Saving...' : 'Save'}
-            </button>
-          )}
-          {confirmRegenerate ? (
-            <>
-              <button
-                onClick={() => setConfirmRegenerate(false)}
-                style={{ ...btnGhost, fontSize: 12, padding: '7px 14px' }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={runAssemble}
-                style={{ ...btnPrimary, fontSize: 12, padding: '7px 16px', background: C.warn }}
-              >
-                Overwrite unsaved edits
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={handleBuildClick}
-              disabled={building}
-              style={{
-                ...(script ? btnGhost : btnPrimary),
-                fontSize: 12,
-                padding: '7px 16px',
-                opacity: building ? 0.7 : 1,
-                cursor: building ? 'wait' : 'pointer',
-              }}
-            >
-              {building ? 'Building...' : script ? 'Rebuild Update' : 'Build Update'}
+              {saving ? 'Saving...' : 'Save Note'}
             </button>
           )}
         </div>
       </div>
 
-      {buildError && (
-        <p style={{ fontFamily: font.body, fontSize: 13, color: C.warn, marginBottom: 12 }}>
-          {buildError}
+      {/* Weekly Note - the only editable part. Not touched by anything
+          else, and included first on the public page, above the live
+          list below. */}
+      <div style={{ marginBottom: 20 }}>
+        <p style={{ fontFamily: font.display, fontSize: 12, fontWeight: 700, color: C.textSec, margin: '0 0 6px', letterSpacing: '0.02em' }}>
+          Weekly Note <span style={{ fontWeight: 400, color: C.textMuted }}>- optional, shown above the list below on the public page</span>
         </p>
-      )}
+        {loadingNote ? (
+          <div style={{ padding: '24px 0', textAlign: 'center', fontFamily: font.body, fontSize: 13, color: C.textMuted }}>
+            Loading...
+          </div>
+        ) : (
+          <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, padding: '20px 24px' }}>
+            {!note && (
+              <p style={{ fontFamily: font.body, fontSize: 13, color: C.textMuted, margin: '0 0 8px' }}>
+                Add a greeting, a one-off note, or anything else that isn't its own announcement...
+              </p>
+            )}
+            <ScriptEditor
+              value={note}
+              onChange={html => { setNote(html); setDirty(true); }}
+            />
+          </div>
+        )}
+      </div>
 
-      {loadingScript ? (
-        <div style={{ padding: '48px 0', textAlign: 'center', fontFamily: font.body, fontSize: 13, color: C.textMuted }}>
-          Loading...
-        </div>
-      ) : (
-        <div style={{
-          background: C.card,
-          border: `1px solid ${C.border}`,
-          borderRadius: 10,
-          padding: '32px 36px',
-        }}>
-          {!script && !building && (
-            <p style={{ fontFamily: font.body, fontSize: 13, color: C.textMuted, margin: '0 0 12px' }}>
-              No update yet for this week. Press "Build Update" to put this week's Full Descriptions together into a Happenings update, or start typing below.
-            </p>
-          )}
-          <ScriptEditor
-            value={script}
-            onChange={html => { setScript(html); setDirty(true); setConfirmRegenerate(false); }}
-            disabled={building}
-          />
-        </div>
-      )}
+      {/* Live list - always exactly what's on the public page right now,
+          nothing to build or save. */}
+      <div>
+        <p style={{ fontFamily: font.display, fontSize: 12, fontWeight: 700, color: C.textSec, margin: '0 0 6px', letterSpacing: '0.02em' }}>
+          This Week's List <span style={{ fontWeight: 400, color: C.textMuted }}>- live, from announcements marked "The Happenings"</span>
+        </p>
+        <div
+          className="happenings-script"
+          style={{ background: C.cardAlt, border: `1px solid ${C.border}`, borderRadius: 10, padding: '20px 24px', color: C.textSec }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(assembledHtml) }}
+        />
+      </div>
     </div>
   );
 }

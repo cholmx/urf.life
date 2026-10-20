@@ -1,4 +1,4 @@
-import type { Announcement } from '../types';
+import type { Announcement, RecurrenceType } from '../types';
 import { getNextOccurrenceDate } from './calendar-grid';
 
 export function getScopeLeadWeeks(scope: Announcement['scope']): number {
@@ -59,6 +59,46 @@ export function isHappeningsActive(a: Announcement, today: string): boolean {
   const start = getAutoHappeningsStartDate(a, today);
   const end = getAutoHappeningsEndDate(a) || '2099-12-31';
   return today >= start && today <= end;
+}
+
+const HAPPENINGS_RECURRING_LABEL_TYPES: RecurrenceType[] = ['weekly', 'biweekly', 'monthly', 'date_range'];
+
+// Mirrors the "when" label shown elsewhere (e.g. the printed weekly
+// bulletin) - prefer the human-written recurrence_label for anything that
+// repeats, otherwise fall back to the actual date(s).
+function happeningsWhenLabel(a: Announcement): string {
+  if (HAPPENINGS_RECURRING_LABEL_TYPES.includes(a.recurrence_type) && a.recurrence_label) return a.recurrence_label;
+  if (a.event_date) return formatDateNice(a.event_date);
+  if (a.event_dates?.length) return a.event_dates.map(formatDateNice).join(', ');
+  return '';
+}
+
+// Assembles this week's active items into the Happenings update HTML,
+// verbatim - each item's own Description (the same copy used for the
+// Monthly Flyer/Bulletin and printed Invite) becomes its body text
+// unchanged, with only the title (Title format) and when/where (Bold
+// format) added around it. No AI rewriting: what staff already wrote for
+// the item is what goes out. Shared by the admin Happenings tab's live
+// preview and the public /announcements page's live render, so both
+// always show exactly the same thing with no separate build/save step.
+export function buildHappeningsScript(items: Announcement[]): string {
+  if (items.length === 0) {
+    return scriptTextToHtml(`Nothing officially scheduled this week, but we'd still love to see you. Check urf.life for anything that might come up.`);
+  }
+  const sections = items.map(a => {
+    const description = (a.flyer_text || a.short_version || '').trim();
+    const whenWhere = [
+      [happeningsWhenLabel(a), a.event_time ? formatTime12h(a.event_time) : ''].filter(Boolean).join(' · '),
+      a.event_location || '',
+    ].filter(Boolean).join(' · ');
+
+    let html = `<h3>${escapeHtml(a.title)}</h3>`;
+    if (whenWhere) html += `<p><strong>${escapeHtml(whenWhere)}</strong></p>`;
+    if (description) html += scriptTextToHtml(description);
+    if (a.link) html += `<p><a href="${escapeHtml(a.link)}" target="_blank" rel="noopener noreferrer">Register Here</a></p>`;
+    return html;
+  });
+  return sections.join('');
 }
 
 export function isMonthlyActive(a: Announcement, today: string): boolean {
