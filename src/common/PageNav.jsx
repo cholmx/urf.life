@@ -58,7 +58,7 @@ export default function PageNav({ hideSearch = false }) {
         </button>
 
         {open && (
-          <div className="absolute right-0 mt-2 w-60 bg-white rounded-2xl shadow-modern-lg border border-neutral-100 py-2 z-50 text-left max-h-[70vh] overflow-y-auto">
+          <div className="absolute right-0 mt-2 w-60 bg-white rounded-2xl shadow-modern-lg border border-neutral-100 py-2 z-50 text-left">
             {NAV_LINKS.map((item) => {
               const linkClasses = 'flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors';
               const inner = (
