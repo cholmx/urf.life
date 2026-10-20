@@ -50,11 +50,12 @@ export default function PageNav({ hideSearch = false }) {
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="inline-flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 active:scale-95 bg-white"
+          className="inline-flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 active:scale-95"
+          style={{ backgroundColor: '#E2BA49' }}
           title="Menu"
           aria-label="Site navigation"
         >
-          <SafeIcon icon={FiMenu} className="h-5 w-5" style={{ color: '#cc4733' }} />
+          <SafeIcon icon={FiMenu} className="h-5 w-5" style={{ color: '#1E1E21' }} />
         </button>
 
         {open && (
