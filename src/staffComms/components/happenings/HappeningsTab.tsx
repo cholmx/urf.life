@@ -1,11 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
 import { C, font } from '../../lib/theme';
 import { btnGhost, btnPrimary } from '../ui/inputs';
-import { isHappeningsActive, formatDateNice, scriptHtmlToText, looksLikeHtml, getWeekStartDate, buildHappeningsScript } from '../../lib/helpers';
+import { isHappeningsActive, isFlyerTextStale, formatDateNice, scriptHtmlToText, looksLikeHtml, getWeekStartDate, buildHappeningsScript } from '../../lib/helpers';
+import { getNextOccurrenceDate } from '../../lib/calendar-grid';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { supabase } from '../../lib/supabase';
 import { sanitizeHtml } from '../../../utils/sanitizeHtml';
-import { Radio } from 'lucide-react';
+import { Radio, AlertTriangle } from 'lucide-react';
 import type { Announcement } from '../../types';
 import { ScriptEditor } from './ScriptEditor';
 
@@ -29,6 +30,15 @@ export function HappeningsTab({ announcements, today }: HappeningsTabProps) {
 
   const active = announcements.filter(a => isHappeningsActive(a, today));
   const assembledHtml = useMemo(() => buildHappeningsScript(active), [active]);
+
+  // Recurring items' Description is free text staff wrote once (often for
+  // a specific past occurrence, e.g. "join us this Thursday the 4th") -
+  // nothing regenerates it automatically as later occurrences roll around,
+  // so it silently goes stale and ships as-is in the live list above. The
+  // Manage tab already flags this per-item, but staff reviewing what's
+  // about to go out don't necessarily go looking there first - surface it
+  // right here too, where it's about to actually go live.
+  const staleItems = active.filter(a => isFlyerTextStale(a, today));
 
   // Weeks run Sunday-Saturday - anchor the saved note to that week's
   // Sunday, not the literal day it happens to be edited on, so editing
@@ -152,6 +162,22 @@ export function HappeningsTab({ announcements, today }: HappeningsTabProps) {
           </div>
         )}
       </div>
+
+      {staleItems.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontFamily: font.body, fontSize: 14, color: C.warn, fontWeight: 600, padding: '12px 14px', background: C.warnBg, borderRadius: 8, marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <AlertTriangle size={15} strokeWidth={2.5} />
+            <span>{staleItems.length} description{staleItems.length === 1 ? '' : 's'} below {staleItems.length === 1 ? 'was' : 'were'} written for a past occurrence and {staleItems.length === 1 ? "hasn't" : "haven't"} been updated - fix in Manage before this goes out:</span>
+          </div>
+          <ul style={{ margin: '0 0 0 23px', padding: 0, fontWeight: 500 }}>
+            {staleItems.map(a => (
+              <li key={a.id}>
+                {a.title} - written for {formatDateNice(a.flyer_text_date)}, next occurrence is {formatDateNice(getNextOccurrenceDate(a, today))}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Live list - always exactly what's on the public page right now,
           nothing to build or save. */}
