@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isArchived, isClassListingActive, getLastRelevantDate, isMonthlyActive, isFlyerTextStale, buildHappeningsScript } from './helpers';
+import { isArchived, isClassListingActive, getLastRelevantDate, isMonthlyActive, isHappeningsActive, isFlyerTextStale, buildHappeningsScript } from './helpers';
 import { getNextOccurrenceDate } from './calendar-grid';
 import type { Announcement } from '../types';
 
@@ -150,6 +150,60 @@ describe('isArchived', () => {
       event_date: '2026-09-25', recurrence_end_date: null,
     });
     expect(isArchived(a, TODAY)).toBe(false); // +4 days, still in grace
+  });
+});
+
+// These exist because a real bug shipped here: getAutoHappeningsEndDate's
+// is_recurring branch read back a.happenings_end_date, a field nothing
+// ever actually populates for a recurring item, so it silently fell through
+// to the '2099-12-31' fallback forever - keeping a class or recurring
+// series live on the public Happenings page long after isArchived had
+// already dropped it from every admin list, with no way for staff to
+// notice. isHappeningsActive now also gates on isArchived directly.
+describe('isHappeningsActive', () => {
+  it('stops a recurring class a week after it starts, even though its own date window never would', () => {
+    const a = makeAnnouncement({
+      happening_type: 'class', is_recurring: true, recurrence_type: 'weekly',
+      event_date: '2026-08-16', recurrence_end_date: null, show_in_happenings: true,
+    });
+    expect(isHappeningsActive(a, TODAY)).toBe(false);
+  });
+
+  it('stops a recurring event once its recurrence_end_date passes', () => {
+    const a = makeAnnouncement({
+      happening_type: 'event', is_recurring: true, recurrence_type: 'weekly',
+      event_date: '2026-08-01', recurrence_end_date: '2026-09-01', show_in_happenings: true,
+    });
+    expect(isHappeningsActive(a, TODAY)).toBe(false);
+  });
+
+  it('keeps a recurring event active before its recurrence_end_date', () => {
+    const a = makeAnnouncement({
+      happening_type: 'event', is_recurring: true, recurrence_type: 'weekly',
+      event_date: '2026-08-01', recurrence_end_date: '2026-10-01', show_in_happenings: true,
+    });
+    expect(isHappeningsActive(a, TODAY)).toBe(true);
+  });
+
+  it('stops a date-range item once it ends', () => {
+    const a = makeAnnouncement({
+      happening_type: 'event', is_recurring: true, recurrence_type: 'date_range',
+      event_date: '2026-08-01', recurrence_end_date: '2026-08-02', show_in_happenings: true,
+    });
+    expect(isHappeningsActive(a, TODAY)).toBe(false);
+  });
+
+  it('keeps a genuinely open-ended recurring item active indefinitely', () => {
+    const a = makeAnnouncement({
+      happening_type: 'event', is_recurring: true, recurrence_type: 'monthly',
+      event_date: '2020-01-01', recurrence_end_date: null, show_in_happenings: true,
+    });
+    expect(isHappeningsActive(a, TODAY)).toBe(true);
+  });
+
+  it('still stays off for an item with show_in_happenings false, regardless of archive state', () => {
+    const a = makeAnnouncement({ event_date: '2026-10-01', show_in_happenings: false });
+    expect(isHappeningsActive(a, TODAY)).toBe(false);
   });
 });
 

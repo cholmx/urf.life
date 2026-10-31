@@ -56,6 +56,20 @@ export function isSlideActive(a: Announcement, today: string): boolean {
 
 export function isHappeningsActive(a: Announcement, today: string): boolean {
   if (!a.show_in_happenings) return false;
+  // isArchived is the one place that already gets every item type's real
+  // retirement rule right - a class's 7-day grace window off event_date
+  // (regardless of is_recurring), a recurring item's own recurrence_end_date,
+  // a one-time item's own date. getAutoHappeningsEndDate's is_recurring
+  // branch, by contrast, reads back a.happenings_end_date - a field nothing
+  // ever actually populates for a recurring item, so it silently defaulted
+  // to the '2099-12-31' fallback below forever. That let real data (a class
+  // or recurring series long past its own grace/end date, and already gone
+  // from every admin list) keep showing live on the public page with no way
+  // for staff to even notice, since admin had already stopped showing it to
+  // them. Gating on isArchived first keeps this in lockstep with what admin
+  // itself considers still current, on top of (not instead of) the item's
+  // own show_in_happenings window below.
+  if (isArchived(a, today)) return false;
   const start = getAutoHappeningsStartDate(a, today);
   const end = getAutoHappeningsEndDate(a) || '2099-12-31';
   return today >= start && today <= end;
