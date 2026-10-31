@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isArchived, isClassListingActive, getLastRelevantDate, isMonthlyActive, isHappeningsActive, isFlyerTextStale, buildHappeningsScript } from './helpers';
+import { isArchived, isClassListingActive, getLastRelevantDate, isMonthlyActive, isHappeningsActive, isSlideActive, isFlyerTextStale, buildHappeningsScript } from './helpers';
 import { getNextOccurrenceDate } from './calendar-grid';
 import type { Announcement } from '../types';
 
@@ -207,6 +207,39 @@ describe('isHappeningsActive', () => {
   });
 });
 
+// Same bug as isHappeningsActive - the a.is_recurring branch here also reads
+// back a.happenings_end_date, which nothing ever actually populates.
+describe('isSlideActive', () => {
+  it('stops a recurring class a week after it starts, even though its own date window never would', () => {
+    const a = makeAnnouncement({
+      happening_type: 'class', is_recurring: true, recurrence_type: 'weekly',
+      event_date: '2026-08-16', recurrence_end_date: null, show_on_slides: true,
+    });
+    expect(isSlideActive(a, TODAY)).toBe(false);
+  });
+
+  it('stops a recurring event once its recurrence_end_date passes', () => {
+    const a = makeAnnouncement({
+      happening_type: 'event', is_recurring: true, recurrence_type: 'weekly',
+      event_date: '2026-08-01', recurrence_end_date: '2026-09-01', show_on_slides: true,
+    });
+    expect(isSlideActive(a, TODAY)).toBe(false);
+  });
+
+  it('keeps a genuinely open-ended recurring item active indefinitely', () => {
+    const a = makeAnnouncement({
+      happening_type: 'event', is_recurring: true, recurrence_type: 'monthly',
+      event_date: '2020-01-01', recurrence_end_date: null, show_on_slides: true,
+    });
+    expect(isSlideActive(a, TODAY)).toBe(true);
+  });
+
+  it('still stays off for an item with show_on_slides false, regardless of archive state', () => {
+    const a = makeAnnouncement({ event_date: '2026-10-01', show_on_slides: false });
+    expect(isSlideActive(a, TODAY)).toBe(false);
+  });
+});
+
 describe('isFlyerTextStale', () => {
   const recurringWithText = (flyerTextDate: string | null) => makeAnnouncement({
     is_recurring: true,
@@ -284,6 +317,24 @@ describe('isMonthlyActive', () => {
 
   it('excludes anything with monthly_include off', () => {
     const a = makeAnnouncement({ monthly_include: false, event_date: '2026-10-25' });
+    expect(isMonthlyActive(a, OCT_TODAY)).toBe(false);
+  });
+
+  // Same bug as isHappeningsActive - the a.is_recurring branch below also
+  // reads back a.happenings_end_date, which nothing ever actually populates.
+  it('stops a recurring class a week after it starts, even though its own date window never would', () => {
+    const a = makeAnnouncement({
+      monthly_include: true, happening_type: 'class', is_recurring: true, recurrence_type: 'weekly',
+      event_date: '2026-08-16', recurrence_end_date: null,
+    });
+    expect(isMonthlyActive(a, OCT_TODAY)).toBe(false);
+  });
+
+  it('stops a recurring event once its recurrence_end_date passes', () => {
+    const a = makeAnnouncement({
+      monthly_include: true, happening_type: 'event', is_recurring: true, recurrence_type: 'weekly',
+      event_date: '2026-08-01', recurrence_end_date: '2026-09-01',
+    });
     expect(isMonthlyActive(a, OCT_TODAY)).toBe(false);
   });
 

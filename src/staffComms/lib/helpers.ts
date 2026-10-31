@@ -36,6 +36,12 @@ export function getAutoHappeningsEndDate(a: Announcement): string | null {
 
 export function isSlideActive(a: Announcement, today: string): boolean {
   if (!a.show_on_slides) return false;
+  // See isHappeningsActive's own comment - the a.is_recurring branch below
+  // reads back a.happenings_end_date, a field nothing ever actually
+  // populates for a recurring item, so without this gate a retired class
+  // or series (already gone from every admin list, per isArchived) would
+  // silently keep showing on Sunday Slides forever.
+  if (isArchived(a, today)) return false;
   if (a.is_recurring) {
     const start = a.happenings_start_date || '2000-01-01';
     const end = a.happenings_end_date || '2099-12-31';
@@ -117,6 +123,12 @@ export function buildHappeningsScript(items: Announcement[]): string {
 
 export function isMonthlyActive(a: Announcement, today: string): boolean {
   if (!a.monthly_include) return false;
+  // See isHappeningsActive's own comment - without this, a retired class
+  // or recurring series (already gone from every admin list, per
+  // isArchived) would silently keep showing on the Monthly Flyer/Bulletin
+  // forever, since the a.is_recurring branch below reads back
+  // a.happenings_end_date, a field nothing ever actually populates.
+  if (isArchived(a, today)) return false;
 
   // Recurring items use their own admin-set active range (happenings_start/
   // end_date), same as before - unaffected by the one-time-item change below.
