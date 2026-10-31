@@ -9,6 +9,7 @@ import {
   getAutoHappeningsEndDate,
   getScopeLeadWeeks,
   isFlyerTextStale,
+  isArchived,
 } from '../../lib/helpers';
 import { getNextOccurrenceDate } from '../../lib/calendar-grid';
 import { AIWriteButton } from './AIWriteButton';
@@ -327,6 +328,11 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
   const autoEnd    = getAutoHappeningsEndDate(f as Announcement);
   const leadWeeks  = getScopeLeadWeeks(f.scope);
   const startsImmediately = f.event_date && autoStart === today;
+  // isHappeningsActive/isSlideActive/isMonthlyActive/isStageActive all gate
+  // on isArchived before ever consulting autoStart/autoEnd - this box needs
+  // the same gate, or it can show a stale "active ... -> " (blank end) for
+  // something that's actually already retired everywhere live.
+  const retired = isArchived(f as Announcement, today);
 
   // Recurring items only ever store their first session in event_date, so
   // flyer_text's wording (e.g. "meets Sunday, October 4") goes stale the
@@ -876,15 +882,21 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
           {f.event_date && (
             <div style={{ background: C.bgSubtle, border: `1px solid ${C.border}`, borderRadius: 8, padding: '12px 18px', fontFamily: font.mono, fontSize: 14, color: C.textTer, lineHeight: 1.8 }}>
               <div style={{ fontFamily: font.display, fontSize: 11, fontWeight: 700, color: C.textMuted, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>Auto schedule</div>
-              <div>
-                <span style={{ color: C.textMuted }}>active </span>
-                <span style={{ color: C.accent }}>
-                  {startsImmediately ? `now (within ${leadWeeks}w window)` : formatDateNice(autoStart)}
-                </span>
-                <span style={{ color: C.textMuted }}> → </span>
-                <span style={{ color: C.accent }}>{formatDateNice(autoEnd)}</span>
-              </div>
-              {f.show_on_slides && slideStart && slideEnd && (
+              {retired ? (
+                <div style={{ color: C.warn, fontWeight: 600 }}>
+                  Retired - past its own grace/end date, so it's no longer shown live anywhere (Happenings, Slides, Monthly, Stage), regardless of the Destinations checked above.
+                </div>
+              ) : (
+                <div>
+                  <span style={{ color: C.textMuted }}>active </span>
+                  <span style={{ color: C.accent }}>
+                    {startsImmediately ? `now (within ${leadWeeks}w window)` : formatDateNice(autoStart)}
+                  </span>
+                  <span style={{ color: C.textMuted }}> → </span>
+                  <span style={{ color: C.accent }}>{formatDateNice(autoEnd)}</span>
+                </div>
+              )}
+              {!retired && f.show_on_slides && slideStart && slideEnd && (
                 <div>
                   <span style={{ color: C.textMuted }}>slides </span>
                   <span style={{ color: C.accent }}>{formatDateNice(slideStart)}</span>
