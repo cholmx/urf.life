@@ -185,6 +185,12 @@ export function getActiveMonthlyItems(items: Announcement[], today: string): Ann
 
 export function isStageActive(a: Announcement, today: string): boolean {
   if (!a.show_on_stage) return false;
+  // See isHappeningsActive's own comment - the a.is_recurring branch below
+  // also reads back a.happenings_end_date, a field nothing ever actually
+  // populates for a recurring item, so without this gate a retired class
+  // or series (already gone from every admin list, per isArchived) would
+  // silently keep getting pulled into the generated Stage Script forever.
+  if (isArchived(a, today)) return false;
   if (a.is_recurring) {
     const start = a.happenings_start_date || '2000-01-01';
     const end = a.happenings_end_date || '2099-12-31';
