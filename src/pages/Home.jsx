@@ -210,7 +210,7 @@ const Home=()=> {
                 <motion.a
                   key={social.name} href={social.url} target="_blank" rel="noopener noreferrer"
                   initial={{opacity: 0, scale: 0.8}} animate={{opacity: 1, scale: 1}} transition={{duration: 0.5, delay: 1.3 + i * 0.1}}
-                  className="p-3 rounded-full bg-accent-dark hover:bg-primary/15 text-text-light hover:text-primary transition-all duration-300 hover:scale-110"
+                  className="p-3 rounded-full bg-[#597F5C] hover:bg-[#2B433E] text-white transition-all duration-300 hover:scale-110"
                 >
                   <SafeIcon icon={social.icon} className="h-5 w-5" />
                 </motion.a>
