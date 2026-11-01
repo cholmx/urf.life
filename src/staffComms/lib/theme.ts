@@ -1,4 +1,4 @@
-// Every color below is one of the site's six literal hexes - E1DCD1,
+// Every color below is one of the site's six literal hexes - EAE5DA,
 // FFFFFF, EAA235, 2B433E, 1E2522, C74F2F - no invented tint, shade or
 // opacity blend standing in as a would-be seventh color. The category
 // badges (scope/happening_type/recurring) used to keep their own
@@ -10,7 +10,7 @@
 export const scopeChipColors: Record<string, { bg: string; text: string; border: string }> = {
   whole_church:  { bg: '#1E2522', text: '#FFFFFF', border: '#1E2522' },
   ministry:      { bg: '#2B433E', text: '#FFFFFF', border: '#2B433E' },
-  informational: { bg: '#E1DCD1', text: '#1E2522', border: '#1E2522' },
+  informational: { bg: '#EAE5DA', text: '#1E2522', border: '#1E2522' },
 };
 
 export const scopeRangeColors: Record<string, string> = {
@@ -20,7 +20,7 @@ export const scopeRangeColors: Record<string, string> = {
 };
 
 export const happeningTypeChipColors: Record<string, { bg: string; text: string; border: string }> = {
-  announcement: { bg: '#E1DCD1', text: '#1E2522', border: '#1E2522' },
+  announcement: { bg: '#EAE5DA', text: '#1E2522', border: '#1E2522' },
   event:        { bg: '#2B433E', text: '#FFFFFF', border: '#2B433E' },
   class:        { bg: '#EAA235', text: '#1E2522', border: '#EAA235' },
   general:      { bg: '#C74F2F', text: '#FFFFFF', border: '#C74F2F' },
@@ -38,10 +38,10 @@ export const recurringChipColor = { bg: '#FFFFFF', text: '#EAA235', border: '#EA
 // picking the tokens up automatically.
 export const C = {
   // Surfaces
-  bg:          '#E1DCD1',
+  bg:          '#EAE5DA',
   bgSubtle:    '#FFFFFF',
   card:        '#FFFFFF',
-  cardAlt:     '#E1DCD1',
+  cardAlt:     '#EAE5DA',
   // Borders
   border:      '#2B433E',
   borderMed:   '#1E2522',
@@ -53,17 +53,17 @@ export const C = {
   textMuted:   '#2B433E',
   // Accent (matches the main site's admin buttons)
   accent:      '#2B433E',
-  accentBg:    '#E1DCD1',
+  accentBg:    '#EAE5DA',
   accentDark:  '#1E2522',
   accentHover: '#1E2522',
   // Status
   warn:        '#C74F2F',
-  warnBg:      '#E1DCD1',
+  warnBg:      '#EAE5DA',
   success:     '#2B433E',
-  successBg:   '#E1DCD1',
+  successBg:   '#EAE5DA',
   // Interaction tints
   high:        '#2B433E',
-  highBg:      '#E1DCD1',
+  highBg:      '#EAE5DA',
   // Dark panels
   stageBg:     '#1E2522',
   stageText:   '#FFFFFF',

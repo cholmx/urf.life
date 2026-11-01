@@ -237,7 +237,7 @@ function buildFlyerHTML(items: Announcement[], today: string, bathroomVariant: b
           ? `<span style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:${s.dateFontSize}pt;font-weight:700;color:${ORANGE};letter-spacing:0.05em;white-space:nowrap;flex-shrink:0;">${dateLabel}</span>`
           : '';
         const ministryTag = ministry
-          ? `<span style="font-family:'Inter',sans-serif;font-size:${Math.max(s.contactFontSize - 0.5, 7)}pt;font-weight:700;color:${TEAL};background:${isWC ? '#E1DCD1' : '#FFFFFF'};border-radius:999px;padding:1pt 7pt;letter-spacing:0.04em;white-space:nowrap;flex-shrink:0;">${ministry}</span>`
+          ? `<span style="font-family:'Inter',sans-serif;font-size:${Math.max(s.contactFontSize - 0.5, 7)}pt;font-weight:700;color:${TEAL};background:${isWC ? '#EAE5DA' : '#FFFFFF'};border-radius:999px;padding:1pt 7pt;letter-spacing:0.04em;white-space:nowrap;flex-shrink:0;">${ministry}</span>`
           : '';
         const contactHTML = contactInfo
           ? `<div style="font-family:'Inter',sans-serif;font-size:${s.contactFontSize}pt;color:#777;margin-top:${s.contactMarginTop}pt;">${contactName ? `${contactName}, ` : ''}${contactInfo}</div>`
@@ -333,7 +333,7 @@ function FlyerPagePreview({ announcements, today, bathroomVariant }: {
                           fontSize: `${Math.max(s.contactFontSize - 0.5, 7)}pt`,
                           fontWeight: 700,
                           color: TEAL,
-                          background: a.scope === 'whole_church' ? '#E1DCD1' : '#FFFFFF',
+                          background: a.scope === 'whole_church' ? '#EAE5DA' : '#FFFFFF',
                           borderRadius: '999px',
                           padding: '1pt 7pt',
                           letterSpacing: '0.04em',
@@ -433,7 +433,7 @@ export function MonthlyTab({ announcements, today }: MonthlyTabProps) {
     <div>
       {printReminder.show && (
         <div style={{
-          background: '#E1DCD1',
+          background: '#EAE5DA',
           border: '1px solid #EAA235',
           borderRadius: 8,
           padding: '10px 16px',

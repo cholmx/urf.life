@@ -71,7 +71,7 @@ return (
 {/* Book Cover Image - Clickable if Amazon link exists */}
 <div
 className="relative w-full h-48 flex items-center justify-center p-2 cursor-pointer"
-style={{backgroundColor: '#E1DCD1'}}
+style={{backgroundColor: '#EAE5DA'}}
 onClick={() => {
 if (amazonUrl) {
 window.open(amazonUrl, '_blank');
