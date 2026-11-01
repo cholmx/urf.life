@@ -301,7 +301,7 @@ const SermonBlog=()=> {
 
                   {/* Discussion Questions */}
                   {sermon.discussion_questions && (
-                    <div className="p-6 rounded-lg discussion-questions-section bg-gray-50">
+                    <div className="p-6 rounded-lg discussion-questions-section">
                       <div className="flex items-center space-x-2 mb-4">
                         <SafeIcon
                           icon={FiMessageCircle}
