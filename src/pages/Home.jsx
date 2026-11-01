@@ -262,7 +262,7 @@ const HomeButton = ({ title, description, icon, path, isFeatured = false, isInte
         </div>
       ) : (
         <div className="relative z-10 flex flex-col items-center">
-          <div className="p-2.5 rounded-xl bg-[#3E584D] group-hover:bg-[#CC4733] mb-2.5 md:mb-3 transition-all duration-300 group-hover:scale-110">
+          <div className="p-2.5 rounded-xl bg-[#6B857A] group-hover:bg-[#CC4733] mb-2.5 md:mb-3 transition-all duration-300 group-hover:scale-110">
             <SafeIcon icon={icon} className="h-5 w-5 md:h-6 md:w-6 text-white" />
           </div>
           <h3 className="text-sm md:text-base font-bold font-gsans leading-tight text-white">{title}</h3>
@@ -275,7 +275,7 @@ const HomeButton = ({ title, description, icon, path, isFeatured = false, isInte
   const gradientStyle = gradient
     ? {background: 'linear-gradient(135deg, #3E584D 0%, #577569 100%)'}
     : isOrange
-      ? {backgroundColor: '#CC4733'}
+      ? {backgroundColor: '#D49E46'}
       : isYellow
         ? {backgroundColor: '#D49E46'}
         : isFeatured
