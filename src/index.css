@@ -249,7 +249,8 @@
 
 /* Discussion questions background */
 .discussion-questions-section {
-  @apply bg-primary/10 border border-primary/20;
+  background-color: #FCFAF2;
+  @apply border border-primary/20;
 }
 
 /* Rich text editor formatting */
