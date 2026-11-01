@@ -128,7 +128,7 @@ const Announcements=()=> {
               className="card-clay rounded-lg shadow-md overflow-hidden"
             >
               <div
-                className="happenings-script p-8 md:p-10 text-text-primary text-[17px]"
+                className="happenings-script p-8 md:p-10 text-text-primary text-[15px]"
                 dangerouslySetInnerHTML={{__html: sanitizeHtml(html)}}
               />
             </motion.div>

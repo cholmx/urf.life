@@ -286,6 +286,11 @@
 .happenings-script h3:not(:first-child) {
   margin-top: 1.4em;
 }
+.happenings-script h3 + p {
+  margin: -0.3em 0 1.2em;
+  color: #CC7D28;
+  font-weight: 700;
+}
 .happenings-script strong {
   font-weight: 700;
 }
