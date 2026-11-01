@@ -82,7 +82,7 @@ export function EditModal({ announcement, defaultDate, onSave, onDelete, onCance
         )}
         <AnnouncementForm
           announcement={announcement}
-          initialOverrides={announcement ? undefined : (defaultDate ? { event_date: defaultDate, happenings_start_date: defaultDate } : undefined)}
+          initialOverrides={announcement ? undefined : (defaultDate ? { event_date: defaultDate } : undefined)}
           onSave={onSave}
           onCancel={onCancel}
           onError={onError}

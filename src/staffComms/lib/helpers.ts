@@ -20,7 +20,14 @@ export function getSlideEndDate(a: Announcement): string | null {
 }
 
 export function getAutoHappeningsStartDate(a: Announcement, today: string): string {
-  if (a.is_recurring) return a.happenings_start_date || today;
+  // Always today for a recurring item, never the stored happenings_start_date.
+  // Nothing in the admin UI lets staff intentionally set that field - its only
+  // source is EditModal prefilling it with the clicked calendar date when a
+  // new item is created from a future cell. Trusting it here meant a
+  // recurring series created that way stayed invisible in Happenings/Slides/
+  // Stage until that one stored date happened to arrive, even with its
+  // destination toggles on and nothing archived.
+  if (a.is_recurring) return today;
   if (!a.event_date) return today;
   const leadWeeks = getScopeLeadWeeks(a.scope);
   const d = new Date(a.event_date + 'T12:00:00');
@@ -43,9 +50,12 @@ export function isSlideActive(a: Announcement, today: string): boolean {
   // silently keep showing on Sunday Slides forever.
   if (isArchived(a, today)) return false;
   if (a.is_recurring) {
-    const start = a.happenings_start_date || '2000-01-01';
+    // Ignore a.happenings_start_date here - see getAutoHappeningsStartDate's
+    // own comment. The one place it can get populated (EditModal prefilling
+    // it from a clicked future calendar cell) would otherwise silently keep
+    // a recurring item off Sunday Slides until that one stored date arrived.
     const end = a.happenings_end_date || '2099-12-31';
-    return today >= start && today <= end;
+    return today <= end;
   }
   // A one-time item with no event_date is "ongoing" (see the form's "no
   // dates set, runs until removed") - isHappeningsActive already treats
@@ -192,9 +202,13 @@ export function isStageActive(a: Announcement, today: string): boolean {
   // silently keep getting pulled into the generated Stage Script forever.
   if (isArchived(a, today)) return false;
   if (a.is_recurring) {
-    const start = a.happenings_start_date || '2000-01-01';
+    // Ignore a.happenings_start_date here - see getAutoHappeningsStartDate's
+    // own comment. The one place it can get populated (EditModal prefilling
+    // it from a clicked future calendar cell) would otherwise silently keep
+    // a recurring item off the generated Stage Script until that one stored
+    // date arrived.
     const end = a.happenings_end_date || '2099-12-31';
-    return today >= start && today <= end;
+    return today <= end;
   }
   if (a.event_date) {
     const start = getSlideStartDate(a) || getAutoHappeningsStartDate(a, today);

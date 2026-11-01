@@ -205,6 +205,19 @@ describe('isHappeningsActive', () => {
     const a = makeAnnouncement({ event_date: '2026-10-01', show_in_happenings: false });
     expect(isHappeningsActive(a, TODAY)).toBe(false);
   });
+
+  // EditModal prefills happenings_start_date with the clicked calendar date
+  // when a new item is created from a future cell - the only place that
+  // field is ever populated. A recurring item created that way shouldn't
+  // stay hidden until that one stored date arrives.
+  it('ignores a stale future happenings_start_date on a recurring item', () => {
+    const a = makeAnnouncement({
+      happening_type: 'event', is_recurring: true, recurrence_type: 'monthly',
+      event_date: '2026-08-01', recurrence_end_date: null, show_in_happenings: true,
+      happenings_start_date: '2026-11-08',
+    });
+    expect(isHappeningsActive(a, TODAY)).toBe(true);
+  });
 });
 
 // Same bug as isHappeningsActive - the a.is_recurring branch here also reads
@@ -238,6 +251,15 @@ describe('isSlideActive', () => {
     const a = makeAnnouncement({ event_date: '2026-10-01', show_on_slides: false });
     expect(isSlideActive(a, TODAY)).toBe(false);
   });
+
+  it('ignores a stale future happenings_start_date on a recurring item', () => {
+    const a = makeAnnouncement({
+      happening_type: 'event', is_recurring: true, recurrence_type: 'monthly',
+      event_date: '2026-08-01', recurrence_end_date: null, show_on_slides: true,
+      happenings_start_date: '2026-11-08',
+    });
+    expect(isSlideActive(a, TODAY)).toBe(true);
+  });
 });
 
 // Same bug as isHappeningsActive - the a.is_recurring branch here also reads
@@ -270,6 +292,15 @@ describe('isStageActive', () => {
   it('still stays off for an item with show_on_stage false, regardless of archive state', () => {
     const a = makeAnnouncement({ event_date: '2026-10-01', show_on_stage: false });
     expect(isStageActive(a, TODAY)).toBe(false);
+  });
+
+  it('ignores a stale future happenings_start_date on a recurring item', () => {
+    const a = makeAnnouncement({
+      happening_type: 'event', is_recurring: true, recurrence_type: 'monthly',
+      event_date: '2026-08-01', recurrence_end_date: null, show_on_stage: true,
+      happenings_start_date: '2026-11-08',
+    });
+    expect(isStageActive(a, TODAY)).toBe(true);
   });
 });
 
