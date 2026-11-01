@@ -25,10 +25,10 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Site palette - EAE5DA/FFFFFF/EAA235/2B433E/1E2522/C74F2F.
+        // Site palette - F7F5EE/FFFFFF/EAA235/2B433E/1E2522/C74F2F.
         primary: '#2B433E',
         secondary: '#1E2522',
-        accent: '#EAE5DA', // page background
+        accent: '#F7F5EE', // page background
         'accent-light': '#FFFFFF',
         'accent-dark': '#2B433E',
 
