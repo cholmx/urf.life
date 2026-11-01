@@ -249,7 +249,7 @@
 
 /* Discussion questions background */
 .discussion-questions-section {
-  @apply bg-accent-dark;
+  @apply bg-white;
 }
 
 /* Rich text editor formatting */

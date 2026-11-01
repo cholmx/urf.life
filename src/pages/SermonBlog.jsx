@@ -227,7 +227,8 @@ const SermonBlog=()=> {
               <p className="text-text-light max-w-xs mx-auto">Check back soon — new sermons will appear here after each service.</p>
             </motion.div>
           ) : (
-            currentSermons.map((sermon,index)=> (
+            <div className="space-y-12">
+            {currentSermons.map((sermon,index)=> (
               <motion.div
                 key={sermon.id}
                 initial={{opacity: 0,y: 30}}
@@ -322,7 +323,8 @@ const SermonBlog=()=> {
                   )}
                 </div>
               </motion.div>
-            ))
+            ))}
+            </div>
           )}
           </LoadingTransition>
         </div>
