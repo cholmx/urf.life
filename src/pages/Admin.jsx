@@ -85,7 +85,7 @@ const ALL_TABS=NAV_SECTIONS.flatMap((section)=> section.items);
 // password field, one submit button) rather than the generic multi-field
 // SkeletonForm, which was roughly 4x too big for this one-field form.
 const LoginSkeleton=()=> (
-  <div className="bg-white rounded-3xl shadow-modern-lg p-8 max-w-md w-full mx-4 border border-neutral-100">
+  <div className="bg-white rounded-3xl shadow-modern-lg p-8 max-w-md w-full mx-4">
     <div className="text-center mb-6 flex flex-col items-center">
       <SkeletonBox width="w-16" height="h-16" rounded="rounded-full" className="mb-4 bg-gray-300" />
       <SkeletonBox width="w-40" height="h-7" className="mb-2 bg-gray-300" />
@@ -310,13 +310,13 @@ const Admin=()=> {
   if (!isAuthenticated) {
     if (checkingSession) {
       return (
-        <div className="admin-shell min-h-screen py-12 flex items-center justify-center bg-neutral-50">
+        <div className="admin-shell min-h-screen py-12 flex items-center justify-center bg-accent">
           <LoginSkeleton />
         </div>
       );
     }
     return (
-      <div className="admin-shell min-h-screen py-12 flex items-center justify-center relative bg-neutral-50">
+      <div className="admin-shell min-h-screen py-12 flex items-center justify-center relative bg-accent">
         {/* Back to Home Button - Top Right */}
         <div className="fixed top-6 right-6 z-50">
           <Link
@@ -333,7 +333,7 @@ const Admin=()=> {
             initial={{opacity: 0,scale: 0.9}}
             animate={{opacity: 1,scale: 1}}
             transition={{duration: 0.5}}
-            className="bg-white rounded-3xl shadow-modern-lg p-8 max-w-md w-full mx-4 border border-neutral-100"
+            className="bg-white rounded-3xl shadow-modern-lg p-8 max-w-md w-full mx-4"
           >
             <div className="text-center mb-6">
               <div className="w-16 h-16 bg-neutral-900 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -412,7 +412,7 @@ const Admin=()=> {
 
   // Main admin dashboard (shown after authentication)
   return (
-    <div className="admin-shell min-h-screen bg-neutral-50 md:flex">
+    <div className="admin-shell min-h-screen bg-accent md:flex">
       <StaffCommsStyles />
       {/* Sidebar - desktop. Pinned to the viewport height (not just
           flex-stretched to match the main content column) so "Back to

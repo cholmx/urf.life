@@ -199,7 +199,7 @@ function RentalCard({ r, conflicts, onDelete, onToggleArchive, onSaveNotes }) {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-modern overflow-hidden border border-neutral-100">
+    <div className="bg-white rounded-2xl shadow-modern overflow-hidden">
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
