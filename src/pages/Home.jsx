@@ -302,7 +302,7 @@ const QuickLinkButton = ({ title, icon, path, isInternal = false, delay = 0 }) =
   const inner = (
     <>
       <SafeIcon icon={icon} className="h-4 w-4 text-primary transition-transform duration-300 group-hover:scale-110 flex-shrink-0" />
-      <span className="text-xs md:text-sm font-semibold font-gsans text-text-primary group-hover:text-primary transition-colors duration-200">{title}</span>
+      <span className="text-xs md:text-sm font-extrabold uppercase font-gsans text-text-primary group-hover:text-primary transition-colors duration-200">{title}</span>
     </>
   );
   return (
