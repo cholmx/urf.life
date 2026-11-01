@@ -89,10 +89,12 @@ export function AnnouncementCard({ a, today, onEdit, onDelete, onTogglePublish, 
   return (
     <div style={{
       background: C.card,
-      border: `1px solid ${expanded ? C.borderMed : C.border}`,
-      borderRadius: 8,
+      boxShadow: expanded
+        ? '0 4px 16px rgba(0,0,0,0.08), 0 16px 32px -8px rgba(0,0,0,0.10)'
+        : '0 2px 8px rgba(0,0,0,0.06), 0 8px 20px -4px rgba(0,0,0,0.07)',
+      borderRadius: 24,
       overflow: 'hidden',
-      transition: 'border-color 0.15s',
+      transition: 'box-shadow 0.15s',
     }}>
       {/* Header row - click anywhere to expand/collapse */}
       <div

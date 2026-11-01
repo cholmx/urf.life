@@ -135,28 +135,28 @@ export function ManageTab({ announcements, today, onSave, onDelete, onTogglePubl
           <DashboardStat
             label="Slides Due"
             value={slidesPending.length}
-            accent={slidesPending.length > 0 ? '#D49E46' : '#3E584D'}
+            accent={slidesPending.length > 0 ? '#CC7D28' : '#3E584D'}
             sub={slidesPending.length > 0 ? 'Need making' : 'All caught up'}
             onClick={() => onNavigateTab?.('slideMaker')}
           />
           <DashboardStat
             label="Unpublished"
             value={unpublishedCount}
-            accent={unpublishedCount > 0 ? '#D49E46' : '#3E584D'}
+            accent={unpublishedCount > 0 ? '#CC7D28' : '#3E584D'}
             sub={unpublishedCount > 0 ? 'Not live yet' : 'All published'}
             onClick={() => { setUnpublishedOnly(v => !v); setStaleOnly(false); }}
           />
           <DashboardStat
             label="Stale Descriptions"
             value={staleCount}
-            accent={staleCount > 0 ? '#D49E46' : '#3E584D'}
+            accent={staleCount > 0 ? '#CC7D28' : '#3E584D'}
             sub={staleCount > 0 ? 'Written for a past date' : 'All up to date'}
             onClick={() => { setStaleOnly(v => !v); setUnpublishedOnly(false); }}
           />
           <DashboardStat
             label="Rental Requests"
             value={pendingRentals ?? 0}
-            accent={(pendingRentals ?? 0) > 0 ? '#D49E46' : '#3E584D'}
+            accent={(pendingRentals ?? 0) > 0 ? '#CC7D28' : '#3E584D'}
             sub={pendingRentals === null ? 'Loading...' : pendingRentals > 0 ? 'Awaiting review' : 'All handled'}
             onClick={() => onNavigateTab?.('rentals')}
           />
@@ -361,14 +361,16 @@ function DashboardStat({ label, value, accent, sub, onClick }: { label: string; 
         flex: '1 1 120px',
         minWidth: 120,
         background: C.card,
-        border: `1px solid ${C.border}`,
-        borderRadius: 8,
+        boxShadow: '0 2px 8px rgba(0,0,0,0.06), 0 8px 20px -4px rgba(0,0,0,0.07)',
+        borderRadius: 16,
         padding: '12px 14px',
         textAlign: 'left',
         fontFamily: 'inherit',
         cursor: onClick ? 'pointer' : 'default',
-        transition: 'border-color 0.15s',
+        transition: 'box-shadow 0.15s',
       }}
+      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 16px rgba(0,0,0,0.08), 0 16px 32px -8px rgba(0,0,0,0.10)'; }}
+      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 8px rgba(0,0,0,0.06), 0 8px 20px -4px rgba(0,0,0,0.07)'; }}
     >
       <div style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 4 }}>
         {label}
