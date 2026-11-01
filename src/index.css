@@ -281,13 +281,13 @@
   text-transform: uppercase;
   letter-spacing: 0.02em;
   color: inherit;
-  margin: 0 0 0.6em;
+  margin: 0 0 0.2em;
 }
 .happenings-script h3:not(:first-child) {
   margin-top: 1.4em;
 }
 .happenings-script h3 + p {
-  margin: -0.3em 0 1.2em;
+  margin: 0 0 1.2em;
   color: #CC7D28;
   font-weight: 700;
 }
