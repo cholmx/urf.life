@@ -176,17 +176,17 @@ const LivingStonesUpload = () => {
         animate={{ opacity: 1, scale: 1 }}
         className="bg-white rounded-xl shadow-md p-10 text-center"
       >
-        <div className="flex items-center justify-center w-16 h-16 rounded-full mx-auto mb-5" style={{ backgroundColor: '#F7F5EE' }}>
-          <SafeIcon icon={FiCheck} className="h-8 w-8" style={{ color: '#3E584D' }} />
+        <div className="flex items-center justify-center w-16 h-16 rounded-full mx-auto mb-5" style={{ backgroundColor: '#E1DCD1' }}>
+          <SafeIcon icon={FiCheck} className="h-8 w-8" style={{ color: '#2B433E' }} />
         </div>
-        <h3 className="text-2xl mb-2" style={{ color: '#3E584D' }}>Photo Submitted!</h3>
+        <h3 className="text-2xl mb-2" style={{ color: '#2B433E' }}>Photo Submitted!</h3>
         <p className="text-text-light mb-6 leading-relaxed">
           Thank you for sharing your Living Stone. Your photo will appear in the gallery after it has been reviewed.
         </p>
         <button
           onClick={handleReset}
           className="px-6 py-3 rounded-lg text-white font-medium hover:opacity-90 transition-opacity"
-          style={{ backgroundColor: '#3E584D' }}
+          style={{ backgroundColor: '#2B433E' }}
         >
           Submit Another Photo
         </button>
@@ -197,7 +197,7 @@ const LivingStonesUpload = () => {
   return (
     <div className="bg-white rounded-xl shadow-md p-6 md:p-8">
       <div className="flex items-center space-x-3 mb-6">
-        <SafeIcon icon={FiCamera} className="h-6 w-6" style={{ color: '#3E584D' }} />
+        <SafeIcon icon={FiCamera} className="h-6 w-6" style={{ color: '#2B433E' }} />
         <h3 className="text-xl font-semibold text-text-primary">Share Your Living Stone</h3>
       </div>
       <p className="text-text-light mb-6 leading-relaxed">
@@ -215,7 +215,7 @@ const LivingStonesUpload = () => {
               className={`relative border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all duration-200 ${
                 dragOver ? 'border-opacity-100 bg-green-50' : 'hover:border-opacity-60'
               }`}
-              style={{ borderColor: dragOver ? '#3E584D' : '#1E2522' }}
+              style={{ borderColor: dragOver ? '#2B433E' : '#1E2522' }}
             >
               <SafeIcon icon={FiImage} className="h-10 w-10 mx-auto mb-3 text-gray-300" />
               <p className="font-medium text-text-primary mb-1">Click to choose a photo</p>
@@ -258,7 +258,7 @@ const LivingStonesUpload = () => {
             placeholder="e.g. Jane Smith"
             maxLength={100}
             className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:border-transparent outline-none transition-all"
-            style={{ '--tw-ring-color': '#3E584D' }}
+            style={{ '--tw-ring-color': '#2B433E' }}
           />
         </div>
 
@@ -273,7 +273,7 @@ const LivingStonesUpload = () => {
             maxLength={300}
             rows={2}
             className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:border-transparent outline-none transition-all resize-none"
-            style={{ '--tw-ring-color': '#3E584D' }}
+            style={{ '--tw-ring-color': '#2B433E' }}
           />
         </div>
 
@@ -294,7 +294,7 @@ const LivingStonesUpload = () => {
           type="submit"
           disabled={uploading || !selectedFile}
           className="w-full py-3 rounded-lg text-white font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 hover:opacity-90"
-          style={{ backgroundColor: '#3E584D' }}
+          style={{ backgroundColor: '#2B433E' }}
         >
           {uploading ? (
             <>

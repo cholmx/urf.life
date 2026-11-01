@@ -1,5 +1,5 @@
-// Every color below is one of the site's six literal hexes - F7F5EE,
-// FFFFFF, EAA235, 3E584D, 1E2522, CC4733 - no invented tint, shade or
+// Every color below is one of the site's six literal hexes - E1DCD1,
+// FFFFFF, EAA235, 2B433E, 1E2522, C74F2F - no invented tint, shade or
 // opacity blend standing in as a would-be seventh color. The category
 // badges (scope/happening_type/recurring) used to keep their own
 // informational hues (blue for event, purple for class, etc.), distinct
@@ -9,21 +9,21 @@
 // bg/text/border combination instead of by hue.
 export const scopeChipColors: Record<string, { bg: string; text: string; border: string }> = {
   whole_church:  { bg: '#1E2522', text: '#FFFFFF', border: '#1E2522' },
-  ministry:      { bg: '#3E584D', text: '#FFFFFF', border: '#3E584D' },
-  informational: { bg: '#F7F5EE', text: '#1E2522', border: '#1E2522' },
+  ministry:      { bg: '#2B433E', text: '#FFFFFF', border: '#2B433E' },
+  informational: { bg: '#E1DCD1', text: '#1E2522', border: '#1E2522' },
 };
 
 export const scopeRangeColors: Record<string, string> = {
   whole_church:  '#1E2522',
-  ministry:      '#3E584D',
+  ministry:      '#2B433E',
   informational: '#EAA235',
 };
 
 export const happeningTypeChipColors: Record<string, { bg: string; text: string; border: string }> = {
-  announcement: { bg: '#F7F5EE', text: '#1E2522', border: '#1E2522' },
-  event:        { bg: '#3E584D', text: '#FFFFFF', border: '#3E584D' },
+  announcement: { bg: '#E1DCD1', text: '#1E2522', border: '#1E2522' },
+  event:        { bg: '#2B433E', text: '#FFFFFF', border: '#2B433E' },
   class:        { bg: '#EAA235', text: '#1E2522', border: '#EAA235' },
-  general:      { bg: '#CC4733', text: '#FFFFFF', border: '#CC4733' },
+  general:      { bg: '#C74F2F', text: '#FFFFFF', border: '#C74F2F' },
 };
 
 // A recurring item's schedule needs its own flag in that same badge row -
@@ -38,32 +38,32 @@ export const recurringChipColor = { bg: '#FFFFFF', text: '#EAA235', border: '#EA
 // picking the tokens up automatically.
 export const C = {
   // Surfaces
-  bg:          '#F7F5EE',
+  bg:          '#E1DCD1',
   bgSubtle:    '#FFFFFF',
   card:        '#FFFFFF',
-  cardAlt:     '#F7F5EE',
+  cardAlt:     '#E1DCD1',
   // Borders
-  border:      '#3E584D',
+  border:      '#2B433E',
   borderMed:   '#1E2522',
-  borderFocus: '#3E584D',
+  borderFocus: '#2B433E',
   // Text
   text:        '#1E2522',
-  textSec:     '#3E584D',
-  textTer:     '#3E584D',
-  textMuted:   '#3E584D',
+  textSec:     '#2B433E',
+  textTer:     '#2B433E',
+  textMuted:   '#2B433E',
   // Accent (matches the main site's admin buttons)
-  accent:      '#3E584D',
-  accentBg:    '#F7F5EE',
+  accent:      '#2B433E',
+  accentBg:    '#E1DCD1',
   accentDark:  '#1E2522',
   accentHover: '#1E2522',
   // Status
-  warn:        '#CC4733',
-  warnBg:      '#F7F5EE',
-  success:     '#3E584D',
-  successBg:   '#F7F5EE',
+  warn:        '#C74F2F',
+  warnBg:      '#E1DCD1',
+  success:     '#2B433E',
+  successBg:   '#E1DCD1',
   // Interaction tints
-  high:        '#3E584D',
-  highBg:      '#F7F5EE',
+  high:        '#2B433E',
+  highBg:      '#E1DCD1',
   // Dark panels
   stageBg:     '#1E2522',
   stageText:   '#FFFFFF',

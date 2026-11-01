@@ -235,7 +235,7 @@ const HomeButton = ({ title, description, icon, path, isFeatured = false, isInte
     : `relative overflow-hidden p-5 rounded-2xl clay-shadow transition-all duration-300 hover:-translate-y-1 active:scale-[0.97] block text-center group flex flex-col justify-center items-center w-full${stretch ? ' h-full' : ' min-h-[160px] md:min-h-[200px]'}`;
 
   const featuredClasses = gradient ? "" : "text-white";
-  const mainClasses = "bg-[#1E2522] hover:bg-[#CC4733] text-white";
+  const mainClasses = "bg-[#1E2522] hover:bg-[#C74F2F] text-white";
 
   const iconColor = (isYellow || isOrange) ? 'text-text-primary' : 'text-white';
   const textColor = (isYellow || isOrange) ? 'text-text-primary' : 'text-white';
@@ -262,7 +262,7 @@ const HomeButton = ({ title, description, icon, path, isFeatured = false, isInte
         </div>
       ) : (
         <div className="relative z-10 flex flex-col items-center">
-          <div className="p-2.5 rounded-xl bg-[#34443D] group-hover:bg-[#CC4733] mb-2.5 md:mb-3 transition-all duration-300 group-hover:scale-110">
+          <div className="p-2.5 rounded-xl bg-[#597F5C] group-hover:bg-[#C74F2F] mb-2.5 md:mb-3 transition-all duration-300 group-hover:scale-110">
             <SafeIcon icon={icon} className="h-5 w-5 md:h-6 md:w-6 text-white" />
           </div>
           <h3 className="text-sm md:text-base font-bold font-gsans leading-tight text-white">{title}</h3>
@@ -273,13 +273,13 @@ const HomeButton = ({ title, description, icon, path, isFeatured = false, isInte
   );
 
   const gradientStyle = gradient
-    ? {background: 'linear-gradient(135deg, #3E584D 0%, #1E2522 100%)'}
+    ? {background: 'linear-gradient(135deg, #2B433E 0%, #1E2522 100%)'}
     : isOrange
       ? {backgroundColor: '#EAA235'}
       : isYellow
         ? {backgroundColor: '#EAA235'}
         : isFeatured
-          ? {backgroundColor: '#CC4733'}
+          ? {backgroundColor: '#C74F2F'}
           : {};
 
   return (

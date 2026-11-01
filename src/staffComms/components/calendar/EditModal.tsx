@@ -48,8 +48,8 @@ export function EditModal({ announcement, defaultDate, onSave, onDelete, onCance
                 <button
                   onClick={onDelete}
                   style={{
-                    padding: '4px 12px', border: '1px solid #CC4733', borderRadius: 5,
-                    background: '#F7F5EE', color: '#CC4733', fontSize: 11, fontFamily: font.body,
+                    padding: '4px 12px', border: '1px solid #C74F2F', borderRadius: 5,
+                    background: '#E1DCD1', color: '#C74F2F', fontSize: 11, fontFamily: font.body,
                     cursor: 'pointer', fontWeight: 600,
                   }}
                 >
@@ -70,8 +70,8 @@ export function EditModal({ announcement, defaultDate, onSave, onDelete, onCance
               <button
                 onClick={() => setConfirmDelete(true)}
                 style={{
-                  padding: '4px 12px', border: '1px solid #CC4733', borderRadius: 5,
-                  background: 'transparent', color: '#CC4733', fontSize: 11, fontFamily: font.body,
+                  padding: '4px 12px', border: '1px solid #C74F2F', borderRadius: 5,
+                  background: 'transparent', color: '#C74F2F', fontSize: 11, fontFamily: font.body,
                   cursor: 'pointer', fontWeight: 500,
                 }}
               >

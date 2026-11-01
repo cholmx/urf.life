@@ -25,24 +25,24 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Site palette - F7F5EE/FFFFFF/EAA235/3E584D/1E2522/CC4733.
-        primary: '#3E584D',
+        // Site palette - E1DCD1/FFFFFF/EAA235/2B433E/1E2522/C74F2F.
+        primary: '#2B433E',
         secondary: '#1E2522',
-        accent: '#F7F5EE', // page background
+        accent: '#E1DCD1', // page background
         'accent-light': '#FFFFFF',
-        'accent-dark': '#3E584D',
+        'accent-dark': '#2B433E',
 
         'text-primary': '#1E2522',
         'text-secondary': '#1E2522',
-        'text-light': '#3E584D',
+        'text-light': '#2B433E',
 
         'brand-yellow': '#EAA235',
-        'brand-blue': '#3E584D',
+        'brand-blue': '#2B433E',
         'brand-blue-dark': '#1E2522',
 
         'white': '#FFFFFF',
-        'social-green': '#3E584D',
-        'brand-red': '#CC4733',
+        'social-green': '#2B433E',
+        'brand-red': '#C74F2F',
 
         // Tailwind's stock scales, collapsed onto the six colors (see
         // sixColorRamp above) instead of staying their default hues -
@@ -51,12 +51,12 @@ export default {
         // palette), blue also as the green primary (no blue either),
         // gray and neutral both as the same cream/white/green/near-black
         // ramp as each other.
-        gray:    sixColorRamp('#3E584D'),
-        neutral: sixColorRamp('#3E584D'),
-        red:     sixColorRamp('#CC4733'),
-        orange:  sixColorRamp('#CC4733'),
-        green:   sixColorRamp('#3E584D'),
-        blue:    sixColorRamp('#3E584D'),
+        gray:    sixColorRamp('#2B433E'),
+        neutral: sixColorRamp('#2B433E'),
+        red:     sixColorRamp('#C74F2F'),
+        orange:  sixColorRamp('#C74F2F'),
+        green:   sixColorRamp('#2B433E'),
+        blue:    sixColorRamp('#2B433E'),
         yellow:  sixColorRamp('#EAA235'),
         amber:   sixColorRamp('#EAA235'),
         purple:  sixColorRamp('#EAA235'),

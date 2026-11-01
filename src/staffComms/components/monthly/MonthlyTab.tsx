@@ -237,12 +237,12 @@ function buildFlyerHTML(items: Announcement[], today: string, bathroomVariant: b
           ? `<span style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:${s.dateFontSize}pt;font-weight:700;color:${ORANGE};letter-spacing:0.05em;white-space:nowrap;flex-shrink:0;">${dateLabel}</span>`
           : '';
         const ministryTag = ministry
-          ? `<span style="font-family:'Inter',sans-serif;font-size:${Math.max(s.contactFontSize - 0.5, 7)}pt;font-weight:700;color:${TEAL};background:${isWC ? '#F7F5EE' : '#FFFFFF'};border-radius:999px;padding:1pt 7pt;letter-spacing:0.04em;white-space:nowrap;flex-shrink:0;">${ministry}</span>`
+          ? `<span style="font-family:'Inter',sans-serif;font-size:${Math.max(s.contactFontSize - 0.5, 7)}pt;font-weight:700;color:${TEAL};background:${isWC ? '#E1DCD1' : '#FFFFFF'};border-radius:999px;padding:1pt 7pt;letter-spacing:0.04em;white-space:nowrap;flex-shrink:0;">${ministry}</span>`
           : '';
         const contactHTML = contactInfo
           ? `<div style="font-family:'Inter',sans-serif;font-size:${s.contactFontSize}pt;color:#777;margin-top:${s.contactMarginTop}pt;">${contactName ? `${contactName}, ` : ''}${contactInfo}</div>`
           : '';
-        const border = i < active.length - 1 ? `border-bottom:1pt solid #3E584D;` : '';
+        const border = i < active.length - 1 ? `border-bottom:1pt solid #2B433E;` : '';
         return `
           <div style="display:flex;gap:${s.gap}in;padding:${s.itemPadV}in 0;${border}align-items:flex-start;">
             <div style="flex:1;min-width:0;">
@@ -260,7 +260,7 @@ function buildFlyerHTML(items: Announcement[], today: string, bathroomVariant: b
       }).join('');
 
   const bathroomHTML = bathroomVariant ? `
-    <div style="border-top:2pt solid #3E584D;padding:0.3in ${s.bodyPadH}in 0.45in;flex-shrink:0;text-align:center;">
+    <div style="border-top:2pt solid #2B433E;padding:0.3in ${s.bodyPadH}in 0.45in;flex-shrink:0;text-align:center;">
       <div style="font-size:${s.bodyFontSize + 1}pt;color:#444;line-height:1.5;">${BATHROOM_NOTE_LINES[0]}</div>
       <div style="font-size:${s.bodyFontSize + 1}pt;color:#444;line-height:1.5;">${BATHROOM_NOTE_LINES[1]}</div>
       <div style="font-size:${s.bodyFontSize + 1.5}pt;font-weight:700;color:${TEAL};line-height:1.5;">${BATHROOM_NOTE_LINES[2]}</div>
@@ -314,7 +314,7 @@ function FlyerPagePreview({ announcements, today, bathroomVariant }: {
           const rawText = a.flyer_text || a.month_override || a.short_version || '';
           const text = stripLeadingTitle(rawText, a.title);
           return (
-            <div key={a.id} style={{ display: 'flex', gap: `${s.gap}in`, padding: `${s.itemPadV}in 0`, borderBottom: i < active.length - 1 ? `1pt solid #3E584D` : 'none', alignItems: 'flex-start' }}>
+            <div key={a.id} style={{ display: 'flex', gap: `${s.gap}in`, padding: `${s.itemPadV}in 0`, borderBottom: i < active.length - 1 ? `1pt solid #2B433E` : 'none', alignItems: 'flex-start' }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ marginBottom: `${s.titleMarginBottom}pt` }}>
                   <div style={{ fontFamily: FLYER_FONT, fontSize: `${s.titleFontSize}pt`, fontWeight: 900, color: TEAL, letterSpacing: '0.02em', lineHeight: 1.1, textTransform: 'uppercase' }}>
@@ -333,7 +333,7 @@ function FlyerPagePreview({ announcements, today, bathroomVariant }: {
                           fontSize: `${Math.max(s.contactFontSize - 0.5, 7)}pt`,
                           fontWeight: 700,
                           color: TEAL,
-                          background: a.scope === 'whole_church' ? '#F7F5EE' : '#FFFFFF',
+                          background: a.scope === 'whole_church' ? '#E1DCD1' : '#FFFFFF',
                           borderRadius: '999px',
                           padding: '1pt 7pt',
                           letterSpacing: '0.04em',
@@ -358,7 +358,7 @@ function FlyerPagePreview({ announcements, today, bathroomVariant }: {
       </div>
 
       {bathroomVariant && (
-        <div style={{ borderTop: `2pt solid #3E584D`, padding: `0.3in ${s.bodyPadH}in 0.45in`, flexShrink: 0, textAlign: 'center' }}>
+        <div style={{ borderTop: `2pt solid #2B433E`, padding: `0.3in ${s.bodyPadH}in 0.45in`, flexShrink: 0, textAlign: 'center' }}>
           <div style={{ fontFamily: font.body, fontSize: `${s.bodyFontSize + 1}pt`, color: '#444', lineHeight: 1.5 }}>{BATHROOM_NOTE_LINES[0]}</div>
           <div style={{ fontFamily: font.body, fontSize: `${s.bodyFontSize + 1}pt`, color: '#444', lineHeight: 1.5 }}>{BATHROOM_NOTE_LINES[1]}</div>
           <div style={{ fontFamily: font.body, fontSize: `${s.bodyFontSize + 1.5}pt`, fontWeight: 700, color: TEAL, lineHeight: 1.5 }}>{BATHROOM_NOTE_LINES[2]}</div>
@@ -433,7 +433,7 @@ export function MonthlyTab({ announcements, today }: MonthlyTabProps) {
     <div>
       {printReminder.show && (
         <div style={{
-          background: '#F7F5EE',
+          background: '#E1DCD1',
           border: '1px solid #EAA235',
           borderRadius: 8,
           padding: '10px 16px',
@@ -474,10 +474,10 @@ export function MonthlyTab({ announcements, today }: MonthlyTabProps) {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
-        <div style={{ boxShadow: '0 4px 32px rgba(0,0,0,0.10)', border: `1px solid #3E584D` }}>
+        <div style={{ boxShadow: '0 4px 32px rgba(0,0,0,0.10)', border: `1px solid #2B433E` }}>
           <FlyerPagePreview announcements={announcements} today={today} bathroomVariant={false} />
         </div>
-        <div style={{ boxShadow: '0 4px 32px rgba(0,0,0,0.10)', border: `1px solid #3E584D` }}>
+        <div style={{ boxShadow: '0 4px 32px rgba(0,0,0,0.10)', border: `1px solid #2B433E` }}>
           <FlyerPagePreview announcements={announcements} today={today} bathroomVariant={true} />
         </div>
       </div>

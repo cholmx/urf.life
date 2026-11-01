@@ -207,7 +207,7 @@
    or it loses the "this is secondary text" contrast it's there for. */
 :is(.card-clay, .form-section, [class~="bg-white"], [class~="bg-accent-dark"], [class~="bg-accent-light"], .admin-shell)
   [class~="text-text-light"] {
-  color: #3E584D;
+  color: #2B433E;
 }
 
 /* Specific overrides for rich text editor fields */
@@ -299,7 +299,7 @@
   font-style: italic;
 }
 .happenings-script a {
-  color: #3E584D;
+  color: #2B433E;
   font-weight: 700;
   text-decoration: underline;
   text-underline-offset: 2px;
@@ -378,7 +378,7 @@ input:focus, textarea:focus, select:focus {
   }
   .form-error-text {
     @apply text-xs mt-1 font-medium;
-    color: #CC4733;
+    color: #C74F2F;
   }
   .form-label {
     @apply block text-sm font-semibold mb-1.5;
@@ -391,7 +391,7 @@ input:focus, textarea:focus, select:focus {
      groove pressed into the card instead. */
   .form-section {
     @apply rounded-2xl p-5 space-y-4;
-    background: #F7F5EE;
+    background: #E1DCD1;
     box-shadow:
       inset 2px 2px 5px rgba(30, 37, 34, 0.1),
       inset -2px -2px 4px rgba(255, 255, 255, 0.7);

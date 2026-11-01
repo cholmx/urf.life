@@ -98,7 +98,7 @@ const TableGroupSignup=()=> {
                 animate={{scale: 1}}
                 transition={{delay: 0.15,type: 'spring',stiffness: 200}}
                 className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
-                style={{backgroundColor: '#3E584D'}}
+                style={{backgroundColor: '#2B433E'}}
               >
                 <SafeIcon icon={FiCheckCircle} className="h-10 w-10 text-white" />
               </motion.div>

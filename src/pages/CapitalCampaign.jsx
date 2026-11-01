@@ -357,7 +357,7 @@ const CapitalCampaign = () => {
                 ? 'shadow-lg text-white'
                 : 'bg-white shadow-md hover:shadow-lg'
             }`}
-            style={{ fontFamily: "'Inter Tight', sans-serif", fontWeight: 700, ...(activeTab === 'living-stones' ? { backgroundColor: '#3E584D' } : {}) }}
+            style={{ fontFamily: "'Inter Tight', sans-serif", fontWeight: 700, ...(activeTab === 'living-stones' ? { backgroundColor: '#2B433E' } : {}) }}
           >
             <div className="flex items-center space-x-1.5">
               <SafeIcon icon={FiCamera} className="h-4 w-4" />
@@ -372,7 +372,7 @@ const CapitalCampaign = () => {
                 ? 'shadow-lg text-white'
                 : 'bg-white shadow-md hover:shadow-lg'
             }`}
-            style={{ fontFamily: "'Inter Tight', sans-serif", fontWeight: 700, ...(activeTab === 'updates' ? { backgroundColor: '#3E584D' } : {}) }}
+            style={{ fontFamily: "'Inter Tight', sans-serif", fontWeight: 700, ...(activeTab === 'updates' ? { backgroundColor: '#2B433E' } : {}) }}
           >
             <div className="flex items-center space-x-1.5">
               <SafeIcon icon={FiFileText} className="h-4 w-4" />
@@ -387,7 +387,7 @@ const CapitalCampaign = () => {
                 ? 'shadow-lg text-white'
                 : 'bg-white shadow-md hover:shadow-lg'
             }`}
-            style={{ fontFamily: "'Inter Tight', sans-serif", fontWeight: 700, ...(activeTab === 'vision' ? { backgroundColor: '#3E584D' } : {}) }}
+            style={{ fontFamily: "'Inter Tight', sans-serif", fontWeight: 700, ...(activeTab === 'vision' ? { backgroundColor: '#2B433E' } : {}) }}
           >
             <div className="flex items-center space-x-1.5">
               <SafeIcon icon={FiEye} className="h-4 w-4" />
@@ -402,7 +402,7 @@ const CapitalCampaign = () => {
                 ? 'shadow-lg text-white'
                 : 'bg-white shadow-md hover:shadow-lg'
             }`}
-            style={{ fontFamily: "'Inter Tight', sans-serif", fontWeight: 700, ...(activeTab === 'faqs' ? { backgroundColor: '#3E584D' } : {}) }}
+            style={{ fontFamily: "'Inter Tight', sans-serif", fontWeight: 700, ...(activeTab === 'faqs' ? { backgroundColor: '#2B433E' } : {}) }}
           >
             <div className="flex items-center space-x-1.5">
               <SafeIcon icon={FiHelpCircle} className="h-4 w-4" />
