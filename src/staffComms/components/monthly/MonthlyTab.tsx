@@ -16,7 +16,7 @@ const BATHROOM_NOTE_LINES = [
 ];
 
 const TEAL = '#1E2522';
-const ORANGE = '#D49E46';
+const ORANGE = '#CC7D28';
 // Its own constant rather than font.display (now the same Google Sans
 // Flex value, but this is printed material representing the public site,
 // independent of whatever the admin UI's own display font happens to be
@@ -429,7 +429,7 @@ export function MonthlyTab({ announcements, today }: MonthlyTabProps) {
       {printReminder.show && (
         <div style={{
           background: '#F7F5EE',
-          border: '1px solid #D49E46',
+          border: '1px solid #CC7D28',
           borderRadius: 8,
           padding: '10px 16px',
           marginBottom: 18,
@@ -441,7 +441,7 @@ export function MonthlyTab({ announcements, today }: MonthlyTabProps) {
             width: 6,
             height: 6,
             borderRadius: '50%',
-            background: '#D49E46',
+            background: '#CC7D28',
             flexShrink: 0,
           }} />
           <span style={{

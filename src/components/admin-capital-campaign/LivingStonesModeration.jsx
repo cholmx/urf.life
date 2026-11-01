@@ -56,7 +56,7 @@ const LivingStonesModeration = ({ onPendingCountChange }) => {
         <div>
           <h3 className="text-lg font-semibold text-text-primary mb-4 flex items-center space-x-2">
             <span>Pending Review</span>
-            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold text-white" style={{ backgroundColor: '#D49E46' }}>
+            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold text-white" style={{ backgroundColor: '#CC7D28' }}>
               {pending.length}
             </span>
           </h3>

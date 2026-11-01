@@ -205,7 +205,7 @@ const Yellow = () => {
                           <button
                             onClick={() => setSelectedEpisode(episode)}
                             className="ml-4 bg-white text-primary border-2 border-primary p-2 rounded-full hover:bg-primary hover:text-white transition-colors flex-shrink-0"
-                            style={{ borderColor: '#D49E46', color: '#D49E46' }}
+                            style={{ borderColor: '#CC7D28', color: '#CC7D28' }}
                             title="Play episode"
                           >
                             <SafeIcon icon={FiPlay} className="h-4 w-4" />
