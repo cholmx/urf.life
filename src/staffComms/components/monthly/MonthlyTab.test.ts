@@ -110,6 +110,25 @@ describe('formatDateTimeList', () => {
     expect(formatDateTimeList(a, '2026-11-01')).toContain('Nov 7');
   });
 
+  it('shows only the real next occurrence, not the stale first session from event_dates too', () => {
+    // event_dates mirrors event_date (its original first-ever session) for
+    // a recurring item - blending it in alongside the computed next
+    // occurrence printed "Oct 4 + Nov 1" instead of just "Nov 1".
+    const a = makeAnnouncement({
+      recurrence_type: 'monthly',
+      is_recurring: true,
+      event_date: '2026-10-04',
+      event_dates: ['2026-10-04'],
+      recurrence_day: 'Sunday',
+      recurrence_week_of_month: 'first',
+      recurrence_end_date: null,
+    });
+    const label = formatDateTimeList(a, '2026-11-01');
+    expect(label).toContain('Nov 1');
+    expect(label).not.toContain('Oct 4');
+    expect(label).not.toContain('+');
+  });
+
   it('still builds a date_range item\'s start-end label, unaffected', () => {
     const a = makeAnnouncement({
       recurrence_type: 'date_range',

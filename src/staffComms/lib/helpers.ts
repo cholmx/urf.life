@@ -141,18 +141,19 @@ export function isMonthlyActive(a: Announcement, today: string): boolean {
   // See isHappeningsActive's own comment - without this, a retired class
   // or recurring series (already gone from every admin list, per
   // isArchived) would silently keep showing on the Monthly Flyer/Bulletin
-  // forever, since the a.is_recurring branch below reads back
-  // a.happenings_end_date, a field nothing ever actually populates.
+  // forever, since the a.is_recurring branch below used to read back
+  // a.happenings_end_date, a field that can carry a stale value forever
+  // once set.
   if (isArchived(a, today)) return false;
 
-  // Recurring items use their own admin-set active range (happenings_start/
-  // end_date), same as before - unaffected by the one-time-item change below.
-  if (a.is_recurring) {
-    const cm = today.slice(0, 7);
-    const start = a.happenings_start_date || '2000-01-01';
-    const end = a.happenings_end_date || '2099-12-31';
-    return start.slice(0, 7) <= cm && end.slice(0, 7) >= cm;
-  }
+  // A recurring item's own active window is never something staff can set
+  // through the admin UI - see getAutoHappeningsStartDate/EndDate's
+  // comments on where happenings_start_date/end_date actually come from.
+  // Trusting them here meant a series could stay permanently capped at
+  // whatever month a stale happenings_end_date happened to land in (e.g.
+  // URFamily Lunch stuck off the Monthly Flyer from September on). isArchived
+  // above is the only real gate for a recurring item.
+  if (a.is_recurring) return true;
 
   // A one-time item with no date at all is "ongoing" (runs until removed) -
   // always include it, same as before.

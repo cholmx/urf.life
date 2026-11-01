@@ -434,13 +434,26 @@ describe('isMonthlyActive', () => {
     expect(isMonthlyActive(a, OCT_TODAY)).toBe(false);
   });
 
-  it('keeps recurring items on their own admin-set active range, unaffected by the date-window change', () => {
+  it('ignores happenings_start_date/end_date for a recurring item - neither is ever staff-set', () => {
     const a = makeAnnouncement({
       monthly_include: true, is_recurring: true,
       happenings_start_date: '2026-10-01', happenings_end_date: '2026-12-31',
     });
     expect(isMonthlyActive(a, OCT_TODAY)).toBe(true);
-    expect(isMonthlyActive(a, '2026-09-29')).toBe(false);
+    expect(isMonthlyActive(a, '2026-09-29')).toBe(true);
+  });
+
+  // happenings_end_date can get a stale value permanently baked in (see
+  // getAutoHappeningsEndDate's own comment) - a recurring item stuck this
+  // way should still print every month, not just the one its stale end
+  // date happens to fall in.
+  it('ignores a stale past happenings_end_date on a recurring item', () => {
+    const a = makeAnnouncement({
+      monthly_include: true, is_recurring: true, happening_type: 'event',
+      recurrence_type: 'monthly', event_date: '2026-01-01', recurrence_end_date: null,
+      happenings_end_date: '2026-02-01',
+    });
+    expect(isMonthlyActive(a, OCT_TODAY)).toBe(true);
   });
 });
 

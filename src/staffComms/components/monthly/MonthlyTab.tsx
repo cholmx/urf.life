@@ -34,12 +34,17 @@ function allEventDates(a: Announcement, today?: string): string[] {
   const all = new Set<string>();
   const recurring = a.recurrence_type !== 'one_time' && a.recurrence_type !== 'date_range';
   if (today && recurring) {
+    // event_dates is skipped here on purpose - for a recurring item it's
+    // just a stale mirror of the original event_date (same first-session-
+    // only field getNextOccurrenceDate's own comment warns about), so
+    // blending it in printed "Oct 4 + Nov 1" alongside the real next
+    // occurrence instead of just "Nov 1".
     const next = getNextOccurrenceDate(a, today);
     if (next) all.add(next);
-  } else if (a.event_date) {
-    all.add(a.event_date);
+  } else {
+    if (a.event_date) all.add(a.event_date);
+    if (a.event_dates?.length) a.event_dates.filter(Boolean).forEach(d => all.add(d));
   }
-  if (a.event_dates?.length) a.event_dates.filter(Boolean).forEach(d => all.add(d));
   return [...all].sort();
 }
 
