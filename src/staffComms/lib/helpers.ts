@@ -37,26 +37,31 @@ export function getAutoHappeningsStartDate(a: Announcement, today: string): stri
 }
 
 export function getAutoHappeningsEndDate(a: Announcement): string | null {
-  if (a.is_recurring) return a.happenings_end_date || null;
+  // Always open-ended for a recurring item, never the stored
+  // happenings_end_date - see getAutoHappeningsStartDate's own comment.
+  // That field can get the same kind of stale value baked in (e.g. a
+  // save made while the item was briefly in a non-recurring state writes
+  // its event_date in here), and because it's echoed back unchanged on
+  // every later save, a recurring series can stay permanently capped at
+  // whatever date happened to be stored - URFamily Lunch stuck "active
+  // ... -> Sep 13" forever despite recurring every month going forward.
+  if (a.is_recurring) return null;
   return a.event_date || a.happenings_end_date || null;
 }
 
 export function isSlideActive(a: Announcement, today: string): boolean {
   if (!a.show_on_slides) return false;
   // See isHappeningsActive's own comment - the a.is_recurring branch below
-  // reads back a.happenings_end_date, a field nothing ever actually
-  // populates for a recurring item, so without this gate a retired class
+  // used to read back a.happenings_end_date, a field that can carry a
+  // stale value forever once set, so without this gate a retired class
   // or series (already gone from every admin list, per isArchived) would
   // silently keep showing on Sunday Slides forever.
   if (isArchived(a, today)) return false;
-  if (a.is_recurring) {
-    // Ignore a.happenings_start_date here - see getAutoHappeningsStartDate's
-    // own comment. The one place it can get populated (EditModal prefilling
-    // it from a clicked future calendar cell) would otherwise silently keep
-    // a recurring item off Sunday Slides until that one stored date arrived.
-    const end = a.happenings_end_date || '2099-12-31';
-    return today <= end;
-  }
+  // A recurring item's own active window is never something staff can
+  // set through the admin UI - see getAutoHappeningsStartDate/EndDate's
+  // comments on where happenings_start_date/end_date actually come from.
+  // isArchived above is the only real gate for a recurring item.
+  if (a.is_recurring) return true;
   // A one-time item with no event_date is "ongoing" (see the form's "no
   // dates set, runs until removed") - isHappeningsActive already treats
   // that as always-active starting today; Slides needs the same fallback,
@@ -196,20 +201,16 @@ export function getActiveMonthlyItems(items: Announcement[], today: string): Ann
 export function isStageActive(a: Announcement, today: string): boolean {
   if (!a.show_on_stage) return false;
   // See isHappeningsActive's own comment - the a.is_recurring branch below
-  // also reads back a.happenings_end_date, a field nothing ever actually
-  // populates for a recurring item, so without this gate a retired class
+  // used to read back a.happenings_end_date, a field that can carry a
+  // stale value forever once set, so without this gate a retired class
   // or series (already gone from every admin list, per isArchived) would
   // silently keep getting pulled into the generated Stage Script forever.
   if (isArchived(a, today)) return false;
-  if (a.is_recurring) {
-    // Ignore a.happenings_start_date here - see getAutoHappeningsStartDate's
-    // own comment. The one place it can get populated (EditModal prefilling
-    // it from a clicked future calendar cell) would otherwise silently keep
-    // a recurring item off the generated Stage Script until that one stored
-    // date arrived.
-    const end = a.happenings_end_date || '2099-12-31';
-    return today <= end;
-  }
+  // A recurring item's own active window is never something staff can set
+  // through the admin UI - see getAutoHappeningsStartDate/EndDate's
+  // comments on where happenings_start_date/end_date actually come from.
+  // isArchived above is the only real gate for a recurring item.
+  if (a.is_recurring) return true;
   if (a.event_date) {
     const start = getSlideStartDate(a) || getAutoHappeningsStartDate(a, today);
     if (today < start) return false;

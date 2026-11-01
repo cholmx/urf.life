@@ -218,6 +218,20 @@ describe('isHappeningsActive', () => {
     });
     expect(isHappeningsActive(a, TODAY)).toBe(true);
   });
+
+  // happenings_end_date can get the same kind of stale value baked in (a
+  // save made while the item briefly had is_recurring false writes its
+  // event_date in here, then it's echoed back unchanged forever) - a
+  // recurring item stuck this way should still show, not stay capped at
+  // whatever date happened to get stored.
+  it('ignores a stale past happenings_end_date on a recurring item', () => {
+    const a = makeAnnouncement({
+      happening_type: 'event', is_recurring: true, recurrence_type: 'monthly',
+      event_date: '2026-01-01', recurrence_end_date: null, show_in_happenings: true,
+      happenings_end_date: '2026-02-01',
+    });
+    expect(isHappeningsActive(a, TODAY)).toBe(true);
+  });
 });
 
 // Same bug as isHappeningsActive - the a.is_recurring branch here also reads
@@ -260,6 +274,15 @@ describe('isSlideActive', () => {
     });
     expect(isSlideActive(a, TODAY)).toBe(true);
   });
+
+  it('ignores a stale past happenings_end_date on a recurring item', () => {
+    const a = makeAnnouncement({
+      happening_type: 'event', is_recurring: true, recurrence_type: 'monthly',
+      event_date: '2026-01-01', recurrence_end_date: null, show_on_slides: true,
+      happenings_end_date: '2026-02-01',
+    });
+    expect(isSlideActive(a, TODAY)).toBe(true);
+  });
 });
 
 // Same bug as isHappeningsActive - the a.is_recurring branch here also reads
@@ -299,6 +322,15 @@ describe('isStageActive', () => {
       happening_type: 'event', is_recurring: true, recurrence_type: 'monthly',
       event_date: '2026-08-01', recurrence_end_date: null, show_on_stage: true,
       happenings_start_date: '2026-11-08',
+    });
+    expect(isStageActive(a, TODAY)).toBe(true);
+  });
+
+  it('ignores a stale past happenings_end_date on a recurring item', () => {
+    const a = makeAnnouncement({
+      happening_type: 'event', is_recurring: true, recurrence_type: 'monthly',
+      event_date: '2026-01-01', recurrence_end_date: null, show_on_stage: true,
+      happenings_end_date: '2026-02-01',
     });
     expect(isStageActive(a, TODAY)).toBe(true);
   });
