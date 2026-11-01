@@ -9,10 +9,10 @@ const TEAL = '#1E2522';
 const TEAL_LIGHT = '#FFFFFF';
 const ORANGE = '#1E2522';
 const LOGO_URL = '/logonegtransblack.png';
-// The bulletin's own headings (org name, item titles) use the site's real
-// heading font, not the admin's own Inter Tight (font.display) - this is
-// printed material representing the public site, independent of the admin
-// UI it's edited in.
+// Its own constant rather than font.display (now the same Google Sans
+// Flex value, but this is printed material representing the public site,
+// independent of whatever the admin UI's own display font happens to be
+// set to).
 const BULLETIN_FONT = "'Google Sans Flex', Inter, sans-serif";
 
 interface BulletinTabProps {

@@ -72,8 +72,14 @@ export const C = {
   navText:     '#FFFFFF',
 } as const;
 
+// display is this suite's "title/header" font - used on every actual
+// section/panel title (always already bold + uppercase, matching the
+// public site's own h1-h6 rule in index.css) and, consistently with that
+// same public-site convention (.btn also uses the heading font), on the
+// bold uppercase buttons/pills/labels styled to match. Was Inter Tight;
+// now the same Google Sans Flex every other title on the site uses.
 export const font = {
   body:    "'Inter', sans-serif",
-  display: "'Inter Tight', sans-serif",
+  display: "'Google Sans Flex', Inter, sans-serif",
   mono:    "'JetBrains Mono', 'Fira Mono', monospace",
 } as const;

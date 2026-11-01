@@ -1,18 +1,20 @@
 /* Ported from Sign-Up-Sheet-App-Design-6580's App.css, scoped under
-   .signup-sheet-tool. Headings already inherit the site's own Inter Tight
-   Bold styling from the global h1-h6 rule, so this file only needs to
-   style the printed sheet's own typography (title, column headers). */
+   .signup-sheet-tool. The site's own title/header treatment (Google Sans
+   Flex, 800 weight, uppercase - see index.css's global h1-h6 rule)
+   applied directly here, since the printed sheet's title and column
+   headers aren't real h1-h6 tags. */
 
 /* Printable Sheet Styles */
 .signup-sheet-tool .sheet-title {
-  font-family: 'Inter Tight', system-ui, sans-serif;
+  font-family: 'Google Sans Flex', Inter, sans-serif;
   font-weight: 800;
+  text-transform: uppercase;
   line-height: 1.1;
 }
 
 .signup-sheet-tool .column-header {
-  font-family: 'Inter Tight', system-ui, sans-serif;
-  font-weight: 700;
+  font-family: 'Google Sans Flex', Inter, sans-serif;
+  font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }

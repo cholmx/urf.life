@@ -17,10 +17,10 @@ const BATHROOM_NOTE_LINES = [
 
 const TEAL = '#1E2522';
 const ORANGE = '#D49E46';
-// The flyer's own headings (month title, item titles, dates) use the
-// site's real heading font, not the admin's own Inter Tight (font.display) -
-// this is printed material representing the public site, independent of
-// the admin UI it's edited in.
+// Its own constant rather than font.display (now the same Google Sans
+// Flex value, but this is printed material representing the public site,
+// independent of whatever the admin UI's own display font happens to be
+// set to).
 const FLYER_FONT = "'Google Sans Flex', Inter, sans-serif";
 
 // Weekly/biweekly/monthly items only ever store their very first session
