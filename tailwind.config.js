@@ -1,3 +1,21 @@
+// Six literal colors, nothing else. The app (public site and admin alike)
+// leans on Tailwind's built-in gray/red/green/yellow/amber/orange/blue/
+// purple scales in dozens of places (delete buttons, status badges, toast
+// colors, category tags) - overriding each of those scales here, instead
+// of hand-editing every call site, is what actually makes "every color on
+// the site is one of these six" true rather than true-except-wherever a
+// stock Tailwind color slipped in unnoticed. Each ramp collapses to cream/
+// white at its light end, near-black at its dark end, with `main` (one of
+// the six) standing in for the whole 400-600 "this is the color" range -
+// a UI needs more lightness steps than six flat colors give it on their
+// own, so this is a discrete, posterized ramp, not a smooth gradient:
+// every step is one of the six exactly, never a blend between them.
+const sixColorRamp = (main) => ({
+  50: '#FFFFFF', 100: '#FFFFFF',
+  200: main, 300: main, 400: main, 500: main, 600: main,
+  700: '#1E2522', 800: '#1E2522', 900: '#1E2522', 950: '#1E2522',
+});
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
@@ -7,22 +25,16 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Site palette - F7F5EE/FFFFFF/D49E46/3E584D/1E2522/CC4733, used
-        // everywhere (public site and admin alike). A few of these entries
-        // are necessarily derived tints/ramps rather than one of those six
-        // literal hexes (a UI needs more lightness steps than six flat
-        // colors can give it - button hover states, subtle borders,
-        // muted-vs-primary text - every derived value below is still
-        // anchored to one of the six, never an unrelated hue).
+        // Site palette - F7F5EE/FFFFFF/D49E46/3E584D/1E2522/CC4733.
         primary: '#3E584D',
         secondary: '#1E2522',
         accent: '#F7F5EE', // page background
         'accent-light': '#FFFFFF',
-        'accent-dark': 'rgba(30, 37, 34, 0.15)', // subtle borders/section fills
+        'accent-dark': '#3E584D',
 
         'text-primary': '#1E2522',
         'text-secondary': '#1E2522',
-        'text-light': '#3E584D', // muted/secondary copy - no gray in this palette, so it reads in the muted green instead
+        'text-light': '#3E584D',
 
         'brand-yellow': '#D49E46',
         'brand-blue': '#3E584D',
@@ -30,33 +42,24 @@ export default {
 
         'white': '#FFFFFF',
         'social-green': '#3E584D',
-
-        // Pop/alert color - already used verbatim as a literal hex in a
-        // handful of places (Home's hover state, PageNav's Home button);
-        // named here too so new work can reference it as a token instead
-        // of repeating the hex.
         'brand-red': '#CC4733',
 
-        // Tailwind's built-in neutral-50..900 scale, which the older admin
-        // screens (Rentals, Resources, Sermons, Staff Contacts, etc.) use
-        // directly - overridden end to end so admin matches the same
-        // palette instead of staying plain gray. Interpolated from the
-        // cream background down to the near-black text color, leaning
-        // toward the muted green through the middle of the ramp rather
-        // than a flat gray.
-        neutral: {
-          50:  '#F7F5EE',
-          100: '#EFEBDF',
-          200: '#DED9C8',
-          300: '#C3BEAC',
-          400: '#9B9A8A',
-          500: '#767D70',
-          600: '#5C6B5D',
-          700: '#44564A',
-          800: '#2E3B33',
-          900: '#1E2522',
-          950: '#141917',
-        },
+        // Tailwind's stock scales, collapsed onto the six colors (see
+        // sixColorRamp above) instead of staying their default hues -
+        // red/orange as the red accent, green as the green primary,
+        // yellow/amber/purple as the gold accent (no purple in this
+        // palette), blue also as the green primary (no blue either),
+        // gray and neutral both as the same cream/white/green/near-black
+        // ramp as each other.
+        gray:    sixColorRamp('#3E584D'),
+        neutral: sixColorRamp('#3E584D'),
+        red:     sixColorRamp('#CC4733'),
+        orange:  sixColorRamp('#CC4733'),
+        green:   sixColorRamp('#3E584D'),
+        blue:    sixColorRamp('#3E584D'),
+        yellow:  sixColorRamp('#D49E46'),
+        amber:   sixColorRamp('#D49E46'),
+        purple:  sixColorRamp('#D49E46'),
       },
       fontFamily: {
         'sans': ['Inter', 'sans-serif'],
@@ -75,8 +78,8 @@ export default {
         '4xl': '3rem',
       },
       boxShadow: {
-        'soft': '8px 8px 16px #d1d9e6, -8px -8px 16px #ffffff',
-        'soft-inset': 'inset 8px 8px 16px #d1d9e6, inset -8px -8px 16px #ffffff',
+        'soft': '8px 8px 16px #1E2522, -8px -8px 16px #FFFFFF',
+        'soft-inset': 'inset 8px 8px 16px #1E2522, inset -8px -8px 16px #FFFFFF',
         'modern': '0 2px 8px rgba(0,0,0,0.06), 0 8px 20px -4px rgba(0,0,0,0.07)',
         'modern-lg': '0 4px 16px rgba(0,0,0,0.08), 0 16px 32px -8px rgba(0,0,0,0.10)',
       },

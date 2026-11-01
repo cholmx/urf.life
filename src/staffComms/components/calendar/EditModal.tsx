@@ -19,7 +19,7 @@ export function EditModal({ announcement, defaultDate, onSave, onDelete, onCance
       onClick={e => { if (e.target === e.currentTarget) onCancel(); }}
       style={{
         position: 'fixed', inset: 0, zIndex: 100,
-        background: 'rgba(30, 28, 25, 0.45)',
+        background: 'rgba(30, 37, 34, 0.45)',
         display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
         padding: '40px 16px',
         overflowY: 'auto',
@@ -48,8 +48,8 @@ export function EditModal({ announcement, defaultDate, onSave, onDelete, onCance
                 <button
                   onClick={onDelete}
                   style={{
-                    padding: '4px 12px', border: '1px solid rgba(224,112,96,0.5)', borderRadius: 5,
-                    background: 'rgba(224,112,96,0.15)', color: '#E07060', fontSize: 11, fontFamily: font.body,
+                    padding: '4px 12px', border: '1px solid #CC4733', borderRadius: 5,
+                    background: '#F7F5EE', color: '#CC4733', fontSize: 11, fontFamily: font.body,
                     cursor: 'pointer', fontWeight: 600,
                   }}
                 >
@@ -70,8 +70,8 @@ export function EditModal({ announcement, defaultDate, onSave, onDelete, onCance
               <button
                 onClick={() => setConfirmDelete(true)}
                 style={{
-                  padding: '4px 12px', border: '1px solid rgba(191,90,58,0.5)', borderRadius: 5,
-                  background: 'transparent', color: '#E07060', fontSize: 11, fontFamily: font.body,
+                  padding: '4px 12px', border: '1px solid #CC4733', borderRadius: 5,
+                  background: 'transparent', color: '#CC4733', fontSize: 11, fontFamily: font.body,
                   cursor: 'pointer', fontWeight: 500,
                 }}
               >

@@ -155,7 +155,7 @@ export const SkeletonBookCard = () => (
     className="bg-white rounded-lg shadow-md overflow-hidden h-full"
   >
     {/* Book cover */}
-    <div className="relative w-full h-48 p-2" style={{ backgroundColor: '#fcfbf7' }}>
+    <div className="relative w-full h-48 p-2" style={{ backgroundColor: '#F7F5EE' }}>
       <SkeletonBox width="w-full" height="h-full" rounded="rounded" />
     </div>
     

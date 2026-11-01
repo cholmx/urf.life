@@ -1,7 +1,7 @@
 import type { Announcement, RecurrenceType } from '../../types';
 
-const TEAL = '#003B36';
-const ORANGE = '#E98A15';
+const TEAL = '#1E2522';
+const ORANGE = '#D49E46';
 
 interface InviteData {
   title: string;
@@ -55,7 +55,7 @@ function buildPostcardHTML(d: InviteData): string {
       ${d.address ? `<div style="font-family:'Inter',sans-serif;font-size:10pt;color:#666;margin-top:2pt;line-height:1.0;">${d.address}</div>` : ''}
       ${d.flyerText ? `<div style="font-family:'Inter',sans-serif;font-size:10pt;color:#222;line-height:1.08;margin-top:7pt;max-width:4.2in;white-space:pre-wrap;">${d.flyerText}</div>` : ''}
     </div>
-    <div style="border-top:1pt solid #D5E8E2;padding-top:6pt;text-align:left;flex-shrink:0;margin-top:auto;">
+    <div style="border-top:1pt solid #FFFFFF;padding-top:6pt;text-align:left;flex-shrink:0;margin-top:auto;">
       ${(d.contactName || d.contactInfo) ? `<div style="font-family:'Inter',sans-serif;font-size:9pt;font-weight:600;color:#666;margin-bottom:3pt;line-height:1.0;">Questions? ${d.contactName ? `${d.contactName}, ` : ''}${d.contactInfo}</div>` : ''}
     </div>
   </div>`;
@@ -77,8 +77,8 @@ function buildInviteHTML(d: InviteData): string {
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #fff; }
     .page { width: 11in; height: 8.5in; page-break-after: always; break-after: page; display: flex; flex-wrap: wrap; position: relative; }
-    .cut-h { position: absolute; left: 0; right: 0; top: 4.25in; height: 0; border-top: 0.5pt dashed #E5E5E5; pointer-events: none; }
-    .cut-v { position: absolute; top: 0; bottom: 0; left: 5.5in; width: 0; border-left: 0.5pt dashed #E5E5E5; pointer-events: none; }
+    .cut-h { position: absolute; left: 0; right: 0; top: 4.25in; height: 0; border-top: 0.5pt dashed #3E584D; pointer-events: none; }
+    .cut-v { position: absolute; top: 0; bottom: 0; left: 5.5in; width: 0; border-left: 0.5pt dashed #3E584D; pointer-events: none; }
     @page { size: 11in 8.5in; margin: 0; }
     @media screen { body { background: #eee; padding: 20px; display: flex; justify-content: center; } .page { box-shadow: 0 4px 24px rgba(0,0,0,0.12); } }
   </style>

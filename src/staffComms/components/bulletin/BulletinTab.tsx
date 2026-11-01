@@ -5,9 +5,9 @@ import { getActiveMonthlyItems, formatDateNice, formatTime12h, escapeHtml, strip
 import type { Announcement } from '../../types';
 import type { ReactNode } from 'react';
 
-const TEAL = '#000000';
+const TEAL = '#1E2522';
 const TEAL_LIGHT = '#FFFFFF';
-const ORANGE = '#000000';
+const ORANGE = '#1E2522';
 const LOGO_URL = '/logonegtransblack.png';
 // The bulletin's own headings (org name, item titles) use the site's real
 // heading font, not the admin's own Inter Tight (font.display) - this is
@@ -310,7 +310,7 @@ function BulletinAnnouncement({ a, scale }: { a: Announcement; scale: BulletinSc
         {dateLabel && <span style={{ fontFamily: BULLETIN_FONT, fontSize: scale.dateFontSize, fontWeight: 700, color: ORANGE }}>{dateLabel}</span>}
         {a.ministry && <Pill fontSize={scale.contactFontSize}>{a.ministry}</Pill>}
       </div>
-      {text && <div style={{ fontFamily: font.body, fontSize: scale.bodyFontSize, color: '#1A1A1A', lineHeight: 1.4, marginBottom: 4 }}>{text}</div>}
+      {text && <div style={{ fontFamily: font.body, fontSize: scale.bodyFontSize, color: '#1E2522', lineHeight: 1.4, marginBottom: 4 }}>{text}</div>}
       {a.contact_info && <ContactLine a={a} fontSize={scale.contactFontSize} />}
     </div>
   );
@@ -353,7 +353,7 @@ function buildItemHTML(a: Announcement, scale: BulletinScale): string {
       ${dateLabel ? `<span style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:${scale.dateFontSize}pt;font-weight:700;color:${ORANGE};">${dateLabel}</span>` : ''}
       ${ministry ? `<span style="font-family:'Inter',sans-serif;font-size:${scale.contactFontSize}pt;font-weight:700;color:${TEAL};background:${TEAL_LIGHT};border-radius:999px;padding:2pt 7pt;">${ministry}</span>` : ''}
     </div>
-    ${text ? `<div style="font-family:'Inter',sans-serif;font-size:${scale.bodyFontSize}pt;color:#1A1A1A;line-height:1.4;margin-bottom:4px;">${text}</div>` : ''}
+    ${text ? `<div style="font-family:'Inter',sans-serif;font-size:${scale.bodyFontSize}pt;color:#1E2522;line-height:1.4;margin-bottom:4px;">${text}</div>` : ''}
     ${contactInfo ? `<div style="font-family:'Inter',sans-serif;font-size:${scale.contactFontSize}pt;color:#000;margin-top:4px;">${contactName ? `${contactName}, ` : ''}${contactInfo}</div>` : ''}
   </div>`;
 }

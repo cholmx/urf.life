@@ -176,7 +176,7 @@ const LivingStonesUpload = () => {
         animate={{ opacity: 1, scale: 1 }}
         className="bg-white rounded-xl shadow-md p-10 text-center"
       >
-        <div className="flex items-center justify-center w-16 h-16 rounded-full mx-auto mb-5" style={{ backgroundColor: '#e8f0e8' }}>
+        <div className="flex items-center justify-center w-16 h-16 rounded-full mx-auto mb-5" style={{ backgroundColor: '#F7F5EE' }}>
           <SafeIcon icon={FiCheck} className="h-8 w-8" style={{ color: '#3E584D' }} />
         </div>
         <h3 className="text-2xl mb-2" style={{ color: '#3E584D' }}>Photo Submitted!</h3>
@@ -215,7 +215,7 @@ const LivingStonesUpload = () => {
               className={`relative border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all duration-200 ${
                 dragOver ? 'border-opacity-100 bg-green-50' : 'hover:border-opacity-60'
               }`}
-              style={{ borderColor: dragOver ? '#3E584D' : '#c9d9c9' }}
+              style={{ borderColor: dragOver ? '#3E584D' : '#1E2522' }}
             >
               <SafeIcon icon={FiImage} className="h-10 w-10 mx-auto mb-3 text-gray-300" />
               <p className="font-medium text-text-primary mb-1">Click to choose a photo</p>

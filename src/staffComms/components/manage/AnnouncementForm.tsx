@@ -397,9 +397,9 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
             style={{
               fontFamily: font.display, fontSize: 13, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase',
               padding: '8px 14px', borderRadius: 8, cursor: 'pointer', transition: 'all 0.15s',
-              border: `1px solid ${f.is_published ? '#15803D' : C.borderMed}`,
-              background: f.is_published ? 'rgba(22,163,74,0.12)' : C.card,
-              color: f.is_published ? '#15803D' : C.textSec,
+              border: `1px solid ${f.is_published ? '#3E584D' : C.borderMed}`,
+              background: f.is_published ? '#F7F5EE' : C.card,
+              color: f.is_published ? '#3E584D' : C.textSec,
             }}
           >
             {f.is_published ? 'Published' : 'Unpublished'}
@@ -409,11 +409,11 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
 
       <div style={{ padding: '24px 24px 20px' }}>
 
-        <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: 12, padding: '16px 20px', marginBottom: 24 }}>
-          <div style={{ fontFamily: font.display, fontSize: 14, fontWeight: 700, color: '#1D4ED8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <div style={{ background: '#F7F5EE', border: '1px solid #3E584D', borderRadius: 12, padding: '16px 20px', marginBottom: 24 }}>
+          <div style={{ fontFamily: font.display, fontSize: 14, fontWeight: 700, color: '#1E2522', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Notes
           </div>
-          <div style={{ fontFamily: font.mono, fontSize: 13, color: '#3B5FA8', margin: '3px 0 10px', lineHeight: 1.5 }}>
+          <div style={{ fontFamily: font.mono, fontSize: 13, color: '#3E584D', margin: '3px 0 10px', lineHeight: 1.5 }}>
             Write rough notes - what's happening, who it's for, any dates/times/location. One click fills in the type, dates, times, and recurrence below, and writes the Description for you to review before saving.
           </div>
           <textarea

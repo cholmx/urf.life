@@ -1,47 +1,41 @@
-// Category badges are informational (letting staff tell announcement types
-// apart at a glance), not brand chrome, so they keep their own colors while
-// everything else below uses the site-wide dark gray / white admin palette.
+// Every color below is one of the site's six literal hexes - F7F5EE,
+// FFFFFF, D49E46, 3E584D, 1E2522, CC4733 - no invented tint, shade or
+// opacity blend standing in as a would-be seventh color. The category
+// badges (scope/happening_type/recurring) used to keep their own
+// informational hues (blue for event, purple for class, etc.), distinct
+// from the site's own chrome, so each type was instantly recognizable
+// without reading the label - now limited to the same six, so some of
+// that at-a-glance distinction is gone; they're differentiated by
+// bg/text/border combination instead of by hue.
 export const scopeChipColors: Record<string, { bg: string; text: string; border: string }> = {
-  whole_church:  { bg: '#E5E5E5', text: '#1E1E21', border: '#D0D0D0' },
-  ministry:      { bg: '#EFEFEF', text: '#3A3A3D', border: '#DCDCDC' },
-  informational: { bg: '#F5F5F5', text: '#6E6E6E', border: '#E5E5E5' },
+  whole_church:  { bg: '#1E2522', text: '#FFFFFF', border: '#1E2522' },
+  ministry:      { bg: '#3E584D', text: '#FFFFFF', border: '#3E584D' },
+  informational: { bg: '#F7F5EE', text: '#1E2522', border: '#1E2522' },
 };
 
 export const scopeRangeColors: Record<string, string> = {
-  whole_church:  '#1E1E21',
-  ministry:      '#4A4A4D',
-  informational: '#7A7A7D',
+  whole_church:  '#1E2522',
+  ministry:      '#3E584D',
+  informational: '#D49E46',
 };
 
-// happening_type badges get real hues (not grayscale like the scope
-// chips above) - on the Dashboard/Manage list, scope + recurring +
-// happening_type all compete for attention in the same badge row, and
-// an all-gray palette made them hard to tell apart at a glance (the
-// actual complaint this was added for). Announcement stays neutral
-// since it's the plain/default type; event, class and general each get
-// their own color so the type reads instantly without having to read
-// the label text.
 export const happeningTypeChipColors: Record<string, { bg: string; text: string; border: string }> = {
-  announcement: { bg: '#F5F5F5', text: '#6E6E6E', border: '#E5E5E5' },
-  event:        { bg: '#DCEAFE', text: '#1D4ED8', border: '#BFDBFE' },
-  class:        { bg: '#EDE4FB', text: '#6D28D9', border: '#DDD0F5' },
-  general:      { bg: '#FDF0D5', text: '#92650C', border: '#F7E0AD' },
+  announcement: { bg: '#F7F5EE', text: '#1E2522', border: '#1E2522' },
+  event:        { bg: '#3E584D', text: '#FFFFFF', border: '#3E584D' },
+  class:        { bg: '#D49E46', text: '#1E2522', border: '#D49E46' },
+  general:      { bg: '#CC4733', text: '#FFFFFF', border: '#CC4733' },
 };
 
-// A recurring item's schedule (not a type, not a scope) needs its own
-// visually distinct flag in that same badge row - amber reads as "this
-// repeats" without colliding with any of the colors above.
-export const recurringChipColor = { bg: '#FDEBD3', text: '#B45309', border: '#F9D9A8' };
+// A recurring item's schedule needs its own flag in that same badge row -
+// reuses gold as an outline (white fill, gold border/text) rather than
+// gold's own solid fill, which "class" already uses, so the two don't
+// read as the same badge.
+export const recurringChipColor = { bg: '#FFFFFF', text: '#D49E46', border: '#D49E46' };
 
-// Site palette (F7F5EE/FFFFFF/D49E46/3E584D/1E2522/CC4733), same values
-// tailwind.config.js uses for the rest of the app - this suite (Manage,
-// Happenings, Calendar, Stage, Printables, Archive) renders via inline
-// styles off this object instead of Tailwind classes, so it needs its own
-// copy rather than picking the tokens up automatically. A few entries are
-// necessarily derived tints (borders, hover/muted steps) rather than one
-// of the six literal hexes, same reasoning as tailwind.config.js's custom
-// neutral ramp - every one is still anchored to F7F5EE or 1E2522, not an
-// unrelated hue.
+// This suite (Manage, Happenings, Calendar, Stage, Printables, Archive)
+// renders via inline styles off this object instead of Tailwind classes,
+// so it needs its own copy of the site's six-color palette rather than
+// picking the tokens up automatically.
 export const C = {
   // Surfaces
   bg:          '#F7F5EE',
@@ -49,27 +43,27 @@ export const C = {
   card:        '#FFFFFF',
   cardAlt:     '#F7F5EE',
   // Borders
-  border:      'rgba(30, 37, 34, 0.12)',
-  borderMed:   'rgba(30, 37, 34, 0.25)',
+  border:      '#3E584D',
+  borderMed:   '#1E2522',
   borderFocus: '#3E584D',
   // Text
   text:        '#1E2522',
   textSec:     '#3E584D',
-  textTer:     'rgba(30, 37, 34, 0.6)',
-  textMuted:   'rgba(30, 37, 34, 0.4)',
+  textTer:     '#3E584D',
+  textMuted:   '#3E584D',
   // Accent (matches the main site's admin buttons)
   accent:      '#3E584D',
-  accentBg:    'rgba(62, 88, 77, 0.1)',
+  accentBg:    '#F7F5EE',
   accentDark:  '#1E2522',
   accentHover: '#1E2522',
   // Status
   warn:        '#CC4733',
-  warnBg:      '#FBE4DF',
+  warnBg:      '#F7F5EE',
   success:     '#3E584D',
-  successBg:   'rgba(62, 88, 77, 0.12)',
+  successBg:   '#F7F5EE',
   // Interaction tints
   high:        '#3E584D',
-  highBg:      'rgba(62, 88, 77, 0.1)',
+  highBg:      '#F7F5EE',
   // Dark panels
   stageBg:     '#1E2522',
   stageText:   '#FFFFFF',

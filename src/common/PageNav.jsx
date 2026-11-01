@@ -55,7 +55,7 @@ export default function PageNav({ hideSearch = false }) {
           title="Menu"
           aria-label="Site navigation"
         >
-          <SafeIcon icon={FiMenu} className="h-5 w-5" style={{ color: '#1E1E21' }} />
+          <SafeIcon icon={FiMenu} className="h-5 w-5" style={{ color: '#1E2522' }} />
         </button>
 
         {open && (

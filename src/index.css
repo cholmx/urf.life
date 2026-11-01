@@ -372,7 +372,7 @@ input:focus, textarea:focus, select:focus {
   }
   .form-error-text {
     @apply text-xs mt-1 font-medium;
-    color: #BA1A1A;
+    color: #CC4733;
   }
   .form-label {
     @apply block text-sm font-semibold mb-1.5;
@@ -385,7 +385,7 @@ input:focus, textarea:focus, select:focus {
      groove pressed into the card instead. */
   .form-section {
     @apply rounded-2xl p-5 space-y-4;
-    background: #DED9C8;
+    background: #F7F5EE;
     box-shadow:
       inset 2px 2px 5px rgba(30, 37, 34, 0.1),
       inset -2px -2px 4px rgba(255, 255, 255, 0.7);
