@@ -113,7 +113,7 @@ const EventRegistration=()=> {
                 transition={{duration: 0.5,delay: index * 0.1}}
                 className="card-clay rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
               >
-                <h3 className="text-xl font-semibold text-text-primary mb-2">
+                <h3 className="text-xl font-extrabold font-gsans text-text-primary mb-2">
                   {event.title}
                 </h3>
                 {event.event_date && (

@@ -200,7 +200,7 @@ const ShinePodcast=()=> {
                       )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between mb-2">
-                          <h3 className="text-lg font-semibold text-text-primary font-inter">
+                          <h3 className="text-lg font-extrabold font-gsans text-text-primary">
                             {episode.title}
                           </h3>
                           {episode.audioUrl && (
