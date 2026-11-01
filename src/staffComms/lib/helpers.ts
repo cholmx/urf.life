@@ -181,6 +181,24 @@ function earliestEventDate(a: Announcement): string | null {
   return candidates.sort()[0];
 }
 
+// event_date/event_dates only ever hold a recurring item's very first-ever
+// session (see getNextOccurrenceDate's own comment), so sorting straight
+// off earliestEventDate put a recurring item wherever its original
+// first-ever session happened to fall, not where it actually prints on
+// the flyer - e.g. URFamily Lunch (next occurrence Nov 8) sorting ahead of
+// First Steps (Nov 1) and Shine Women's Gathering (Nov 7) because its
+// stored event_date predated theirs by months. Falls back to
+// earliestEventDate when there's no real next occurrence (recurrence
+// already ended) so a retired-but-not-yet-archived item still sorts
+// somewhere sensible instead of dropping to "dateless, sorts last".
+function monthlySortDate(a: Announcement, today: string): string | null {
+  if (a.recurrence_type !== 'one_time') {
+    const next = getNextOccurrenceDate(a, today);
+    if (next) return next;
+  }
+  return earliestEventDate(a);
+}
+
 // Shared by the Monthly Flyer and the Monthly Bulletin so both always show
 // the exact same set of items in the exact same order - filtered by
 // isMonthlyActive, then soonest date first (dateless items last), title as
@@ -189,8 +207,8 @@ export function getActiveMonthlyItems(items: Announcement[], today: string): Ann
   return items
     .filter(a => isMonthlyActive(a, today))
     .sort((a, b) => {
-      const da = earliestEventDate(a);
-      const db = earliestEventDate(b);
+      const da = monthlySortDate(a, today);
+      const db = monthlySortDate(b, today);
       if (!da && !db) return a.title.localeCompare(b.title);
       if (!da) return 1;
       if (!db) return -1;

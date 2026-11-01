@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isArchived, isClassListingActive, getLastRelevantDate, isMonthlyActive, isHappeningsActive, isSlideActive, isStageActive, isFlyerTextStale, buildHappeningsScript } from './helpers';
+import { isArchived, isClassListingActive, getLastRelevantDate, isMonthlyActive, getActiveMonthlyItems, isHappeningsActive, isSlideActive, isStageActive, isFlyerTextStale, buildHappeningsScript } from './helpers';
 import { getNextOccurrenceDate } from './calendar-grid';
 import type { Announcement } from '../types';
 
@@ -454,6 +454,33 @@ describe('isMonthlyActive', () => {
       happenings_end_date: '2026-02-01',
     });
     expect(isMonthlyActive(a, OCT_TODAY)).toBe(true);
+  });
+});
+
+describe('getActiveMonthlyItems', () => {
+  // Real bug: sorting off event_date (a recurring item's frozen first-ever
+  // session) put URFamily Lunch (next occurrence Nov 8) ahead of First
+  // Steps (Nov 1) and Shine Women's Gathering (Nov 7) on the printed
+  // flyer, since its stored event_date predated theirs by months.
+  it('sorts recurring items by their real next occurrence, not their frozen first session', () => {
+    const urfamilyLunch = makeAnnouncement({
+      title: 'URFamily Lunch', monthly_include: true, is_recurring: true,
+      happening_type: 'event', recurrence_type: 'monthly',
+      event_date: '2026-06-14', recurrence_day: 'Sunday',
+      recurrence_week_of_month: 'second', recurrence_end_date: null,
+    });
+    const firstSteps = makeAnnouncement({
+      title: 'First Steps', monthly_include: true, is_recurring: true,
+      happening_type: 'event', recurrence_type: 'monthly',
+      event_date: '2026-10-04', recurrence_day: 'Sunday',
+      recurrence_week_of_month: 'first', recurrence_end_date: null,
+    });
+    const shineGathering = makeAnnouncement({
+      title: "Shine Women's Gathering", monthly_include: true,
+      recurrence_type: 'one_time', event_date: '2026-11-07',
+    });
+    const sorted = getActiveMonthlyItems([urfamilyLunch, firstSteps, shineGathering], '2026-11-01');
+    expect(sorted.map(a => a.title)).toEqual(['First Steps', "Shine Women's Gathering", 'URFamily Lunch']);
   });
 });
 
