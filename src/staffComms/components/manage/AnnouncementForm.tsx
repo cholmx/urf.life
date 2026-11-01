@@ -131,12 +131,12 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   return (
     <div style={{ marginBottom: 24 }}>
       <div style={{
-        fontFamily: font.mono,
+        fontFamily: font.display,
         fontSize: 14,
-        fontWeight: 600,
-        letterSpacing: '0.08em',
+        fontWeight: 800,
+        letterSpacing: '0.04em',
         textTransform: 'uppercase',
-        color: C.textTer,
+        color: C.text,
         marginBottom: 12,
         paddingBottom: 10,
         borderBottom: `1px solid ${C.border}`,
@@ -378,7 +378,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
   const fieldInput: React.CSSProperties = { ...inputBase, fontSize: 16, padding: '11px 14px' };
 
   return (
-    <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, overflow: 'hidden', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
+    <div style={{ background: C.card, borderRadius: 24, overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.08), 0 16px 32px -8px rgba(0,0,0,0.10)' }}>
       <style>{`@keyframes aispin { to { transform: rotate(360deg); } }`}</style>
 
       {/* Header bar */}
@@ -395,7 +395,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
             onClick={() => set('is_published', !f.is_published)}
             title={f.is_published ? 'Won\'t appear on the public site once you Save' : 'Will appear on the public site once you Save'}
             style={{
-              fontFamily: font.display, fontSize: 13, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase',
+              fontFamily: font.display, fontSize: 13, fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase',
               padding: '8px 14px', borderRadius: 8, cursor: 'pointer', transition: 'all 0.15s',
               border: `1px solid ${f.is_published ? '#3E584D' : C.borderMed}`,
               background: f.is_published ? '#F7F5EE' : C.card,
@@ -409,8 +409,8 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
 
       <div style={{ padding: '24px 24px 20px' }}>
 
-        <div style={{ background: '#F7F5EE', border: '1px solid #3E584D', borderRadius: 12, padding: '16px 20px', marginBottom: 24 }}>
-          <div style={{ fontFamily: font.display, fontSize: 14, fontWeight: 700, color: '#1E2522', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <div style={{ background: '#F7F5EE', borderRadius: 16, padding: '16px 20px', marginBottom: 24 }}>
+          <div style={{ fontFamily: font.display, fontSize: 14, fontWeight: 800, color: '#1E2522', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
             Notes
           </div>
           <div style={{ fontFamily: font.mono, fontSize: 13, color: '#3E584D', margin: '3px 0 10px', lineHeight: 1.5 }}>
@@ -880,7 +880,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
           )}
 
           {f.event_date && (
-            <div style={{ background: C.bgSubtle, border: `1px solid ${C.border}`, borderRadius: 8, padding: '12px 18px', fontFamily: font.mono, fontSize: 14, color: C.textTer, lineHeight: 1.8 }}>
+            <div style={{ background: '#F7F5EE', borderRadius: 12, padding: '12px 18px', fontFamily: font.mono, fontSize: 14, color: C.textTer, lineHeight: 1.8 }}>
               <div style={{ fontFamily: font.display, fontSize: 11, fontWeight: 700, color: C.textMuted, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>Auto schedule</div>
               {retired ? (
                 <div style={{ color: C.warn, fontWeight: 600 }}>
