@@ -11,7 +11,7 @@
     @apply bg-accent text-text-primary font-sans antialiased;
     font-size: 18px;
     font-weight: 500;
-    background-image: radial-gradient(ellipse at 50% 0%, rgba(131,166,130,0.07) 0%, transparent 70%);
+    background-image: radial-gradient(ellipse at 50% 0%, rgba(62,88,77,0.07) 0%, transparent 70%);
     background-attachment: fixed;
   }
 
@@ -40,11 +40,11 @@
    only catch an element actually wearing that class or an h1-h6 tag. */
 .prose {
   @apply text-base leading-normal;
-  color: #1E1E21;
+  color: #1E2522;
 }
 .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
   @apply font-heading mt-4 mb-2;
-  color: #1E1E21;
+  color: #1E2522;
 }
 .prose h1 {
   @apply text-2xl font-bold;
@@ -60,7 +60,7 @@
 }
 .prose strong {
   @apply font-bold;
-  color: #1E1E21;
+  color: #1E2522;
 }
 .prose em {
   @apply italic;
@@ -145,9 +145,9 @@
 :root {
   --clay-shadow:
     -2px -2px 5px rgba(255, 255, 255, 0.7),
-    4px 4px 12px rgba(30, 30, 33, 0.12),
+    4px 4px 12px rgba(30, 37, 34, 0.12),
     inset 1px 1px 1px rgba(255, 255, 255, 0.4),
-    inset -1px -1px 1px rgba(30, 30, 33, 0.05);
+    inset -1px -1px 1px rgba(30, 37, 34, 0.05);
 }
 .card-clay {
   background: #FFFFFF;
@@ -195,19 +195,19 @@
    utilities (never @apply'd), so plain class selectors are fine for
    those. */
 :is(.card-clay, .form-section, [class~="bg-white"], [class~="bg-accent-dark"], [class~="bg-accent-light"], .admin-shell) {
-  color: #1E1E21;
+  color: #1E2522;
 }
 :is(.card-clay, .form-section, [class~="bg-white"], [class~="bg-accent-dark"], [class~="bg-accent-light"], .admin-shell)
   :is(h1, h2, h3, h4, h5, h6, [class~="text-text-primary"], [class~="text-text-secondary"]) {
-  color: #1E1E21;
+  color: #1E2522;
 }
 /* .text-text-light is the muted/secondary tone (now a light gray-teal
    tuned for the dark page background) - inside a light surface it needs
-   its own muted-dark color, not the same #1E1E21 as headings/body text,
+   its own muted-dark color, not the same #1E2522 as headings/body text,
    or it loses the "this is secondary text" contrast it's there for. */
 :is(.card-clay, .form-section, [class~="bg-white"], [class~="bg-accent-dark"], [class~="bg-accent-light"], .admin-shell)
   [class~="text-text-light"] {
-  color: #6B6B6B;
+  color: #3E584D;
 }
 
 /* Specific overrides for rich text editor fields */
@@ -293,18 +293,20 @@
   font-style: italic;
 }
 .happenings-script a {
-  color: #83A682;
+  color: #3E584D;
   font-weight: 700;
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 .happenings-script a:hover {
-  color: #6d8a6b;
+  color: #1E2522;
 }
 
-/* Admin dashboard: its own dark-gray-and-white look, Inter for body text
-   (headings already inherit Inter Tight Bold from the base h1-h6 rule
-   above), independent of the public site's green/cream/Liter styling. */
+/* Admin dashboard: Inter for body text (headings already inherit Inter
+   Tight Bold from the base h1-h6 rule above). Same green/cream/near-black
+   palette as the public site - admin-input/admin-card/admin-btn-* below
+   use Tailwind's neutral-* scale, which tailwind.config.js overrides
+   end to end to match that palette instead of staying plain gray. */
 .admin-shell {
   font-family: 'Inter', system-ui, sans-serif;
 }
@@ -340,35 +342,13 @@
   }
 }
 
-/* The individual admin panels (AdminAnnouncements, AdminEvents, etc.) still
-   use the public site's green `primary`/cream `accent` Tailwind utilities
-   directly in dozens of places. Rather than hand-editing every file (and
-   risking missing spots), override those utilities' effect wherever they
-   render inside the admin shell, so the whole area reads as dark gray and
-   white without touching the public site's own green/cream branding.
-
-   [class~="..."] attribute selectors, not plain .foo class selectors -
-   see the comment above the dark-theme :is() rules for why: these are
-   all real Tailwind utilities that are also @apply'd elsewhere in this
-   file (text-primary/bg-primary via the `a`/.prose rules, bg-accent via
-   body, etc.), and a literal class selector referencing the same token
-   gets silently corrupted by a Tailwind v3 JIT bug when that happens. */
-.admin-shell [class~="text-primary"] { color: #1E1E21 !important; }
-.admin-shell [class~="bg-primary"] { background-color: #1E1E21 !important; }
-.admin-shell [class~="border-primary"] { border-color: #1E1E21 !important; }
-.admin-shell [class~="ring-primary"] { --tw-ring-color: #1E1E21 !important; }
-.admin-shell [class~="hover:bg-primary"]:hover { background-color: #1E1E21 !important; }
-.admin-shell [class~="hover:border-primary"]:hover { border-color: #1E1E21 !important; }
-.admin-shell [class~="hover:text-primary"]:hover { color: #1E1E21 !important; }
-.admin-shell .group:hover [class~="group-hover:text-primary"] { color: #1E1E21 !important; }
-.admin-shell [class~="focus:ring-primary"]:focus { --tw-ring-color: #1E1E21 !important; }
-.admin-shell [class~="focus:border-primary"]:focus { border-color: #1E1E21 !important; }
-
-.admin-shell [class~="bg-accent"] { background-color: #F5F5F5 !important; }
-.admin-shell [class~="bg-accent/50"] { background-color: rgba(245,245,245,0.5) !important; }
-.admin-shell [class~="hover:bg-accent/50"]:hover { background-color: rgba(245,245,245,0.5) !important; }
-.admin-shell [class~="border-accent"] { border-color: #E2E2E2 !important; }
-.admin-shell [class~="border-accent-dark"] { border-color: #D0D0D0 !important; }
+/* The individual admin panels (AdminAnnouncements, AdminEvents, etc.) used
+   to have their green `primary`/cream `accent` Tailwind utilities forced
+   to dark gray/white here, so admin read as a visually distinct dashboard
+   from the public site's own branding. The site now uses one palette
+   everywhere, admin included, so primary/accent/accent-dark resolve to
+   the same green/cream values in both places and this override block is
+   gone - nothing left to fight. */
 
 /* Global input focus ring */
 input:focus, textarea:focus, select:focus {
@@ -384,7 +364,7 @@ input:focus, textarea:focus, select:focus {
   .form-input {
     @apply w-full p-3 border border-accent-dark rounded-xl bg-white placeholder-text-light transition-all duration-200;
     @apply focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary;
-    color: #1E1E21;
+    color: #1E2522;
   }
   .form-input-error {
     @apply border-red-400;
@@ -396,7 +376,7 @@ input:focus, textarea:focus, select:focus {
   }
   .form-label {
     @apply block text-sm font-semibold mb-1.5;
-    color: #1E1E21;
+    color: #1E2522;
   }
   /* form-section is always nested inside a .card-clay container, so it
      needs its own light, solid surface rather than the translucent
@@ -405,9 +385,9 @@ input:focus, textarea:focus, select:focus {
      groove pressed into the card instead. */
   .form-section {
     @apply rounded-2xl p-5 space-y-4;
-    background: #EAE6D9;
+    background: #DED9C8;
     box-shadow:
-      inset 2px 2px 5px rgba(5, 48, 48, 0.1),
+      inset 2px 2px 5px rgba(30, 37, 34, 0.1),
       inset -2px -2px 4px rgba(255, 255, 255, 0.7);
   }
   .form-section-title {

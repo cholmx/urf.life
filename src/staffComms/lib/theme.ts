@@ -33,39 +33,48 @@ export const happeningTypeChipColors: Record<string, { bg: string; text: string;
 // repeats" without colliding with any of the colors above.
 export const recurringChipColor = { bg: '#FDEBD3', text: '#B45309', border: '#F9D9A8' };
 
+// Site palette (F7F5EE/FFFFFF/D49E46/3E584D/1E2522/CC4733), same values
+// tailwind.config.js uses for the rest of the app - this suite (Manage,
+// Happenings, Calendar, Stage, Printables, Archive) renders via inline
+// styles off this object instead of Tailwind classes, so it needs its own
+// copy rather than picking the tokens up automatically. A few entries are
+// necessarily derived tints (borders, hover/muted steps) rather than one
+// of the six literal hexes, same reasoning as tailwind.config.js's custom
+// neutral ramp - every one is still anchored to F7F5EE or 1E2522, not an
+// unrelated hue.
 export const C = {
   // Surfaces
-  bg:          '#F7F7F7',
-  bgSubtle:    '#EFEFEF',
+  bg:          '#F7F5EE',
+  bgSubtle:    '#FFFFFF',
   card:        '#FFFFFF',
-  cardAlt:     '#F5F5F5',
+  cardAlt:     '#F7F5EE',
   // Borders
-  border:      '#E2E2E2',
-  borderMed:   '#C7C7C7',
-  borderFocus: '#1E1E21',
+  border:      'rgba(30, 37, 34, 0.12)',
+  borderMed:   'rgba(30, 37, 34, 0.25)',
+  borderFocus: '#3E584D',
   // Text
-  text:        '#1E1E21',
-  textSec:     '#4A4A4D',
-  textTer:     '#6E6E6E',
-  textMuted:   '#9A9A9A',
-  // Accent (dark gray - matches the main site's admin buttons)
-  accent:      '#1E1E21',
-  accentBg:    '#EFEFEF',
-  accentDark:  '#000000',
-  accentHover: '#3A3A3D',
+  text:        '#1E2522',
+  textSec:     '#3E584D',
+  textTer:     'rgba(30, 37, 34, 0.6)',
+  textMuted:   'rgba(30, 37, 34, 0.4)',
+  // Accent (matches the main site's admin buttons)
+  accent:      '#3E584D',
+  accentBg:    'rgba(62, 88, 77, 0.1)',
+  accentDark:  '#1E2522',
+  accentHover: '#1E2522',
   // Status
-  warn:        '#BA1A1A',
-  warnBg:      '#FFDAD6',
-  success:     '#2E7D32',
-  successBg:   '#DCF0DD',
+  warn:        '#CC4733',
+  warnBg:      '#FBE4DF',
+  success:     '#3E584D',
+  successBg:   'rgba(62, 88, 77, 0.12)',
   // Interaction tints
-  high:        '#1E1E21',
-  highBg:      '#EFEFEF',
+  high:        '#3E584D',
+  highBg:      'rgba(62, 88, 77, 0.1)',
   // Dark panels
-  stageBg:     '#1E1E21',
+  stageBg:     '#1E2522',
   stageText:   '#FFFFFF',
   // Nav
-  navBg:       '#1E1E21',
+  navBg:       '#1E2522',
   navText:     '#FFFFFF',
 } as const;
 

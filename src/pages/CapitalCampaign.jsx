@@ -326,7 +326,7 @@ const CapitalCampaign = () => {
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center space-x-1.5 px-4 py-2 rounded-lg text-sm text-white hover:text-white hover:scale-105 transition-all duration-300 shadow-lg"
-            style={{ backgroundColor: '#E2BA49', fontFamily: "'Inter Tight', sans-serif", fontWeight: 700 }}
+            style={{ backgroundColor: '#D49E46', fontFamily: "'Inter Tight', sans-serif", fontWeight: 700 }}
           >
             <SafeIcon icon={FiTrendingUp} className="h-4 w-4" />
             <span>Give to the Growth Campaign</span>
@@ -336,7 +336,7 @@ const CapitalCampaign = () => {
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center space-x-1.5 px-4 py-2 rounded-lg text-sm text-white hover:text-white hover:scale-105 transition-all duration-300 shadow-lg"
-            style={{ backgroundColor: '#E2BA49', fontFamily: "'Inter Tight', sans-serif", fontWeight: 700 }}
+            style={{ backgroundColor: '#D49E46', fontFamily: "'Inter Tight', sans-serif", fontWeight: 700 }}
           >
             <SafeIcon icon={FiFileText} className="h-4 w-4" />
             <span>Submit Your Commitment Card</span>
@@ -357,7 +357,7 @@ const CapitalCampaign = () => {
                 ? 'shadow-lg text-white'
                 : 'bg-white shadow-md hover:shadow-lg'
             }`}
-            style={{ fontFamily: "'Inter Tight', sans-serif", fontWeight: 700, ...(activeTab === 'living-stones' ? { backgroundColor: '#83A682' } : {}) }}
+            style={{ fontFamily: "'Inter Tight', sans-serif", fontWeight: 700, ...(activeTab === 'living-stones' ? { backgroundColor: '#3E584D' } : {}) }}
           >
             <div className="flex items-center space-x-1.5">
               <SafeIcon icon={FiCamera} className="h-4 w-4" />
@@ -372,7 +372,7 @@ const CapitalCampaign = () => {
                 ? 'shadow-lg text-white'
                 : 'bg-white shadow-md hover:shadow-lg'
             }`}
-            style={{ fontFamily: "'Inter Tight', sans-serif", fontWeight: 700, ...(activeTab === 'updates' ? { backgroundColor: '#83A682' } : {}) }}
+            style={{ fontFamily: "'Inter Tight', sans-serif", fontWeight: 700, ...(activeTab === 'updates' ? { backgroundColor: '#3E584D' } : {}) }}
           >
             <div className="flex items-center space-x-1.5">
               <SafeIcon icon={FiFileText} className="h-4 w-4" />
@@ -387,7 +387,7 @@ const CapitalCampaign = () => {
                 ? 'shadow-lg text-white'
                 : 'bg-white shadow-md hover:shadow-lg'
             }`}
-            style={{ fontFamily: "'Inter Tight', sans-serif", fontWeight: 700, ...(activeTab === 'vision' ? { backgroundColor: '#83A682' } : {}) }}
+            style={{ fontFamily: "'Inter Tight', sans-serif", fontWeight: 700, ...(activeTab === 'vision' ? { backgroundColor: '#3E584D' } : {}) }}
           >
             <div className="flex items-center space-x-1.5">
               <SafeIcon icon={FiEye} className="h-4 w-4" />
@@ -402,7 +402,7 @@ const CapitalCampaign = () => {
                 ? 'shadow-lg text-white'
                 : 'bg-white shadow-md hover:shadow-lg'
             }`}
-            style={{ fontFamily: "'Inter Tight', sans-serif", fontWeight: 700, ...(activeTab === 'faqs' ? { backgroundColor: '#83A682' } : {}) }}
+            style={{ fontFamily: "'Inter Tight', sans-serif", fontWeight: 700, ...(activeTab === 'faqs' ? { backgroundColor: '#3E584D' } : {}) }}
           >
             <div className="flex items-center space-x-1.5">
               <SafeIcon icon={FiHelpCircle} className="h-4 w-4" />

@@ -160,7 +160,7 @@ const AudioPlayer = ({ episode, onClose }) => {
               onClick={togglePlay}
               disabled={loading || !episode.audioUrl}
               className="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center hover:bg-primary-dark transition-colors disabled:opacity-50"
-              style={{ backgroundColor: '#2c4747' }}
+              style={{ backgroundColor: '#3E584D' }}
             >
               {loading ? (
                 <LoadingSpinner size="sm" color="#ffffff" />
@@ -187,7 +187,7 @@ const AudioPlayer = ({ episode, onClose }) => {
               >
                 <div
                   className="h-full bg-primary rounded-full transition-all"
-                  style={{ width: `${progressPercent}%`, backgroundColor: '#2c4747' }}
+                  style={{ width: `${progressPercent}%`, backgroundColor: '#3E584D' }}
                 />
               </div>
               <span>{formatTime(duration)}</span>
