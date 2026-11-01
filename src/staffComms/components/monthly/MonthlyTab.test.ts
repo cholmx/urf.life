@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { pickFlyerScale, FLYER_SCALE_TIERS } from './MonthlyTab';
+import { pickFlyerScale, FLYER_SCALE_TIERS, formatDateTimeList } from './MonthlyTab';
 import type { Announcement } from '../../types';
 
 // pickFlyerScale replaced a pure item-count lookup (getScaleParams) that
@@ -73,6 +73,56 @@ function makeItems(count: number, bodyLength: 'short' | 'long' | 'mixed'): Annou
     });
   });
 }
+
+// Real bug: a recurring item's date line always read straight off
+// event_date, which only ever holds its very first-ever session - so a
+// monthly item set up back in, say, October kept printing "Oct 4" forever,
+// regardless of which month's flyer was actually being built.
+describe('formatDateTimeList', () => {
+  it('advances a monthly weekday-position item to the real upcoming date instead of its frozen first session', () => {
+    const a = makeAnnouncement({
+      recurrence_type: 'monthly',
+      is_recurring: true,
+      event_date: '2026-10-04', // first Sunday of October - the "frozen" date
+      recurrence_day: 'Sunday',
+      recurrence_week_of_month: 'first',
+      recurrence_end_date: null,
+    });
+    // Previewing November's flyer should show November's first Sunday, not October's.
+    expect(formatDateTimeList(a, '2026-11-01')).toContain('Nov 1');
+    expect(formatDateTimeList(a, '2026-11-01')).not.toContain('Oct 4');
+  });
+
+  it('advances a weekly item past its frozen first session', () => {
+    const a = makeAnnouncement({
+      recurrence_type: 'weekly',
+      is_recurring: true,
+      event_date: '2026-08-05',
+      recurrence_day: 'Wednesday',
+      recurrence_end_date: null,
+    });
+    const label = formatDateTimeList(a, '2026-11-01');
+    expect(label).not.toContain('Aug 5');
+  });
+
+  it('still shows a one-time item\'s actual date, unaffected', () => {
+    const a = makeAnnouncement({ recurrence_type: 'one_time', event_date: '2026-11-07' });
+    expect(formatDateTimeList(a, '2026-11-01')).toContain('Nov 7');
+  });
+
+  it('still builds a date_range item\'s start-end label, unaffected', () => {
+    const a = makeAnnouncement({
+      recurrence_type: 'date_range',
+      event_date: '2026-10-09',
+      event_time: '17:00',
+      recurrence_end_date: '2026-10-10',
+      end_time: '12:00',
+    });
+    const label = formatDateTimeList(a, '2026-11-01');
+    expect(label).toContain('Oct 9');
+    expect(label).toContain('Oct 10');
+  });
+});
 
 describe('pickFlyerScale', () => {
   it('never throws and always returns a complete ScaleParams for any load', () => {

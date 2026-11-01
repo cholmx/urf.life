@@ -1,6 +1,7 @@
 import { C, font } from '../../lib/theme';
 import { btnGhost } from '../ui/inputs';
 import { getActiveMonthlyItems, formatDateNice, formatTime12h, escapeHtml, stripLeadingTitle } from '../../lib/helpers';
+import { getNextOccurrenceDate } from '../../lib/calendar-grid';
 import type { Announcement } from '../../types';
 
 interface MonthlyTabProps {
@@ -22,15 +23,28 @@ const ORANGE = '#D49E46';
 // the admin UI it's edited in.
 const FLYER_FONT = "'Google Sans Flex', Inter, sans-serif";
 
-function allEventDates(a: Announcement): string[] {
+// Weekly/biweekly/monthly items only ever store their very first session
+// in event_date (see getNextOccurrenceDate's own comment) - using it
+// directly here is exactly how this flyer ended up printing a recurring
+// item's original first-ever date forever, regardless of which month was
+// actually selected. today is optional only for estimateFlyerItemHeightPt's
+// layout-estimation pass below, which doesn't care which real date it
+// measures the string length of - every actual display call site passes it.
+function allEventDates(a: Announcement, today?: string): string[] {
   const all = new Set<string>();
-  if (a.event_date) all.add(a.event_date);
+  const recurring = a.recurrence_type !== 'one_time' && a.recurrence_type !== 'date_range';
+  if (today && recurring) {
+    const next = getNextOccurrenceDate(a, today);
+    if (next) all.add(next);
+  } else if (a.event_date) {
+    all.add(a.event_date);
+  }
   if (a.event_dates?.length) a.event_dates.filter(Boolean).forEach(d => all.add(d));
   return [...all].sort();
 }
 
-function formatDateList(a: Announcement): string {
-  const dates = allEventDates(a);
+function formatDateList(a: Announcement, today?: string): string {
+  const dates = allEventDates(a, today);
   if (!dates.length) return '';
   return dates.map(formatDateNice).join(' + ');
 }
@@ -44,7 +58,7 @@ function formatDateList(a: Announcement): string {
 // entirely - event_date/event_time is the start, recurrence_end_date/
 // end_time is the end, and allEventDates doesn't even look at
 // recurrence_end_date, so without this it silently dropped the end date.
-function formatDateTimeList(a: Announcement): string {
+export function formatDateTimeList(a: Announcement, today?: string): string {
   if (a.recurrence_type === 'date_range' && a.event_date && a.recurrence_end_date) {
     const startDate = formatDateNice(a.event_date);
     const endDate = formatDateNice(a.recurrence_end_date);
@@ -53,7 +67,7 @@ function formatDateTimeList(a: Announcement): string {
     return `${start} – ${end}`;
   }
 
-  const dateLabel = formatDateList(a);
+  const dateLabel = formatDateList(a, today);
   if (!dateLabel) return '';
   if (!a.event_time) return dateLabel;
   const start = formatTime12h(a.event_time);
@@ -213,7 +227,7 @@ function buildFlyerHTML(items: Announcement[], today: string, bathroomVariant: b
         const contactName = escapeHtml(a.contact_name);
         const contactInfo = escapeHtml(a.contact_info);
         const isWC = a.scope === 'whole_church';
-        const dateLabel = escapeHtml(formatDateTimeList(a));
+        const dateLabel = escapeHtml(formatDateTimeList(a, today));
         const dateSpan = dateLabel
           ? `<span style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:${s.dateFontSize}pt;font-weight:700;color:${ORANGE};letter-spacing:0.05em;white-space:nowrap;flex-shrink:0;">${dateLabel}</span>`
           : '';
@@ -301,11 +315,11 @@ function FlyerPagePreview({ announcements, today, bathroomVariant }: {
                   <div style={{ fontFamily: FLYER_FONT, fontSize: `${s.titleFontSize}pt`, fontWeight: 900, color: TEAL, letterSpacing: '0.02em', lineHeight: 1.1, textTransform: 'uppercase' }}>
                     {a.title}
                   </div>
-                  {(formatDateTimeList(a) || a.ministry) && (
+                  {(formatDateTimeList(a, today) || a.ministry) && (
                     <div style={{ marginTop: '1pt', lineHeight: 1.1, display: 'flex', gap: '4pt', alignItems: 'center', flexWrap: 'wrap' }}>
-                      {formatDateTimeList(a) && (
+                      {formatDateTimeList(a, today) && (
                         <span style={{ fontFamily: FLYER_FONT, fontSize: `${s.dateFontSize}pt`, fontWeight: 700, color: ORANGE, letterSpacing: '0.05em' }}>
-                          {formatDateTimeList(a)}
+                          {formatDateTimeList(a, today)}
                         </span>
                       )}
                       {a.ministry && (
