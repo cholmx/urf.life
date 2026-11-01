@@ -1,7 +1,7 @@
 import type { Announcement, RecurrenceType } from '../../types';
 
 const TEAL = '#1E2522';
-const ORANGE = '#CC7D28';
+const ORANGE = '#EAA235';
 
 interface InviteData {
   title: string;

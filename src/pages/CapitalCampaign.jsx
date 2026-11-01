@@ -326,7 +326,7 @@ const CapitalCampaign = () => {
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center space-x-1.5 px-4 py-2 rounded-lg text-sm text-white hover:text-white hover:scale-105 transition-all duration-300 shadow-lg"
-            style={{ backgroundColor: '#CC7D28', fontFamily: "'Inter Tight', sans-serif", fontWeight: 700 }}
+            style={{ backgroundColor: '#EAA235', fontFamily: "'Inter Tight', sans-serif", fontWeight: 700 }}
           >
             <SafeIcon icon={FiTrendingUp} className="h-4 w-4" />
             <span>Give to the Growth Campaign</span>
@@ -336,7 +336,7 @@ const CapitalCampaign = () => {
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center space-x-1.5 px-4 py-2 rounded-lg text-sm text-white hover:text-white hover:scale-105 transition-all duration-300 shadow-lg"
-            style={{ backgroundColor: '#CC7D28', fontFamily: "'Inter Tight', sans-serif", fontWeight: 700 }}
+            style={{ backgroundColor: '#EAA235', fontFamily: "'Inter Tight', sans-serif", fontWeight: 700 }}
           >
             <SafeIcon icon={FiFileText} className="h-4 w-4" />
             <span>Submit Your Commitment Card</span>

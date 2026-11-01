@@ -1,5 +1,5 @@
 // Every color below is one of the site's six literal hexes - F7F5EE,
-// FFFFFF, CC7D28, 3E584D, 1E2522, CC4733 - no invented tint, shade or
+// FFFFFF, EAA235, 3E584D, 1E2522, CC4733 - no invented tint, shade or
 // opacity blend standing in as a would-be seventh color. The category
 // badges (scope/happening_type/recurring) used to keep their own
 // informational hues (blue for event, purple for class, etc.), distinct
@@ -16,13 +16,13 @@ export const scopeChipColors: Record<string, { bg: string; text: string; border:
 export const scopeRangeColors: Record<string, string> = {
   whole_church:  '#1E2522',
   ministry:      '#3E584D',
-  informational: '#CC7D28',
+  informational: '#EAA235',
 };
 
 export const happeningTypeChipColors: Record<string, { bg: string; text: string; border: string }> = {
   announcement: { bg: '#F7F5EE', text: '#1E2522', border: '#1E2522' },
   event:        { bg: '#3E584D', text: '#FFFFFF', border: '#3E584D' },
-  class:        { bg: '#CC7D28', text: '#1E2522', border: '#CC7D28' },
+  class:        { bg: '#EAA235', text: '#1E2522', border: '#EAA235' },
   general:      { bg: '#CC4733', text: '#FFFFFF', border: '#CC4733' },
 };
 
@@ -30,7 +30,7 @@ export const happeningTypeChipColors: Record<string, { bg: string; text: string;
 // reuses gold as an outline (white fill, gold border/text) rather than
 // gold's own solid fill, which "class" already uses, so the two don't
 // read as the same badge.
-export const recurringChipColor = { bg: '#FFFFFF', text: '#CC7D28', border: '#CC7D28' };
+export const recurringChipColor = { bg: '#FFFFFF', text: '#EAA235', border: '#EAA235' };
 
 // This suite (Manage, Happenings, Calendar, Stage, Printables, Archive)
 // renders via inline styles off this object instead of Tailwind classes,

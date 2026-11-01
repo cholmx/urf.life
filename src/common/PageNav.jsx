@@ -51,7 +51,7 @@ export default function PageNav({ hideSearch = false }) {
           type="button"
           onClick={() => setOpen((v) => !v)}
           className="inline-flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 active:scale-95"
-          style={{ backgroundColor: '#CC7D28' }}
+          style={{ backgroundColor: '#EAA235' }}
           title="Menu"
           aria-label="Site navigation"
         >

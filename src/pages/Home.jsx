@@ -275,9 +275,9 @@ const HomeButton = ({ title, description, icon, path, isFeatured = false, isInte
   const gradientStyle = gradient
     ? {background: 'linear-gradient(135deg, #3E584D 0%, #1E2522 100%)'}
     : isOrange
-      ? {backgroundColor: '#CC7D28'}
+      ? {backgroundColor: '#EAA235'}
       : isYellow
-        ? {backgroundColor: '#CC7D28'}
+        ? {backgroundColor: '#EAA235'}
         : isFeatured
           ? {backgroundColor: '#CC4733'}
           : {};

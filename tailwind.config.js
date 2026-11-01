@@ -25,7 +25,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Site palette - F7F5EE/FFFFFF/CC7D28/3E584D/1E2522/CC4733.
+        // Site palette - F7F5EE/FFFFFF/EAA235/3E584D/1E2522/CC4733.
         primary: '#3E584D',
         secondary: '#1E2522',
         accent: '#F7F5EE', // page background
@@ -36,7 +36,7 @@ export default {
         'text-secondary': '#1E2522',
         'text-light': '#3E584D',
 
-        'brand-yellow': '#CC7D28',
+        'brand-yellow': '#EAA235',
         'brand-blue': '#3E584D',
         'brand-blue-dark': '#1E2522',
 
@@ -57,9 +57,9 @@ export default {
         orange:  sixColorRamp('#CC4733'),
         green:   sixColorRamp('#3E584D'),
         blue:    sixColorRamp('#3E584D'),
-        yellow:  sixColorRamp('#CC7D28'),
-        amber:   sixColorRamp('#CC7D28'),
-        purple:  sixColorRamp('#CC7D28'),
+        yellow:  sixColorRamp('#EAA235'),
+        amber:   sixColorRamp('#EAA235'),
+        purple:  sixColorRamp('#EAA235'),
       },
       fontFamily: {
         'sans': ['Inter', 'sans-serif'],
