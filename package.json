@@ -12,6 +12,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@rolldown/binding-wasm32-wasi": "1.2.6",
     "@supabase/supabase-js": "^2.39.0",
     "dompurify": "^3.4.14",
     "framer-motion": "^11.0.8",
@@ -35,5 +36,8 @@
     "typescript-eslint": "^8.3.0",
     "vite": "^5.4.2",
     "vitest": "^4.1.11"
+  },
+  "overrides": {
+    "@napi-rs/wasm-runtime": "1.2.5"
   }
 }
