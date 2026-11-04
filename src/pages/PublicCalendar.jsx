@@ -8,18 +8,16 @@ import {LoadingTransition} from '../components/LoadingSkeletons';
 import AddToCalendarButton from '../components/AddToCalendarButton';
 import supabase from '../lib/supabase';
 import {getTodayDateString,formatTime} from '../utils/dateFormat';
-import {getMonthGrid,getEventItems,getRangeItems} from '../staffComms/lib/calendar-grid';
+import {getEventItems,getRangeItems} from '../staffComms/lib/calendar-grid';
 import {downloadIcsCalendar} from '../utils/generateIcs';
 
-const {FiCalendar,FiClock,FiMapPin,FiExternalLink,FiChevronLeft,FiChevronRight,FiX,FiDownload}=FiIcons;
+const {FiCalendar,FiClock,FiMapPin,FiExternalLink,FiX,FiDownload}=FiIcons;
 
-// How far ahead the "Coming Up" list and the bulk calendar download look -
+// How far ahead the upcoming list and the bulk calendar download look -
 // far enough to be useful (a season's worth of weekly recurring items),
 // not so far it drags in things nobody's ready to commit to yet.
 const UPCOMING_WINDOW_DAYS=120;
 const UPCOMING_DISPLAY_LIMIT=8;
-
-const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
 const TYPE_STYLES={
   event: {dot: 'bg-primary',label: 'Event'},
@@ -32,8 +30,6 @@ const PublicCalendar=()=> {
   const today=getTodayDateString();
   const [announcements,setAnnouncements]=useState([]);
   const [loading,setLoading]=useState(true);
-  const [viewYear,setViewYear]=useState(()=> Number(today.slice(0,4)));
-  const [viewMonth,setViewMonth]=useState(()=> Number(today.slice(5,7)) - 1);
   const [selectedDay,setSelectedDay]=useState(null);
 
   useEffect(()=> {
@@ -53,30 +49,6 @@ const PublicCalendar=()=> {
     } finally {
       setLoading(false);
     }
-  };
-
-  const weeks=useMemo(()=> {
-    const cells=getMonthGrid(viewYear,viewMonth);
-    const rows=[];
-    for (let i=0;i<cells.length;i+=7) rows.push(cells.slice(i,i + 7));
-    return rows;
-  },[viewYear,viewMonth]);
-
-  const currentMonthStr=`${viewYear}-${String(viewMonth + 1).padStart(2,'0')}`;
-  const monthLabel=new Date(viewYear,viewMonth,1).toLocaleDateString('en-US',{month: 'long',year: 'numeric'});
-
-  const prevMonth=()=> {
-    if (viewMonth===0) {setViewYear(y=> y - 1); setViewMonth(11);}
-    else setViewMonth(m=> m - 1);
-  };
-  const nextMonth=()=> {
-    if (viewMonth===11) {setViewYear(y=> y + 1); setViewMonth(0);}
-    else setViewMonth(m=> m + 1);
-  };
-  const goToToday=()=> {
-    setViewYear(Number(today.slice(0,4)));
-    setViewMonth(Number(today.slice(5,7)) - 1);
-    setSelectedDay(today);
   };
 
   // Every occurrence (including each future date of a recurring item) in
@@ -162,7 +134,7 @@ const PublicCalendar=()=> {
             transition={{duration: 0.8,delay: 0.2}}
             className="text-base page-subtitle"
           >
-            Everything happening at Upper Room Fellowship, all in one place
+            What's coming up at Upper Room Fellowship
           </motion.p>
         </div>
 
@@ -170,141 +142,81 @@ const PublicCalendar=()=> {
           isLoading={loading}
           skeleton={<div className="card-clay rounded-2xl shadow-modern h-96 animate-pulse" />}
         >
-          <div className="card-clay rounded-2xl shadow-modern overflow-hidden">
-            <div className="flex items-center justify-between px-6 py-5 border-b border-accent-dark">
-              <h2 className="text-xl md:text-2xl font-semibold text-text-primary">{monthLabel}</h2>
-              <div className="flex items-center gap-2">
+          {upcomingItems.length===0 ? (
+            <motion.div
+              initial={{opacity: 0,y: 20}}
+              animate={{opacity: 1,y: 0}}
+              className="card-clay rounded-2xl shadow-modern p-16 text-center"
+            >
+              <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-5">
+                <SafeIcon icon={FiCalendar} className="h-9 w-9 text-primary" />
+              </div>
+              <h2 className="text-xl font-bold text-text-primary mb-2">Nothing scheduled yet</h2>
+              <p className="text-text-light max-w-xs mx-auto">Check back soon — upcoming events will appear here.</p>
+            </motion.div>
+          ) : (
+            <motion.div
+              initial={{opacity: 0,y: 20}}
+              animate={{opacity: 1,y: 0}}
+              transition={{duration: 0.6,delay: 0.1}}
+              className="card-clay rounded-2xl shadow-modern overflow-hidden"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-5 border-b border-accent-dark">
+                <div>
+                  <h2 className="text-xl md:text-2xl font-semibold text-text-primary">Coming Up</h2>
+                  <p className="text-sm text-text-light">
+                    Next {Math.min(upcomingDisplayItems.length,UPCOMING_DISPLAY_LIMIT)} happening{Math.min(upcomingDisplayItems.length,UPCOMING_DISPLAY_LIMIT) !== 1 ? 's' : ''}
+                  </p>
+                </div>
                 <button
-                  onClick={goToToday}
-                  className="px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wide text-secondary border border-accent-dark hover:bg-accent-dark transition-colors"
+                  onClick={handleDownloadUpcoming}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-primary text-white hover:bg-primary/90 transition-colors"
+                  title="Download an .ics file of everything upcoming to import into Google, Apple, or Outlook Calendar"
                 >
-                  Today
-                </button>
-                <button
-                  onClick={prevMonth}
-                  aria-label="Previous month"
-                  className="w-8 h-8 flex items-center justify-center rounded-lg border border-accent-dark text-secondary hover:bg-accent-dark transition-colors"
-                >
-                  <SafeIcon icon={FiChevronLeft} className="h-4 w-4" />
-                </button>
-                <button
-                  onClick={nextMonth}
-                  aria-label="Next month"
-                  className="w-8 h-8 flex items-center justify-center rounded-lg border border-accent-dark text-secondary hover:bg-accent-dark transition-colors"
-                >
-                  <SafeIcon icon={FiChevronRight} className="h-4 w-4" />
+                  <SafeIcon icon={FiDownload} className="h-4 w-4" />
+                  <span>Add to Your Calendar</span>
                 </button>
               </div>
-            </div>
 
-            <div className="grid grid-cols-7 border-b border-accent-dark bg-accent-dark/40">
-              {DAYS.map(d=> (
-                <div key={d} className="py-2 text-center text-[10px] font-bold uppercase tracking-widest text-text-light">
-                  {d}
-                </div>
-              ))}
-            </div>
-
-            {weeks.map((week,wi)=> (
-              <div key={wi} className={`grid grid-cols-7 ${wi < weeks.length - 1 ? 'border-b border-accent-dark' : ''}`}>
-                {week.map((day,ci)=> {
-                  const items=getEventItems(day,announcements);
-                  const isToday=day===today;
-                  const isSelected=day===selectedDay;
-                  const inMonth=day.startsWith(currentMonthStr);
+              <div className="divide-y divide-accent-dark">
+                {upcomingDisplayItems.slice(0,UPCOMING_DISPLAY_LIMIT).map(a=> {
+                  const style=TYPE_STYLES[a.happening_type] || TYPE_STYLES.general;
+                  const [weekdayLabel,monthDayLabel]=new Date(a.occurrenceDate + 'T12:00:00')
+                    .toLocaleDateString('en-US',{weekday: 'short',month: 'short',day: 'numeric'})
+                    .split(', ');
                   return (
                     <button
-                      key={day}
-                      onClick={()=> setSelectedDay(prev=> prev===day ? null : day)}
-                      className={`text-left h-24 sm:h-28 p-1.5 sm:p-2 overflow-hidden transition-colors ${ci > 0 ? 'border-l border-accent-dark' : ''} ${isSelected ? 'bg-primary/10' : 'hover:bg-accent-dark/30'}`}
+                      key={`${a.id}-${a.occurrenceDate}`}
+                      onClick={()=> setSelectedDay(a.occurrenceDate)}
+                      className="w-full text-left flex items-center gap-4 px-6 py-4 hover:bg-accent-dark/20 transition-colors"
                     >
-                      <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs ${isToday ? 'bg-primary text-white font-bold' : inMonth ? 'text-text-primary' : 'text-text-light'}`}>
-                        {new Date(day + 'T12:00:00').getDate()}
-                      </span>
-                      <div className="mt-1 flex flex-col gap-0.5">
-                        {items.slice(0,2).map(a=> {
-                          const style=TYPE_STYLES[a.happening_type] || TYPE_STYLES.general;
-                          return (
-                            <div key={a.id} className="flex items-center gap-1 min-w-0">
-                              <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${style.dot}`} />
-                              <span className="text-[10px] sm:text-[11px] text-text-secondary truncate">{a.title}</span>
-                            </div>
-                          );
-                        })}
-                        {items.length > 2 && (
-                          <span className="text-[9px] text-text-light pl-2.5">+{items.length - 2} more</span>
-                        )}
+                      <div className="flex-shrink-0 w-16 text-center">
+                        <div className="text-[10px] font-bold uppercase tracking-wide text-text-light">{weekdayLabel}</div>
+                        <div className="text-sm font-semibold text-text-primary">{monthDayLabel}</div>
+                      </div>
+                      <span className={`w-2 h-2 rounded-full flex-shrink-0 ${style.dot}`} />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-semibold text-text-primary truncate">{a.title}</p>
+                        <div className="flex flex-wrap items-center gap-x-3 text-xs text-text-light">
+                          {a.event_time && <span>{formatTime(a.event_time)}</span>}
+                          {a.event_location && <span>{a.event_location}</span>}
+                        </div>
                       </div>
                     </button>
                   );
                 })}
               </div>
-            ))}
-          </div>
+
+              {upcomingDisplayItems.length > UPCOMING_DISPLAY_LIMIT && (
+                <div className="px-6 py-3 border-t border-accent-dark text-center">
+                  <span className="text-xs text-text-light">
+                    +{upcomingDisplayItems.length - UPCOMING_DISPLAY_LIMIT} more in the next {Math.round(UPCOMING_WINDOW_DAYS / 30)} months
+                  </span>
+                </div>
+              )}
+            </motion.div>
+          )}
         </LoadingTransition>
-
-        {!loading && upcomingItems.length > 0 && (
-          <motion.div
-            initial={{opacity: 0,y: 20}}
-            animate={{opacity: 1,y: 0}}
-            transition={{duration: 0.6,delay: 0.1}}
-            className="card-clay rounded-2xl shadow-modern overflow-hidden mt-6"
-          >
-            <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-5 border-b border-accent-dark">
-              <div>
-                <h2 className="text-xl md:text-2xl font-semibold text-text-primary">Coming Up</h2>
-                <p className="text-sm text-text-light">
-                  Next {Math.min(upcomingDisplayItems.length,UPCOMING_DISPLAY_LIMIT)} happening{Math.min(upcomingDisplayItems.length,UPCOMING_DISPLAY_LIMIT) !== 1 ? 's' : ''}
-                </p>
-              </div>
-              <button
-                onClick={handleDownloadUpcoming}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-primary text-white hover:bg-primary/90 transition-colors"
-                title="Download an .ics file of everything upcoming to import into Google, Apple, or Outlook Calendar"
-              >
-                <SafeIcon icon={FiDownload} className="h-4 w-4" />
-                <span>Add to Your Calendar</span>
-              </button>
-            </div>
-
-            <div className="divide-y divide-accent-dark">
-              {upcomingDisplayItems.slice(0,UPCOMING_DISPLAY_LIMIT).map(a=> {
-                const style=TYPE_STYLES[a.happening_type] || TYPE_STYLES.general;
-                const [weekdayLabel,monthDayLabel]=new Date(a.occurrenceDate + 'T12:00:00')
-                  .toLocaleDateString('en-US',{weekday: 'short',month: 'short',day: 'numeric'})
-                  .split(', ');
-                return (
-                  <button
-                    key={`${a.id}-${a.occurrenceDate}`}
-                    onClick={()=> setSelectedDay(a.occurrenceDate)}
-                    className="w-full text-left flex items-center gap-4 px-6 py-4 hover:bg-accent-dark/20 transition-colors"
-                  >
-                    <div className="flex-shrink-0 w-16 text-center">
-                      <div className="text-[10px] font-bold uppercase tracking-wide text-text-light">{weekdayLabel}</div>
-                      <div className="text-sm font-semibold text-text-primary">{monthDayLabel}</div>
-                    </div>
-                    <span className={`w-2 h-2 rounded-full flex-shrink-0 ${style.dot}`} />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-text-primary truncate">{a.title}</p>
-                      <div className="flex flex-wrap items-center gap-x-3 text-xs text-text-light">
-                        {a.event_time && <span>{formatTime(a.event_time)}</span>}
-                        {a.event_location && <span>{a.event_location}</span>}
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-
-            {upcomingDisplayItems.length > UPCOMING_DISPLAY_LIMIT && (
-              <div className="px-6 py-3 border-t border-accent-dark text-center">
-                <span className="text-xs text-text-light">
-                  +{upcomingDisplayItems.length - UPCOMING_DISPLAY_LIMIT} more in the next {Math.round(UPCOMING_WINDOW_DAYS / 30)} months
-                </span>
-              </div>
-            )}
-          </motion.div>
-        )}
       </div>
 
       <AnimatePresence>
