@@ -190,52 +190,28 @@ const Resources=()=> {
             transition={{duration: 0.8,delay: 0.4}}
             className="card-clay rounded-lg shadow-md px-4 py-3 mb-6"
           >
-            <div className="flex items-center gap-1.5 mb-2">
-              <SafeIcon icon={FiFilter} className="h-3.5 w-3.5 text-text-light" />
-              <span className="text-xs font-medium text-text-light font-inter uppercase tracking-wide">
-                Filter by Category
-              </span>
-            </div>
-            <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
-              <button
-                onClick={()=> setSelectedCategory('')}
-                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-colors font-inter ${
-                  selectedCategory===''
-                    ? 'bg-primary text-white'
-                    : 'bg-accent text-text-primary hover:bg-accent-dark'
-                }`}
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5 flex-shrink-0">
+                <SafeIcon icon={FiFilter} className="h-3.5 w-3.5 text-text-light" />
+                <span className="text-xs font-medium text-text-light font-inter uppercase tracking-wide">
+                  Category
+                </span>
+              </div>
+              <select
+                value={selectedCategory}
+                onChange={(e)=> setSelectedCategory(e.target.value)}
+                className="form-input py-2 flex-1"
               >
-                All Resources
-              </button>
-              {categories.map((category)=> (
-                <button
-                  key={category.id}
-                  onClick={()=> setSelectedCategory(category.id)}
-                  className={`flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-colors font-inter flex items-center space-x-1 ${
-                    selectedCategory===category.id
-                      ? 'bg-primary text-white'
-                      : 'bg-accent text-text-primary hover:bg-accent-dark'
-                  }`}
-                >
-                  <SafeIcon
-                    icon={category.is_link_group ? FiLink : FiBookOpen}
-                    className="h-3 w-3"
-                  />
-                  <span>{category.name}</span>
-                </button>
-              ))}
-              {resources.some((r)=> !r.category_id) && (
-                <button
-                  onClick={()=> setSelectedCategory('uncategorized')}
-                  className={`flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-colors font-inter ${
-                    selectedCategory==='uncategorized'
-                      ? 'bg-primary text-white'
-                      : 'bg-accent text-text-primary hover:bg-accent-dark'
-                  }`}
-                >
-                  Uncategorized
-                </button>
-              )}
+                <option value="">All Resources</option>
+                {categories.map((category)=> (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+                {resources.some((r)=> !r.category_id) && (
+                  <option value="uncategorized">Uncategorized</option>
+                )}
+              </select>
             </div>
           </motion.div>
         )}
