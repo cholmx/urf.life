@@ -82,19 +82,19 @@ const Home=()=> {
 
   const mainButtons=[
     {title: 'The Happenings',description: 'This week’s update',icon: FiMail,path: '/announcements',isInternal: true},
-    {title: 'Calendar',description: 'Everything coming up',icon: FiCalendar,path: '/calendar',isInternal: true},
     {title: 'Sermon Blog',description: 'Weekly sermons',icon: FiFileText,path: '/sermon-blog',isInternal: true},
     {title: 'Shine Podcast',description: 'Latest episodes',icon: FiMic,path: '/shine-podcast',isInternal: true},
     {title: 'Sermon Podcast',description: 'Listen to recordings',icon: FiHeadphones,path: '/sermon-podcast',isInternal: true},
     {title: 'Give',description: 'Support our ministry',icon: FiCreditCard,path: 'https://onrealm.org/urfellowship/-/form/give/now',isInternal: false},
     {title: 'Table Group Sign-Up',description: 'Join a small group',icon: FiUsers,path: '/table-group-signup',isInternal: true},
     {title: 'Facility Rental',description: 'Request to use our space',icon: FiKey,path: '/rental',isInternal: true},
-    {title: 'Join Realm',description: 'Our online community',icon: FiUserPlus,path: '/join-realm',isInternal: true}
+    {title: 'Join Realm',description: 'Our online community',icon: FiUserPlus,path: '/join-realm',isInternal: true},
+    ...(hasResources ? [{title: 'Resources',description: 'Books, links & materials',icon: FiBookOpen,path: '/resources',isInternal: true}] : [])
   ];
 
   const quickLinks=[
     {title: 'Contact',icon: FiMail,path: '/contact',isInternal: true},
-    ...(hasResources ? [{title: 'Resources',icon: FiBookOpen,path: '/resources',isInternal: true}] : []),
+    {title: 'Calendar',icon: FiCalendar,path: '/calendar',isInternal: true},
     {title: 'Realm',icon: FiLogIn,path: 'https://onrealm.org/urfellowship/'},
     {title: 'Website',icon: FiGlobe,path: 'https://urfellowship.com'}
   ];
