@@ -203,7 +203,7 @@ const Resources=()=> {
                 className="form-input py-2 flex-1"
               >
                 <option value="">All Resources</option>
-                {categories.map((category)=> (
+                {categories.filter((category)=> resources.some((r)=> r.category_id===category.id)).map((category)=> (
                   <option key={category.id} value={category.id}>
                     {category.name}
                   </option>
