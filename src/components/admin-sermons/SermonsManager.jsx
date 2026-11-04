@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../../common/SafeIcon';
@@ -37,6 +37,14 @@ const SermonsManager = ({ sermonSeries }) => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState('');
   const [formData, setFormData] = useState(emptyForm);
+  const formRef = useRef(null);
+
+  // Edit opens this same form at the top of the list - for a sermon far
+  // down a long, newest-first list, that landed off-screen above the
+  // admin's current scroll position with nothing to show it had worked.
+  useEffect(() => {
+    if (showForm) formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [showForm]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -139,7 +147,7 @@ const SermonsManager = ({ sermonSeries }) => {
       </div>
 
       {showForm && (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="admin-card mb-6">
+        <motion.div ref={formRef} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="admin-card mb-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
