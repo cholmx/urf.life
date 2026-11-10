@@ -25,7 +25,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Site palette - F7F5EE/FFFFFF/EAA235/2B433E/1E2522/C74F2F.
+        // Site palette - E8E7E3/FFFFFF/EAA235/2B433E/1E2522/C74F2F.
         primary: '#2B433E',
         secondary: '#1E2522',
         accent: '#FFFFFF', // page background
