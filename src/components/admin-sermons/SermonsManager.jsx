@@ -18,6 +18,7 @@ const emptyForm = {
   youtube_url: '',
   summary: '',
   discussion_questions: '',
+  tags: '',
   sermon_series_id: ''
 };
 
@@ -60,6 +61,7 @@ const SermonsManager = ({ sermonSeries }) => {
         youtube_url: formData.youtube_url,
         summary: formData.summary,
         discussion_questions: formData.discussion_questions,
+        tags: formData.tags.split(',').map((t) => t.trim()).filter(Boolean),
         sermon_series_id: formData.sermon_series_id || null
       };
 
@@ -88,6 +90,7 @@ const SermonsManager = ({ sermonSeries }) => {
       youtube_url: sermon.youtube_url || '',
       summary: sermon.summary,
       discussion_questions: sermon.discussion_questions,
+      tags: (sermon.tags || []).join(', '),
       sermon_series_id: sermon.sermon_series_id || ''
     });
     setEditingId(sermon.id);
@@ -232,6 +235,17 @@ const SermonsManager = ({ sermonSeries }) => {
               />
             </div>
 
+            <div>
+              <label className="admin-label">Tags</label>
+              <input
+                type="text"
+                value={formData.tags}
+                onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                className="admin-input"
+                placeholder="Comma-separated, e.g. Forgiveness, The Holy Spirit"
+              />
+            </div>
+
             <div className="flex space-x-4">
               <button type="submit" disabled={saving} className="admin-btn-primary">
                 <SafeIcon icon={FiSave} className="h-4 w-4" />
@@ -285,6 +299,15 @@ const SermonsManager = ({ sermonSeries }) => {
                     {sermon.summary && (
                       <div className="text-sm text-text-primary font-inter mb-2">
                         Summary: {sermon.summary.replace(/<[^>]*>/g, '').substring(0, 100)}...
+                      </div>
+                    )}
+                    {sermon.tags?.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {sermon.tags.map((tag) => (
+                          <span key={tag} className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-accent text-text-primary font-inter">
+                            {tag}
+                          </span>
+                        ))}
                       </div>
                     )}
                   </div>
