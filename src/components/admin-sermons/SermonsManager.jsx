@@ -8,8 +8,9 @@ import { toTitleCase } from '../../utils/textFormat';
 import { formatDate } from '../../utils/dateFormat';
 import { useSupabaseCrud } from '../../hooks/useSupabaseCrud';
 import { useConfirm } from '../../hooks/useConfirm';
+import supabase from '../../lib/supabase';
 
-const { FiPlus, FiEdit, FiTrash2, FiSave, FiX, FiLayers, FiAlertTriangle, FiCheckCircle } = FiIcons;
+const { FiPlus, FiEdit, FiTrash2, FiSave, FiX, FiLayers, FiAlertTriangle, FiCheckCircle, FiTag } = FiIcons;
 
 const emptyForm = {
   title: '',
@@ -38,6 +39,7 @@ const SermonsManager = ({ sermonSeries }) => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState('');
   const [formData, setFormData] = useState(emptyForm);
+  const [tagging, setTagging] = useState(false);
   const formRef = useRef(null);
 
   // Edit opens this same form at the top of the list - for a sermon far
@@ -118,6 +120,25 @@ const SermonsManager = ({ sermonSeries }) => {
     setSuccess('');
   };
 
+  // Runs the same AI tagging the hourly cron job runs, on demand - for
+  // sermons that already have a summary/description but no tags yet
+  // (e.g. backfilled or manually entered before this existed).
+  const handleTagUntagged = async () => {
+    setTagging(true);
+    setError(null);
+    setSuccess('');
+    try {
+      const { data, error: rpcError } = await supabase.rpc('ai_tag_untagged_sermons', { batch_size: 50 });
+      if (rpcError) throw rpcError;
+      setSuccess(data > 0 ? `Tagged ${data} sermon${data === 1 ? '' : 's'} with AI.` : 'No untagged sermons found.');
+    } catch (err) {
+      console.error('Error tagging sermons:', err);
+      setError('Error tagging sermons: ' + err.message);
+    } finally {
+      setTagging(false);
+    }
+  };
+
   const getSeriesName = (seriesId) => {
     const series = sermonSeries.find(s => s.id === seriesId);
     return series ? series.name : 'Standalone Sermon';
@@ -142,7 +163,11 @@ const SermonsManager = ({ sermonSeries }) => {
         </motion.div>
       )}
 
-      <div className="flex justify-end mb-6">
+      <div className="flex justify-end space-x-3 mb-6">
+        <button onClick={handleTagUntagged} disabled={tagging} className="admin-btn-secondary">
+          <SafeIcon icon={FiTag} className="h-4 w-4" />
+          <span>{tagging ? 'Tagging...' : 'Tag Untagged Sermons'}</span>
+        </button>
         <button onClick={() => setShowForm(true)} className="admin-btn-primary">
           <SafeIcon icon={FiPlus} className="h-4 w-4" />
           <span>New Sermon</span>
