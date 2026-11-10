@@ -87,7 +87,7 @@ const CapitalCampaign = () => {
             key={update.id}
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
+            transition={{ duration: 0.25, delay: index * 0.05 }}
             className="card-clay rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
           >
             <div className="p-8">
@@ -161,7 +161,7 @@ const CapitalCampaign = () => {
             key={item.id}
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
+            transition={{ duration: 0.25, delay: index * 0.05 }}
             className="card-clay rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
           >
             {item.image_url && (
@@ -202,7 +202,7 @@ const CapitalCampaign = () => {
             key={faq.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: index * 0.05 }}
+            transition={{ duration: 0.2, delay: index * 0.025 }}
             className="card-clay rounded-lg shadow-md overflow-hidden"
           >
             <button
@@ -224,7 +224,7 @@ const CapitalCampaign = () => {
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.3 }}
+                transition={{ duration: 0.15 }}
                 className="px-6 pb-6 border-t border-gray-100"
               >
                 <div
@@ -296,7 +296,7 @@ const CapitalCampaign = () => {
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.4 }}
             className="flex items-center justify-center space-x-4 mb-1"
           >
             <SafeIcon icon={FiTrendingUp} className="h-8 w-8 text-primary" />
@@ -307,7 +307,7 @@ const CapitalCampaign = () => {
           <motion.p
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
             className="text-base page-subtitle"
           >
             Transforming Together
@@ -318,7 +318,7 @@ const CapitalCampaign = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.25 }}
+          transition={{ duration: 0.3, delay: 0.125 }}
           className="flex flex-col sm:flex-row justify-center gap-4 mb-10"
         >
           <a
@@ -347,7 +347,7 @@ const CapitalCampaign = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
+          transition={{ duration: 0.3, delay: 0.15 }}
           className="flex flex-wrap justify-center gap-4 mb-12"
         >
           <button

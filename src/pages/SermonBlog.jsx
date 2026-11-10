@@ -104,7 +104,7 @@ const SermonBlog=()=> {
           <motion.div
             initial={{opacity: 0,y: 30}}
             animate={{opacity: 1,y: 0}}
-            transition={{duration: 0.8}}
+            transition={{duration: 0.4}}
             className="flex items-center justify-center space-x-4 mb-1"
           >
             <SafeIcon icon={FiPlay} className="h-8 w-8 text-primary" />
@@ -117,7 +117,7 @@ const SermonBlog=()=> {
           <motion.p
             initial={{opacity: 0,y: 30}}
             animate={{opacity: 1,y: 0}}
-            transition={{duration: 0.8,delay: 0.2}}
+            transition={{duration: 0.4,delay: 0.1}}
             className="text-base page-subtitle"
           >
             Weekly sermons and discussion questions for Table Groups
@@ -129,7 +129,7 @@ const SermonBlog=()=> {
           <motion.div
             initial={{opacity: 0,y: 30}}
             animate={{opacity: 1,y: 0}}
-            transition={{duration: 0.8,delay: 0.4}}
+            transition={{duration: 0.4,delay: 0.2}}
             className="card-clay rounded-2xl shadow-modern p-6 mb-8"
           >
             <div className="flex flex-wrap items-center justify-between gap-4">
@@ -187,7 +187,7 @@ const SermonBlog=()=> {
             <motion.div
               initial={{opacity: 0,y: 30}}
               animate={{opacity: 1,y: 0}}
-              transition={{duration: 0.5}}
+              transition={{duration: 0.25}}
               className="bg-primary text-white rounded-lg p-6 mb-8"
             >
               <div className="flex items-center space-x-3 mb-3">
@@ -233,7 +233,7 @@ const SermonBlog=()=> {
                 key={sermon.id}
                 initial={{opacity: 0,y: 30}}
                 animate={{opacity: 1,y: 0}}
-                transition={{duration: 0.5,delay: index * 0.1}}
+                transition={{duration: 0.25,delay: index * 0.05}}
                 className="card-clay rounded-2xl shadow-modern overflow-hidden hover:shadow-modern-lg hover:-translate-y-1 transition-all duration-300"
               >
                 <div className="p-8">
@@ -343,7 +343,7 @@ const SermonBlog=()=> {
           <motion.div
             initial={{opacity: 0,y: 30}}
             animate={{opacity: 1,y: 0}}
-            transition={{duration: 0.5}}
+            transition={{duration: 0.25}}
             className="mt-12 flex flex-col items-center space-y-4"
           >
             <div className="flex items-center gap-3 w-full max-w-sm">

@@ -1,5 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@400;500;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;0,900;1,400;1,700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Caladea:ital,wght@0,400;1,400;1,700&display=swap');
 
 @tailwind base;
@@ -10,14 +10,14 @@
   body {
     @apply bg-accent text-text-primary font-sans antialiased;
     font-size: 18px;
-    font-weight: 500;
+    font-weight: 400;
     background-image: radial-gradient(ellipse at 50% 0%, rgba(62,88,77,0.07) 0%, transparent 70%);
     background-attachment: fixed;
   }
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading text-text-primary;
-    font-weight: 800;
+    font-weight: 700;
     text-transform: uppercase;
   }
 
@@ -275,9 +275,9 @@
   margin-bottom: 0;
 }
 .happenings-script h3 {
-  font-family: "Google Sans Flex", Inter, sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
   font-size: 1.5em;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.15;
   text-transform: uppercase;
   letter-spacing: 0.02em;
@@ -308,13 +308,13 @@
   color: #1E2522;
 }
 
-/* Admin dashboard: Inter for body text (headings already inherit Inter
-   Tight Bold from the base h1-h6 rule above). Same green/cream/near-black
+/* Admin dashboard: Merriweather for body text (headings already inherit
+   Arial Bold from the base h1-h6 rule above). Same green/cream/near-black
    palette as the public site - admin-input/admin-card/admin-btn-* below
    use Tailwind's neutral-* scale, which tailwind.config.js overrides
    end to end to match that palette instead of staying plain gray. */
 .admin-shell {
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Merriweather', Georgia, serif;
 }
 
 @layer components {

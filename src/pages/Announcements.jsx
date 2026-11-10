@@ -75,7 +75,7 @@ const Announcements=()=> {
           <motion.div
             initial={{opacity: 0,y: 30}}
             animate={{opacity: 1,y: 0}}
-            transition={{duration: 0.8}}
+            transition={{duration: 0.4}}
             className="flex items-center justify-center space-x-4 mb-1"
           >
             <SafeIcon icon={FiMail} className="h-8 w-8 text-primary" />
@@ -86,7 +86,7 @@ const Announcements=()=> {
           <motion.p
             initial={{opacity: 0,y: 30}}
             animate={{opacity: 1,y: 0}}
-            transition={{duration: 0.8,delay: 0.2}}
+            transition={{duration: 0.4,delay: 0.1}}
             className="text-base page-subtitle"
           >
             {weekDate ? `Week of ${formatDate(weekDate)}` : 'What’s happening around the church'}
@@ -124,7 +124,7 @@ const Announcements=()=> {
             <motion.div
               initial={{opacity: 0,y: 30}}
               animate={{opacity: 1,y: 0}}
-              transition={{duration: 0.5}}
+              transition={{duration: 0.25}}
               className="card-clay rounded-lg shadow-md overflow-hidden"
             >
               <div

@@ -17,11 +17,11 @@ const BATHROOM_NOTE_LINES = [
 
 const TEAL = '#1E2522';
 const ORANGE = '#EAA235';
-// Its own constant rather than font.display (now the same Google Sans
-// Flex value, but this is printed material representing the public site,
+// Its own constant rather than font.display (currently the same Arial
+// value, but this is printed material representing the public site,
 // independent of whatever the admin UI's own display font happens to be
 // set to).
-const FLYER_FONT = "'Google Sans Flex', Inter, sans-serif";
+const FLYER_FONT = "Arial, Helvetica, sans-serif";
 
 // Weekly/biweekly/monthly items only ever store their very first session
 // in event_date (see getNextOccurrenceDate's own comment) - using it
@@ -234,26 +234,26 @@ function buildFlyerHTML(items: Announcement[], today: string, bathroomVariant: b
         const isWC = a.scope === 'whole_church';
         const dateLabel = escapeHtml(formatDateTimeList(a, today));
         const dateSpan = dateLabel
-          ? `<span style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:${s.dateFontSize}pt;font-weight:700;color:${ORANGE};letter-spacing:0.05em;white-space:nowrap;flex-shrink:0;">${dateLabel}</span>`
+          ? `<span style="font-family:${FLYER_FONT};font-size:${s.dateFontSize}pt;font-weight:700;color:${ORANGE};letter-spacing:0.05em;white-space:nowrap;flex-shrink:0;">${dateLabel}</span>`
           : '';
         const ministryTag = ministry
-          ? `<span style="font-family:'Inter',sans-serif;font-size:${Math.max(s.contactFontSize - 0.5, 7)}pt;font-weight:700;color:${TEAL};background:${isWC ? '#F7F5EE' : '#FFFFFF'};border-radius:999px;padding:1pt 7pt;letter-spacing:0.04em;white-space:nowrap;flex-shrink:0;">${ministry}</span>`
+          ? `<span style="font-family:${font.body};font-size:${Math.max(s.contactFontSize - 0.5, 7)}pt;font-weight:700;color:${TEAL};background:${isWC ? '#F7F5EE' : '#FFFFFF'};border-radius:999px;padding:1pt 7pt;letter-spacing:0.04em;white-space:nowrap;flex-shrink:0;">${ministry}</span>`
           : '';
         const contactHTML = contactInfo
-          ? `<div style="font-family:'Inter',sans-serif;font-size:${s.contactFontSize}pt;color:#777;margin-top:${s.contactMarginTop}pt;">${contactName ? `${contactName}, ` : ''}${contactInfo}</div>`
+          ? `<div style="font-family:${font.body};font-size:${s.contactFontSize}pt;color:#777;margin-top:${s.contactMarginTop}pt;">${contactName ? `${contactName}, ` : ''}${contactInfo}</div>`
           : '';
         const border = i < active.length - 1 ? `border-bottom:1pt solid #2B433E;` : '';
         return `
           <div style="display:flex;gap:${s.gap}in;padding:${s.itemPadV}in 0;${border}align-items:flex-start;">
             <div style="flex:1;min-width:0;">
               <div style="margin-bottom:${s.titleMarginBottom}pt;">
-                <div style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:${s.titleFontSize}pt;font-weight:900;color:${TEAL};letter-spacing:0.02em;line-height:1.1;text-transform:uppercase;">${title}</div>
+                <div style="font-family:${FLYER_FONT};font-size:${s.titleFontSize}pt;font-weight:900;color:${TEAL};letter-spacing:0.02em;line-height:1.1;text-transform:uppercase;">${title}</div>
                 <div style="margin-top:1pt;line-height:1.1;display:flex;gap:4pt;align-items:center;flex-wrap:wrap;">
                   ${dateSpan}
                   ${ministryTag}
                 </div>
               </div>
-              <div style="font-family:'Inter',sans-serif;font-size:${s.bodyFontSize}pt;color:#1E2522;line-height:1.4;">${text}</div>
+              <div style="font-family:${font.body};font-size:${s.bodyFontSize}pt;color:#1E2522;line-height:1.4;">${text}</div>
               ${contactHTML}
             </div>
           </div>`;
@@ -267,11 +267,11 @@ function buildFlyerHTML(items: Announcement[], today: string, bathroomVariant: b
     </div>` : '';
 
   return `
-    <div style="width:8.5in;min-height:11in;background:#fff;font-family:'Inter',sans-serif;display:flex;flex-direction:column;box-sizing:border-box;padding:0.5in;">
+    <div style="width:8.5in;min-height:11in;background:#fff;font-family:${font.body};display:flex;flex-direction:column;box-sizing:border-box;padding:0.5in;">
       <div style="padding:${s.headerPadV}in 0 ${s.headerPadV * 0.54}in;flex-shrink:0;text-align:center;border-bottom:3pt solid ${ORANGE};">
-        <div style="font-family:'Inter',sans-serif;font-size:${s.orgFontSize}pt;font-weight:700;letter-spacing:0.28em;text-transform:uppercase;color:${TEAL};margin-bottom:8pt;">Upper Room Fellowship &nbsp;·&nbsp; urf.life</div>
-        <div style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:${s.monthFontSize}pt;font-weight:900;color:${TEAL};text-transform:uppercase;letter-spacing:0.01em;line-height:0.95;margin-bottom:8pt;">${monthLabel}</div>
-        <div style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:${s.subtitleFontSize}pt;font-weight:600;color:${ORANGE};text-transform:uppercase;letter-spacing:0.22em;">Events &amp; Announcements</div>
+        <div style="font-family:${font.body};font-size:${s.orgFontSize}pt;font-weight:700;letter-spacing:0.28em;text-transform:uppercase;color:${TEAL};margin-bottom:8pt;">Upper Room Fellowship &nbsp;·&nbsp; urf.life</div>
+        <div style="font-family:${FLYER_FONT};font-size:${s.monthFontSize}pt;font-weight:900;color:${TEAL};text-transform:uppercase;letter-spacing:0.01em;line-height:0.95;margin-bottom:8pt;">${monthLabel}</div>
+        <div style="font-family:${FLYER_FONT};font-size:${s.subtitleFontSize}pt;font-weight:600;color:${ORANGE};text-transform:uppercase;letter-spacing:0.22em;">Events &amp; Announcements</div>
       </div>
       <div style="flex:1;padding:${s.bodyPadV}in ${s.bodyPadH}in ${s.bodyPadV * 0.67}in;background:#fff;display:flex;flex-direction:column;">
         ${itemsHTML}
@@ -407,7 +407,7 @@ export function MonthlyTab({ announcements, today }: MonthlyTabProps) {
   <title>Monthly Flyer - ${monthLabel}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@400;500;700;900&family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,700;1,14..32,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;0,900;1,400;1,700&display=swap" rel="stylesheet">
   <style>
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #fff; }

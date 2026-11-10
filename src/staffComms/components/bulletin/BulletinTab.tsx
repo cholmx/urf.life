@@ -9,11 +9,11 @@ const TEAL = '#1E2522';
 const TEAL_LIGHT = '#FFFFFF';
 const ORANGE = '#1E2522';
 const LOGO_URL = '/logonegtransblack.png';
-// Its own constant rather than font.display (now the same Google Sans
-// Flex value, but this is printed material representing the public site,
+// Its own constant rather than font.display (currently the same Arial
+// value, but this is printed material representing the public site,
 // independent of whatever the admin UI's own display font happens to be
 // set to).
-const BULLETIN_FONT = "'Google Sans Flex', Inter, sans-serif";
+const BULLETIN_FONT = "Arial, Helvetica, sans-serif";
 
 interface BulletinTabProps {
   announcements: Announcement[];
@@ -349,12 +349,12 @@ function buildItemHTML(a: Announcement, scale: BulletinScale): string {
   const contactInfo = escapeHtml(a.contact_info);
   return `<div style="padding:${scale.itemPadV}pt 0;">
     <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:4px;">
-      <span style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:${scale.titleFontSize}pt;font-weight:800;color:${TEAL};text-transform:uppercase;letter-spacing:0.01em;">${title}</span>
-      ${dateLabel ? `<span style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:${scale.dateFontSize}pt;font-weight:700;color:${ORANGE};">${dateLabel}</span>` : ''}
-      ${ministry ? `<span style="font-family:'Inter',sans-serif;font-size:${scale.contactFontSize}pt;font-weight:700;color:${TEAL};background:${TEAL_LIGHT};border-radius:999px;padding:2pt 7pt;">${ministry}</span>` : ''}
+      <span style="font-family:${BULLETIN_FONT};font-size:${scale.titleFontSize}pt;font-weight:800;color:${TEAL};text-transform:uppercase;letter-spacing:0.01em;">${title}</span>
+      ${dateLabel ? `<span style="font-family:${BULLETIN_FONT};font-size:${scale.dateFontSize}pt;font-weight:700;color:${ORANGE};">${dateLabel}</span>` : ''}
+      ${ministry ? `<span style="font-family:${font.body};font-size:${scale.contactFontSize}pt;font-weight:700;color:${TEAL};background:${TEAL_LIGHT};border-radius:999px;padding:2pt 7pt;">${ministry}</span>` : ''}
     </div>
-    ${text ? `<div style="font-family:'Inter',sans-serif;font-size:${scale.bodyFontSize}pt;color:#1E2522;line-height:1.4;margin-bottom:4px;">${text}</div>` : ''}
-    ${contactInfo ? `<div style="font-family:'Inter',sans-serif;font-size:${scale.contactFontSize}pt;color:#000;margin-top:4px;">${contactName ? `${contactName}, ` : ''}${contactInfo}</div>` : ''}
+    ${text ? `<div style="font-family:${font.body};font-size:${scale.bodyFontSize}pt;color:#1E2522;line-height:1.4;margin-bottom:4px;">${text}</div>` : ''}
+    ${contactInfo ? `<div style="font-family:${font.body};font-size:${scale.contactFontSize}pt;color:#000;margin-top:4px;">${contactName ? `${contactName}, ` : ''}${contactInfo}</div>` : ''}
   </div>`;
 }
 
@@ -374,7 +374,7 @@ function buildBulletinHTML(items: Announcement[], monthLabel: string): string {
   <title>Upper Room Fellowship Monthly Announcements - ${monthLabel}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@400;500;700;900&family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,700;1,14..32,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;0,900;1,400;1,700&display=swap" rel="stylesheet">
   <style>
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #fff; }
@@ -403,17 +403,17 @@ function buildPrintBulletin(itemsHTML: string, monthLabel: string): string {
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
       <img src="${LOGO_URL}" alt="URF" style="height:52px;width:auto;flex-shrink:0;" />
       <div>
-        <div style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:22pt;font-weight:900;color:${TEAL};line-height:1;letter-spacing:-0.01em;">Upper Room Fellowship</div>
-        <div style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:16pt;font-weight:700;color:${ORANGE};line-height:1.1;margin-top:2px;">Monthly Announcements</div>
+        <div style="font-family:${BULLETIN_FONT};font-size:22pt;font-weight:900;color:${TEAL};line-height:1;letter-spacing:-0.01em;">Upper Room Fellowship</div>
+        <div style="font-family:${BULLETIN_FONT};font-size:16pt;font-weight:700;color:${ORANGE};line-height:1.1;margin-top:2px;">Monthly Announcements</div>
       </div>
     </div>
-    <div style="font-family:'Google Sans Flex',Inter,sans-serif;font-size:10pt;font-weight:600;color:${ORANGE};letter-spacing:0.1em;margin-bottom:4px;">${monthLabel}</div>
+    <div style="font-family:${BULLETIN_FONT};font-size:10pt;font-weight:600;color:${ORANGE};letter-spacing:0.1em;margin-bottom:4px;">${monthLabel}</div>
     <div style="border-top:2.5pt solid ${ORANGE};margin-top:10px;margin-bottom:14px;flex-shrink:0;"></div>
     <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;justify-content:space-evenly;">
       ${itemsHTML}
     </div>
     <div style="border-top:1.5pt solid ${ORANGE};padding-top:9px;text-align:center;flex-shrink:0;margin-top:10px;">
-      <div style="font-family:'Inter',sans-serif;font-size:7.5pt;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:${TEAL};">Upper Room Fellowship &nbsp;&middot;&nbsp; urf.life &nbsp;&middot;&nbsp; Info@urfellowship.com</div>
+      <div style="font-family:${font.body};font-size:7.5pt;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:${TEAL};">Upper Room Fellowship &nbsp;&middot;&nbsp; urf.life &nbsp;&middot;&nbsp; Info@urfellowship.com</div>
     </div>
   </div>`;
 }

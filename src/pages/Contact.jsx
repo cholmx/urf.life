@@ -92,7 +92,7 @@ const Contact=()=> {
         <motion.div
           initial={{opacity: 0,scale: 0.9}}
           animate={{opacity: 1,scale: 1}}
-          transition={{duration: 0.5}}
+          transition={{duration: 0.25}}
           className="card-clay rounded-lg shadow-lg p-8 max-w-md mx-auto text-center"
         >
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -129,7 +129,7 @@ const Contact=()=> {
           <motion.div
             initial={{opacity: 0,y: 30}}
             animate={{opacity: 1,y: 0}}
-            transition={{duration: 0.8}}
+            transition={{duration: 0.4}}
             className="flex items-center justify-center space-x-4 mb-1"
           >
             <SafeIcon icon={FiMail} className="h-8 w-8 text-primary" />
@@ -142,7 +142,7 @@ const Contact=()=> {
           <motion.p
             initial={{opacity: 0,y: 30}}
             animate={{opacity: 1,y: 0}}
-            transition={{duration: 0.8,delay: 0.2}}
+            transition={{duration: 0.4,delay: 0.1}}
             className="text-base page-subtitle"
           >
             Get in touch with our church team
@@ -154,7 +154,7 @@ const Contact=()=> {
           <motion.div
             initial={{opacity: 0,y: 30}}
             animate={{opacity: 1,y: 0}}
-            transition={{duration: 0.8,delay: 0.3}}
+            transition={{duration: 0.4,delay: 0.15}}
             className="mb-12"
           >
             <div className="text-center mb-6">
@@ -174,7 +174,7 @@ const Contact=()=> {
                   key={staff.id}
                   initial={{opacity: 0,y: 20}}
                   animate={{opacity: 1,y: 0}}
-                  transition={{duration: 0.5,delay: 0.4 + index * 0.1}}
+                  transition={{duration: 0.25,delay: 0.2 + index * 0.1}}
                   className="card-clay rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
                 >
                   <div className="flex items-start space-x-4">
@@ -219,7 +219,7 @@ const Contact=()=> {
         <motion.div
           initial={{opacity: 0,y: 30}}
           animate={{opacity: 1,y: 0}}
-          transition={{duration: 0.8,delay: 0.6}}
+          transition={{duration: 0.4,delay: 0.3}}
           className="card-clay rounded-lg shadow-md p-8 max-w-2xl mx-auto"
         >
           <form onSubmit={handleSubmit} noValidate className="space-y-6">

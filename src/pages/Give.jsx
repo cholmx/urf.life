@@ -23,7 +23,7 @@ const Give=()=> {
           <motion.div
             initial={{opacity: 0,y: 30}}
             animate={{opacity: 1,y: 0}}
-            transition={{duration: 0.8}}
+            transition={{duration: 0.4}}
             className="flex items-center justify-center space-x-4 mb-1"
           >
             <SafeIcon icon={FiCreditCard} className="h-8 w-8 text-primary" />
@@ -36,7 +36,7 @@ const Give=()=> {
           <motion.p
             initial={{opacity: 0,y: 30}}
             animate={{opacity: 1,y: 0}}
-            transition={{duration: 0.8,delay: 0.2}}
+            transition={{duration: 0.4,delay: 0.1}}
             className="text-base page-subtitle"
           >
             Support our church through online giving
@@ -47,7 +47,7 @@ const Give=()=> {
         <motion.div
           initial={{opacity: 0,y: 30}}
           animate={{opacity: 1,y: 0}}
-          transition={{duration: 0.8,delay: 0.4}}
+          transition={{duration: 0.4,delay: 0.2}}
           className="card-clay rounded-lg shadow-lg overflow-hidden"
         >
           <div className="p-8">
@@ -114,7 +114,7 @@ const Give=()=> {
         <motion.div
           initial={{opacity: 0,y: 30}}
           animate={{opacity: 1,y: 0}}
-          transition={{duration: 0.8,delay: 0.6}}
+          transition={{duration: 0.4,delay: 0.3}}
           className="mt-8 text-center"
         >
           <p className="text-text-primary">

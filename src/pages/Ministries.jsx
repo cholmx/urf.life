@@ -71,7 +71,7 @@ const Ministries=()=> {
           <motion.div
             initial={{opacity: 0,y: 30}}
             animate={{opacity: 1,y: 0}}
-            transition={{duration: 0.8}}
+            transition={{duration: 0.4}}
             className="flex items-center justify-center space-x-4 mb-1"
           >
             <SafeIcon icon={FiHeart} className="h-8 w-8 text-primary" />
@@ -84,7 +84,7 @@ const Ministries=()=> {
           <motion.p
             initial={{opacity: 0,y: 30}}
             animate={{opacity: 1,y: 0}}
-            transition={{duration: 0.8,delay: 0.2}}
+            transition={{duration: 0.4,delay: 0.1}}
             className="text-base page-subtitle"
           >
             Discover ways to grow, serve, and connect
@@ -105,7 +105,7 @@ const Ministries=()=> {
             <motion.div
               initial={{opacity: 0,y: 30}}
               animate={{opacity: 1,y: 0}}
-              transition={{duration: 0.5}}
+              transition={{duration: 0.25}}
               className="text-center py-12"
             >
               <SafeIcon icon={FiHeart} className="h-16 w-16 text-text-light mx-auto mb-4" />
@@ -122,7 +122,7 @@ const Ministries=()=> {
                 key={ministry.id}
                 initial={{opacity: 0,y: 30}}
                 animate={{opacity: 1,y: 0}}
-                transition={{duration: 0.5,delay: index * 0.1}}
+                transition={{duration: 0.25,delay: index * 0.05}}
                 className="card-clay rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
               >
                 <div className="p-6 md:p-8">
@@ -196,7 +196,7 @@ const Ministries=()=> {
           <motion.div
             initial={{opacity: 0,y: 30}}
             animate={{opacity: 1,y: 0}}
-            transition={{duration: 0.8,delay: 0.5}}
+            transition={{duration: 0.4,delay: 0.25}}
             className="mt-16 card-clay rounded-lg shadow-md p-8 text-center"
           >
             <h2 className="text-2xl md:text-3xl font-bold text-text-primary mb-4">

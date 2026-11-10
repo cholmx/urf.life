@@ -65,7 +65,7 @@ const Services = () => {
           <motion.h1
             initial={{opacity: 0, y: 30}}
             animate={{opacity: 1, y: 0}}
-            transition={{duration: 0.8}}
+            transition={{duration: 0.4}}
             className="text-4xl md:text-6xl font-bold mb-6 font-inter"
           >
             Join Us for Worship
@@ -73,7 +73,7 @@ const Services = () => {
           <motion.p
             initial={{opacity: 0, y: 30}}
             animate={{opacity: 1, y: 0}}
-            transition={{duration: 0.8, delay: 0.2}}
+            transition={{duration: 0.4, delay: 0.1}}
             className="text-xl text-primary-light page-subtitle"
           >
             Experience meaningful worship, biblical teaching, and authentic community
@@ -94,7 +94,7 @@ const Services = () => {
                 key={index}
                 initial={{opacity: 0, y: 30}}
                 animate={{opacity: 1, y: 0}}
-                transition={{duration: 0.5, delay: index * 0.1}}
+                transition={{duration: 0.25, delay: index * 0.05}}
                 className="bg-white border border-accent rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
               >
                 <div className="bg-primary text-white p-6">
@@ -143,7 +143,7 @@ const Services = () => {
                 key={index}
                 initial={{opacity: 0, y: 30}}
                 animate={{opacity: 1, y: 0}}
-                transition={{duration: 0.5, delay: index * 0.1}}
+                transition={{duration: 0.25, delay: index * 0.05}}
                 className="text-center p-6 card-clay rounded-lg shadow-md hover:shadow-lg transition-shadow"
               >
                 <SafeIcon icon={item.icon} className="h-12 w-12 text-primary mx-auto mb-4" />

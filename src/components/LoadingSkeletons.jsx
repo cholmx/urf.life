@@ -197,7 +197,7 @@ export const SkeletonTable = ({ rows = 5, columns = 4, rounded = 'rounded-2xl', 
             key={rowIndex}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: rowIndex * 0.1 }}
+            transition={{ delay: rowIndex * 0.05 }}
             className="p-4"
           >
             <div className={`grid ${gridColsClass} gap-4 items-center`}>
@@ -292,7 +292,7 @@ export const SkeletonStats = () => (
         key={i}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: i * 0.1 }}
+        transition={{ delay: i * 0.05 }}
         className="bg-white rounded-lg shadow-md p-6 text-center space-y-3"
       >
         <SkeletonBox width="w-16" height="h-16" rounded="rounded-full" className="mx-auto bg-gray-300" />
@@ -311,7 +311,7 @@ export const SkeletonGrid = ({ items = 6, columns = 3 }) => (
         key={i}
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: i * 0.05 }}
+        transition={{ delay: i * 0.025 }}
         className="bg-white rounded-lg shadow-md p-6 text-center space-y-3"
         style={{ width: '160px', height: '120px' }}
       >
@@ -393,7 +393,7 @@ export const LoadingTransition = ({ isLoading, skeleton, children, delay = 0 }) 
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay }}
+      transition={{ duration: 0.25, delay }}
     >
       {children}
     </motion.div>

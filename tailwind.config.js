@@ -62,12 +62,12 @@ export default {
         purple:  sixColorRamp('#EAA235'),
       },
       fontFamily: {
-        'sans': ['Inter', 'sans-serif'],
-        'heading': ['"Google Sans Flex"', 'Inter', 'sans-serif'],
-        'display': ['"Google Sans Flex"', 'Inter', 'sans-serif'],
+        'sans': ['Merriweather', 'Georgia', 'serif'],
+        'heading': ['Arial', 'Helvetica', 'sans-serif'],
+        'display': ['Arial', 'Helvetica', 'sans-serif'],
 
         // New design system typography
-        'gsans': ['"Google Sans Flex"', 'Inter', 'sans-serif'],
+        'gsans': ['Arial', 'Helvetica', 'sans-serif'],
         'caladea': ['Caladea', 'Georgia', 'serif'],
         'ui': ['Inter', 'sans-serif'],
       },

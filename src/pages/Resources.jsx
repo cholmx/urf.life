@@ -164,7 +164,7 @@ const Resources=()=> {
           <motion.div
             initial={{opacity: 0,y: 30}}
             animate={{opacity: 1,y: 0}}
-            transition={{duration: 0.8}}
+            transition={{duration: 0.4}}
             className="flex items-center justify-center space-x-4 mb-1"
           >
             <SafeIcon icon={FiBookOpen} className="h-8 w-8 text-primary" />
@@ -175,7 +175,7 @@ const Resources=()=> {
           <motion.p
             initial={{opacity: 0,y: 30}}
             animate={{opacity: 1,y: 0}}
-            transition={{duration: 0.8,delay: 0.2}}
+            transition={{duration: 0.4,delay: 0.1}}
             className="text-base page-subtitle"
           >
             Helpful books,links,and materials for your faith journey
@@ -187,7 +187,7 @@ const Resources=()=> {
           <motion.div
             initial={{opacity: 0,y: 30}}
             animate={{opacity: 1,y: 0}}
-            transition={{duration: 0.8,delay: 0.4}}
+            transition={{duration: 0.4,delay: 0.2}}
             className="card-clay rounded-lg shadow-md px-4 py-3 mb-6"
           >
             <div className="flex items-center gap-3">
@@ -267,7 +267,7 @@ const Resources=()=> {
                   key={group.name}
                   initial={{opacity: 0,y: 30}}
                   animate={{opacity: 1,y: 0}}
-                  transition={{duration: 0.5,delay: groupIndex * 0.1}}
+                  transition={{duration: 0.25,delay: groupIndex * 0.05}}
                 >
                   {/* Category Header with special styling for Upper Room Books */}
                   <div className="mb-6">
@@ -327,8 +327,8 @@ const Resources=()=> {
                         initial={{opacity: 0,y: 30}}
                         animate={{opacity: 1,y: 0}}
                         transition={{
-                          duration: 0.5,
-                          delay: groupIndex * 0.1 + index * 0.05
+                          duration: 0.25,
+                          delay: groupIndex * 0.05 + index * 0.05
                         }}
                       >
                         <BookCard resource={resource} />

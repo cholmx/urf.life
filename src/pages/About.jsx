@@ -31,7 +31,7 @@ const About=()=> {
           <motion.h1
             initial={{opacity: 0,y: 30}}
             animate={{opacity: 1,y: 0}}
-            transition={{duration: 0.8}}
+            transition={{duration: 0.4}}
             className="text-4xl md:text-6xl mb-2"
           >
             About Upper Room Fellowship
@@ -39,7 +39,7 @@ const About=()=> {
           <motion.p
             initial={{opacity: 0,y: 30}}
             animate={{opacity: 1,y: 0}}
-            transition={{duration: 0.8,delay: 0.2}}
+            transition={{duration: 0.4,delay: 0.1}}
             className="text-lg text-primary-light opacity-90 page-subtitle"
           >
             Discover our story,mission,and the heart behind our church community
@@ -81,7 +81,7 @@ const About=()=> {
             <motion.div
               initial={{opacity: 0,x: -30}}
               animate={{opacity: 1,x: 0}}
-              transition={{duration: 0.8}}
+              transition={{duration: 0.4}}
               className="bg-white p-8 rounded-lg shadow-md"
             >
               <h3 className="text-2xl mb-4">Our Mission</h3>
@@ -92,7 +92,7 @@ const About=()=> {
             <motion.div
               initial={{opacity: 0,x: 30}}
               animate={{opacity: 1,x: 0}}
-              transition={{duration: 0.8,delay: 0.2}}
+              transition={{duration: 0.4,delay: 0.1}}
               className="bg-white p-8 rounded-lg shadow-md"
             >
               <h3 className="text-2xl mb-4">Our Vision</h3>
@@ -117,7 +117,7 @@ const About=()=> {
                 key={index}
                 initial={{opacity: 0,y: 30}}
                 animate={{opacity: 1,y: 0}}
-                transition={{duration: 0.5,delay: index * 0.1}}
+                transition={{duration: 0.25,delay: index * 0.05}}
                 className="text-center p-6 rounded-lg hover:shadow-md transition-shadow bg-accent-dark"
               >
                 <SafeIcon icon={value.icon} className="h-12 w-12 text-text-primary mx-auto mb-4" />
@@ -142,7 +142,7 @@ const About=()=> {
                 key={index}
                 initial={{opacity: 0,y: 30}}
                 animate={{opacity: 1,y: 0}}
-                transition={{duration: 0.5,delay: index * 0.1}}
+                transition={{duration: 0.25,delay: index * 0.05}}
                 className="card-clay rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
               >
                 <img src={member.image} alt={member.name} className="w-full h-64 object-cover" />

@@ -84,7 +84,7 @@ const LivingStonesGallery = () => {
             key={photo.id}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3, delay: index * 0.04 }}
+            transition={{ duration: 0.15, delay: index * 0.02 }}
             onClick={() => openLightbox(index)}
             className="relative group aspect-square rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow focus:outline-none"
           >
@@ -116,7 +116,7 @@ const LivingStonesGallery = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.1 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
             onClick={closeLightbox}
           >
@@ -124,7 +124,7 @@ const LivingStonesGallery = () => {
               initial={{ scale: 0.92, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.92, opacity: 0 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.1 }}
               onClick={(e) => e.stopPropagation()}
               className="relative max-w-3xl w-full rounded-2xl overflow-hidden bg-white shadow-2xl"
             >

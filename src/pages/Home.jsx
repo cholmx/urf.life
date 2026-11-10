@@ -123,7 +123,7 @@ const Home=()=> {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <header className="text-center mb-4 md:mb-6">
           <motion.h1
-            initial={{opacity: 0,y: 20}} animate={{opacity: 1,y: 0}} transition={{duration: 0.7}}
+            initial={{opacity: 0,y: 20}} animate={{opacity: 1,y: 0}} transition={{duration: 0.35}}
             className="font-gsans uppercase font-black text-xl md:text-3xl text-text-primary tracking-tight flex items-center justify-center gap-2.5"
           >
             <img src="/logonegtransblack%20copy.png" alt="" className="h-[1.35em] w-auto" />
@@ -155,7 +155,7 @@ const Home=()=> {
                 <section className="mb-8 flex justify-center w-full">
                   <div className="flex flex-col gap-3 md:gap-4 w-full max-w-[344px] md:max-w-[711px]">
                     {featuredButtons.map((button, i) => (
-                      <HomeButton key={button.title} {...button} isFeatured delay={0.3 + i * 0.1} />
+                      <HomeButton key={button.title} {...button} isFeatured delay={0.15 + i * 0.05} />
                     ))}
                   </div>
                 </section>
@@ -165,12 +165,12 @@ const Home=()=> {
                 <div className="w-full max-w-[344px] md:max-w-[711px]">
                   <div className="hidden md:grid md:grid-cols-3 gap-4 w-full items-stretch">
                     {mainButtons.map((button, i) => (
-                      <HomeButton key={button.title} {...button} delay={0.5 + i * 0.05} stretch />
+                      <HomeButton key={button.title} {...button} delay={0.25 + i * 0.025} stretch />
                     ))}
                   </div>
                   <div className="grid grid-cols-2 md:hidden gap-3 w-full items-stretch">
                     {mainButtons.map((button, i) => (
-                      <HomeButton key={button.title} {...button} delay={0.5 + i * 0.05} isLastOdd={mainButtons.length % 2 !== 0 && i === mainButtons.length - 1} stretch />
+                      <HomeButton key={button.title} {...button} delay={0.25 + i * 0.025} isLastOdd={mainButtons.length % 2 !== 0 && i === mainButtons.length - 1} stretch />
                     ))}
                   </div>
                 </div>
@@ -180,7 +180,7 @@ const Home=()=> {
                 <motion.div
                   initial={{opacity: 0, y: 16}}
                   animate={{opacity: 1, y: 0}}
-                  transition={{duration: 0.5, delay: 0.9}}
+                  transition={{duration: 0.25, delay: 0.45}}
                   className="flex items-center gap-3 mb-5"
                 >
                   <div className="h-px w-10 bg-text-light/30"></div>
@@ -189,7 +189,7 @@ const Home=()=> {
                 </motion.div>
                 <div className="flex flex-wrap justify-center gap-3">
                   {quickLinks.map((link, i) => (
-                    <QuickLinkButton key={link.title} {...link} delay={1.0 + i * 0.1} />
+                    <QuickLinkButton key={link.title} {...link} delay={0.5 + i * 0.05} />
                   ))}
                 </div>
               </section>
@@ -197,7 +197,7 @@ const Home=()=> {
           )}
 
           <motion.footer
-            initial={{opacity: 0}} animate={{opacity: 1}} transition={{duration: 0.8, delay: 1.2}}
+            initial={{opacity: 0}} animate={{opacity: 1}} transition={{duration: 0.4, delay: 0.6}}
             className="mt-16 text-center"
           >
             <div className="flex items-center justify-center gap-3 mb-5">
@@ -209,7 +209,7 @@ const Home=()=> {
               {socialLinks.map((social, i) => (
                 <motion.a
                   key={social.name} href={social.url} target="_blank" rel="noopener noreferrer"
-                  initial={{opacity: 0, scale: 0.8}} animate={{opacity: 1, scale: 1}} transition={{duration: 0.5, delay: 1.3 + i * 0.1}}
+                  initial={{opacity: 0, scale: 0.8}} animate={{opacity: 1, scale: 1}} transition={{duration: 0.25, delay: 0.65 + i * 0.1}}
                   className="p-3 rounded-full bg-[#597F5C] hover:bg-[#2B433E] text-white transition-all duration-300 hover:scale-110"
                 >
                   <SafeIcon icon={social.icon} className="h-5 w-5" />
@@ -283,7 +283,7 @@ const HomeButton = ({ title, description, icon, path, isFeatured = false, isInte
           : {};
 
   return (
-    <motion.div initial={{opacity: 0, y: 30}} animate={{opacity: 1, y: 0}} transition={{duration: 0.6, delay}} className={`${isLastOdd ? 'col-span-2' : ''}${stretch ? ' h-full flex flex-col' : ''}`}>
+    <motion.div initial={{opacity: 0, y: 30}} animate={{opacity: 1, y: 0}} transition={{duration: 0.3, delay}} className={`${isLastOdd ? 'col-span-2' : ''}${stretch ? ' h-full flex flex-col' : ''}`}>
       {isInternal ? (
         <Link to={path} className={`${baseClasses} ${isFeatured ? featuredClasses : mainClasses}`} style={gradientStyle}>
           {content}
@@ -306,7 +306,7 @@ const QuickLinkButton = ({ title, icon, path, isInternal = false, delay = 0 }) =
     </>
   );
   return (
-    <motion.div initial={{opacity: 0, y: 20}} animate={{opacity: 1, y: 0}} transition={{duration: 0.5, delay}}>
+    <motion.div initial={{opacity: 0, y: 20}} animate={{opacity: 1, y: 0}} transition={{duration: 0.25, delay}}>
       {isInternal ? (
         <Link to={path} className={className}>{inner}</Link>
       ) : (

@@ -122,7 +122,7 @@ const PublicCalendar=()=> {
           <motion.div
             initial={{opacity: 0,y: 30}}
             animate={{opacity: 1,y: 0}}
-            transition={{duration: 0.8}}
+            transition={{duration: 0.4}}
             className="flex items-center justify-center space-x-4 mb-1"
           >
             <SafeIcon icon={FiCalendar} className="h-8 w-8 text-primary" />
@@ -131,7 +131,7 @@ const PublicCalendar=()=> {
           <motion.p
             initial={{opacity: 0,y: 30}}
             animate={{opacity: 1,y: 0}}
-            transition={{duration: 0.8,delay: 0.2}}
+            transition={{duration: 0.4,delay: 0.1}}
             className="text-base page-subtitle"
           >
             What's coming up at Upper Room Fellowship
@@ -158,7 +158,7 @@ const PublicCalendar=()=> {
             <motion.div
               initial={{opacity: 0,y: 20}}
               animate={{opacity: 1,y: 0}}
-              transition={{duration: 0.6,delay: 0.1}}
+              transition={{duration: 0.3,delay: 0.05}}
               className="card-clay rounded-2xl shadow-modern overflow-hidden"
             >
               <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-5 border-b border-accent-dark">
@@ -233,7 +233,7 @@ const PublicCalendar=()=> {
               initial={{opacity: 0,scale: 0.96,y: 10}}
               animate={{opacity: 1,scale: 1,y: 0}}
               exit={{opacity: 0,scale: 0.96}}
-              transition={{duration: 0.25}}
+              transition={{duration: 0.125}}
               className="relative card-clay rounded-3xl shadow-modern-lg max-w-lg w-full max-h-[85vh] overflow-y-auto"
             >
               <div className="px-6 py-4 border-b border-accent-dark flex items-start justify-between sticky top-0 bg-white rounded-t-3xl">

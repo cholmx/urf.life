@@ -130,7 +130,7 @@ const DailyDevotionals=()=> {
           <motion.div 
             initial={{opacity: 0,y: 30}} 
             animate={{opacity: 1,y: 0}} 
-            transition={{duration: 0.8}} 
+            transition={{duration: 0.4}} 
             className="flex items-center justify-center space-x-4 mb-3"
           >
             <SafeIcon icon={FiBookOpen} className="h-8 w-8 text-primary" />
@@ -143,7 +143,7 @@ const DailyDevotionals=()=> {
           <motion.p 
             initial={{opacity: 0,y: 30}} 
             animate={{opacity: 1,y: 0}} 
-            transition={{duration: 0.8,delay: 0.2}} 
+            transition={{duration: 0.4,delay: 0.1}} 
             className="text-lg text-text-primary font-inter"
           > 
             Daily inspiration and reflection for your spiritual journey 

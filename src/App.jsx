@@ -39,7 +39,7 @@ const pageVariants = {
   exit: {opacity: 0, y: -8},
 }
 
-const pageTransition = {duration: 0.28, ease: [0.4, 0, 0.2, 1]}
+const pageTransition = {duration: 0.14, ease: [0.4, 0, 0.2, 1]}
 
 const PageLoader = () => (
   <div style={{minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>

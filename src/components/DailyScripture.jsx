@@ -64,7 +64,7 @@ const DailyScripture=()=> {
     <motion.div
       initial={{opacity: 0,y: 20}}
       animate={{opacity: 1,y: 0}}
-      transition={{duration: 0.8}}
+      transition={{duration: 0.4}}
       className="bg-white rounded-lg shadow-md overflow-hidden border-l-4 border-primary"
     >
       <div className="p-6">

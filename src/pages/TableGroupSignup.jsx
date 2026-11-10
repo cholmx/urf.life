@@ -89,14 +89,14 @@ const TableGroupSignup=()=> {
             initial={{opacity: 0,scale: 0.92,y: 20}}
             animate={{opacity: 1,scale: 1,y: 0}}
             exit={{opacity: 0,scale: 0.92}}
-            transition={{duration: 0.45}}
+            transition={{duration: 0.225}}
             className="flex items-center justify-center min-h-[80vh] px-4"
           >
             <div className="card-clay rounded-3xl shadow-modern-lg p-10 max-w-md w-full text-center">
               <motion.div
                 initial={{scale: 0}}
                 animate={{scale: 1}}
-                transition={{delay: 0.15,type: 'spring',stiffness: 200}}
+                transition={{delay: 0.075,type: 'spring',stiffness: 200}}
                 className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
                 style={{backgroundColor: '#2B433E'}}
               >
@@ -126,14 +126,14 @@ const TableGroupSignup=()=> {
             initial={{opacity: 0,y: 20}}
             animate={{opacity: 1,y: 0}}
             exit={{opacity: 0,y: -20}}
-            transition={{duration: 0.3}}
+            transition={{duration: 0.15}}
             className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8"
           >
             <div className="text-center mb-12">
               <motion.div
                 initial={{opacity: 0,y: 30}}
                 animate={{opacity: 1,y: 0}}
-                transition={{duration: 0.8}}
+                transition={{duration: 0.4}}
                 className="flex items-center justify-center space-x-4 mb-1"
               >
                 <SafeIcon icon={FiUsers} className="h-8 w-8 text-primary" />
@@ -142,7 +142,7 @@ const TableGroupSignup=()=> {
               <motion.p
                 initial={{opacity: 0,y: 30}}
                 animate={{opacity: 1,y: 0}}
-                transition={{duration: 0.8,delay: 0.2}}
+                transition={{duration: 0.4,delay: 0.1}}
                 className="text-base page-subtitle"
               >
                 Complete this quick form and we'll be in touch soon.
@@ -152,7 +152,7 @@ const TableGroupSignup=()=> {
             <motion.div
               initial={{opacity: 0,y: 30}}
               animate={{opacity: 1,y: 0}}
-              transition={{duration: 0.8,delay: 0.4}}
+              transition={{duration: 0.4,delay: 0.2}}
               className="card-clay rounded-3xl shadow-modern p-8"
             >
               <form onSubmit={handleSubmit} noValidate className="space-y-6">

@@ -70,7 +70,7 @@ const EventRegistration=()=> {
           <motion.div
             initial={{opacity: 0,y: 30}}
             animate={{opacity: 1,y: 0}}
-            transition={{duration: 0.8}}
+            transition={{duration: 0.4}}
             className="flex items-center justify-center space-x-4 mb-1"
           >
             <SafeIcon icon={FiCalendar} className="h-8 w-8 text-primary" />
@@ -83,7 +83,7 @@ const EventRegistration=()=> {
           <motion.p
             initial={{opacity: 0,y: 30}}
             animate={{opacity: 1,y: 0}}
-            transition={{duration: 0.8,delay: 0.2}}
+            transition={{duration: 0.4,delay: 0.1}}
             className="text-base page-subtitle"
           >
             Upcoming church events and activities
@@ -110,7 +110,7 @@ const EventRegistration=()=> {
                 key={event.id}
                 initial={{opacity: 0,y: 30}}
                 animate={{opacity: 1,y: 0}}
-                transition={{duration: 0.5,delay: index * 0.1}}
+                transition={{duration: 0.25,delay: index * 0.05}}
                 className="card-clay rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
               >
                 <h3 className="text-xl font-extrabold font-gsans text-text-primary mb-2">
