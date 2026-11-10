@@ -409,7 +409,7 @@ begin
         'content-type', 'application/json'
       ),
       body := jsonb_build_object(
-        'model', 'claude-opus-5-5',
+        'model', 'claude-sonnet-5-5',
         'max_tokens', 512,
         'system', 'You tag church sermons for a website. Given a sermon''s title, summary, and discussion questions, call the sermon_tags tool with 3-6 short topical tags (1-3 words each, title case, e.g. "Forgiveness", "The Holy Spirit") describing what it is actually about.',
         'messages', jsonb_build_array(
