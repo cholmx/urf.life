@@ -124,7 +124,7 @@ const Home=()=> {
         <header className="text-center mb-4 md:mb-6">
           <motion.h1
             initial={{opacity: 0,y: 20}} animate={{opacity: 1,y: 0}} transition={{duration: 0.35}}
-            className="font-gsans uppercase font-black text-xl md:text-3xl text-text-primary tracking-tight flex items-center justify-center gap-2.5"
+            className="font-gsans font-black text-xl md:text-3xl text-text-primary tracking-tight flex items-center justify-center gap-2.5"
           >
             <img src="/logonegtransblack%20copy.png" alt="" className="h-[1.35em] w-auto" />
             <span>Upper Room Fellowship</span>
@@ -302,7 +302,7 @@ const QuickLinkButton = ({ title, icon, path, isInternal = false, delay = 0 }) =
   const inner = (
     <>
       <SafeIcon icon={icon} className="h-4 w-4 text-primary transition-transform duration-300 group-hover:scale-110 flex-shrink-0" />
-      <span className="text-xs md:text-sm font-extrabold uppercase font-gsans text-text-primary group-hover:text-primary transition-colors duration-200">{title}</span>
+      <span className="text-xs md:text-sm font-extrabold font-gsans text-text-primary group-hover:text-primary transition-colors duration-200">{title}</span>
     </>
   );
   return (

@@ -9,8 +9,9 @@
 @layer base {
   body {
     @apply bg-accent text-text-primary font-sans antialiased;
-    font-size: 18px;
+    font-size: 15px;
     font-weight: 400;
+    line-height: 1.7;
     background-image: radial-gradient(ellipse at 50% 0%, rgba(62,88,77,0.07) 0%, transparent 70%);
     background-attachment: fixed;
   }
@@ -18,11 +19,12 @@
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading text-text-primary;
     font-weight: 700;
-    text-transform: uppercase;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
   }
 
   p {
-    @apply leading-normal;
+    line-height: 1.7;
   }
 
   a {
