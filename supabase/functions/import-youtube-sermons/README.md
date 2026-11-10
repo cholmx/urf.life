@@ -15,18 +15,25 @@ installed and linked to this project (`supabase link`):
 supabase functions deploy import-youtube-sermons
 ```
 
-### 2. Set the two secrets this function needs
+### 2. Set the one secret this function needs
 
 `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are provided automatically
-to every Edge Function - you only need to set these two yourself:
+to every Edge Function, and `ANTHROPIC_API_KEY` is already set project-wide
+(the `generate-script` function already uses it) - secrets are shared
+across every Edge Function in the project, not set per-function. You only
+need to add this one:
 
 ```bash
 supabase secrets set YOUTUBE_API_KEY=your-youtube-data-api-v3-key
-supabase secrets set ANTHROPIC_API_KEY=your-anthropic-api-key
 ```
 
-(Or set them without the CLI: Supabase Dashboard -> Edge Functions ->
+(Or set it without the CLI: Supabase Dashboard -> Edge Functions ->
 Secrets.)
+
+If your Anthropic key is a personal/service-account key not scoped to a
+single workspace, it also needs `ANTHROPIC_WORKSPACE_ID` set - same as
+`generate-script` - but if that function already works today, yours is
+already covered and there's nothing more to do here.
 
 ### 3. Schedule it to run automatically
 

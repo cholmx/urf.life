@@ -150,9 +150,16 @@ async function runImport() {
   const supabaseUrl = requireEnv('SUPABASE_URL');
   const supabaseServiceRoleKey = requireEnv('SUPABASE_SERVICE_ROLE_KEY');
   const anthropicApiKey = requireEnv('ANTHROPIC_API_KEY');
+  // Only needed for a personal/service-account key that isn't scoped to a
+  // single workspace - see generate-script/index.ts, which uses the same
+  // ANTHROPIC_API_KEY secret and the same optional header.
+  const workspaceId = Deno.env.get('ANTHROPIC_WORKSPACE_ID');
 
   const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
-  const anthropic = new Anthropic({ apiKey: anthropicApiKey });
+  const anthropic = new Anthropic({
+    apiKey: anthropicApiKey,
+    defaultHeaders: workspaceId ? { 'anthropic-workspace-id': workspaceId } : undefined,
+  });
 
   console.log(`Resolving uploads playlist for @${YOUTUBE_CHANNEL_HANDLE}...`);
   const uploadsPlaylistId = await fetchChannelUploadsPlaylistId(youtubeApiKey);
