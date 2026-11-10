@@ -26,9 +26,10 @@
 
   h1, h2, h3, h4, h5, h6 {
     @apply text-text-primary;
-    /* Literal, not @apply font-heading - see the body rule's comment. */
+    /* Literal, not @apply font-heading - see the body rule's comment.
+       font-weight matches designTokens.js's fontWeights.heading. */
     font-family: Arial, Helvetica, sans-serif;
-    font-weight: 700;
+    font-weight: 800;
     line-height: 1.1;
     letter-spacing: -0.01em;
   }
@@ -60,13 +61,13 @@
   color: #1E2522;
 }
 .prose h1 {
-  @apply text-2xl font-bold;
+  @apply text-2xl font-extrabold;
 }
 .prose h2 {
-  @apply text-xl font-bold;
+  @apply text-xl font-extrabold;
 }
 .prose h3 {
-  @apply text-lg font-bold;
+  @apply text-lg font-extrabold;
 }
 .prose p {
   @apply mb-0.5 leading-normal;
@@ -294,7 +295,7 @@
 .happenings-script h3 {
   font-family: Arial, Helvetica, sans-serif;
   font-size: 1.5em;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.01em;
   color: inherit;

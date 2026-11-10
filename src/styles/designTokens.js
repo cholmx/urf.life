@@ -36,3 +36,9 @@ export const fonts = {
   heading: fontFamilies.heading.join(', '),
   body: fontFamilies.body.join(', '),
 };
+
+export const fontWeights = {
+  // Headings, buttons, labels - was 700 (Bold), bumped a step heavier.
+  heading: 800,
+  body: 400,
+};
