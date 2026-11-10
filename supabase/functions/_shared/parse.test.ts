@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseSermonTitle, extractYouTubeVideoId, splitDescriptionSections } from './parse.js';
+import { parseSermonTitle, extractYouTubeVideoId, splitDescriptionSections } from './parse.ts';
 
 describe('parseSermonTitle', () => {
   it('parses a title with a series', () => {

@@ -1,14 +1,22 @@
 // Pure, dependency-free parsing helpers for the YouTube sermon import -
-// kept separate from index.js (which talks to the YouTube/Claude/Supabase
+// kept separate from index.ts (which talks to the YouTube/Claude/Supabase
 // APIs) so the actual parsing logic can be unit tested without network
-// access or credentials.
+// access or credentials. Plain portable TS (no Deno- or Node-specific
+// APIs), so the same file is both deployed with the edge function and
+// imported directly by parse.test.ts under Vitest.
 
 // Expected title shapes going forward:
 //   "Series :: Sermon Name // Speaker"   (part of a series)
 //   "Sermon Name // Speaker"             (standalone, no series)
 // A title matching neither (older videos, or one not yet following the
 // convention) returns null so the caller can skip it rather than guess.
-export function parseSermonTitle(title) {
+export interface ParsedSermonTitle {
+  series: string | null;
+  sermonName: string;
+  speaker: string;
+}
+
+export function parseSermonTitle(title: string | null | undefined): ParsedSermonTitle | null {
   if (!title || typeof title !== 'string') return null;
 
   const withSeries = title.match(/^(.+?)\s*::\s*(.+?)\s*\/\/\s*(.+?)\s*$/);
@@ -35,7 +43,7 @@ export function parseSermonTitle(title) {
 // already a bare ID. Used to match a freshly-fetched video against
 // existing sermons whose youtube_url was typed in by hand long before
 // youtube_video_id existed, in whatever format staff happened to paste.
-export function extractYouTubeVideoId(input) {
+export function extractYouTubeVideoId(input: string | null | undefined): string | null {
   if (!input || typeof input !== 'string') return null;
   const trimmed = input.trim();
 
@@ -59,7 +67,7 @@ export function extractYouTubeVideoId(input) {
 // the AI call a concrete starting point instead of the whole raw
 // description, and lets the caller skip the AI call entirely when a
 // description has neither header (nothing to extract).
-export function splitDescriptionSections(description) {
+export function splitDescriptionSections(description: string | null | undefined): { summary: string; discussionQuestions: string } {
   if (!description || typeof description !== 'string') {
     return { summary: '', discussionQuestions: '' };
   }

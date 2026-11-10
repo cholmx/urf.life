@@ -1,5 +1,10 @@
 // Imports new sermon videos from the church's YouTube channel into
-// sermons_portal123, run on a schedule by .github/workflows/import-sermons.yml.
+// sermons_portal123. Deploy with:
+//   supabase functions deploy import-youtube-sermons
+// then set it up to run on a schedule via Supabase Dashboard -> Edge
+// Functions -> import-youtube-sermons -> Cron Triggers (no code needed -
+// see supabase/functions/import-youtube-sermons/README.md for the exact
+// steps and the two secrets this function needs).
 //
 // What it does, per run:
 //   1. Fetch the channel's most recent uploads from the YouTube Data API.
@@ -15,29 +20,32 @@
 //      "Sermon Name // Speaker" is logged and skipped rather than guessed -
 //      covers the channel's older videos, which predate this convention.
 //
-// Required environment variables (set as GitHub Actions secrets - see the
-// workflow file for the exact names):
-//   YOUTUBE_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, ANTHROPIC_API_KEY
-//
-// Re-running this script is always safe: every video is either skipped,
-// backfilled (metadata-only), or inserted once - never updated after that,
-// so a staff edit made afterward in the admin UI is never silently
+// Re-running this is always safe: every video is either skipped,
+// backfilled (metadata-only), or inserted once - never updated after
+// that, so a staff edit made afterward in the admin UI is never silently
 // overwritten by a later run.
 
-import { createClient } from '@supabase/supabase-js';
-import Anthropic from '@anthropic-ai/sdk';
-import { parseSermonTitle, extractYouTubeVideoId, splitDescriptionSections } from './parse.js';
+import { createClient } from 'npm:@supabase/supabase-js@2';
+import Anthropic from 'npm:@anthropic-ai/sdk@1';
+import { parseSermonTitle, extractYouTubeVideoId, splitDescriptionSections } from '../_shared/parse.ts';
 
 const YOUTUBE_CHANNEL_HANDLE = 'TheUpperRoomFellowship';
 const MAX_VIDEOS_PER_RUN = 50;
 
-function requireEnv(name) {
-  const value = process.env[name];
+function requireEnv(name: string): string {
+  const value = Deno.env.get(name);
   if (!value) throw new Error(`Missing required environment variable: ${name}`);
   return value;
 }
 
-async function fetchChannelUploadsPlaylistId(apiKey) {
+interface FetchedVideo {
+  videoId: string;
+  title: string;
+  description: string;
+  publishedAt: string;
+}
+
+async function fetchChannelUploadsPlaylistId(apiKey: string): Promise<string> {
   const url = `https://www.googleapis.com/youtube/v3/channels?part=contentDetails&forHandle=${encodeURIComponent(YOUTUBE_CHANNEL_HANDLE)}&key=${apiKey}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`YouTube channels.list failed: ${res.status} ${await res.text()}`);
@@ -47,12 +55,12 @@ async function fetchChannelUploadsPlaylistId(apiKey) {
   return uploadsId;
 }
 
-async function fetchRecentUploads(apiKey, uploadsPlaylistId, limit) {
+async function fetchRecentUploads(apiKey: string, uploadsPlaylistId: string, limit: number): Promise<FetchedVideo[]> {
   const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=${uploadsPlaylistId}&maxResults=${limit}&key=${apiKey}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`YouTube playlistItems.list failed: ${res.status} ${await res.text()}`);
   const data = await res.json();
-  return (data.items || []).map((item) => ({
+  return (data.items || []).map((item: any) => ({
     videoId: item.contentDetails.videoId,
     title: item.snippet.title,
     description: item.snippet.description || '',
@@ -63,14 +71,17 @@ async function fetchRecentUploads(apiKey, uploadsPlaylistId, limit) {
 // Claude reviews the naive header-split (if any) against the full raw
 // description and returns the cleaned-up, render-ready HTML plus tags -
 // this is the "look at it and make sure it's right" step, not a second
-// opinion the script trusts blindly: a description with neither header
+// opinion the function trusts blindly: a description with neither header
 // still gets tags from whatever it does say.
-async function extractSermonContent(anthropic, { title, description, naiveSummary, naiveQuestions }) {
+async function extractSermonContent(
+  anthropic: Anthropic,
+  { title, description, naiveSummary, naiveQuestions }: { title: string; description: string; naiveSummary: string; naiveQuestions: string }
+): Promise<{ summary_html: string; discussion_questions_html: string; tags: string[] }> {
   const tool = {
     name: 'sermon_content',
     description: 'The cleaned-up sermon summary, discussion questions, and topical tags extracted from a YouTube video description.',
     input_schema: {
-      type: 'object',
+      type: 'object' as const,
       properties: {
         summary_html: {
           type: 'string',
@@ -106,15 +117,15 @@ async function extractSermonContent(anthropic, { title, description, naiveSummar
     tool_choice: { type: 'auto' },
   });
 
-  const toolUse = response.content.find((block) => block.type === 'tool_use' && block.name === 'sermon_content');
+  const toolUse = response.content.find((block: any) => block.type === 'tool_use' && block.name === 'sermon_content');
   if (!toolUse) {
-    console.warn('  Claude did not call sermon_content - leaving summary/discussion questions/tags empty for this video.');
+    console.warn('Claude did not call sermon_content - leaving summary/discussion questions/tags empty for this video.');
     return { summary_html: '', discussion_questions_html: '', tags: [] };
   }
-  return toolUse.input;
+  return toolUse.input as { summary_html: string; discussion_questions_html: string; tags: string[] };
 }
 
-async function findOrCreateSeries(supabase, seriesName) {
+async function findOrCreateSeries(supabase: any, seriesName: string | null): Promise<string | null> {
   if (!seriesName) return null;
   const { data: existing, error: findError } = await supabase
     .from('sermon_series_portal123')
@@ -130,11 +141,11 @@ async function findOrCreateSeries(supabase, seriesName) {
     .select('id')
     .single();
   if (insertError) throw insertError;
-  console.log(`  Created new sermon series: "${seriesName}"`);
+  console.log(`Created new sermon series: "${seriesName}"`);
   return created.id;
 }
 
-async function run() {
+async function runImport() {
   const youtubeApiKey = requireEnv('YOUTUBE_API_KEY');
   const supabaseUrl = requireEnv('SUPABASE_URL');
   const supabaseServiceRoleKey = requireEnv('SUPABASE_SERVICE_ROLE_KEY');
@@ -156,16 +167,18 @@ async function run() {
   if (existingError) throw existingError;
 
   const claimedVideoIds = new Set(
-    existingSermons.filter((s) => s.youtube_video_id).map((s) => s.youtube_video_id)
+    (existingSermons as any[]).filter((s) => s.youtube_video_id).map((s) => s.youtube_video_id)
   );
-  const unclaimedByVideoId = new Map();
-  for (const sermon of existingSermons) {
+  const unclaimedByVideoId = new Map<string, string>();
+  for (const sermon of existingSermons as any[]) {
     if (sermon.youtube_video_id) continue;
     const id = extractYouTubeVideoId(sermon.youtube_url);
     if (id) unclaimedByVideoId.set(id, sermon.id);
   }
 
   let skipped = 0, backfilled = 0, imported = 0, unmatched = 0;
+  const importedTitles: string[] = [];
+  const unmatchedTitles: string[] = [];
 
   for (const video of videos) {
     if (claimedVideoIds.has(video.videoId)) {
@@ -188,6 +201,7 @@ async function run() {
     const parsedTitle = parseSermonTitle(video.title);
     if (!parsedTitle) {
       console.log(`Skipping "${video.title}" - title doesn't match "Series :: Name // Speaker" or "Name // Speaker".`);
+      unmatchedTitles.push(video.title);
       unmatched += 1;
       continue;
     }
@@ -215,13 +229,25 @@ async function run() {
       sermon_series_id: seriesId,
     });
     if (insertError) throw insertError;
+    importedTitles.push(parsedTitle.sermonName);
     imported += 1;
   }
 
-  console.log(`\nDone. Imported ${imported}, backfilled ${backfilled}, skipped ${skipped} (already imported), ${unmatched} not yet in the expected title format.`);
+  return { imported, backfilled, skipped, unmatched, importedTitles, unmatchedTitles };
 }
 
-run().catch((error) => {
-  console.error('Import failed:', error);
-  process.exit(1);
+Deno.serve(async () => {
+  try {
+    const result = await runImport();
+    console.log(`Done. Imported ${result.imported}, backfilled ${result.backfilled}, skipped ${result.skipped}, ${result.unmatched} not yet in the expected title format.`);
+    return new Response(JSON.stringify(result), {
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (error) {
+    console.error('Import failed:', error);
+    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
 });
