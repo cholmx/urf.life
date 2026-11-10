@@ -8,7 +8,15 @@
 
 @layer base {
   body {
-    @apply bg-accent text-text-primary font-sans antialiased;
+    @apply text-text-primary antialiased;
+    /* Written as literal CSS, not @apply, on purpose: Bolt's build has
+       been caching @apply's theme resolution stale for font-family/
+       background-color specifically (confirmed via DevTools - the
+       plain CSS properties below always came through fresh on a push,
+       while @apply bg-accent/font-sans kept resolving to the old
+       cream/Inter values). Literal properties sidestep that cache. */
+    background-color: #FFFFFF;
+    font-family: 'Merriweather', Georgia, serif;
     font-size: 15px;
     font-weight: 400;
     line-height: 1.7;
@@ -17,7 +25,9 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-heading text-text-primary;
+    @apply text-text-primary;
+    /* Literal, not @apply font-heading - see the body rule's comment. */
+    font-family: Arial, Helvetica, sans-serif;
     font-weight: 700;
     line-height: 1.1;
     letter-spacing: -0.01em;
@@ -45,7 +55,8 @@
   color: #1E2522;
 }
 .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
-  @apply font-heading mt-4 mb-2;
+  @apply mt-4 mb-2;
+  font-family: Arial, Helvetica, sans-serif;
   color: #1E2522;
 }
 .prose h1 {
@@ -97,7 +108,8 @@
 /* Custom button component styles */
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center px-6 py-3 rounded-2xl font-extrabold font-heading uppercase tracking-wide transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-accent;
+    @apply inline-flex items-center justify-center px-6 py-3 rounded-2xl font-extrabold uppercase tracking-wide transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-accent;
+    font-family: Arial, Helvetica, sans-serif;
   }
   .btn-primary {
     @apply bg-primary text-white shadow-modern hover:shadow-modern-lg hover:-translate-y-0.5;
@@ -186,12 +198,14 @@
    [class~="..."] attribute selectors, not plain .bg-white-style class
    selectors - Tailwind's v3 JIT has a real bug where a hand-written CSS
    rule using the literal selector of a utility class that's ALSO
-   consumed via @apply elsewhere in this file (body's bg-accent/
-   text-text-primary, .form-input's text-text-primary, etc.) gets its
-   selector silently corrupted, rewritten to whatever element that other
-   @apply happened to target (this is exactly how the page background
-   shipped broken the first time - .bg-accent on body got silently
-   rewritten and lost). An attribute selector matches the same elements
+   consumed via @apply elsewhere in this file (.form-input's
+   text-text-primary, etc.) gets its selector silently corrupted,
+   rewritten to whatever element that other @apply happened to target
+   (this is exactly how the page background shipped broken the first
+   time - body's own @apply bg-accent silently resolved to a stale
+   cached value instead, which is why body now sets background-color
+   as a literal property instead of through @apply at all). An
+   attribute selector matches the same elements
    but isn't a "class" node to Tailwind's @apply bookkeeping, so it's
    immune. card-clay/form-section/admin-shell aren't real Tailwind
    utilities (never @apply'd), so plain class selectors are fine for
@@ -238,15 +252,16 @@
 }
 
 .font-fraunces {
-  @apply font-sans;
+  font-family: 'Merriweather', Georgia, serif;
 }
 
 .page-subtitle {
-  @apply font-sans font-normal text-base -mt-2;
+  @apply font-normal text-base -mt-2;
+  font-family: 'Merriweather', Georgia, serif;
 }
 
 .font-inter {
-  @apply font-sans;
+  font-family: 'Merriweather', Georgia, serif;
 }
 
 /* Discussion questions background */
