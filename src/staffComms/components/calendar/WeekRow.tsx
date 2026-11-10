@@ -50,7 +50,7 @@ export function WeekRow({
                 borderLeft: ci > 0 ? `1px solid ${C.border}` : 'none',
                 padding: '6px 5px 4px',
                 cursor: 'pointer',
-                background: isDragTarget ? C.highBg : isSelected ? '#E8E7E3' : 'transparent',
+                background: isDragTarget ? C.highBg : isSelected ? '#FFFFFF' : 'transparent',
                 transition: 'background 0.1s',
                 position: 'relative',
                 boxSizing: 'border-box',

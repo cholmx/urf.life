@@ -49,7 +49,7 @@ export function EditModal({ announcement, defaultDate, onSave, onDelete, onCance
                   onClick={onDelete}
                   style={{
                     padding: '4px 12px', border: '1px solid #C74F2F', borderRadius: 5,
-                    background: '#E8E7E3', color: '#C74F2F', fontSize: 11, fontFamily: font.body,
+                    background: '#FFFFFF', color: '#C74F2F', fontSize: 11, fontFamily: font.body,
                     cursor: 'pointer', fontWeight: 600,
                   }}
                 >

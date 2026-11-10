@@ -1,6 +1,6 @@
-// Every color below is one of the site's six literal hexes - E8E7E3,
-// FFFFFF, EAA235, 2B433E, 1E2522, C74F2F - no invented tint, shade or
-// opacity blend standing in as a would-be seventh color. The category
+// Every color below is one of the site's five literal hexes - FFFFFF,
+// EAA235, 2B433E, 1E2522, C74F2F - no invented tint, shade or
+// opacity blend standing in as a would-be sixth color. The category
 // badges (scope/happening_type/recurring) used to keep their own
 // informational hues (blue for event, purple for class, etc.), distinct
 // from the site's own chrome, so each type was instantly recognizable
@@ -10,7 +10,7 @@
 export const scopeChipColors: Record<string, { bg: string; text: string; border: string }> = {
   whole_church:  { bg: '#1E2522', text: '#FFFFFF', border: '#1E2522' },
   ministry:      { bg: '#2B433E', text: '#FFFFFF', border: '#2B433E' },
-  informational: { bg: '#E8E7E3', text: '#1E2522', border: '#1E2522' },
+  informational: { bg: '#FFFFFF', text: '#1E2522', border: '#1E2522' },
 };
 
 export const scopeRangeColors: Record<string, string> = {
@@ -20,7 +20,7 @@ export const scopeRangeColors: Record<string, string> = {
 };
 
 export const happeningTypeChipColors: Record<string, { bg: string; text: string; border: string }> = {
-  announcement: { bg: '#E8E7E3', text: '#1E2522', border: '#1E2522' },
+  announcement: { bg: '#FFFFFF', text: '#1E2522', border: '#1E2522' },
   event:        { bg: '#2B433E', text: '#FFFFFF', border: '#2B433E' },
   class:        { bg: '#EAA235', text: '#1E2522', border: '#EAA235' },
   general:      { bg: '#C74F2F', text: '#FFFFFF', border: '#C74F2F' },
@@ -38,10 +38,10 @@ export const recurringChipColor = { bg: '#FFFFFF', text: '#EAA235', border: '#EA
 // picking the tokens up automatically.
 export const C = {
   // Surfaces
-  bg:          '#E8E7E3',
+  bg:          '#FFFFFF',
   bgSubtle:    '#FFFFFF',
   card:        '#FFFFFF',
-  cardAlt:     '#E8E7E3',
+  cardAlt:     '#FFFFFF',
   // Borders
   border:      '#2B433E',
   borderMed:   '#1E2522',
@@ -53,17 +53,17 @@ export const C = {
   textMuted:   '#2B433E',
   // Accent (matches the main site's admin buttons)
   accent:      '#2B433E',
-  accentBg:    '#E8E7E3',
+  accentBg:    '#FFFFFF',
   accentDark:  '#1E2522',
   accentHover: '#1E2522',
   // Status
   warn:        '#C74F2F',
-  warnBg:      '#E8E7E3',
+  warnBg:      '#FFFFFF',
   success:     '#2B433E',
-  successBg:   '#E8E7E3',
+  successBg:   '#FFFFFF',
   // Interaction tints
   high:        '#2B433E',
-  highBg:      '#E8E7E3',
+  highBg:      '#FFFFFF',
   // Dark panels
   stageBg:     '#1E2522',
   stageText:   '#FFFFFF',
