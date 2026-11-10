@@ -1,22 +1,21 @@
 /* Ported from Sign-Up-Sheet-App-Design-6580's App.css, scoped under
    .signup-sheet-tool. The site's own title/header treatment (Arial,
-   800 weight, uppercase - see index.css's global h1-h6 rule)
-   applied directly here, since the printed sheet's title and column
-   headers aren't real h1-h6 tags. */
+   800 weight - see index.css's global h1-h6 rule) applied directly
+   here, since the printed sheet's title and column headers aren't
+   real h1-h6 tags. */
 
 /* Printable Sheet Styles */
 .signup-sheet-tool .sheet-title {
   font-family: Arial, Helvetica, sans-serif;
   font-weight: 800;
-  text-transform: uppercase;
   line-height: 1.1;
+  letter-spacing: -0.01em;
 }
 
 .signup-sheet-tool .column-header {
   font-family: Arial, Helvetica, sans-serif;
   font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  letter-spacing: -0.01em;
 }
 
 .signup-sheet-tool .signup-sheet-container {
@@ -75,7 +74,7 @@
 
 .signup-sheet-tool .resize-handle:hover,
 .signup-sheet-tool .resize-handle.resizing {
-  background: var(--resize-color, #1E1E21);
+  background: var(--resize-color, #1E2522);
   opacity: 0.6;
 }
 

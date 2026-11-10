@@ -1,75 +1,79 @@
-// Every color below is one of the site's five literal hexes - FFFFFF,
-// EAA235, 2B433E, 1E2522, C74F2F - no invented tint, shade or
-// opacity blend standing in as a would-be sixth color. The category
+import { colors, fonts } from '../../styles/designTokens.js';
+
+// Every color below is one of the site's five literal hexes, imported
+// from the one shared designTokens.js file (also consumed by
+// tailwind.config.js) instead of re-typed here - no invented tint, shade
+// or opacity blend standing in as a would-be sixth color. The category
 // badges (scope/happening_type/recurring) used to keep their own
 // informational hues (blue for event, purple for class, etc.), distinct
 // from the site's own chrome, so each type was instantly recognizable
-// without reading the label - now limited to the same six, so some of
+// without reading the label - now limited to the same five, so some of
 // that at-a-glance distinction is gone; they're differentiated by
 // bg/text/border combination instead of by hue.
 export const scopeChipColors: Record<string, { bg: string; text: string; border: string }> = {
-  whole_church:  { bg: '#1E2522', text: '#FFFFFF', border: '#1E2522' },
-  ministry:      { bg: '#2B433E', text: '#FFFFFF', border: '#2B433E' },
-  informational: { bg: '#FFFFFF', text: '#1E2522', border: '#1E2522' },
+  whole_church:  { bg: colors.secondary, text: colors.white, border: colors.secondary },
+  ministry:      { bg: colors.primary, text: colors.white, border: colors.primary },
+  informational: { bg: colors.white, text: colors.secondary, border: colors.secondary },
 };
 
 export const scopeRangeColors: Record<string, string> = {
-  whole_church:  '#1E2522',
-  ministry:      '#2B433E',
-  informational: '#EAA235',
+  whole_church:  colors.secondary,
+  ministry:      colors.primary,
+  informational: colors.gold,
 };
 
 export const happeningTypeChipColors: Record<string, { bg: string; text: string; border: string }> = {
-  announcement: { bg: '#FFFFFF', text: '#1E2522', border: '#1E2522' },
-  event:        { bg: '#2B433E', text: '#FFFFFF', border: '#2B433E' },
-  class:        { bg: '#EAA235', text: '#1E2522', border: '#EAA235' },
-  general:      { bg: '#C74F2F', text: '#FFFFFF', border: '#C74F2F' },
+  announcement: { bg: colors.white, text: colors.secondary, border: colors.secondary },
+  event:        { bg: colors.primary, text: colors.white, border: colors.primary },
+  class:        { bg: colors.gold, text: colors.secondary, border: colors.gold },
+  general:      { bg: colors.red, text: colors.white, border: colors.red },
 };
 
 // A recurring item's schedule needs its own flag in that same badge row -
 // reuses gold as an outline (white fill, gold border/text) rather than
 // gold's own solid fill, which "class" already uses, so the two don't
 // read as the same badge.
-export const recurringChipColor = { bg: '#FFFFFF', text: '#EAA235', border: '#EAA235' };
+export const recurringChipColor = { bg: colors.white, text: colors.gold, border: colors.gold };
 
 // This suite (Manage, Happenings, Calendar, Stage, Printables, Archive)
 // renders via inline styles off this object instead of Tailwind classes,
-// so it needs its own copy of the site's six-color palette rather than
-// picking the tokens up automatically.
+// so it needs its own copy of the site's palette rather than picking the
+// Tailwind tokens up automatically - but that copy is these same five
+// colors.* values, not independently hand-typed hexes.
 export const C = {
   // Surfaces
-  bg:          '#FFFFFF',
-  bgSubtle:    '#FFFFFF',
-  card:        '#FFFFFF',
-  cardAlt:     '#FFFFFF',
+  bg:          colors.white,
+  bgSubtle:    colors.white,
+  card:        colors.white,
+  cardAlt:     colors.white,
   // Borders
-  border:      '#2B433E',
-  borderMed:   '#1E2522',
-  borderFocus: '#2B433E',
+  border:      colors.primary,
+  borderMed:   colors.secondary,
+  borderFocus: colors.primary,
   // Text
-  text:        '#1E2522',
-  textSec:     '#2B433E',
-  textTer:     '#2B433E',
-  textMuted:   '#2B433E',
+  text:        colors.secondary,
+  textSec:     colors.primary,
+  textTer:     colors.primary,
+  textMuted:   colors.primary,
   // Accent (matches the main site's admin buttons)
-  accent:      '#2B433E',
-  accentBg:    '#FFFFFF',
-  accentDark:  '#1E2522',
-  accentHover: '#1E2522',
+  accent:      colors.primary,
+  accentBg:    colors.white,
+  accentDark:  colors.secondary,
+  accentHover: colors.secondary,
   // Status
-  warn:        '#C74F2F',
-  warnBg:      '#FFFFFF',
-  success:     '#2B433E',
-  successBg:   '#FFFFFF',
+  warn:        colors.red,
+  warnBg:      colors.white,
+  success:     colors.primary,
+  successBg:   colors.white,
   // Interaction tints
-  high:        '#2B433E',
-  highBg:      '#FFFFFF',
+  high:        colors.primary,
+  highBg:      colors.white,
   // Dark panels
-  stageBg:     '#1E2522',
-  stageText:   '#FFFFFF',
+  stageBg:     colors.secondary,
+  stageText:   colors.white,
   // Nav
-  navBg:       '#1E2522',
-  navText:     '#FFFFFF',
+  navBg:       colors.secondary,
+  navText:     colors.white,
 } as const;
 
 // display is this suite's "title/header" font - used on every actual
@@ -77,9 +81,10 @@ export const C = {
 // public site's own h1-h6 rule in index.css) and, consistently with that
 // same public-site convention (.btn also uses the heading font), on the
 // bold uppercase buttons/pills/labels styled to match. Matches the public
-// site's current defaults: Arial Bold for headers, Merriweather for body.
+// site's current defaults (also from designTokens.js): Arial Bold for
+// headers, Merriweather for body.
 export const font = {
-  body:    "'Merriweather', Georgia, serif",
-  display: "'Arial', Helvetica, sans-serif",
+  body:    fonts.body,
+  display: fonts.heading,
   mono:    "'JetBrains Mono', 'Fira Mono', monospace",
 } as const;

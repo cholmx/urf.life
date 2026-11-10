@@ -1,19 +1,21 @@
-// Six literal colors, nothing else. The app (public site and admin alike)
+import { colors, fontFamilies } from './src/styles/designTokens.js';
+
+// Five literal colors, nothing else. The app (public site and admin alike)
 // leans on Tailwind's built-in gray/red/green/yellow/amber/orange/blue/
 // purple scales in dozens of places (delete buttons, status badges, toast
 // colors, category tags) - overriding each of those scales here, instead
 // of hand-editing every call site, is what actually makes "every color on
-// the site is one of these six" true rather than true-except-wherever a
-// stock Tailwind color slipped in unnoticed. Each ramp collapses to cream/
-// white at its light end, near-black at its dark end, with `main` (one of
-// the six) standing in for the whole 400-600 "this is the color" range -
-// a UI needs more lightness steps than six flat colors give it on their
+// the site is one of these five" true rather than true-except-wherever a
+// stock Tailwind color slipped in unnoticed. Each ramp collapses to white
+// at its light end, near-black at its dark end, with `main` (one of
+// the five) standing in for the whole 400-600 "this is the color" range -
+// a UI needs more lightness steps than five flat colors give it on their
 // own, so this is a discrete, posterized ramp, not a smooth gradient:
-// every step is one of the six exactly, never a blend between them.
-const sixColorRamp = (main) => ({
-  50: '#FFFFFF', 100: '#FFFFFF',
+// every step is one of the five exactly, never a blend between them.
+const fiveColorRamp = (main) => ({
+  50: colors.white, 100: colors.white,
   200: main, 300: main, 400: main, 500: main, 600: main,
-  700: '#1E2522', 800: '#1E2522', 900: '#1E2522', 950: '#1E2522',
+  700: colors.secondary, 800: colors.secondary, 900: colors.secondary, 950: colors.secondary,
 });
 
 /** @type {import('tailwindcss').Config} */
@@ -25,49 +27,48 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Site palette - FFFFFF/EAA235/2B433E/1E2522/C74F2F.
-        primary: '#2B433E',
-        secondary: '#1E2522',
-        accent: '#FFFFFF', // page background
-        'accent-light': '#FFFFFF',
-        'accent-dark': '#2B433E',
+        primary: colors.primary,
+        secondary: colors.secondary,
+        accent: colors.white, // page background
+        'accent-light': colors.white,
+        'accent-dark': colors.primary,
 
-        'text-primary': '#1E2522',
-        'text-secondary': '#1E2522',
-        'text-light': '#2B433E',
+        'text-primary': colors.secondary,
+        'text-secondary': colors.secondary,
+        'text-light': colors.primary,
 
-        'brand-yellow': '#EAA235',
-        'brand-blue': '#2B433E',
-        'brand-blue-dark': '#1E2522',
+        'brand-yellow': colors.gold,
+        'brand-blue': colors.primary,
+        'brand-blue-dark': colors.secondary,
 
-        'white': '#FFFFFF',
-        'social-green': '#2B433E',
-        'brand-red': '#C74F2F',
+        'white': colors.white,
+        'social-green': colors.primary,
+        'brand-red': colors.red,
 
-        // Tailwind's stock scales, collapsed onto the six colors (see
-        // sixColorRamp above) instead of staying their default hues -
+        // Tailwind's stock scales, collapsed onto the five colors (see
+        // fiveColorRamp above) instead of staying their default hues -
         // red/orange as the red accent, green as the green primary,
         // yellow/amber/purple as the gold accent (no purple in this
         // palette), blue also as the green primary (no blue either),
-        // gray and neutral both as the same cream/white/green/near-black
+        // gray and neutral both as the same white/green/near-black
         // ramp as each other.
-        gray:    sixColorRamp('#2B433E'),
-        neutral: sixColorRamp('#2B433E'),
-        red:     sixColorRamp('#C74F2F'),
-        orange:  sixColorRamp('#C74F2F'),
-        green:   sixColorRamp('#2B433E'),
-        blue:    sixColorRamp('#2B433E'),
-        yellow:  sixColorRamp('#EAA235'),
-        amber:   sixColorRamp('#EAA235'),
-        purple:  sixColorRamp('#EAA235'),
+        gray:    fiveColorRamp(colors.primary),
+        neutral: fiveColorRamp(colors.primary),
+        red:     fiveColorRamp(colors.red),
+        orange:  fiveColorRamp(colors.red),
+        green:   fiveColorRamp(colors.primary),
+        blue:    fiveColorRamp(colors.primary),
+        yellow:  fiveColorRamp(colors.gold),
+        amber:   fiveColorRamp(colors.gold),
+        purple:  fiveColorRamp(colors.gold),
       },
       fontFamily: {
-        'sans': ['Merriweather', 'Georgia', 'serif'],
-        'heading': ['Arial', 'Helvetica', 'sans-serif'],
-        'display': ['Arial', 'Helvetica', 'sans-serif'],
+        'sans': fontFamilies.body,
+        'heading': fontFamilies.heading,
+        'display': fontFamilies.heading,
 
         // New design system typography
-        'gsans': ['Arial', 'Helvetica', 'sans-serif'],
+        'gsans': fontFamilies.heading,
         'caladea': ['Caladea', 'Georgia', 'serif'],
         'ui': ['Inter', 'sans-serif'],
       },
