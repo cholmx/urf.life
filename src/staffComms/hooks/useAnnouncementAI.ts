@@ -81,9 +81,9 @@ export function useAnnouncementAI(
   f: FormData,
   set: Setter,
   onError: (msg: string) => void,
+  today: string,
 ): UseAnnouncementAIReturn {
   const [aiLoading, setAiLoading] = useState<AILoadingState>({ slide: false, flyer: false });
-  const today = new Date().toISOString().split('T')[0];
 
   const hasEnoughForAI = f.title.length > AI_THRESHOLD || f.description.length > AI_THRESHOLD;
 
@@ -142,7 +142,6 @@ export function useAnnouncementAI(
     if (!draftText.trim()) return null;
     setParsingDraft(true);
     try {
-      const today = new Date().toISOString().split('T')[0];
       const todayWeekday = new Date(today + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long' });
       const result = await callAI(
         `You read a church staff member's rough, informal notes about something happening at the church - an event, class, or announcement - and extract its scheduling details. Today is ${today}, a ${todayWeekday}. Resolve any relative date or day reference ("next Tuesday", "starting the 20th", "every other Wednesday") into an actual date using today as the reference point.

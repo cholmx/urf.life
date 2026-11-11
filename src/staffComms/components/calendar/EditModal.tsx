@@ -6,13 +6,14 @@ import type { Announcement } from '../../types';
 interface EditModalProps {
   announcement: Announcement | null;
   defaultDate: string | null;
+  today: string;
   onSave: (a: Omit<Announcement, 'id' | 'created_at' | 'updated_at'> & { id?: string }) => Promise<void>;
   onDelete?: () => Promise<void>;
   onCancel: () => void;
   onError: (msg: string) => void;
 }
 
-export function EditModal({ announcement, defaultDate, onSave, onDelete, onCancel, onError }: EditModalProps) {
+export function EditModal({ announcement, defaultDate, today, onSave, onDelete, onCancel, onError }: EditModalProps) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   return (
     <div
@@ -83,6 +84,7 @@ export function EditModal({ announcement, defaultDate, onSave, onDelete, onCance
         <AnnouncementForm
           announcement={announcement}
           initialOverrides={announcement ? undefined : (defaultDate ? { event_date: defaultDate } : undefined)}
+          today={today}
           onSave={onSave}
           onCancel={onCancel}
           onError={onError}

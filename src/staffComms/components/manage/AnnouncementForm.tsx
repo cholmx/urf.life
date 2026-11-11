@@ -121,6 +121,7 @@ function computeRecurrenceLabel(
 interface AnnouncementFormProps {
   announcement: Announcement | null;
   initialOverrides?: Partial<Omit<Announcement, 'id' | 'created_at' | 'updated_at'>>;
+  today: string;
   onSave: (a: Omit<Announcement, 'id' | 'created_at' | 'updated_at'> & { id?: string }) => Promise<void>;
   onCancel: () => void;
   onError: (msg: string) => void;
@@ -148,8 +149,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-export function AnnouncementForm({ announcement, initialOverrides, onSave, onCancel, onError, onOpenSignupSheet }: AnnouncementFormProps) {
-  const today = new Date().toISOString().split('T')[0];
+export function AnnouncementForm({ announcement, initialOverrides, today, onSave, onCancel, onError, onOpenSignupSheet }: AnnouncementFormProps) {
 
   const [f, setF] = useState<Omit<Announcement, 'id' | 'created_at' | 'updated_at'> & { id?: string }>(
     announcement
@@ -237,7 +237,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
     });
 
   const { aiLoading, hasEnoughForAI, generateSlide, generateFlyer, parsingDraft, parseDraft } =
-    useAnnouncementAI(f, set, onError);
+    useAnnouncementAI(f, set, onError, today);
 
   // Fires generateFlyer once the fields handleFillAndWrite just set() have
   // actually landed in f - set() calls queue a re-render rather than

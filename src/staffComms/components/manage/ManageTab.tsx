@@ -83,6 +83,7 @@ export function ManageTab({ announcements, today, onSave, onDelete, onTogglePubl
       <AnnouncementForm
         announcement={editing === 'new' ? null : editing}
         initialOverrides={editing === 'new' && copySource ? copySource : undefined}
+        today={today}
         onSave={async (f) => {
           const saved = await onSave(f);
           setEditing(null);

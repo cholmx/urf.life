@@ -197,6 +197,7 @@ function CalendarInner({ announcements, today, onSave, onDelete, onPreviewDateCh
         <EditModal
           announcement={editingAnnouncement}
           defaultDate={addingForDay}
+          today={today}
           onSave={handleEditSave}
           onDelete={editingAnnouncement ? async () => { await onDelete(editingAnnouncement.id); setEditingAnnouncement(null); } : undefined}
           onCancel={() => { setEditingAnnouncement(null); setAddingForDay(null); }}
