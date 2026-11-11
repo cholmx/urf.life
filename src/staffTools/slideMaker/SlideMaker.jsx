@@ -2,7 +2,7 @@ import React, {useState, useRef, useEffect, useCallback, useMemo} from 'react';
 import useGoogleFonts from './hooks/useGoogleFonts';
 import {ToastProvider, useToast} from './hooks/useToast.jsx';
 import {useUndoHistory} from './hooks/useUndoHistory';
-import {FONT_COMBOS, COLOR_PALETTES, ASPECT_RATIOS} from './constants/data';
+import {BACKGROUNDS, HEADLINE_FONT, HEADLINE_WEIGHT, BODY_FONT, BODY_WEIGHT, ASPECT_RATIOS} from './constants/data';
 import {C, ui} from './constants/styles';
 import {sharpenCanvas, checkContrast} from './utils/canvasUtils';
 import {isSlideActive, formatDateNice} from '../../staffComms/lib/helpers';
@@ -25,16 +25,19 @@ const DEFAULT_DATA = {
   headLineHeight: 1.12,
 };
 
-const DEFAULT_BRAND = (combo) => ({
-  bgColor: "#1E1E21",
-  textColor: "#F0EDE8",
-  accentColor: "#E98A15",
-  hFont: combo.h,
-  bFont: combo.b,
+// Fixed brand typography and the "Dark" swatch's default text color - no
+// font picker and no custom color pickers (see constants/data.js).
+const DEFAULT_BRAND = {
+  bgColor: BACKGROUNDS[0].bg,
+  textColor: BACKGROUNDS[0].textOptions[0].color,
+  hFont: HEADLINE_FONT,
+  bFont: BODY_FONT,
+  hWeight: HEADLINE_WEIGHT,
+  bWeight: BODY_WEIGHT,
   churchName: "UPPER ROOM FELLOWSHIP",
   hLetterSpacing: 0,
   textShadow: true,
-});
+};
 
 export default function SlideMaker({announcements, today, onToggleSlideMade}) {
   return (
@@ -61,15 +64,13 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
   }, [announcements, today]);
 
   const [tmplId, setTmplId] = useState("left_block");
-  const [combo, setCombo] = useState(FONT_COMBOS[0]);
-  const [palette, setPalette] = useState(COLOR_PALETTES[0]);
   const [data, setData] = useState({...DEFAULT_DATA});
-  const [brand, setBrand] = useState(DEFAULT_BRAND(FONT_COMBOS[0]));
+  const [brand, setBrand] = useState({...DEFAULT_BRAND});
   const [photos, setPhotos] = useState([]);
   const [activePhoto, setActivePhoto] = useState(null);
-  const [accentPhoto, setAccentPhoto] = useState(null);
   const [ov, setOv] = useState(86);
   const [blur, setBlur] = useState(0);
+  const [overlayColor, setOverlayColor] = useState("#000000");
   // Land on the queue whenever there's something pending, instead of
   // always opening to whatever was last on the canvas - that's the whole
   // point of the queue existing, but it was never actually the default.
@@ -83,16 +84,16 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
 
   // Initialize undo history with the initial state
   useEffect(() => {
-    undoHistory.init({tmplId, data, brand, combo, palette, activePhoto, accentPhoto, ov, blur, aspectRatio});
+    undoHistory.init({tmplId, data, brand, activePhoto, ov, blur, overlayColor, aspectRatio});
   }, []);
 
   // Push undo state whenever tracked values change (after init)
   const pushUndo = useCallback((overrides = {}) => {
     undoHistory.push({
-      tmplId, data, brand, combo, palette, activePhoto, accentPhoto, ov, blur, aspectRatio,
+      tmplId, data, brand, activePhoto, ov, blur, overlayColor, aspectRatio,
       ...overrides,
     });
-  }, [tmplId, data, brand, combo, palette, activePhoto, accentPhoto, ov, blur, aspectRatio, undoHistory]);
+  }, [tmplId, data, brand, activePhoto, ov, blur, overlayColor, aspectRatio, undoHistory]);
 
   // ds() (every text field/slider in ContentTab) and setBrand() (color
   // pickers, letter-spacing, the text-shadow toggle) fire on every
@@ -122,16 +123,17 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     setBrand(updater);
   }, [pushUndoDebounced]);
 
-  const updateCombo = useCallback((c) => {
+  // Switching background buckets (dark/light) resets text color to that
+  // bucket's default, since the previously-selected text color may not be
+  // one of the new bucket's two allowed options.
+  const updateBackground = useCallback((bgOption) => {
     pushUndo();
-    setCombo(c);
-    setBrand(b => ({...b, hFont: c.h, bFont: c.b, hWeight: c.hWeight ?? null, bWeight: c.bWeight ?? null}));
+    setBrand(b => ({...b, bgColor: bgOption.bg, textColor: bgOption.textOptions[0].color}));
   }, [pushUndo]);
 
-  const updatePalette = useCallback((p) => {
+  const updateTextColor = useCallback((color) => {
     pushUndo();
-    setPalette(p);
-    setBrand(b => ({...b, bgColor: p.bg, textColor: p.tx, accentColor: p.ac}));
+    setBrand(b => ({...b, textColor: color}));
   }, [pushUndo]);
 
   const handleSetTmplId = useCallback((id) => {
@@ -152,18 +154,20 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     setBlur(v);
   }, []);
 
+  const handleSetOverlayColor = useCallback((v) => {
+    setOverlayColor(v);
+  }, []);
+
   const handleUndo = useCallback(() => {
     const prev = undoHistory.undo();
     if (!prev) return;
     if (prev.tmplId !== undefined) setTmplId(prev.tmplId);
     if (prev.data !== undefined) setData(prev.data);
     if (prev.brand !== undefined) setBrand(prev.brand);
-    if (prev.combo !== undefined) setCombo(prev.combo);
-    if (prev.palette !== undefined) setPalette(prev.palette);
     if (prev.activePhoto !== undefined) setActivePhoto(prev.activePhoto);
-    if (prev.accentPhoto !== undefined) setAccentPhoto(prev.accentPhoto);
     if (prev.ov !== undefined) setOv(prev.ov);
     if (prev.blur !== undefined) setBlur(prev.blur);
+    if (prev.overlayColor !== undefined) setOverlayColor(prev.overlayColor);
     if (prev.aspectRatio !== undefined) setAspectRatio(prev.aspectRatio);
   }, [undoHistory]);
 
@@ -173,12 +177,10 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     if (next.tmplId !== undefined) setTmplId(next.tmplId);
     if (next.data !== undefined) setData(next.data);
     if (next.brand !== undefined) setBrand(next.brand);
-    if (next.combo !== undefined) setCombo(next.combo);
-    if (next.palette !== undefined) setPalette(next.palette);
     if (next.activePhoto !== undefined) setActivePhoto(next.activePhoto);
-    if (next.accentPhoto !== undefined) setAccentPhoto(next.accentPhoto);
     if (next.ov !== undefined) setOv(next.ov);
     if (next.blur !== undefined) setBlur(next.blur);
+    if (next.overlayColor !== undefined) setOverlayColor(next.overlayColor);
     if (next.aspectRatio !== undefined) setAspectRatio(next.aspectRatio);
   }, [undoHistory]);
 
@@ -228,6 +230,9 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     setBrand(presetData.brand);
     setOv(presetData.ov);
     setBlur(presetData.blur || 0);
+    // Older presets saved before the overlay-color toggle existed default
+    // to black, matching the always-dark overlay they were saved with.
+    setOverlayColor(presetData.overlayColor || "#000000");
 
     if (presetData.photoId) {
       const photo = photos.find(p => p.dbId === presetData.photoId);
@@ -236,17 +241,6 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
       setActivePhoto(null);
     }
 
-    if (presetData.accentPhotoId) {
-      const photo = photos.find(p => p.dbId === presetData.accentPhotoId);
-      setAccentPhoto(photo ? photo.img : null);
-    } else {
-      setAccentPhoto(null);
-    }
-
-    const fc = FONT_COMBOS.find(f => f.h === presetData.brand.hFont);
-    if (fc) setCombo(fc);
-    const pl = COLOR_PALETTES.find(p => p.bg === presetData.brand.bgColor && p.ac === presetData.brand.accentColor);
-    if (pl) setPalette(pl);
     setActiveQueueItem(null);
     setTab("content");
     setSidebarOpen(false);
@@ -286,7 +280,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
   const clearActiveQueueItem = useCallback(() => setActiveQueueItem(null), []);
 
   const cornerR = aspectRatio.id === "16:10" ? 80 : 0;
-  const slideProps = {tmplId, data, brand, bgImg: activePhoto, accentImg: accentPhoto, ov, blur, canvasW: aspectRatio.w, canvasH: aspectRatio.h, cornerR};
+  const slideProps = {tmplId, data, brand, bgImg: activePhoto, overlayColor, ov, blur, canvasW: aspectRatio.w, canvasH: aspectRatio.h, cornerR};
 
   return (
     <div className="slide-maker" style={{fontFamily: ui.body, background: C.bg, minHeight: "100vh", display: "flex", flexDirection: "column"}}>
@@ -392,16 +386,15 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
         <div className="sidebar-desktop" style={{width: 340, flexShrink: 0}}>
           <Sidebar
             tab={tab} setTab={setTab}
-            combo={combo} updateCombo={updateCombo}
-            palette={palette} updatePalette={updatePalette}
+            updateBackground={updateBackground} updateTextColor={updateTextColor}
             brand={brand} setBrand={updateBrand}
             tmplId={tmplId} setTmplId={handleSetTmplId}
             data={data} ds={ds}
             photos={photos} setPhotos={setPhotos}
             activePhoto={activePhoto} setActivePhoto={setActivePhoto}
-            accentPhoto={accentPhoto} setAccentPhoto={setAccentPhoto}
             ov={ov} setOv={handleSetOv}
             blur={blur} setBlur={handleSetBlur}
+            overlayColor={overlayColor} setOverlayColor={handleSetOverlayColor}
             slideProps={slideProps}
             canvasRef={canvasRef}
             onLoadPreset={loadPreset}
@@ -437,16 +430,15 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
           }} className="sidebar-mobile">
             <Sidebar
               tab={tab} setTab={setTab}
-              combo={combo} updateCombo={updateCombo}
-              palette={palette} updatePalette={updatePalette}
+              updateBackground={updateBackground} updateTextColor={updateTextColor}
               brand={brand} setBrand={updateBrand}
               tmplId={tmplId} setTmplId={handleSetTmplId}
               data={data} ds={ds}
               photos={photos} setPhotos={setPhotos}
               activePhoto={activePhoto} setActivePhoto={setActivePhoto}
-              accentPhoto={accentPhoto} setAccentPhoto={setAccentPhoto}
               ov={ov} setOv={handleSetOv}
               blur={blur} setBlur={handleSetBlur}
+              overlayColor={overlayColor} setOverlayColor={handleSetOverlayColor}
               slideProps={slideProps}
               canvasRef={canvasRef}
               onLoadPreset={loadPreset}

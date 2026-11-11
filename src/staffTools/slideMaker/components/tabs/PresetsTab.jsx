@@ -4,7 +4,7 @@ import {savePreset, getPresets, deletePreset} from '../../services/presetService
 import {useToast} from '../../hooks/useToast';
 import ConfirmDialog from '../ConfirmDialog';
 
-export default function PresetsTab({canvasRef, tmplId, data, brand, photos, activePhoto, accentPhoto, ov, blur, onLoadPreset}) {
+export default function PresetsTab({canvasRef, tmplId, data, brand, photos, activePhoto, ov, blur, overlayColor, onLoadPreset}) {
   const [presets, setPresets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -34,16 +34,14 @@ export default function PresetsTab({canvasRef, tmplId, data, brand, photos, acti
     if (!presetName.trim()) return;
     setSaving(true);
     try {
-      // activePhoto/accentPhoto are the raw canvas Image objects, not the
-      // library records - look up each one's dbId by matching .img so the
-      // preset can find the same photo again on load.
+      // activePhoto is the raw canvas Image object, not the library record -
+      // look up its dbId by matching .img so the preset can find the same
+      // photo again on load.
       const activePhotoRecord = (photos || []).find(p => p.img === activePhoto);
-      const accentPhotoRecord = (photos || []).find(p => p.img === accentPhoto);
       const presetData = {
         tmplId, data, brand,
         photoId: activePhotoRecord?.dbId || null,
-        accentPhotoId: accentPhotoRecord?.dbId || null,
-        ov, blur,
+        ov, blur, overlayColor,
       };
       const canvas = canvasRef?.current;
       await savePreset(presetName, presetDescription, presetData, canvas);

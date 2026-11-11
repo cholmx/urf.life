@@ -3,7 +3,7 @@ import { TEMPLATES } from '../../constants/data';
 import { C, ui } from '../../constants/styles';
 import SlideCanvas from '../SlideCanvas';
 
-export default function TemplatesTab({ tmplId, setTmplId, data, brand, bgImg, ov, blur }) {
+export default function TemplatesTab({ tmplId, setTmplId, data, brand, bgImg, overlayColor, ov, blur }) {
   return (
     <div>
       <p style={{ fontFamily: ui.body, fontSize: 12, color: C.textTer, marginBottom: 12 }}>
@@ -18,7 +18,7 @@ export default function TemplatesTab({ tmplId, setTmplId, data, brand, bgImg, ov
               boxShadow: tmplId === t.id ? `0 0 0 3px ${C.accentBg}` : "none",
               transition: "border-color 0.15s",
             }}>
-              <SlideCanvas tmplId={t.id} data={data} brand={brand} bgImg={bgImg} ov={ov} blur={blur} />
+              <SlideCanvas tmplId={t.id} data={data} brand={brand} bgImg={bgImg} overlayColor={overlayColor} ov={ov} blur={blur} />
             </div>
             <div style={{
               fontFamily: ui.display, fontSize: 10, fontWeight: 700,

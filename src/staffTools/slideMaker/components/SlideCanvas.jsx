@@ -1,16 +1,16 @@
 import React, { useEffect, useRef, useImperativeHandle } from 'react';
 import { render } from '../utils/renderEngine';
 
-const SlideCanvas = React.forwardRef(({ tmplId, data, brand, bgImg, accentImg, ov, blur, canvasW, canvasH, cornerR = 32, style }, forwardedRef) => {
+const SlideCanvas = React.forwardRef(({ tmplId, data, brand, bgImg, overlayColor, ov, blur, canvasW, canvasH, cornerR = 32, style }, forwardedRef) => {
   const internalRef = useRef(null);
 
   useImperativeHandle(forwardedRef, () => internalRef.current);
 
   useEffect(() => {
     if (internalRef.current) {
-      render(internalRef.current, tmplId, data, brand, bgImg, accentImg, ov, blur, canvasW, canvasH, cornerR);
+      render(internalRef.current, tmplId, data, brand, bgImg, overlayColor, ov, blur, canvasW, canvasH, cornerR);
     }
-  }, [tmplId, data, brand, bgImg, accentImg, ov, blur, canvasW, canvasH, cornerR]);
+  }, [tmplId, data, brand, bgImg, overlayColor, ov, blur, canvasW, canvasH, cornerR]);
 
   return (
     <canvas 

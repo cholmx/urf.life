@@ -1,6 +1,5 @@
 import React from 'react';
 import {C, ui} from '../constants/styles';
-import FontsTab from './tabs/FontsTab';
 import ColorsTab from './tabs/ColorsTab';
 import TemplatesTab from './tabs/TemplatesTab';
 import ContentTab from './tabs/ContentTab';
@@ -13,7 +12,6 @@ const TABS = [
   {key: "content", label: "✏️ Content"},
   {key: "templates", label: "⬜ Layout"},
   {key: "palettes", label: "🎨 Colors"},
-  {key: "fonts", label: "Aa Fonts"},
   {key: "photos", label: "🖼 Photos"},
   {key: "presets", label: "💾 Presets"},
 ];
@@ -21,16 +19,15 @@ const TABS = [
 export default function Sidebar(props) {
   const {
     tab, setTab,
-    combo, updateCombo,
-    palette, updatePalette,
+    updateBackground, updateTextColor,
     brand, setBrand,
     tmplId, setTmplId,
     data, ds,
     photos, setPhotos,
     activePhoto, setActivePhoto,
-    accentPhoto, setAccentPhoto,
     ov, setOv,
     blur, setBlur,
+    overlayColor, setOverlayColor,
     canvasRef,
     onLoadPreset,
     queueItems, onUseQueueItem, onToggleSlideMade,
@@ -125,23 +122,19 @@ export default function Sidebar(props) {
           <TemplatesTab
             tmplId={tmplId} setTmplId={setTmplId}
             data={data} brand={brand}
-            bgImg={activePhoto} ov={ov} blur={blur}
+            bgImg={activePhoto} overlayColor={overlayColor} ov={ov} blur={blur}
           />
         )}
         {tab === "palettes" && (
-          <ColorsTab palette={palette} updatePalette={updatePalette} brand={brand} setBrand={setBrand} />
-        )}
-        {tab === "fonts" && (
-          <FontsTab combo={combo} updateCombo={updateCombo} brand={brand} setBrand={setBrand} />
+          <ColorsTab brand={brand} setBrand={setBrand} updateBackground={updateBackground} updateTextColor={updateTextColor} />
         )}
         {tab === "photos" && (
           <PhotosTab
             photos={photos} setPhotos={setPhotos}
             activePhoto={activePhoto} setActivePhoto={setActivePhoto}
-            accentPhoto={accentPhoto} setAccentPhoto={setAccentPhoto}
-            tmplId={tmplId}
             ov={ov} setOv={setOv}
             blur={blur} setBlur={setBlur}
+            overlayColor={overlayColor} setOverlayColor={setOverlayColor}
           />
         )}
         {tab === "presets" && (
@@ -152,9 +145,9 @@ export default function Sidebar(props) {
             brand={brand}
             photos={photos}
             activePhoto={activePhoto}
-            accentPhoto={accentPhoto}
             ov={ov}
             blur={blur}
+            overlayColor={overlayColor}
             onLoadPreset={onLoadPreset}
           />
         )}

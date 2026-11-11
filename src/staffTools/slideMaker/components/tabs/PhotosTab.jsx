@@ -5,18 +5,17 @@ import {uploadPhoto, getPhotos, deletePhoto, isDuplicatePhoto} from '../../servi
 import {useToast} from '../../hooks/useToast';
 import ConfirmDialog from '../ConfirmDialog';
 
-const ACCENT_PANEL_TEMPLATES = ["right_accent", "side_panel"];
+const OVERLAY_COLORS = [
+  { id: "black", name: "Black", color: "#000000" },
+  { id: "white", name: "White", color: "#FFFFFF" },
+];
 
-export default function PhotosTab({photos, setPhotos, activePhoto, setActivePhoto, accentPhoto, setAccentPhoto, tmplId, ov, setOv, blur, setBlur}) {
+export default function PhotosTab({photos, setPhotos, activePhoto, setActivePhoto, ov, setOv, blur, setBlur, overlayColor, setOverlayColor}) {
   const fileRef = useRef(null);
-  const accentFileRef = useRef(null);
   const [dragging, setDragging] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(null);
-  const [accentDragging, setAccentDragging] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const toast = useToast();
-
-  const showAccentPanel = ACCENT_PANEL_TEMPLATES.includes(tmplId);
 
   useEffect(() => {
     loadSavedPhotos();
@@ -39,7 +38,7 @@ export default function PhotosTab({photos, setPhotos, activePhoto, setActivePhot
     }
   };
 
-  const handleFiles = async (files, isAccent = false) => {
+  const handleFiles = async (files) => {
     const validFiles = Array.from(files).filter(f => f.type.startsWith("image/"));
     if (validFiles.length === 0) return;
 
@@ -57,7 +56,6 @@ export default function PhotosTab({photos, setPhotos, activePhoto, setActivePhot
       try {
         const photo = await uploadPhoto(file);
         setPhotos(p => [...p, photo]);
-        if (isAccent) setAccentPhoto(photo.img);
       } catch (error) {
         toast.show(`Could not upload "${file.name}". Please try again.`, 'error');
       }
@@ -69,25 +67,14 @@ export default function PhotosTab({photos, setPhotos, activePhoto, setActivePhot
   };
 
   const handlePhotos = async e => {
-    await handleFiles(e.target.files, false);
+    await handleFiles(e.target.files);
     e.target.value = "";
   };
 
   const handleDrop = async e => {
     e.preventDefault();
     setDragging(false);
-    await handleFiles(e.dataTransfer.files, false);
-  };
-
-  const handleAccentPhotos = async e => {
-    await handleFiles(e.target.files, true);
-    e.target.value = "";
-  };
-
-  const handleAccentDrop = async e => {
-    e.preventDefault();
-    setAccentDragging(false);
-    await handleFiles(e.dataTransfer.files, true);
+    await handleFiles(e.dataTransfer.files);
   };
 
   const handleDeletePhoto = (photo) => {
@@ -99,7 +86,6 @@ export default function PhotosTab({photos, setPhotos, activePhoto, setActivePhot
     setConfirmDelete(null);
     try {
       if (activePhoto === photo.img) setActivePhoto(null);
-      if (accentPhoto === photo.img) setAccentPhoto(null);
       if (photo.dbId && photo.storagePath) {
         await deletePhoto(photo.dbId, photo.storagePath);
       }
@@ -150,7 +136,6 @@ export default function PhotosTab({photos, setPhotos, activePhoto, setActivePhot
   return (
     <div>
       <input type="file" ref={fileRef} accept="image/*" multiple onChange={handlePhotos} style={{display: "none"}} />
-      <input type="file" ref={accentFileRef} accept="image/*" onChange={handleAccentPhotos} style={{display: "none"}} />
 
       {/* Background section */}
       <div style={{fontFamily: ui.display, fontSize: 10, fontWeight: 700, color: C.textSec, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 8}}>
@@ -205,62 +190,32 @@ export default function PhotosTab({photos, setPhotos, activePhoto, setActivePhot
 
       {activePhoto && (
         <div style={{marginTop: 12, background: C.cardAlt, borderRadius: 8, padding: 12, display: "flex", flexDirection: "column", gap: 12}}>
+          <div>
+            <div style={{fontFamily: ui.display, fontSize: 10, fontWeight: 700, color: C.textSec, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6}}>
+              Overlay Color
+            </div>
+            <div style={{display: "flex", gap: 8}}>
+              {OVERLAY_COLORS.map(o => (
+                <div key={o.id} onClick={() => setOverlayColor(o.color)} style={{
+                  flex: 1, display: "flex", alignItems: "center", gap: 6, padding: "6px 10px", cursor: "pointer",
+                  border: `2px solid ${overlayColor === o.color ? C.accent : C.border}`,
+                  borderRadius: 6,
+                  background: overlayColor === o.color ? C.accentBg : "transparent",
+                }}>
+                  <div style={{width: 14, height: 14, borderRadius: "50%", background: o.color, border: `1px solid ${C.border}`, flexShrink: 0}} />
+                  <span style={{fontFamily: ui.display, fontSize: 10, fontWeight: 700, color: C.text}}>{o.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
           <Slider
-            label={`Dark Overlay (${ov}%)`}
+            label={`Overlay Opacity (${ov}%)`}
             value={ov}
-            min={50}
-            max={90}
+            min={0}
+            max={100}
             onChange={setOv}
           />
           <Slider label={`Blur (${blur}px)`} value={blur} min={0} max={60} onChange={setBlur} />
-        </div>
-      )}
-
-      {/* Accent Panel section */}
-      {showAccentPanel && (
-        <div style={{marginTop: 20}}>
-          <div style={{height: 1, background: C.border, marginBottom: 16}} />
-
-          <div style={{fontFamily: ui.display, fontSize: 10, fontWeight: 700, color: C.textSec, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 4}}>
-            Accent Panel Photo
-          </div>
-          <div style={{fontFamily: ui.body, fontSize: 11, color: C.textTer, marginBottom: 10}}>
-            Fills the colored accent panel with this image, tinted by your accent color.
-          </div>
-
-          <div
-            onDragOver={e => {e.preventDefault(); setAccentDragging(true);}}
-            onDragLeave={() => setAccentDragging(false)}
-            onDrop={handleAccentDrop}
-            onClick={() => !uploadProgress && accentFileRef.current?.click()}
-            style={{
-              border: `2px dashed ${accentDragging ? C.accent : C.border}`,
-              borderRadius: 10, padding: "14px 12px", textAlign: "center",
-              background: accentDragging ? C.accentBg : C.cardAlt,
-              cursor: uploadProgress ? "wait" : "pointer", marginBottom: 10, transition: "all 0.15s",
-            }}
-          >
-            <div style={{fontFamily: ui.display, fontSize: 10, fontWeight: 700, color: C.accent, textTransform: "uppercase", letterSpacing: "0.06em"}}>
-              {progressText || accentDragging ? "Drop to add" : "Upload accent image"}
-            </div>
-            <div style={{fontFamily: ui.body, fontSize: 10, color: C.textTer, marginTop: 2}}>
-              Or pick from library below
-            </div>
-          </div>
-
-          <div style={{display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10}}>
-            <div onClick={() => setAccentPhoto(null)} style={{
-              padding: "5px 12px", borderRadius: 6, cursor: "pointer", fontFamily: ui.display,
-              fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em",
-              border: `2px solid ${!accentPhoto ? C.accent : C.border}`,
-              background: !accentPhoto ? C.accentBg : "transparent",
-              color: !accentPhoto ? C.accentDark : C.textTer,
-            }}>
-              Color Only
-            </div>
-          </div>
-
-          {photos.length > 0 && <PhotoGrid selectedImg={accentPhoto} onSelect={setAccentPhoto} />}
         </div>
       )}
 

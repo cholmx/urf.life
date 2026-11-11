@@ -77,10 +77,10 @@ function drawTextBlock(ctx, block, brand, x, startY, align) {
   const hLS = brand.hLetterSpacing ?? 0;
   let y = drawLines(ctx, block.headLines, x, startY, block.headFont, brand.textColor, align, block.headLH, hLS, sh(brand));
   if (block.subLines.length) {
-    y = drawLines(ctx, block.subLines, x, y + block.subGap, block.subFont, brand.accentColor, align, block.subLH, 0, sh(brand));
+    y = drawLines(ctx, block.subLines, x, y + block.subGap, block.subFont, brand.textColor, align, block.subLH, 0, sh(brand));
   }
   if (block.detLines.length) {
-    drawLines(ctx, block.detLines, x, y + block.detGap, block.detFont, brand.accentColor, align, block.detLH, 0, sh(brand));
+    drawLines(ctx, block.detLines, x, y + block.detGap, block.detFont, brand.textColor, align, block.detLH, 0, sh(brand));
   }
 }
 
@@ -95,106 +95,10 @@ export const renderLeftBlock=(ctx,data,brand,contentW,margin,cw,ch)=> {
   drawTextBlock(ctx, block, brand, margin, centerY(block.totalH, 0, ch), "left");
 };
 
-export const renderLeftBand=(ctx,data,brand,margin,cw,ch)=> {
-  const bandW=16;
-  const bandX=margin + 54;
-  ctx.fillStyle=brand.accentColor;
-  ctx.fillRect(bandX, ch * 0.22, bandW, ch * 0.56);
-
-  const textX=bandX + bandW + 66;
-  const textW=cw - textX - margin;
-
-  const block = computeTextBlock(ctx, data, brand, { textW, headlineWeight: hw(brand, 800), headlineFallbackSize: 98 });
-  drawTextBlock(ctx, block, brand, textX, centerY(block.totalH, 0, ch), "left");
-};
-
 export const renderMinimal=(ctx,data,brand,contentW,cw,ch)=> {
   const block = computeTextBlock(ctx, data, brand, {
     textW: contentW, headlineWeight: hw(brand, 900), headlineFallbackSize: 128,
     subGap: 40, subFallbackSize: 45, includeDetail: false,
   });
   drawTextBlock(ctx, block, brand, cw / 2, centerY(block.totalH, 0, ch), "center");
-};
-
-export const renderOffsetHeader=(ctx,data,brand,margin,cw,ch)=> {
-  const barW=cw * 0.42;
-  const barH=133;
-  const barX=margin;
-  const barY=ch * 0.24;
-
-  ctx.fillStyle=brand.accentColor;
-  ctx.fillRect(barX, barY, barW, barH);
-
-  const textW = cw - margin * 2;
-  const block = computeTextBlock(ctx, data, brand, {
-    textW, headlineWeight: hw(brand, 800), headlineFallbackSize: 101,
-    subGap: 35, subFallbackSize: 40, includeDetail: false,
-  });
-
-  const startY=barY + barH + 93;
-  const availH=ch - startY - margin;
-  drawTextBlock(ctx, block, brand, margin, centerY(block.totalH, startY, availH), "left");
-};
-
-const drawAccentImage=(ctx,img,x,y,w,h,accentColor)=> {
-  ctx.save();
-  ctx.beginPath();
-  ctx.rect(x, y, w, h);
-  ctx.clip();
-  const sc=Math.max(w/img.width, h/img.height);
-  const iw=img.width*sc, ih=img.height*sc;
-  ctx.drawImage(img, x+(w-iw)/2, y+(h-ih)/2, iw, ih);
-  const rgb=accentColor.match(/\w\w/g)?.map(v=>parseInt(v,16))||[0,0,0];
-  ctx.fillStyle=`rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.55)`;
-  ctx.fillRect(x, y, w, h);
-  ctx.restore();
-};
-
-export const renderRightAccent=(ctx,data,brand,margin,accentImg,cw,ch)=> {
-  const accentW=cw * 0.22;
-  const accentX=cw - accentW;
-  if (accentImg) {
-    drawAccentImage(ctx, accentImg, accentX, 0, accentW, ch, brand.accentColor);
-  } else {
-    ctx.fillStyle=brand.accentColor;
-    ctx.fillRect(accentX, 0, accentW, ch);
-  }
-
-  const textW = cw - accentW - margin;
-  const block = computeTextBlock(ctx, data, brand, {
-    textW, headlineWeight: hw(brand, 800), headlineFallbackSize: 101,
-    subGap: 35, subFallbackSize: 40, includeDetail: false,
-  });
-  drawTextBlock(ctx, block, brand, margin, centerY(block.totalH, 0, ch), "left");
-};
-
-export const renderBottomBanner=(ctx,data,brand,contentW,cw,ch)=> {
-  const bannerH=187;
-  const bannerY=ch - bannerH;
-  ctx.fillStyle=brand.accentColor;
-  ctx.fillRect(0, bannerY, cw, bannerH);
-
-  const block = computeTextBlock(ctx, data, brand, {
-    textW: contentW, headlineWeight: hw(brand, 800), headlineFallbackSize: 110,
-    subGap: 37, subFallbackSize: 43, includeDetail: false,
-  });
-
-  const availH=bannerY - 107;
-  drawTextBlock(ctx, block, brand, cw / 2, centerY(block.totalH, 107, availH), "center");
-};
-
-export const renderSidePanel=(ctx,data,brand,margin,accentImg,cw,ch)=> {
-  const panelW=cw * 0.18;
-  if (accentImg) {
-    drawAccentImage(ctx, accentImg, 0, 0, panelW, ch, brand.accentColor);
-  } else {
-    ctx.fillStyle=brand.accentColor;
-    ctx.fillRect(0, 0, panelW, ch);
-  }
-
-  const textX=panelW + 80;
-  const textW=cw - textX - margin;
-
-  const block = computeTextBlock(ctx, data, brand, { textW, headlineWeight: hw(brand, 800), headlineFallbackSize: 101 });
-  drawTextBlock(ctx, block, brand, textX, centerY(block.totalH, 0, ch), "left");
 };
