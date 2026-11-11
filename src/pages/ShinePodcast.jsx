@@ -10,6 +10,7 @@ export default function ShinePodcast() {
       subtitleFallback="Listen to our latest podcast episodes"
       accentColor="#2B433E"
       emptyStateText="Check back soon for new podcast episodes!"
+      normalizeTitleCase
     />
   );
 }

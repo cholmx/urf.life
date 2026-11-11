@@ -10,13 +10,21 @@ import StandardButton from '../components/StandardButton';
 
 const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=400&h=400&fit=crop';
 
+// Some feeds (e.g. Shine's) return their title in solid caps - normalizes
+// to Title Case for display, regardless of whether it came from the live
+// feed or titleFallback.
+function toTitleCase(str) {
+  if (!str) return str;
+  return str.toLowerCase().replace(/(^|\s)\S/g, (c) => c.toUpperCase());
+}
+
 // Shared page for all 4 of the site's podcast feeds (Shine, Green, Yellow,
 // Sermon) - previously 4 near-identical ~330-line page components. Each
 // podcast now only supplies its service instance and the handful of
 // values that actually differ: the title/subtitle shown before the live
 // feed loads (or if it never supplies one), the play button's accent
 // color, and the "no episodes" message's wording.
-export default function PodcastPage({ service, titleFallback, subtitleFallback, accentColor, emptyStateText }) {
+export default function PodcastPage({ service, titleFallback, subtitleFallback, accentColor, emptyStateText, normalizeTitleCase }) {
   const [podcastData, setPodcastData] = useState({ channel: null, episodes: [] });
   const [loading, setLoading] = useState(true);
   const [selectedEpisode, setSelectedEpisode] = useState(null);
@@ -105,7 +113,9 @@ export default function PodcastPage({ service, titleFallback, subtitleFallback, 
             <SafeIcon icon={FiMic} className="h-8 w-8 text-primary" />
             <Link to="/" className="hover:text-primary transition-colors">
               <h1 className="text-3xl md:text-4xl font-bold text-text-primary">
-                {podcastData.channel?.title || titleFallback}
+                {normalizeTitleCase
+                  ? toTitleCase(podcastData.channel?.title || titleFallback)
+                  : (podcastData.channel?.title || titleFallback)}
               </h1>
             </Link>
           </motion.div>
