@@ -1,9 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import * as FiIcons from 'react-icons/fi';
+import { FiBell, FiX } from 'react-icons/fi';
 import SafeIcon from '../../common/SafeIcon';
 import { useAdminNotifications } from '../../hooks/useAdminNotifications';
-
-const { FiBell, FiX } = FiIcons;
 
 // Shown in both the desktop sidebar header and the mobile top bar in
 // Admin.jsx - a single bell driven by one shared hook so the two spots

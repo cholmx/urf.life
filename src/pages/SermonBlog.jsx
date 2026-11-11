@@ -1,7 +1,7 @@
 import React,{useState,useEffect} from 'react';
 import {Link} from 'react-router-dom';
 import {motion} from 'framer-motion';
-import * as FiIcons from 'react-icons/fi';
+import { FiPlay, FiCalendar, FiUser, FiMessageCircle, FiLayers, FiFilter } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import PageNav from '../common/PageNav';
 import {SkeletonCard,LoadingTransition} from '../components/LoadingSkeletons';
@@ -10,8 +10,6 @@ import supabase from '../lib/supabase';
 import {formatDate} from '../utils/dateFormat';
 import {sanitizeHtml} from '../utils/sanitizeHtml';
 import {getYouTubeEmbedUrl} from '../utils/youtube';
-
-const {FiPlay,FiCalendar,FiUser,FiMessageCircle,FiLayers,FiFilter}=FiIcons;
 
 const SermonBlog=()=> {
   const [sermons,setSermons]=useState([]);

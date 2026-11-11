@@ -1,11 +1,9 @@
 import React,{useState,useEffect} from 'react';
 import {motion} from 'framer-motion';
-import * as FiIcons from 'react-icons/fi';
+import { FiBookOpen, FiRefreshCw } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import supabase from '../lib/supabase';
 import {sanitizeHtml} from '../utils/sanitizeHtml';
-
-const {FiBookOpen,FiRefreshCw}=FiIcons;
 
 const DailyScripture=()=> {
   const [currentScripture,setCurrentScripture]=useState(null);

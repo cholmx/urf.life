@@ -1,15 +1,13 @@
 import React,{useState} from 'react';
 import {Link} from 'react-router-dom';
 import {motion,AnimatePresence} from 'framer-motion';
-import * as FiIcons from 'react-icons/fi';
+import { FiUserPlus, FiCheckCircle, FiUser, FiMail, FiPhone, FiMapPin, FiCalendar, FiHeart, FiArrowRight } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import PageNav from '../common/PageNav';
 import {submitRealmSignup} from '../lib/contactStorage';
 import StandardButton from '../components/StandardButton';
 import {useToast} from '../hooks/useToast';
 import {isValidEmail} from '../utils/validation';
-
-const {FiUserPlus,FiCheckCircle,FiUser,FiMail,FiPhone,FiMapPin,FiCalendar,FiHeart,FiArrowRight}=FiIcons;
 
 const JoinRealm=()=> {
   const toast=useToast();

@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import * as FiIcons from 'react-icons/fi';
+import { FiFileText, FiEye, FiHelpCircle, FiCamera } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import supabase from '../lib/supabase';
 import CampaignUpdatesManager from './admin-capital-campaign/CampaignUpdatesManager';
 import CampaignVisionManager from './admin-capital-campaign/CampaignVisionManager';
 import CampaignFaqsManager from './admin-capital-campaign/CampaignFaqsManager';
 import LivingStonesModeration from './admin-capital-campaign/LivingStonesModeration';
-
-const { FiFileText, FiEye, FiHelpCircle, FiCamera } = FiIcons;
 
 // Each tab owns its own table via useSupabaseCrud (see the four
 // sub-components); this component is just the tab switcher. The pending

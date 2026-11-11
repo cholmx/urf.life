@@ -1,9 +1,7 @@
 import React from 'react';
-import * as FiIcons from 'react-icons/fi';
+import { FiCalendar } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import { downloadIcsEvent } from '../utils/generateIcs';
-
-const { FiCalendar } = FiIcons;
 
 // Only render this where `date` is actually set - see generateIcs.js.
 const AddToCalendarButton = ({ title, description, date, startTime, endTime, location, className }) => {

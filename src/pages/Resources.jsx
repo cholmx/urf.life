@@ -1,15 +1,13 @@
 import React,{useState,useEffect} from 'react';
 import {Link} from 'react-router-dom';
 import {motion} from 'framer-motion';
-import * as FiIcons from 'react-icons/fi';
+import { FiBookOpen, FiExternalLink, FiTag, FiFilter, FiLink, FiRefreshCw } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import PageNav from '../common/PageNav';
 import BookCard from '../components/BookCard';
 import {SkeletonBookCard,LoadingTransition} from '../components/LoadingSkeletons';
 import supabase from '../lib/supabase';
 import StandardButton from '../components/StandardButton';
-
-const {FiBookOpen,FiExternalLink,FiTag,FiFilter,FiLink}=FiIcons;
 
 const Resources=()=> {
   const [resources,setResources]=useState([]);
@@ -144,7 +142,7 @@ const Resources=()=> {
             <div className="mt-4">
               <StandardButton
                 onClick={()=> window.location.reload()}
-                icon={FiIcons.FiRefreshCw}
+                icon={FiRefreshCw}
               >
                 Try Again
               </StandardButton>

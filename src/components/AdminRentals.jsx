@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import * as FiIcons from 'react-icons/fi';
+import { FiCalendar, FiUser, FiMail, FiPhone, FiDollarSign, FiMapPin, FiChevronDown, FiChevronUp, FiTrash2, FiSave, FiInbox, FiHome, FiPrinter, FiArchive, FiRotateCcw, FiAlertTriangle } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import supabase from '../lib/supabase';
 import { useSupabaseCrud } from '../hooks/useSupabaseCrud';
@@ -9,8 +9,6 @@ import { formatDate, getTodayDateString } from '../utils/dateFormat';
 import { SkeletonBox, LoadingTransition } from './LoadingSkeletons';
 import { findRoomConflicts } from './rentalConflicts';
 import { ROOM_OPTIONS, SERVICE_OPTIONS, DEFAULT_PRICING, mergePricing } from '../lib/rentalPricing';
-
-const { FiCalendar, FiUser, FiMail, FiPhone, FiDollarSign, FiMapPin, FiChevronDown, FiChevronUp, FiTrash2, FiSave, FiInbox, FiHome, FiPrinter, FiArchive, FiRotateCcw, FiAlertTriangle } = FiIcons;
 
 function escapeHtml(s) {
   return String(s ?? '')

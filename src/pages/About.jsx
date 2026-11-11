@@ -1,11 +1,9 @@
 import React from 'react';
 import {Link} from 'react-router-dom';
 import {motion} from 'framer-motion';
-import * as FiIcons from 'react-icons/fi';
+import { FiHeart, FiUsers, FiBookOpen, FiTarget } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import PageNav from '../common/PageNav';
-
-const {FiHeart,FiUsers,FiBookOpen,FiTarget}=FiIcons;
 
 const About=()=> {
   const values=[

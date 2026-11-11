@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import * as FiIcons from 'react-icons/fi';
+import { FiBookOpen, FiCalendar, FiChevronLeft, FiChevronRight, FiRefreshCw } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import supabase from '../lib/supabase';
 import { parseLocalDate } from '../utils/dateFormat';
-
-const { FiBookOpen, FiCalendar, FiChevronLeft, FiChevronRight, FiRefreshCw } = FiIcons;
 
 const DailyDevotional = () => {
   const [currentDevotional, setCurrentDevotional] = useState(null);

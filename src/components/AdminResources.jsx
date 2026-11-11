@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import * as FiIcons from 'react-icons/fi';
+import { FiPlus, FiTag, FiBookOpen, FiAlertCircle, FiCheckCircle, FiUpload, FiDownload, FiRefreshCw } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import supabase from '../lib/supabase';
 import { useSupabaseCrud } from '../hooks/useSupabaseCrud';
@@ -10,8 +10,6 @@ import ResourceBulkImport from './admin-resources/ResourceBulkImport';
 import ResourceList, { getCleanDescription } from './admin-resources/ResourceList';
 import { useToast } from '../hooks/useToast';
 import { useConfirm } from '../hooks/useConfirm';
-
-const { FiPlus, FiTag, FiBookOpen, FiAlertCircle, FiCheckCircle, FiUpload, FiDownload, FiRefreshCw } = FiIcons;
 
 const AdminResources = () => {
   const toast = useToast();

@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import * as FiIcons from 'react-icons/fi';
+import { FiSearch, FiInbox } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import PageNav from '../common/PageNav';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { searchSite } from '../utils/siteSearch';
-
-const { FiSearch, FiInbox } = FiIcons;
 
 const Search = () => {
   const [searchParams, setSearchParams] = useSearchParams();

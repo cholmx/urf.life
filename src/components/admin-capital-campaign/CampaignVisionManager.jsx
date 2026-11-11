@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import * as FiIcons from 'react-icons/fi';
+import { FiPlus, FiEdit, FiTrash2, FiSave, FiX } from 'react-icons/fi';
 import SafeIcon from '../../common/SafeIcon';
 import RichTextEditor from '../RichTextEditor';
 import { SkeletonTable, LoadingTransition } from '../LoadingSkeletons';
@@ -9,8 +9,6 @@ import { formatDate } from '../../utils/dateFormat';
 import { useSupabaseCrud } from '../../hooks/useSupabaseCrud';
 import { useToast } from '../../hooks/useToast';
 import { useConfirm } from '../../hooks/useConfirm';
-
-const { FiPlus, FiEdit, FiTrash2, FiSave, FiX } = FiIcons;
 
 const emptyForm = { title: '', content: '', image_url: '', published: false, display_order: 0 };
 

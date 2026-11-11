@@ -1,9 +1,7 @@
 import React, { createContext, useCallback, useContext, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import * as FiIcons from 'react-icons/fi';
+import { FiCheckCircle, FiAlertCircle, FiX } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
-
-const { FiCheckCircle, FiAlertCircle, FiX } = FiIcons;
 
 const ToastContext = createContext(null);
 

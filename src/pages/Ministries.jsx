@@ -1,14 +1,12 @@
 import React,{useState,useEffect} from 'react';
 import {Link} from 'react-router-dom';
 import {motion} from 'framer-motion';
-import * as FiIcons from 'react-icons/fi';
+import { FiHeart } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import PageNav from '../common/PageNav';
 import {SkeletonCard,LoadingTransition} from '../components/LoadingSkeletons';
 import supabase from '../lib/supabase';
 import {sanitizeHtml} from '../utils/sanitizeHtml';
-
-const {FiHeart}=FiIcons;
 
 const Ministries=()=> {
   const [ministries,setMinistries]=useState([]);

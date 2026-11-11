@@ -1,7 +1,7 @@
 import React,{useState,useEffect} from 'react';
 import {Link} from 'react-router-dom';
 import {motion} from 'framer-motion';
-import * as FiIcons from 'react-icons/fi';
+import { FiMail, FiCheck, FiUser, FiMessageSquare, FiPhone, FiUsers } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import PageNav from '../common/PageNav';
 import {submitContactForm} from '../lib/contactStorage';
@@ -9,8 +9,6 @@ import StandardButton from '../components/StandardButton';
 import supabase from '../lib/supabase';
 import {useToast} from '../hooks/useToast';
 import {isValidEmail} from '../utils/validation';
-
-const {FiMail,FiCheck,FiUser,FiMessageSquare,FiPhone,FiUsers}=FiIcons;
 
 const Contact=()=> {
   const toast=useToast();

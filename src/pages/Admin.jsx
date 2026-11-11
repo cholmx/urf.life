@@ -1,7 +1,7 @@
 import React,{useState,useEffect,lazy,Suspense} from 'react';
 import {Link} from 'react-router-dom';
 import {motion,AnimatePresence} from 'framer-motion';
-import * as FiIcons from 'react-icons/fi';
+import { FiPlay, FiBookOpen, FiHome, FiLock, FiStar, FiHeart, FiUsers, FiTrendingUp, FiMessageSquare, FiGrid, FiLogOut, FiInbox, FiMic, FiPrinter, FiCalendar, FiArchive, FiMail, FiImage, FiClipboard, FiMenu, FiX, FiKey } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import supabase from '../lib/supabase';
 import {SkeletonBox,LoadingTransition} from '../components/LoadingSkeletons';
@@ -32,8 +32,6 @@ const AdminSubmissions = lazy(() => import('../components/AdminSubmissions'));
 const AdminRentals = lazy(() => import('../components/AdminRentals'));
 const SlideMaker = lazy(() => import('../staffTools/slideMaker/SlideMaker'));
 const SignupSheetMaker = lazy(() => import('../staffTools/signupSheet/SignupSheetMaker'));
-
-const {FiPlay,FiBookOpen,FiHome,FiLock,FiStar,FiHeart,FiUsers,FiTrendingUp,FiMessageSquare,FiGrid,FiLogOut,FiInbox,FiMic,FiPrinter,FiCalendar,FiArchive,FiMail,FiImage,FiClipboard,FiMenu,FiX,FiKey}=FiIcons;
 
 const NAV_SECTIONS=[
   {

@@ -1,13 +1,11 @@
 import React from 'react';
-import * as FiIcons from 'react-icons/fi';
+import { FiCheck, FiTrash2, FiImage } from 'react-icons/fi';
 import SafeIcon from '../../common/SafeIcon';
 import supabase from '../../lib/supabase';
 import { formatDate } from '../../utils/dateFormat';
 import { useSupabaseCrud } from '../../hooks/useSupabaseCrud';
 import { useToast } from '../../hooks/useToast';
 import { useConfirm } from '../../hooks/useConfirm';
-
-const { FiCheck, FiTrash2, FiImage } = FiIcons;
 
 // Approve/reject moderation for visitor-submitted "Living Stones" photos.
 // Reports its pending count up to the parent (for the tab badge) via

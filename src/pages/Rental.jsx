@@ -1,15 +1,13 @@
 import React,{useState,useEffect} from 'react';
 import {Link} from 'react-router-dom';
 import {motion,AnimatePresence} from 'framer-motion';
-import * as FiIcons from 'react-icons/fi';
+import { FiKey, FiCheckCircle, FiArrowRight, FiArrowLeft, FiPhone, FiMail, FiClock, FiUser, FiExternalLink, FiDollarSign } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import PageNav from '../common/PageNav';
 import {submitFacilityRentalRequest,fetchRentalPricing} from '../lib/contactStorage';
 import {useToast} from '../hooks/useToast';
 import {formatTime,getTodayDateString} from '../utils/dateFormat';
 import {ROOM_OPTIONS,SERVICE_OPTIONS,DEFAULT_PRICING,calculateRentalTotal,roomLabel,serviceLabel} from '../lib/rentalPricing';
-
-const {FiKey,FiCheckCircle,FiArrowRight,FiArrowLeft,FiPhone,FiMail,FiClock,FiUser,FiExternalLink,FiDollarSign}=FiIcons;
 
 const REALM_GIVE_URL='https://onrealm.org/urfellowship/-/form/give/now';
 

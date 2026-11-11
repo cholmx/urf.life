@@ -1,12 +1,10 @@
 import React from 'react';
 import {Link} from 'react-router-dom';
 import {motion} from 'framer-motion';
-import * as FiIcons from 'react-icons/fi';
+import { FiCreditCard, FiExternalLink, FiShield } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import PageNav from '../common/PageNav';
 import StandardButton from '../components/StandardButton';
-
-const {FiCreditCard,FiExternalLink,FiShield}=FiIcons;
 
 const Give=()=> {
   const handleGiveClick=()=> {

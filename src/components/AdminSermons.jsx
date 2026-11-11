@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
-import * as FiIcons from 'react-icons/fi';
+import { FiLayers } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import SermonSeriesManager, { useSermonSeries } from './admin-sermons/SermonSeriesManager';
 import SermonsManager from './admin-sermons/SermonsManager';
-
-const { FiLayers } = FiIcons;
 
 // Sermons and sermon series are managed by two sub-components, but the
 // series list itself is fetched once here and passed down to both - so

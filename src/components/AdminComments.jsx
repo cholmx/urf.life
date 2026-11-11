@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import * as FiIcons from 'react-icons/fi';
+import { FiMessageSquare, FiCheck, FiX, FiTrash2 } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import { useSupabaseCrud } from '../hooks/useSupabaseCrud';
 import { useToast } from '../hooks/useToast';
 import { useConfirm } from '../hooks/useConfirm';
 import { LoadingSpinner } from './LoadingSpinner';
-
-const { FiMessageSquare, FiCheck, FiX, FiTrash2 } = FiIcons;
 
 const AdminComments = () => {
   const toast = useToast();

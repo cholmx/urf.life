@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import * as FiIcons from 'react-icons/fi';
+import { FiUpload, FiX } from 'react-icons/fi';
 import SafeIcon from '../../common/SafeIcon';
 import supabase from '../../lib/supabase';
 import { parseDevotionalFile } from '../../utils/devotionalParser';
 import { useConfirm } from '../../hooks/useConfirm';
-
-const { FiUpload, FiX } = FiIcons;
 
 // Replaces every existing devotional with a freshly parsed batch from a
 // pasted or uploaded .txt file. Uses the raw supabase client directly

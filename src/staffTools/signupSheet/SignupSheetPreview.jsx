@@ -1,8 +1,7 @@
 import React, { useRef, useState, useCallback } from 'react';
-import * as FiIcons from 'react-icons/fi';
+import { FiPrinter } from 'react-icons/fi';
 import { colors } from '../../styles/designTokens.js';
 
-const { FiPrinter } = FiIcons;
 const MIN_COL_WIDTH = 5;
 const SAVE_LABELS = { idle: 'Save to Happening', saving: 'Saving...', saved: 'Saved', error: 'Save Failed - Retry' };
 

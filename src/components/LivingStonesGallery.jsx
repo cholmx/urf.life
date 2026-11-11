@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import * as FiIcons from 'react-icons/fi';
+import { FiX, FiChevronLeft, FiChevronRight, FiUser, FiMessageSquare, FiCamera } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import supabase from '../lib/supabase';
-
-const { FiX, FiChevronLeft, FiChevronRight, FiUser, FiMessageSquare, FiCamera } = FiIcons;
 
 const LivingStonesGallery = () => {
   const [photos, setPhotos] = useState([]);

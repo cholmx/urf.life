@@ -1,7 +1,7 @@
 import React,{useState,useEffect,useMemo} from 'react';
 import {Link} from 'react-router-dom';
 import {AnimatePresence,motion} from 'framer-motion';
-import * as FiIcons from 'react-icons/fi';
+import { FiCalendar, FiClock, FiMapPin, FiExternalLink, FiX, FiDownload } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import PageNav from '../common/PageNav';
 import {LoadingTransition} from '../components/LoadingSkeletons';
@@ -10,8 +10,6 @@ import supabase from '../lib/supabase';
 import {getTodayDateString,formatTime} from '../utils/dateFormat';
 import {getEventItems,getRangeItems} from '../staffComms/lib/calendar-grid';
 import {downloadIcsCalendar} from '../utils/generateIcs';
-
-const {FiCalendar,FiClock,FiMapPin,FiExternalLink,FiX,FiDownload}=FiIcons;
 
 // How far ahead the upcoming list and the bulk calendar download look -
 // far enough to be useful (a season's worth of weekly recurring items),

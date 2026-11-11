@@ -1,7 +1,7 @@
 import React,{useState,useEffect} from 'react';
 import {Link} from 'react-router-dom';
 import {motion} from 'framer-motion';
-import * as FiIcons from 'react-icons/fi';
+import { FiMail } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import PageNav from '../common/PageNav';
 import {SkeletonCard,LoadingTransition} from '../components/LoadingSkeletons';
@@ -11,8 +11,6 @@ import {formatDate,getTodayDateString} from '../utils/dateFormat';
 import {ensureScriptHtml} from '../lib/textToHtml';
 import {sanitizeHtml} from '../utils/sanitizeHtml';
 import {getWeekStartDate,isHappeningsActive,buildHappeningsScript} from '../staffComms/lib/helpers';
-
-const {FiMail}=FiIcons;
 
 const Announcements=()=> {
   const [weekDate,setWeekDate]=useState(null);

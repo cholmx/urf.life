@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import * as FiIcons from 'react-icons/fi';
+import { FiTrendingUp, FiPlayCircle, FiFileText, FiEye, FiHelpCircle, FiChevronDown, FiChevronUp, FiCamera } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import PageNav from '../common/PageNav';
 import { SkeletonCard, SkeletonBox, LoadingTransition } from '../components/LoadingSkeletons';
@@ -11,8 +11,6 @@ import LivingStonesGallery from '../components/LivingStonesGallery';
 import LivingStonesUpload from '../components/LivingStonesUpload';
 import { sanitizeHtml } from '../utils/sanitizeHtml';
 import { getYouTubeEmbedUrl } from '../utils/youtube';
-
-const { FiTrendingUp, FiPlayCircle, FiFileText, FiEye, FiHelpCircle, FiChevronDown, FiChevronUp, FiCamera } = FiIcons;
 
 const CapitalCampaign = () => {
   const [updates, setUpdates] = useState([]);

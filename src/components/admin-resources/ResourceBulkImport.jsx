@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import * as FiIcons from 'react-icons/fi';
+import { FiUpload, FiX } from 'react-icons/fi';
 import SafeIcon from '../../common/SafeIcon';
 import supabase from '../../lib/supabase';
 import { parseResourcesFile } from '../../utils/resourceParser';
 import { useConfirm } from '../../hooks/useConfirm';
-
-const { FiUpload, FiX } = FiIcons;
 
 // Bulk import needs the live resources/categories lists (to dedupe against
 // existing titles and find-or-create categories on the fly), so the parent
@@ -164,7 +162,6 @@ Links to Books:
 https://www.amazon.com/Problem-Pain-C-S-Lewis/dp/0060652969
 https://www.barnesandnoble.com/w/the-problem-of-pain-c-s-lewis/1100421588
 https://www.christianbook.com/problem-pain-s-lewis/s-lewis/9780060652968
-
 
 Category: CHRISTIAN LIVING
 Title: Mere Christianity

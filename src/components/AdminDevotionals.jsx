@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import * as FiIcons from 'react-icons/fi';
+import { FiUpload, FiDownload, FiTrash2, FiRefreshCw, FiCheckCircle, FiAlertCircle, FiPlus } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import supabase from '../lib/supabase';
 import { parseLocalDate } from '../utils/dateFormat';
@@ -10,8 +10,6 @@ import DevotionalBulkImport from './admin-devotionals/DevotionalBulkImport';
 import DevotionalList from './admin-devotionals/DevotionalList';
 import { useToast } from '../hooks/useToast';
 import { useConfirm } from '../hooks/useConfirm';
-
-const { FiUpload, FiDownload, FiTrash2, FiRefreshCw, FiCheckCircle, FiAlertCircle, FiPlus } = FiIcons;
 
 const AdminDevotionals = () => {
   const toast = useToast();

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import * as FiIcons from 'react-icons/fi';
+import { FiPlus, FiEdit, FiTrash2, FiSave, FiX, FiLayers, FiAlertTriangle, FiCheckCircle, FiTag } from 'react-icons/fi';
 import SafeIcon from '../../common/SafeIcon';
 import RichTextEditor from '../RichTextEditor';
 import { LoadingSpinner } from '../LoadingSpinner';
@@ -9,8 +9,6 @@ import { formatDate } from '../../utils/dateFormat';
 import { useSupabaseCrud } from '../../hooks/useSupabaseCrud';
 import { useConfirm } from '../../hooks/useConfirm';
 import supabase from '../../lib/supabase';
-
-const { FiPlus, FiEdit, FiTrash2, FiSave, FiX, FiLayers, FiAlertTriangle, FiCheckCircle, FiTag } = FiIcons;
 
 const emptyForm = {
   title: '',

@@ -1,11 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import * as FiIcons from 'react-icons/fi';
+import { FiUpload, FiX, FiCamera, FiCheck, FiImage } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import supabase from '../lib/supabase';
 import { LoadingSpinner } from './LoadingSpinner';
-
-const { FiUpload, FiX, FiCamera, FiCheck, FiImage } = FiIcons;
 
 const MAX_WIDTH = 1200;
 const MAX_HEIGHT = 1200;

@@ -1,9 +1,7 @@
 import React, { createContext, useCallback, useContext, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import * as FiIcons from 'react-icons/fi';
+import { FiAlertTriangle } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
-
-const { FiAlertTriangle } = FiIcons;
 
 const ConfirmContext = createContext(null);
 

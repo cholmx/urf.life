@@ -1,13 +1,11 @@
 import React,{useState,useEffect} from 'react';
 import {Link} from 'react-router-dom';
 import {motion} from 'framer-motion';
-import * as FiIcons from 'react-icons/fi';
+import { FiPlay, FiMic, FiUsers, FiCreditCard, FiUserPlus, FiMail, FiCalendar, FiBookOpen, FiSettings, FiFacebook, FiInstagram, FiYoutube, FiGlobe, FiLogIn, FiExternalLink, FiFileText, FiHeadphones, FiTrendingUp, FiCheck, FiKey } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import supabase from '../lib/supabase';
 import {getTodayDateString} from '../utils/dateFormat';
 import {CLASS_LISTING_GRACE_DAYS} from '../staffComms/lib/helpers';
-
-const {FiPlay,FiMic,FiUsers,FiCreditCard,FiUserPlus,FiMail,FiCalendar,FiBookOpen,FiSettings,FiFacebook,FiInstagram,FiYoutube,FiGlobe,FiLogIn,FiExternalLink,FiFileText,FiHeadphones,FiTrendingUp,FiCheck,FiKey}=FiIcons;
 
 const Home=()=> {
   const [hasEvents,setHasEvents]=useState(false);

@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import * as FiIcons from 'react-icons/fi';
+import { FiTrash2, FiSave, FiX, FiBookOpen, FiLink } from 'react-icons/fi';
 import SafeIcon from '../../common/SafeIcon';
 import { toTitleCase } from '../../utils/textFormat';
-
-const { FiTrash2, FiSave, FiX, FiBookOpen, FiLink } = FiIcons;
 
 const emptyForm = { name: '', description: '', is_link_group: false };
 

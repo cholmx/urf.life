@@ -1,14 +1,12 @@
 import React,{useState} from 'react';
 import {Link} from 'react-router-dom';
 import {motion,AnimatePresence} from 'framer-motion';
-import * as FiIcons from 'react-icons/fi';
+import { FiUsers, FiCheckCircle, FiUser, FiMail, FiHash, FiArrowRight, FiCalendar } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import PageNav from '../common/PageNav';
 import {submitTableGroupSignup} from '../lib/contactStorage';
 import {useToast} from '../hooks/useToast';
 import {isValidEmail} from '../utils/validation';
-
-const {FiUsers,FiCheckCircle,FiUser,FiMail,FiHash,FiArrowRight,FiCalendar}=FiIcons;
 
 const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 

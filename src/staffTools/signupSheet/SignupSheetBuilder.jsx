@@ -1,9 +1,7 @@
 import React from 'react';
-import * as FiIcons from 'react-icons/fi';
+import { FiPlus, FiTrash2, FiCalendar } from 'react-icons/fi';
 import SafeIcon from './SafeIcon';
 import { colors } from '../../styles/designTokens.js';
-
-const { FiPlus, FiTrash2, FiCalendar } = FiIcons;
 
 const PRESET_COLORS = [
   { label: 'Deep Teal', value: '#0D2B23' },

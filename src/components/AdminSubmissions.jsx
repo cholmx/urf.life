@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
-import * as FiIcons from 'react-icons/fi';
+import { FiMail, FiUserPlus, FiUsers } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import SubmissionsList from './admin-submissions/SubmissionsList';
-
-const { FiMail, FiUserPlus, FiUsers } = FiIcons;
 
 const tabs = [
   { id: 'contact', label: 'Contact', icon: FiMail },

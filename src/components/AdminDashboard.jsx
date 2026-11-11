@@ -1,11 +1,9 @@
 import React,{useState,useEffect} from 'react';
-import * as FiIcons from 'react-icons/fi';
+import { FiMic, FiExternalLink, FiRefreshCw } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import supabase from '../lib/supabase';
 import { formatDate as formatDateSafe, getTodayDateString } from '../utils/dateFormat';
 import { isArchived } from '../staffComms/lib/helpers';
-
-const {FiMic,FiExternalLink,FiRefreshCw}=FiIcons;
 
 const AdminDashboard=({onNavigate})=> {
   const [recentAnnouncements,setRecentAnnouncements]=useState([]);

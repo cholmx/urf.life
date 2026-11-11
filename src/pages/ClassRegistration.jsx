@@ -1,7 +1,7 @@
 import React,{useState,useEffect} from 'react';
 import {Link} from 'react-router-dom';
 import {motion} from 'framer-motion';
-import * as FiIcons from 'react-icons/fi';
+import { FiBookOpen, FiExternalLink } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import PageNav from '../common/PageNav';
 import { LoadingSpinner } from '../components/LoadingSpinner';
@@ -12,8 +12,6 @@ import {plainTextToHtml} from '../lib/textToHtml';
 import {formatDate,formatTime,getTodayDateString} from '../utils/dateFormat';
 import AddToCalendarButton from '../components/AddToCalendarButton';
 import {isClassListingActive} from '../staffComms/lib/helpers';
-
-const {FiBookOpen,FiExternalLink}=FiIcons;
 
 const ClassRegistration=()=> {
   const [classes,setClasses]=useState([]);

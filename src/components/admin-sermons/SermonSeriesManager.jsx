@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import * as FiIcons from 'react-icons/fi';
+import { FiTrash2, FiSave, FiX, FiAlertTriangle, FiCheckCircle } from 'react-icons/fi';
 import SafeIcon from '../../common/SafeIcon';
 import { toTitleCase } from '../../utils/textFormat';
 import { formatDate } from '../../utils/dateFormat';
 import { useSupabaseCrud } from '../../hooks/useSupabaseCrud';
 import { useConfirm } from '../../hooks/useConfirm';
-
-const { FiTrash2, FiSave, FiX, FiAlertTriangle, FiCheckCircle } = FiIcons;
 
 const emptyForm = { name: '', description: '', start_date: '', end_date: '' };
 

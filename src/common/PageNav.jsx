@@ -1,9 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import * as FiIcons from 'react-icons/fi';
+import { FiHome, FiMenu, FiMail, FiCalendar, FiFileText, FiMic, FiHeadphones, FiCreditCard, FiUsers, FiKey, FiUserPlus, FiBookOpen, FiSearch } from 'react-icons/fi';
 import SafeIcon from './SafeIcon';
-
-const { FiHome, FiMenu, FiMail, FiCalendar, FiFileText, FiMic, FiHeadphones, FiCreditCard, FiUsers, FiKey, FiUserPlus, FiBookOpen, FiSearch } = FiIcons;
 
 // Everywhere people actually want to go from any page, not just Home -
 // mirrors Home.jsx's own primary/quick-link buttons, minus the ones that

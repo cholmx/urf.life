@@ -1,5 +1,5 @@
 import React from 'react';
-import * as FiIcons from 'react-icons/fi';
+import { FiEdit, FiTrash2, FiBookOpen, FiTag } from 'react-icons/fi';
 import SafeIcon from '../../common/SafeIcon';
 import { LoadingSpinner } from '../LoadingSpinner';
 import { getCleanDescription } from '../../utils/resourceText';
@@ -7,8 +7,6 @@ import { getCleanDescription } from '../../utils/resourceText';
 // Re-exported for existing importers - the canonical implementation now
 // lives in utils/resourceText so BookCard.jsx can share it too.
 export { getCleanDescription };
-
-const { FiEdit, FiTrash2, FiBookOpen, FiTag } = FiIcons;
 
 export const getWebsiteName = (url) => {
   try {

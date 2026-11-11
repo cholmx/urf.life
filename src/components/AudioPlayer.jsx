@@ -1,10 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import * as FiIcons from 'react-icons/fi';
+import { FiPlay, FiPause, FiSkipBack, FiSkipForward, FiVolume2, FiVolumeX, FiX } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import { LoadingSpinner } from './LoadingSpinner';
-
-const { FiPlay, FiPause, FiSkipBack, FiSkipForward, FiVolume2, FiVolumeX } = FiIcons;
 
 const AudioPlayer = ({ episode, onClose }) => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -215,7 +213,7 @@ const AudioPlayer = ({ episode, onClose }) => {
 
           {/* Close */}
           <button onClick={onClose} className="p-2 text-text-primary hover:text-primary transition-colors">
-            <SafeIcon icon={FiIcons.FiX} className="h-5 w-5" />
+            <SafeIcon icon={FiX} className="h-5 w-5" />
           </button>
         </div>
       </div>

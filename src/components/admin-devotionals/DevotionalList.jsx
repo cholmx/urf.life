@@ -1,10 +1,8 @@
 import React from 'react';
-import * as FiIcons from 'react-icons/fi';
+import { FiBookOpen, FiEdit, FiTrash2 } from 'react-icons/fi';
 import SafeIcon from '../../common/SafeIcon';
 import { formatDate } from '../../utils/dateFormat';
 import { LoadingSpinner } from '../LoadingSpinner';
-
-const { FiBookOpen, FiEdit, FiTrash2 } = FiIcons;
 
 const DevotionalList = ({ devotionals, loading, onEdit, onDelete }) => (
   <div className="bg-white rounded-lg shadow-md overflow-hidden">

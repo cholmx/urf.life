@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
-import * as FiIcons from 'react-icons/fi';
+import { FiArchive, FiRotateCcw, FiTrash2, FiInbox } from 'react-icons/fi';
 import SafeIcon from '../../common/SafeIcon';
 import { formatDate } from '../../utils/dateFormat';
 import { useSupabaseCrud } from '../../hooks/useSupabaseCrud';
 import { useToast } from '../../hooks/useToast';
 import { useConfirm } from '../../hooks/useConfirm';
 import { SkeletonBox, LoadingTransition } from '../LoadingSkeletons';
-
-const { FiArchive, FiRotateCcw, FiTrash2, FiInbox } = FiIcons;
 
 // The real list is a stacked column of detail rows, not a table -
 // SkeletonTable's grid-with-header shape had no visual relationship to it.

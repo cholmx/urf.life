@@ -1,11 +1,9 @@
 import React from 'react';
 import {Link} from 'react-router-dom';
 import {motion} from 'framer-motion';
-import * as FiIcons from 'react-icons/fi';
+import { FiClock, FiMapPin, FiUsers, FiMusic, FiBookOpen, FiHeart } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import PageNav from '../common/PageNav';
-
-const {FiClock, FiMapPin, FiUsers, FiMusic, FiBookOpen, FiHeart} = FiIcons;
 
 const Services = () => {
   const services = [
