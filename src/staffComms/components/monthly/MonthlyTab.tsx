@@ -2,6 +2,7 @@ import { C, font } from '../../lib/theme';
 import { btnGhost } from '../ui/inputs';
 import { getActiveMonthlyItems, formatDateNice, formatTime12h, escapeHtml, stripLeadingTitle } from '../../lib/helpers';
 import { getNextOccurrenceDate } from '../../lib/calendar-grid';
+import { printHtml } from '../../lib/printHtml';
 import type { Announcement } from '../../types';
 
 interface MonthlyTabProps {
@@ -397,10 +398,7 @@ export function MonthlyTab({ announcements, today }: MonthlyTabProps) {
     const page1 = buildFlyerHTML(announcements, today, false);
     const page2 = buildFlyerHTML(announcements, today, true);
 
-    const printWindow = window.open('', '_blank', 'width=900,height=700');
-    if (!printWindow) return;
-
-    printWindow.document.write(`<!DOCTYPE html>
+    printHtml(`<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
@@ -419,14 +417,8 @@ export function MonthlyTab({ announcements, today }: MonthlyTabProps) {
 <body>
   <div class="page">${page1}</div>
   <div class="page">${page2}</div>
-  <script>
-    window.addEventListener('load', function() {
-      setTimeout(function() { window.print(); }, 600);
-    });
-  </script>
 </body>
 </html>`);
-    printWindow.document.close();
   };
 
   return (

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { C, font } from '../../lib/theme';
 import { btnGhost } from '../ui/inputs';
 import { getActiveMonthlyItems, formatDateNice, formatTime12h, escapeHtml, stripLeadingTitle } from '../../lib/helpers';
+import { printHtml } from '../../lib/printHtml';
 import type { Announcement } from '../../types';
 import type { ReactNode } from 'react';
 
@@ -127,25 +128,7 @@ export function BulletinTab({ announcements, today }: BulletinTabProps) {
   const bulletinScale = pickBulletinScale(monthItems);
 
   const handlePrint = () => {
-    const html = buildBulletinHTML(monthItems, monthLabel);
-    const iframe = document.createElement('iframe');
-    iframe.style.position = 'fixed';
-    iframe.style.top = '-10000px';
-    iframe.style.left = '-10000px';
-    iframe.style.width = '0';
-    iframe.style.height = '0';
-    iframe.style.border = 'none';
-    document.body.appendChild(iframe);
-    const doc = iframe.contentWindow?.document;
-    if (!doc) return;
-    doc.open();
-    doc.write(html);
-    doc.close();
-    setTimeout(() => {
-      try { iframe.contentWindow?.focus(); iframe.contentWindow?.print(); }
-      catch { /* ignore */ }
-      setTimeout(() => document.body.removeChild(iframe), 1000);
-    }, 800);
+    printHtml(buildBulletinHTML(monthItems, monthLabel));
   };
 
   return (

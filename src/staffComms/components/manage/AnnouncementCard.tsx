@@ -5,6 +5,7 @@ import { ScopePill, HappeningTypePill, Pill } from '../ui/Pill';
 import { formatDateNice, weeksUntil } from '../../lib/helpers';
 import { getNextOccurrenceDate } from '../../lib/calendar-grid';
 import { buildInviteHTMLFromAnnouncement } from './invitePrinter';
+import { printHtml } from '../../lib/printHtml';
 import type { Announcement, DestinationKey } from '../../types';
 
 const DEST_LABELS: { key: DestinationKey; short: string }[] = [
@@ -63,25 +64,7 @@ export function AnnouncementCard({ a, today, onEdit, onDelete, onTogglePublish, 
   const wks = weeksUntil(displayDate, today);
 
   const printInvite = () => {
-    const html = buildInviteHTMLFromAnnouncement(a);
-    const iframe = document.createElement('iframe');
-    iframe.style.position = 'fixed';
-    iframe.style.top = '-10000px';
-    iframe.style.left = '-10000px';
-    iframe.style.width = '0';
-    iframe.style.height = '0';
-    iframe.style.border = 'none';
-    document.body.appendChild(iframe);
-    const doc = iframe.contentWindow?.document;
-    if (!doc) return;
-    doc.open();
-    doc.write(html);
-    doc.close();
-    setTimeout(() => {
-      try { iframe.contentWindow?.focus(); iframe.contentWindow?.print(); }
-      catch { /* ignore */ }
-      setTimeout(() => document.body.removeChild(iframe), 1000);
-    }, 800);
+    printHtml(buildInviteHTMLFromAnnouncement(a));
   };
 
   const btnBase: React.CSSProperties = { fontFamily: font.display, fontSize: 10, fontWeight: 700, borderRadius: 5, padding: '4px 10px', cursor: 'pointer', letterSpacing: '0.04em', textTransform: 'uppercase' };
