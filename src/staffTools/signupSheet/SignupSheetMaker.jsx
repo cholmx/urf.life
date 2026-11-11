@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import SignupSheetBuilder from './SignupSheetBuilder';
 import SignupSheetPreview from './SignupSheetPreview';
 import supabase from '../../lib/supabase';
@@ -64,6 +64,15 @@ export default function SignupSheetMaker({ happening, onClearHappening }) {
     return () => { cancelled = true; };
   }, [happening, loadedForId]);
 
+  // Wraps the raw setter so any edit after a save clears the "Saved"/
+  // "error" button state back to idle - otherwise the button kept
+  // reading "Saved" even after further unsaved edits, masking that
+  // there was anything new to save.
+  const updateSheetData = useCallback((updater) => {
+    setSheetData(updater);
+    setSaveState(s => (s === 'idle' ? s : 'idle'));
+  }, []);
+
   const handleSaveToHappening = async () => {
     if (!happening) return;
     setSaveState('saving');
@@ -79,7 +88,7 @@ export default function SignupSheetMaker({ happening, onClearHappening }) {
       {view === 'builder' ? (
         <SignupSheetBuilder
           sheetData={sheetData}
-          setSheetData={setSheetData}
+          setSheetData={updateSheetData}
           onPreview={() => setView('preview')}
           happening={happening}
           saveState={saveState}
@@ -89,7 +98,7 @@ export default function SignupSheetMaker({ happening, onClearHappening }) {
       ) : (
         <SignupSheetPreview
           sheetData={sheetData}
-          setSheetData={setSheetData}
+          setSheetData={updateSheetData}
           onBack={() => setView('builder')}
           happening={happening}
           saveState={saveState}
