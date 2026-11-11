@@ -77,12 +77,12 @@ export const C = {
 } as const;
 
 // display is this suite's "title/header" font - used on every actual
-// section/panel title (always already bold + uppercase, matching the
-// public site's own h1-h6 rule in index.css) and, consistently with that
-// same public-site convention (.btn also uses the heading font), on the
-// bold uppercase buttons/pills/labels styled to match. Matches the public
-// site's current defaults (also from designTokens.js): Arial Bold for
-// headers, Merriweather for body.
+// section/panel title (always already bold, matching the public site's
+// own h1-h6 rule in index.css) and, consistently with that same
+// public-site convention (.btn also uses the heading font), on the bold
+// buttons/pills/labels styled to match. Matches the public site's
+// current defaults (also from designTokens.js): Inter Tight Bold for
+// headers, Inter Regular for body.
 export const font = {
   body:    fonts.body,
   display: fonts.heading,

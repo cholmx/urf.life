@@ -17,11 +17,11 @@ const BATHROOM_NOTE_LINES = [
 
 const TEAL = '#1E2522';
 const ORANGE = '#EAA235';
-// Its own constant rather than font.display (currently the same Arial
-// value, but this is printed material representing the public site,
-// independent of whatever the admin UI's own display font happens to be
-// set to).
-const FLYER_FONT = "Arial, Helvetica, sans-serif";
+// Its own constant rather than font.display (currently the same Inter
+// Tight value, but this is printed material representing the public
+// site, independent of whatever the admin UI's own display font happens
+// to be set to).
+const FLYER_FONT = "'Inter Tight', sans-serif";
 
 // Weekly/biweekly/monthly items only ever store their very first session
 // in event_date (see getNextOccurrenceDate's own comment) - using it
@@ -407,7 +407,7 @@ export function MonthlyTab({ announcements, today }: MonthlyTabProps) {
   <title>Monthly Flyer - ${monthLabel}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;0,900;1,400;1,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Inter+Tight:wght@100..900&display=swap" rel="stylesheet">
   <style>
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #fff; }

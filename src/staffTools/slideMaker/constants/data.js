@@ -9,7 +9,7 @@ export const ASPECT_RATIOS = [
 ];
 
 export const FONT_COMBOS = [
-  { id: "google_sans_flex_inter", name: "Arial + Merriweather", vibe: "URF Site Default", h: "'Arial',sans-serif", b: "'Merriweather',serif" },
+  { id: "google_sans_flex_inter", name: "Inter Tight + Inter", vibe: "URF Site Default", h: "'Inter Tight',sans-serif", b: "'Inter',sans-serif" },
   { id: "inter_tight_inconsolata", name: "Inter Tight + Inconsolata", vibe: "Compact & Monospaced", h: "'Inter Tight',sans-serif", b: "'Inconsolata',monospace" },
   { id: "outfit_outfit", name: "Outfit + Outfit", vibe: "Geometric & Unified", h: "'Outfit',sans-serif", b: "'Outfit',sans-serif" },
   { id: "spartan_dm", name: "League Spartan + DM Sans", vibe: "Bold & Structured", h: "'League Spartan',sans-serif", b: "'DM Sans',sans-serif" },

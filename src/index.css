@@ -1,5 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;0,900;1,400;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@100..900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Caladea:ital,wght@0,400;1,400;1,700&display=swap');
 
 @tailwind base;
@@ -16,7 +16,7 @@
        while @apply bg-accent/font-sans kept resolving to the old
        cream/Inter values). Literal properties sidestep that cache. */
     background-color: #FCF9F2;
-    font-family: 'Merriweather', Georgia, serif;
+    font-family: 'Inter', sans-serif;
     font-size: 14px;
     font-weight: 400;
     line-height: 1.7;
@@ -25,11 +25,9 @@
   h1, h2, h3, h4, h5, h6 {
     @apply text-text-primary;
     /* Literal, not @apply font-heading - see the body rule's comment.
-       font-weight matches designTokens.js's fontWeights.heading. Arial
-       only ships true 400/700 faces - 800 has no real face to use, so
-       browsers synthesize (faux-bold) it, which reads chunky/blotchy
-       at heading sizes. 700 is the heaviest clean weight Arial has. */
-    font-family: Arial, Helvetica, sans-serif;
+       font-weight matches designTokens.js's fontWeights.heading - Inter
+       Tight Bold. */
+    font-family: 'Inter Tight', sans-serif;
     font-weight: 700;
     line-height: 1.1;
     letter-spacing: -0.02em;
@@ -58,7 +56,7 @@
 }
 .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
   @apply mt-4 mb-2;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter Tight', sans-serif;
   color: #1E2522;
 }
 .prose h1 {
@@ -111,7 +109,7 @@
 @layer components {
   .btn {
     @apply inline-flex items-center justify-center px-6 py-3 rounded-2xl font-extrabold uppercase tracking-wide transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-accent;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: 'Inter Tight', sans-serif;
   }
   .btn-primary {
     @apply bg-primary text-white shadow-modern hover:shadow-modern-lg hover:-translate-y-0.5;
@@ -250,16 +248,16 @@
 }
 
 .font-fraunces {
-  font-family: 'Merriweather', Georgia, serif;
+  font-family: 'Inter Tight', sans-serif;
 }
 
 .page-subtitle {
   @apply font-normal text-base -mt-2;
-  font-family: 'Merriweather', Georgia, serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .font-inter {
-  font-family: 'Merriweather', Georgia, serif;
+  font-family: 'Inter', sans-serif;
 }
 
 /* Discussion questions background */
@@ -290,7 +288,7 @@
   margin-bottom: 0;
 }
 .happenings-script h3 {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter Tight', sans-serif;
   font-size: 1.5em;
   font-weight: 700;
   line-height: 1.1;
@@ -322,13 +320,13 @@
   color: #1E2522;
 }
 
-/* Admin dashboard: Merriweather for body text (headings already inherit
-   Arial Bold from the base h1-h6 rule above). Same green/cream/near-black
+/* Admin dashboard: Inter Regular for body text (headings already inherit
+   Inter Tight Bold from the base h1-h6 rule above). Same green/cream/near-black
    palette as the public site - admin-input/admin-card/admin-btn-* below
    use Tailwind's neutral-* scale, which tailwind.config.js overrides
    end to end to match that palette instead of staying plain gray. */
 .admin-shell {
-  font-family: 'Merriweather', Georgia, serif;
+  font-family: 'Inter', sans-serif;
 }
 
 @layer components {
