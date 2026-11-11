@@ -34,27 +34,65 @@ function computeHeadline(ctx, data, brand, maxW, weight, fallbackSize) {
   return { lines, headLH, headFont };
 }
 
-export const renderLeftBlock=(ctx,data,brand,contentW,margin,cw,ch)=> {
-  const {lines:headLines,headLH,headFont}=computeHeadline(ctx,data,brand,contentW,hw(brand,800));
-  const headH=blockHeight(headLines,headLH);
+// Shared layout math for every template below: measure the headline,
+// optionally measure a subtitle (line2) and a detail line (line3), and
+// sum their heights into one block - each template previously repeated
+// this ~15-line measurement (and the matching draw calls in
+// drawTextBlock) with only its x/width/weights/gaps/alignment differing.
+function computeTextBlock(ctx, data, brand, {
+  textW,
+  headlineWeight,
+  headlineFallbackSize,
+  subGap = 32,
+  subFallbackSize = 40,
+  detGap = 26,
+  detFallbackSize = 32,
+  includeDetail = true,
+}) {
+  const { lines: headLines, headLH, headFont } = computeHeadline(ctx, data, brand, textW, headlineWeight, headlineFallbackSize);
+  let totalH = blockHeight(headLines, headLH);
 
-  let totalH=headH,subLines=[],subLH=0,detLines=[],detLH=0;
+  let subLines = [], subLH = 0, subFont = '';
   if (data.line2) {
-    subLines=wrapText(ctx,data.line2,`${bw(brand,600)} ${data.s2 || 40}px ${brand.bFont}`,contentW,true);
-    subLH=(data.s2 || 40) * 1.35;
-    totalH +=32 + blockHeight(subLines,subLH);
-  }
-  if (data.line3) {
-    detLines=wrapText(ctx,data.line3,`400 ${data.s3 || 32}px ${brand.bFont}`,contentW,true);
-    detLH=(data.s3 || 32) * 1.4;
-    totalH +=26 + blockHeight(detLines,detLH);
+    const subSize = data.s2 || subFallbackSize;
+    subFont = `${bw(brand, 600)} ${subSize}px ${brand.bFont}`;
+    subLines = wrapText(ctx, data.line2, subFont, textW, true);
+    subLH = subSize * 1.35;
+    totalH += subGap + blockHeight(subLines, subLH);
   }
 
+  let detLines = [], detLH = 0, detFont = '';
+  if (includeDetail && data.line3) {
+    const detSize = data.s3 || detFallbackSize;
+    detFont = `400 ${detSize}px ${brand.bFont}`;
+    detLines = wrapText(ctx, data.line3, detFont, textW, true);
+    detLH = detSize * 1.4;
+    totalH += detGap + blockHeight(detLines, detLH);
+  }
+
+  return { headLines, headLH, headFont, subLines, subLH, subFont, subGap, detLines, detLH, detFont, detGap, totalH };
+}
+
+function drawTextBlock(ctx, block, brand, x, startY, align) {
   const hLS = brand.hLetterSpacing ?? 0;
-  let y=(ch - totalH) / 2;
-  y=drawLines(ctx,headLines,margin,y,headFont,brand.textColor,"left",headLH,hLS,sh(brand));
-  if (data.line2) y=drawLines(ctx,subLines,margin,y + 32,`${bw(brand,600)} ${data.s2 || 40}px ${brand.bFont}`,brand.accentColor,"left",subLH,0,sh(brand));
-  if (data.line3) drawLines(ctx,detLines,margin,y + 26,`400 ${data.s3 || 32}px ${brand.bFont}`,brand.accentColor,"left",detLH,0,sh(brand));
+  let y = drawLines(ctx, block.headLines, x, startY, block.headFont, brand.textColor, align, block.headLH, hLS, sh(brand));
+  if (block.subLines.length) {
+    y = drawLines(ctx, block.subLines, x, y + block.subGap, block.subFont, brand.accentColor, align, block.subLH, 0, sh(brand));
+  }
+  if (block.detLines.length) {
+    drawLines(ctx, block.detLines, x, y + block.detGap, block.detFont, brand.accentColor, align, block.detLH, 0, sh(brand));
+  }
+}
+
+// Vertically centers a block of height totalH within [rangeStart,
+// rangeStart + rangeHeight) - most templates center within the whole
+// canvas (rangeStart 0, rangeHeight ch); a couple reserve space for a
+// header bar/banner first and center within what's left.
+const centerY = (totalH, rangeStart, rangeHeight) => rangeStart + (rangeHeight - totalH) / 2;
+
+export const renderLeftBlock=(ctx,data,brand,contentW,margin,cw,ch)=> {
+  const block = computeTextBlock(ctx, data, brand, { textW: contentW, headlineWeight: hw(brand, 800) });
+  drawTextBlock(ctx, block, brand, margin, centerY(block.totalH, 0, ch), "left");
 };
 
 export const renderLeftBand=(ctx,data,brand,margin,cw,ch)=> {
@@ -66,43 +104,16 @@ export const renderLeftBand=(ctx,data,brand,margin,cw,ch)=> {
   const textX=bandX + bandW + 66;
   const textW=cw - textX - margin;
 
-  const {lines:headLines,headLH,headFont}=computeHeadline(ctx,data,brand,textW,hw(brand,800),98);
-  const headH=blockHeight(headLines,headLH);
-
-  let totalH=headH,subLines=[],subLH=0,detLines=[],detLH=0;
-  if (data.line2) {
-    subLines=wrapText(ctx,data.line2,`${bw(brand,600)} ${data.s2||40}px ${brand.bFont}`,textW,true);
-    subLH=(data.s2||40)*1.35;
-    totalH +=32 + blockHeight(subLines,subLH);
-  }
-  if (data.line3) {
-    detLines=wrapText(ctx,data.line3,`400 ${data.s3||32}px ${brand.bFont}`,textW,true);
-    detLH=(data.s3||32)*1.4;
-    totalH +=26 + blockHeight(detLines,detLH);
-  }
-
-  const hLS = brand.hLetterSpacing ?? 0;
-  let y=(ch - totalH) / 2;
-  y=drawLines(ctx,headLines,textX,y,headFont,brand.textColor,"left",headLH,hLS,sh(brand));
-  if (data.line2) y=drawLines(ctx,subLines,textX,y + 32,`${bw(brand,600)} ${data.s2||40}px ${brand.bFont}`,brand.accentColor,"left",subLH,0,sh(brand));
-  if (data.line3) drawLines(ctx,detLines,textX,y + 26,`400 ${data.s3||32}px ${brand.bFont}`,brand.accentColor,"left",detLH,0,sh(brand));
+  const block = computeTextBlock(ctx, data, brand, { textW, headlineWeight: hw(brand, 800), headlineFallbackSize: 98 });
+  drawTextBlock(ctx, block, brand, textX, centerY(block.totalH, 0, ch), "left");
 };
 
 export const renderMinimal=(ctx,data,brand,contentW,cw,ch)=> {
-  const {lines:headLines,headLH,headFont}=computeHeadline(ctx,data,brand,contentW,hw(brand,900),128);
-  const headH=blockHeight(headLines,headLH);
-
-  let totalH=headH,subLines=[],subLH=0;
-  if (data.line2) {
-    subLines=wrapText(ctx,data.line2,`${bw(brand,600)} ${data.s2||45}px ${brand.bFont}`,contentW,true);
-    subLH=(data.s2||45)*1.35;
-    totalH +=40 + blockHeight(subLines,subLH);
-  }
-
-  const hLS = brand.hLetterSpacing ?? 0;
-  let y=(ch - totalH) / 2;
-  y=drawLines(ctx,headLines,cw / 2,y,headFont,brand.textColor,"center",headLH,hLS,sh(brand));
-  if (data.line2) drawLines(ctx,subLines,cw / 2,y + 40,`${bw(brand,600)} ${data.s2||45}px ${brand.bFont}`,brand.accentColor,"center",subLH,0,sh(brand));
+  const block = computeTextBlock(ctx, data, brand, {
+    textW: contentW, headlineWeight: hw(brand, 900), headlineFallbackSize: 128,
+    subGap: 40, subFallbackSize: 45, includeDetail: false,
+  });
+  drawTextBlock(ctx, block, brand, cw / 2, centerY(block.totalH, 0, ch), "center");
 };
 
 export const renderOffsetHeader=(ctx,data,brand,margin,cw,ch)=> {
@@ -114,22 +125,15 @@ export const renderOffsetHeader=(ctx,data,brand,margin,cw,ch)=> {
   ctx.fillStyle=brand.accentColor;
   ctx.fillRect(barX, barY, barW, barH);
 
-  const {lines:headLines,headLH,headFont}=computeHeadline(ctx,data,brand,cw-margin*2,hw(brand,800),101);
-  const headH=blockHeight(headLines,headLH);
+  const textW = cw - margin * 2;
+  const block = computeTextBlock(ctx, data, brand, {
+    textW, headlineWeight: hw(brand, 800), headlineFallbackSize: 101,
+    subGap: 35, subFallbackSize: 40, includeDetail: false,
+  });
 
-  let totalH=headH,subLines=[],subLH=0;
-  if (data.line2) {
-    subLines=wrapText(ctx,data.line2,`${bw(brand,600)} ${data.s2||40}px ${brand.bFont}`,cw-margin*2,true);
-    subLH=(data.s2||40)*1.35;
-    totalH +=35 + blockHeight(subLines,subLH);
-  }
-
-  const hLS = brand.hLetterSpacing ?? 0;
   const startY=barY + barH + 93;
   const availH=ch - startY - margin;
-  let y=startY + (availH - totalH) / 2;
-  y=drawLines(ctx,headLines,margin,y,headFont,brand.textColor,"left",headLH,hLS,sh(brand));
-  if (data.line2) drawLines(ctx,subLines,margin,y + 35,`${bw(brand,600)} ${data.s2||40}px ${brand.bFont}`,brand.accentColor,"left",subLH,0,sh(brand));
+  drawTextBlock(ctx, block, brand, margin, centerY(block.totalH, startY, availH), "left");
 };
 
 const drawAccentImage=(ctx,img,x,y,w,h,accentColor)=> {
@@ -156,20 +160,12 @@ export const renderRightAccent=(ctx,data,brand,margin,accentImg,cw,ch)=> {
     ctx.fillRect(accentX, 0, accentW, ch);
   }
 
-  const {lines:headLines,headLH,headFont}=computeHeadline(ctx,data,brand,cw-accentW-margin,hw(brand,800),101);
-  const headH=blockHeight(headLines,headLH);
-
-  let totalH=headH,subLines=[],subLH=0;
-  if (data.line2) {
-    subLines=wrapText(ctx,data.line2,`${bw(brand,600)} ${data.s2||40}px ${brand.bFont}`,cw-accentW-margin,true);
-    subLH=(data.s2||40)*1.35;
-    totalH +=35 + blockHeight(subLines,subLH);
-  }
-
-  const hLS = brand.hLetterSpacing ?? 0;
-  let y=(ch - totalH) / 2;
-  y=drawLines(ctx,headLines,margin,y,headFont,brand.textColor,"left",headLH,hLS,sh(brand));
-  if (data.line2) drawLines(ctx,subLines,margin,y + 35,`${bw(brand,600)} ${data.s2||40}px ${brand.bFont}`,brand.accentColor,"left",subLH,0,sh(brand));
+  const textW = cw - accentW - margin;
+  const block = computeTextBlock(ctx, data, brand, {
+    textW, headlineWeight: hw(brand, 800), headlineFallbackSize: 101,
+    subGap: 35, subFallbackSize: 40, includeDetail: false,
+  });
+  drawTextBlock(ctx, block, brand, margin, centerY(block.totalH, 0, ch), "left");
 };
 
 export const renderBottomBanner=(ctx,data,brand,contentW,cw,ch)=> {
@@ -178,21 +174,13 @@ export const renderBottomBanner=(ctx,data,brand,contentW,cw,ch)=> {
   ctx.fillStyle=brand.accentColor;
   ctx.fillRect(0, bannerY, cw, bannerH);
 
-  const {lines:headLines,headLH,headFont}=computeHeadline(ctx,data,brand,contentW,hw(brand,800),110);
-  const headH=blockHeight(headLines,headLH);
+  const block = computeTextBlock(ctx, data, brand, {
+    textW: contentW, headlineWeight: hw(brand, 800), headlineFallbackSize: 110,
+    subGap: 37, subFallbackSize: 43, includeDetail: false,
+  });
 
-  let totalH=headH,subLines=[],subLH=0;
-  if (data.line2) {
-    subLines=wrapText(ctx,data.line2,`${bw(brand,600)} ${data.s2||43}px ${brand.bFont}`,contentW,true);
-    subLH=(data.s2||43)*1.35;
-    totalH +=37 + blockHeight(subLines,subLH);
-  }
-
-  const hLS = brand.hLetterSpacing ?? 0;
   const availH=bannerY - 107;
-  let y=(availH - totalH) / 2 + 107;
-  y=drawLines(ctx,headLines,cw / 2,y,headFont,brand.textColor,"center",headLH,hLS,sh(brand));
-  if (data.line2) drawLines(ctx,subLines,cw / 2,y + 37,`${bw(brand,600)} ${data.s2||43}px ${brand.bFont}`,brand.accentColor,"center",subLH,0,sh(brand));
+  drawTextBlock(ctx, block, brand, cw / 2, centerY(block.totalH, 107, availH), "center");
 };
 
 export const renderSidePanel=(ctx,data,brand,margin,accentImg,cw,ch)=> {
@@ -207,24 +195,6 @@ export const renderSidePanel=(ctx,data,brand,margin,accentImg,cw,ch)=> {
   const textX=panelW + 80;
   const textW=cw - textX - margin;
 
-  const {lines:headLines,headLH,headFont}=computeHeadline(ctx,data,brand,textW,hw(brand,800),101);
-  const headH=blockHeight(headLines,headLH);
-
-  let totalH=headH,subLines=[],subLH=0,detLines=[],detLH=0;
-  if (data.line2) {
-    subLines=wrapText(ctx,data.line2,`${bw(brand,600)} ${data.s2||40}px ${brand.bFont}`,textW,true);
-    subLH=(data.s2||40)*1.35;
-    totalH +=32 + blockHeight(subLines,subLH);
-  }
-  if (data.line3) {
-    detLines=wrapText(ctx,data.line3,`400 ${data.s3||32}px ${brand.bFont}`,textW,true);
-    detLH=(data.s3||32)*1.4;
-    totalH +=26 + blockHeight(detLines,detLH);
-  }
-
-  const hLS = brand.hLetterSpacing ?? 0;
-  let y=(ch - totalH) / 2;
-  y=drawLines(ctx,headLines,textX,y,headFont,brand.textColor,"left",headLH,hLS,sh(brand));
-  if (data.line2) y=drawLines(ctx,subLines,textX,y + 32,`${bw(brand,600)} ${data.s2||40}px ${brand.bFont}`,brand.accentColor,"left",subLH,0,sh(brand));
-  if (data.line3) drawLines(ctx,detLines,textX,y + 26,`400 ${data.s3||32}px ${brand.bFont}`,brand.accentColor,"left",detLH,0,sh(brand));
+  const block = computeTextBlock(ctx, data, brand, { textW, headlineWeight: hw(brand, 800), headlineFallbackSize: 101 });
+  drawTextBlock(ctx, block, brand, textX, centerY(block.totalH, 0, ch), "left");
 };
