@@ -304,7 +304,14 @@
   font-weight: 700;
   line-height: 1.1;
   letter-spacing: -0.02em;
-  color: #2B433E;
+  /* !important: the happenings-script container is always rendered
+     inside a .card-clay card (both the public page and the admin
+     preview), and the dark-theme :is(.card-clay, ...) :is(h1...h6, ...)
+     override further down this file has higher specificity (0,2,0)
+     than a plain ".happenings-script h3" rule (0,1,1) - it was silently
+     winning and forcing this back to #1E2522 regardless of what color
+     was set here. */
+  color: #2B433E !important;
   margin: 0 0 0.2em;
 }
 .happenings-script h3:not(:first-child) {
@@ -312,6 +319,7 @@
 }
 .happenings-script h3 + p {
   margin: 0 0 1.2em;
+  font-family: 'Inter Tight', sans-serif;
   font-size: 1.3em;
   color: #597F5C;
   font-weight: 700;
