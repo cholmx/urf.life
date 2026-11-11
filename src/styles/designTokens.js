@@ -50,5 +50,5 @@ export const fontWeights = {
   // weight range (no faux-bold synthesis concern the way Arial had
   // above 700).
   heading: 700,
-  body: 400,
+  body: 500,
 };
