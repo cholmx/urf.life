@@ -17,7 +17,7 @@ const BATHROOM_NOTE_LINES = [
 ];
 
 const TEAL = '#1E2522';
-const ORANGE = '#EAA235';
+const ACCENT = '#597F5C';
 // Its own constant rather than font.display (currently the same Inter
 // Tight value, but this is printed material representing the public
 // site, independent of whatever the admin UI's own display font happens
@@ -235,7 +235,7 @@ function buildFlyerHTML(items: Announcement[], today: string, bathroomVariant: b
         const isWC = a.scope === 'whole_church';
         const dateLabel = escapeHtml(formatDateTimeList(a, today));
         const dateSpan = dateLabel
-          ? `<span style="font-family:${FLYER_FONT};font-size:${s.dateFontSize}pt;font-weight:700;color:${ORANGE};letter-spacing:0.05em;white-space:nowrap;flex-shrink:0;">${dateLabel}</span>`
+          ? `<span style="font-family:${FLYER_FONT};font-size:${s.dateFontSize}pt;font-weight:700;color:${ACCENT};letter-spacing:0.05em;white-space:nowrap;flex-shrink:0;">${dateLabel}</span>`
           : '';
         const ministryTag = ministry
           ? `<span style="font-family:${font.body};font-size:${Math.max(s.contactFontSize - 0.5, 7)}pt;font-weight:700;color:${TEAL};background:${isWC ? C.cardAlt : '#FFFFFF'};border-radius:999px;padding:1pt 7pt;letter-spacing:0.04em;white-space:nowrap;flex-shrink:0;">${ministry}</span>`
@@ -248,7 +248,7 @@ function buildFlyerHTML(items: Announcement[], today: string, bathroomVariant: b
           <div style="display:flex;gap:${s.gap}in;padding:${s.itemPadV}in 0;${border}align-items:flex-start;">
             <div style="flex:1;min-width:0;">
               <div style="margin-bottom:${s.titleMarginBottom}pt;">
-                <div style="font-family:${FLYER_FONT};font-size:${s.titleFontSize}pt;font-weight:700;color:${TEAL};letter-spacing:-0.01em;line-height:1.1;">${title}</div>
+                <div style="font-family:${FLYER_FONT};font-size:${s.titleFontSize}pt;font-weight:700;color:#2B433E;letter-spacing:-0.01em;line-height:1.1;">${title}</div>
                 <div style="margin-top:1pt;line-height:1.1;display:flex;gap:4pt;align-items:center;flex-wrap:wrap;">
                   ${dateSpan}
                   ${ministryTag}
@@ -269,10 +269,10 @@ function buildFlyerHTML(items: Announcement[], today: string, bathroomVariant: b
 
   return `
     <div style="width:8.5in;min-height:11in;background:#fff;font-family:${font.body};display:flex;flex-direction:column;box-sizing:border-box;padding:0.5in;">
-      <div style="padding:${s.headerPadV}in 0 ${s.headerPadV * 0.54}in;flex-shrink:0;text-align:center;border-bottom:3pt solid ${ORANGE};">
+      <div style="padding:${s.headerPadV}in 0 ${s.headerPadV * 0.54}in;flex-shrink:0;text-align:center;border-bottom:3pt solid ${ACCENT};">
         <div style="font-family:${font.body};font-size:${s.orgFontSize}pt;font-weight:700;letter-spacing:0.04em;color:${TEAL};margin-bottom:8pt;">Upper Room Fellowship &nbsp;·&nbsp; urf.life</div>
-        <div style="font-family:${FLYER_FONT};font-size:${s.monthFontSize}pt;font-weight:700;color:${TEAL};letter-spacing:-0.01em;line-height:0.95;margin-bottom:8pt;">${monthLabel}</div>
-        <div style="font-family:${FLYER_FONT};font-size:${s.subtitleFontSize}pt;font-weight:600;color:${ORANGE};letter-spacing:0.04em;">Events &amp; Announcements</div>
+        <div style="font-family:${FLYER_FONT};font-size:${s.monthFontSize}pt;font-weight:900;color:#2B433E;letter-spacing:-0.01em;line-height:0.95;margin-bottom:8pt;">${monthLabel}</div>
+        <div style="font-family:${FLYER_FONT};font-size:${s.subtitleFontSize}pt;font-weight:600;color:${ACCENT};letter-spacing:0.04em;">Events &amp; Announcements</div>
       </div>
       <div style="flex:1;padding:${s.bodyPadV}in ${s.bodyPadH}in ${s.bodyPadV * 0.67}in;background:#fff;display:flex;flex-direction:column;">
         ${itemsHTML}
@@ -293,14 +293,14 @@ function FlyerPagePreview({ announcements, today, bathroomVariant }: {
   return (
     <div style={{ width: '8.5in', minHeight: '11in', background: '#ffffff', fontFamily: font.body, display: 'flex', flexDirection: 'column', boxSizing: 'border-box', padding: '0.5in' }}>
 
-      <div style={{ padding: `${s.headerPadV}in 0 ${s.headerPadV * 0.54}in`, flexShrink: 0, textAlign: 'center', borderBottom: `3pt solid ${ORANGE}` }}>
+      <div style={{ padding: `${s.headerPadV}in 0 ${s.headerPadV * 0.54}in`, flexShrink: 0, textAlign: 'center', borderBottom: `3pt solid ${ACCENT}` }}>
         <div style={{ fontFamily: font.body, fontSize: `${s.orgFontSize}pt`, fontWeight: 700, letterSpacing: '0.04em', color: TEAL, marginBottom: '8pt' }}>
           Upper Room Fellowship &nbsp;·&nbsp; urf.life
         </div>
-        <div style={{ fontFamily: FLYER_FONT, fontSize: `${s.monthFontSize}pt`, fontWeight: 700, color: TEAL, letterSpacing: '-0.01em', lineHeight: 0.95, marginBottom: '8pt' }}>
+        <div style={{ fontFamily: FLYER_FONT, fontSize: `${s.monthFontSize}pt`, fontWeight: 900, color: '#2B433E', letterSpacing: '-0.01em', lineHeight: 0.95, marginBottom: '8pt' }}>
           {monthLabel}
         </div>
-        <div style={{ fontFamily: FLYER_FONT, fontSize: `${s.subtitleFontSize}pt`, fontWeight: 600, color: ORANGE, letterSpacing: '0.04em' }}>
+        <div style={{ fontFamily: FLYER_FONT, fontSize: `${s.subtitleFontSize}pt`, fontWeight: 600, color: ACCENT, letterSpacing: '0.04em' }}>
           Events &amp; Announcements
         </div>
       </div>
@@ -318,13 +318,13 @@ function FlyerPagePreview({ announcements, today, bathroomVariant }: {
             <div key={a.id} style={{ display: 'flex', gap: `${s.gap}in`, padding: `${s.itemPadV}in 0`, borderBottom: i < active.length - 1 ? `1pt solid #2B433E` : 'none', alignItems: 'flex-start' }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ marginBottom: `${s.titleMarginBottom}pt` }}>
-                  <div style={{ fontFamily: FLYER_FONT, fontSize: `${s.titleFontSize}pt`, fontWeight: 700, color: TEAL, letterSpacing: '-0.01em', lineHeight: 1.1 }}>
+                  <div style={{ fontFamily: FLYER_FONT, fontSize: `${s.titleFontSize}pt`, fontWeight: 700, color: '#2B433E', letterSpacing: '-0.01em', lineHeight: 1.1 }}>
                     {a.title}
                   </div>
                   {(formatDateTimeList(a, today) || a.ministry) && (
                     <div style={{ marginTop: '1pt', lineHeight: 1.1, display: 'flex', gap: '4pt', alignItems: 'center', flexWrap: 'wrap' }}>
                       {formatDateTimeList(a, today) && (
-                        <span style={{ fontFamily: FLYER_FONT, fontSize: `${s.dateFontSize}pt`, fontWeight: 700, color: ORANGE, letterSpacing: '0.05em' }}>
+                        <span style={{ fontFamily: FLYER_FONT, fontSize: `${s.dateFontSize}pt`, fontWeight: 700, color: ACCENT, letterSpacing: '0.05em' }}>
                           {formatDateTimeList(a, today)}
                         </span>
                       )}
