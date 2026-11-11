@@ -1,23 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FiTrendingUp, FiPlayCircle, FiFileText, FiEye, FiHelpCircle, FiChevronDown, FiChevronUp, FiCamera } from 'react-icons/fi';
+import { FiTrendingUp, FiFileText, FiEye, FiHelpCircle, FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import PageNav from '../common/PageNav';
-import { SkeletonCard, SkeletonBox, LoadingTransition } from '../components/LoadingSkeletons';
+import { SkeletonBox, LoadingTransition } from '../components/LoadingSkeletons';
 import { useCleanContent } from '../hooks/useCleanContent';
 import supabase from '../lib/supabase';
-import LivingStonesGallery from '../components/LivingStonesGallery';
-import LivingStonesUpload from '../components/LivingStonesUpload';
 import { sanitizeHtml } from '../utils/sanitizeHtml';
-import { getYouTubeEmbedUrl } from '../utils/youtube';
 
 const CapitalCampaign = () => {
-  const [updates, setUpdates] = useState([]);
   const [visionItems, setVisionItems] = useState([]);
   const [faqs, setFaqs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('updates');
+  const [activeTab, setActiveTab] = useState('vision');
   const [openFaqId, setOpenFaqId] = useState(null);
 
   useCleanContent();
@@ -28,13 +24,7 @@ const CapitalCampaign = () => {
 
   const fetchAllContent = async () => {
     try {
-      const [updatesRes, visionRes, faqsRes] = await Promise.all([
-        supabase
-          .from('campaign_updates')
-          .select('*')
-          .eq('published', true)
-          .order('display_order', { ascending: true })
-          .order('created_at', { ascending: false }),
+      const [visionRes, faqsRes] = await Promise.all([
         supabase
           .from('campaign_vision')
           .select('*')
@@ -48,11 +38,9 @@ const CapitalCampaign = () => {
           .order('display_order', { ascending: true })
       ]);
 
-      if (updatesRes.error) throw updatesRes.error;
       if (visionRes.error) throw visionRes.error;
       if (faqsRes.error) throw faqsRes.error;
 
-      setUpdates(updatesRes.data || []);
       setVisionItems(visionRes.data || []);
       setFaqs(faqsRes.data || []);
     } catch (error) {
@@ -61,89 +49,6 @@ const CapitalCampaign = () => {
       setTimeout(() => setLoading(false), 600);
     }
   };
-
-  const formatDate = (dateString) => {
-    if (!dateString) return '';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-
-  const renderUpdates = () => (
-    <div className="space-y-8">
-      {updates.length === 0 ? (
-        <div className="text-center py-12">
-          <SafeIcon icon={FiFileText} className="h-16 w-16 text-text-light mx-auto mb-4" />
-          <p className="text-xl">No updates yet</p>
-          <p className="text-text-light">Check back soon for updates!</p>
-        </div>
-      ) : (
-        updates.map((update, index) => (
-          <motion.div
-            key={update.id}
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.25, delay: index * 0.05 }}
-            className="card-clay rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-          >
-            <div className="p-8">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center space-x-3">
-                  <SafeIcon
-                    icon={update.type === 'video' ? FiPlayCircle : FiFileText}
-                    className="h-6 w-6 text-primary"
-                  />
-                  <h3 className="text-2xl md:text-3xl">{update.title}</h3>
-                </div>
-                <span className="text-sm text-text-light whitespace-nowrap ml-4">
-                  {formatDate(update.created_at)}
-                </span>
-              </div>
-
-              {update.type === 'video' && update.video_url && (
-                <div className="mb-6 rounded-lg overflow-hidden aspect-video bg-gray-100">
-                  {update.video_url.includes('youtube.com') || update.video_url.includes('youtu.be') ? (
-                    <iframe
-                      src={getYouTubeEmbedUrl(update.video_url)}
-                      title={update.title}
-                      className="w-full h-full"
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
-                  ) : (
-                    <video controls className="w-full h-full">
-                      <source src={update.video_url} type="video/mp4" />
-                      Your browser does not support the video tag.
-                    </video>
-                  )}
-                </div>
-              )}
-
-              {update.thumbnail_url && update.type === 'video' && !update.video_url && (
-                <div className="mb-6">
-                  <img
-                    src={update.thumbnail_url}
-                    alt={update.title}
-                    className="w-full rounded-lg"
-                  />
-                </div>
-              )}
-
-              <div className="prose max-w-none">
-                <div
-                  className="announcement-content"
-                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(update.content) }}
-                />
-              </div>
-            </div>
-          </motion.div>
-        ))
-      )}
-    </div>
-  );
 
   const renderVision = () => (
     <div className="space-y-8">
@@ -237,10 +142,9 @@ const CapitalCampaign = () => {
     </div>
   );
 
-  // Each tab's real content has a different shape (Updates: title/date
-  // header + prose; Vision: mandatory top image + title + prose; FAQs: a
-  // short collapsed accordion row) - one shared skeleton can't stand in
-  // for all three without either over- or under-shooting height.
+  // Vision (mandatory top image + title + prose) and FAQs (a short
+  // collapsed accordion row) have different enough shapes that one shared
+  // skeleton would either over- or under-shoot the real height.
   const renderTabSkeleton = () => {
     if (activeTab === 'faqs') {
       return (
@@ -257,28 +161,19 @@ const CapitalCampaign = () => {
         </div>
       );
     }
-    if (activeTab === 'vision') {
-      return (
-        <div className="space-y-8">
-          {Array.from({ length: 2 }).map((_, i) => (
-            <div key={i} className="card-clay rounded-lg shadow-md overflow-hidden">
-              <SkeletonBox width="w-full" height="h-64" rounded="rounded-none" />
-              <div className="p-8 space-y-3">
-                <SkeletonBox width="w-1/2" height="h-7" className="bg-primary/15" />
-                <SkeletonBox width="w-full" height="h-4" />
-                <SkeletonBox width="w-full" height="h-4" />
-                <SkeletonBox width="w-3/4" height="h-4" />
-              </div>
-            </div>
-          ))}
-        </div>
-      );
-    }
-    // updates (and any future tab) - title/date header, no image, prose lines
+    // vision (the only other tab)
     return (
       <div className="space-y-8">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <SkeletonCard key={i} rounded="rounded-lg" shadow="shadow-md" padding="p-8" showMeta={false} lines={5} />
+        {Array.from({ length: 2 }).map((_, i) => (
+          <div key={i} className="card-clay rounded-lg shadow-md overflow-hidden">
+            <SkeletonBox width="w-full" height="h-64" rounded="rounded-none" />
+            <div className="p-8 space-y-3">
+              <SkeletonBox width="w-1/2" height="h-7" className="bg-primary/15" />
+              <SkeletonBox width="w-full" height="h-4" />
+              <SkeletonBox width="w-full" height="h-4" />
+              <SkeletonBox width="w-3/4" height="h-4" />
+            </div>
+          </div>
         ))}
       </div>
     );
@@ -346,67 +241,31 @@ const CapitalCampaign = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.15 }}
-          className="flex flex-wrap justify-center gap-4 mb-12"
+          className="flex justify-center mb-12"
         >
-          <button
-            onClick={() => setActiveTab('living-stones')}
-            className={`px-4 py-2 rounded-lg transition-all duration-300 text-sm ${
-              activeTab === 'living-stones'
-                ? 'shadow-lg text-white'
-                : 'bg-white shadow-md hover:shadow-lg'
-            }`}
-            style={{ fontFamily: "'Inter Tight', sans-serif", fontWeight: 700, ...(activeTab === 'living-stones' ? { backgroundColor: '#2B433E' } : {}) }}
-          >
-            <div className="flex items-center space-x-1.5">
-              <SafeIcon icon={FiCamera} className="h-4 w-4" />
-              <span>Living Stones</span>
-            </div>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('updates')}
-            className={`px-4 py-2 rounded-lg transition-all duration-300 text-sm ${
-              activeTab === 'updates'
-                ? 'shadow-lg text-white'
-                : 'bg-white shadow-md hover:shadow-lg'
-            }`}
-            style={{ fontFamily: "'Inter Tight', sans-serif", fontWeight: 700, ...(activeTab === 'updates' ? { backgroundColor: '#2B433E' } : {}) }}
-          >
-            <div className="flex items-center space-x-1.5">
-              <SafeIcon icon={FiFileText} className="h-4 w-4" />
-              <span>Updates</span>
-            </div>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('vision')}
-            className={`px-4 py-2 rounded-lg transition-all duration-300 text-sm ${
-              activeTab === 'vision'
-                ? 'shadow-lg text-white'
-                : 'bg-white shadow-md hover:shadow-lg'
-            }`}
-            style={{ fontFamily: "'Inter Tight', sans-serif", fontWeight: 700, ...(activeTab === 'vision' ? { backgroundColor: '#2B433E' } : {}) }}
-          >
-            <div className="flex items-center space-x-1.5">
+          <div className="inline-flex bg-white rounded-full shadow-md p-1.5 gap-1">
+            <button
+              onClick={() => setActiveTab('vision')}
+              className={`flex items-center space-x-2 px-6 py-2.5 rounded-full text-sm transition-all duration-300 ${
+                activeTab === 'vision' ? 'text-white shadow-md' : 'text-text-light hover:text-text-primary'
+              }`}
+              style={{ fontFamily: "'Inter Tight', sans-serif", fontWeight: 700, ...(activeTab === 'vision' ? { backgroundColor: '#2B433E' } : {}) }}
+            >
               <SafeIcon icon={FiEye} className="h-4 w-4" />
               <span>Vision</span>
-            </div>
-          </button>
+            </button>
 
-          <button
-            onClick={() => setActiveTab('faqs')}
-            className={`px-4 py-2 rounded-lg transition-all duration-300 text-sm ${
-              activeTab === 'faqs'
-                ? 'shadow-lg text-white'
-                : 'bg-white shadow-md hover:shadow-lg'
-            }`}
-            style={{ fontFamily: "'Inter Tight', sans-serif", fontWeight: 700, ...(activeTab === 'faqs' ? { backgroundColor: '#2B433E' } : {}) }}
-          >
-            <div className="flex items-center space-x-1.5">
+            <button
+              onClick={() => setActiveTab('faqs')}
+              className={`flex items-center space-x-2 px-6 py-2.5 rounded-full text-sm transition-all duration-300 ${
+                activeTab === 'faqs' ? 'text-white shadow-md' : 'text-text-light hover:text-text-primary'
+              }`}
+              style={{ fontFamily: "'Inter Tight', sans-serif", fontWeight: 700, ...(activeTab === 'faqs' ? { backgroundColor: '#2B433E' } : {}) }}
+            >
               <SafeIcon icon={FiHelpCircle} className="h-4 w-4" />
               <span>Q&A</span>
-            </div>
-          </button>
+            </button>
+          </div>
         </motion.div>
 
         {/* Content */}
@@ -414,25 +273,8 @@ const CapitalCampaign = () => {
           isLoading={loading}
           skeleton={renderTabSkeleton()}
         >
-          {activeTab === 'updates' && renderUpdates()}
           {activeTab === 'vision' && renderVision()}
           {activeTab === 'faqs' && renderFaqs()}
-          {activeTab === 'living-stones' && (
-            <div className="space-y-10">
-              <div>
-                <div className="text-center mb-8">
-                  <h2 className="text-2xl md:text-3xl mb-3">Living Stones Gallery</h2>
-                  <p className="text-text-light max-w-xl mx-auto leading-relaxed">
-                    As part of our Growth Campaign, members of our congregation are painting stones as a symbol of our living faith. Share yours below!
-                  </p>
-                </div>
-                <LivingStonesGallery />
-              </div>
-              <div className="max-w-lg mx-auto">
-                <LivingStonesUpload />
-              </div>
-            </div>
-          )}
         </LoadingTransition>
       </div>
     </div>
