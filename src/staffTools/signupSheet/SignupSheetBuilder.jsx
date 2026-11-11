@@ -1,6 +1,6 @@
 import React from 'react';
 import { FiPlus, FiTrash2, FiCalendar } from 'react-icons/fi';
-import SafeIcon from './SafeIcon';
+import SafeIcon from '../../common/SafeIcon';
 import { colors } from '../../styles/designTokens.js';
 
 const PRESET_COLORS = [
