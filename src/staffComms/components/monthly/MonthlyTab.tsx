@@ -18,6 +18,7 @@ const BATHROOM_NOTE_LINES = [
 
 const TEAL = '#1E2522';
 const ACCENT = '#597F5C';
+const GOLD = '#EAA235';
 // Its own constant rather than font.display (currently the same Inter
 // Tight value, but this is printed material representing the public
 // site, independent of whatever the admin UI's own display font happens
@@ -269,7 +270,7 @@ function buildFlyerHTML(items: Announcement[], today: string, bathroomVariant: b
 
   return `
     <div style="width:8.5in;min-height:11in;background:#fff;font-family:${font.body};display:flex;flex-direction:column;box-sizing:border-box;padding:0.5in;">
-      <div style="padding:${s.headerPadV}in 0 ${s.headerPadV * 0.54}in;flex-shrink:0;text-align:center;border-bottom:3pt solid ${ACCENT};">
+      <div style="padding:${s.headerPadV}in 0 ${s.headerPadV * 0.54}in;flex-shrink:0;text-align:center;border-bottom:3pt solid ${GOLD};">
         <div style="font-family:${font.body};font-size:${s.orgFontSize}pt;font-weight:700;letter-spacing:0.04em;color:${TEAL};margin-bottom:8pt;">Upper Room Fellowship &nbsp;·&nbsp; urf.life</div>
         <div style="font-family:${FLYER_FONT};font-size:${s.monthFontSize}pt;font-weight:900;color:#2B433E;letter-spacing:-0.01em;line-height:0.95;margin-bottom:8pt;">${monthLabel}</div>
         <div style="font-family:${FLYER_FONT};font-size:${s.subtitleFontSize}pt;font-weight:600;color:${ACCENT};letter-spacing:0.04em;">Events &amp; Announcements</div>
@@ -293,7 +294,7 @@ function FlyerPagePreview({ announcements, today, bathroomVariant }: {
   return (
     <div style={{ width: '8.5in', minHeight: '11in', background: '#ffffff', fontFamily: font.body, display: 'flex', flexDirection: 'column', boxSizing: 'border-box', padding: '0.5in' }}>
 
-      <div style={{ padding: `${s.headerPadV}in 0 ${s.headerPadV * 0.54}in`, flexShrink: 0, textAlign: 'center', borderBottom: `3pt solid ${ACCENT}` }}>
+      <div style={{ padding: `${s.headerPadV}in 0 ${s.headerPadV * 0.54}in`, flexShrink: 0, textAlign: 'center', borderBottom: `3pt solid ${GOLD}` }}>
         <div style={{ fontFamily: font.body, fontSize: `${s.orgFontSize}pt`, fontWeight: 700, letterSpacing: '0.04em', color: TEAL, marginBottom: '8pt' }}>
           Upper Room Fellowship &nbsp;·&nbsp; urf.life
         </div>

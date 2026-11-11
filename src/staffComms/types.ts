@@ -66,12 +66,10 @@ export interface Announcement {
   updated_at?: string;
 }
 
-export type PrintablesTab = 'bulletin' | 'monthly';
-
 // The "Destinations" booleans on Announcement, toggled from both the full
 // form and (single-field, without opening it) an announcement's card.
-// show_in_weekly isn't one of these anymore - the Monthly Bulletin now
-// shares monthly_include with the Monthly Flyer instead of having its own
-// opt-in (see BulletinTab) - but the field/column stays on Announcement
-// itself since it's still real, saved data.
+// show_in_weekly isn't one of these anymore - it was the Monthly
+// Bulletin's own opt-in before that printable was removed in favor of just
+// the Monthly Flyer - but the field/column stays on Announcement itself
+// since it's still real, saved data.
 export type DestinationKey = 'show_on_slides' | 'show_in_happenings' | 'monthly_include' | 'show_on_stage';

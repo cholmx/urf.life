@@ -38,11 +38,6 @@ export const SIGNUP_MODE_OPTIONS = [
   { value: 'sheet', label: 'Printable sign-up sheet' },
 ] as const;
 
-export const PRINTABLES_TABS = [
-  { key: 'bulletin', label: 'Monthly Bulletin' },
-  { key: 'monthly', label: 'Monthly Flyer' },
-] as const;
-
 export const DEFAULT_ANNOUNCEMENT = {
   title: '',
   description: '',

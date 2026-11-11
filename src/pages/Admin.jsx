@@ -47,7 +47,7 @@ const NAV_SECTIONS=[
       {id: 'calendar',label: 'Calendar',icon: FiCalendar},
       {id: 'happenings',label: 'The Happenings',icon: FiMail},
       {id: 'stageScript',label: 'Stage Script',icon: FiMic},
-      {id: 'printables',label: 'Printables',icon: FiPrinter},
+      {id: 'printables',label: 'Monthly Flyer',icon: FiPrinter},
       {id: 'archive',label: 'Archive',icon: FiArchive},
     ],
   },

@@ -8,13 +8,17 @@
 
 @layer base {
   body {
-    @apply text-text-primary antialiased;
+    @apply antialiased;
     /* Written as literal CSS, not @apply, on purpose: Bolt's build has
        been caching @apply's theme resolution stale for font-family/
-       background-color specifically (confirmed via DevTools - the
-       plain CSS properties below always came through fresh on a push,
-       while @apply bg-accent/font-sans kept resolving to the old
-       cream/Inter values). Literal properties sidestep that cache. */
+       background-color/text-color specifically (confirmed via DevTools -
+       the plain CSS properties below always came through fresh on a push,
+       while @apply bg-accent/font-sans/text-text-primary kept resolving to
+       old values - the stale text-text-primary is why body text and any
+       subtitle/paragraph with no explicit color class could render in a
+       near-invisible light tone against the light page background).
+       Literal properties sidestep that cache. */
+    color: #1E2522;
     background-color: #F8F6F1;
     background-image: url('/background-texture.png');
     background-repeat: repeat;
@@ -25,10 +29,10 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply text-text-primary;
-    /* Literal, not @apply font-heading - see the body rule's comment.
-       font-weight matches designTokens.js's fontWeights.heading - Inter
-       Tight Bold. */
+    /* Literal, not @apply text-text-primary/font-heading - see the body
+       rule's comment. font-weight matches designTokens.js's
+       fontWeights.heading - Inter Tight Bold. */
+    color: #1E2522;
     font-family: 'Inter Tight', sans-serif;
     font-weight: 700;
     line-height: 1.1;
@@ -220,6 +224,19 @@
   background-color: #F8F6F1;
   background-image: url('/background-texture.png');
   background-repeat: repeat;
+}
+/* Same stale-@apply-cache risk as body/h1-h6 above, but for text-text-*
+   used directly in JSX classNames (e.g. className="text-text-primary"),
+   anywhere on the page - not just inside a card/white surface, which is
+   all the :is() block below this one protects. Without this, a heading
+   or paragraph wearing one of these classes straight on the page
+   background can pick up a stale, low-contrast cached color. */
+[class~="text-text-primary"],
+[class~="text-text-secondary"] {
+  color: #1E2522;
+}
+[class~="text-text-light"] {
+  color: #2B433E;
 }
 :is(.card-clay, .form-section, [class~="bg-white"], [class~="bg-accent-dark"], [class~="bg-accent-light"], .admin-shell) {
   color: #1E2522;

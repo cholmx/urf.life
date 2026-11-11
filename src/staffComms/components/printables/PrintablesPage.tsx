@@ -3,7 +3,7 @@ import { C, font } from '../../lib/theme';
 import { PreviewDateControl } from '../PreviewDateControl';
 import type { Announcement } from '../../types';
 
-const PrintablesTab = lazy(() => import('./PrintablesTab').then(m => ({ default: m.PrintablesTab })));
+const MonthlyTab = lazy(() => import('../monthly/MonthlyTab').then(m => ({ default: m.MonthlyTab })));
 
 function Fallback() {
   return (
@@ -26,7 +26,7 @@ export function PrintablesPage({ today, onPreviewDateChange, ...rest }: Printabl
         <PreviewDateControl value={today} onChange={onPreviewDateChange} />
       </div>
       <Suspense fallback={<Fallback />}>
-        <PrintablesTab today={today} {...rest} />
+        <MonthlyTab today={today} {...rest} />
       </Suspense>
     </div>
   );

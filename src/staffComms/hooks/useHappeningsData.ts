@@ -59,8 +59,8 @@ export function useHappeningsData(enabled: boolean, onNavigateToManage?: () => v
       show_on_slides: f.show_on_slides,
       show_in_happenings: f.show_in_happenings,
       // Kept for schema compatibility only - nothing reads this anymore
-      // since the Monthly Bulletin switched to monthly_include (see
-      // BulletinTab). Not worth a migration to drop the column for.
+      // since the old Monthly Bulletin switched to monthly_include before
+      // being removed outright. Not worth a migration to drop the column for.
       show_in_weekly: f.show_in_weekly,
       show_on_stage: f.show_on_stage,
       contact_name: f.contact_name,

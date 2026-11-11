@@ -24,7 +24,7 @@ function toTitleCase(str) {
 // values that actually differ: the title/subtitle shown before the live
 // feed loads (or if it never supplies one), the play button's accent
 // color, and the "no episodes" message's wording.
-export default function PodcastPage({ service, titleFallback, subtitleFallback, accentColor, emptyStateText, normalizeTitleCase }) {
+export default function PodcastPage({ service, titleFallback, subtitleFallback, accentColor, emptyStateText, normalizeTitleCase, narrowSubtitle }) {
   const [podcastData, setPodcastData] = useState({ channel: null, episodes: [] });
   const [loading, setLoading] = useState(true);
   const [selectedEpisode, setSelectedEpisode] = useState(null);
@@ -125,7 +125,7 @@ export default function PodcastPage({ service, titleFallback, subtitleFallback, 
             transition={{ duration: 0.4, delay: 0.1 }}
             className="flex items-center justify-center space-x-4"
           >
-            <p className="text-base page-subtitle">
+            <p className={`text-base page-subtitle${narrowSubtitle ? ' max-w-md text-center' : ''}`}>
               {podcastData.channel?.description || subtitleFallback}
             </p>
             <button

@@ -373,8 +373,8 @@ export function AnnouncementForm({ announcement, initialOverrides, today, onSave
 
   // Bigger than the shared inputBase - this form is the one place in the
   // app people said felt cramped, so it gets its own larger scale rather
-  // than bumping the shared default (used by Calendar, Bulletin, Monthly,
-  // Printables, Stage, and the Manage list's search bar too).
+  // than bumping the shared default (used by Calendar, Monthly, Printables,
+  // Stage, and the Manage list's search bar too).
   const fieldInput: React.CSSProperties = { ...inputBase, fontSize: 16, padding: '11px 14px' };
 
   return (
@@ -525,7 +525,7 @@ export function AnnouncementForm({ announcement, initialOverrides, today, onSave
           <div style={fg}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
               <div>
-                <label style={labelBase}>Description <span style={{ fontWeight: 400, textTransform: 'none' }}>(used everywhere: The Happenings email, Monthly Flyer, Monthly Bulletin, printed Invite, the Events/Classes pages & Calendar)</span></label>
+                <label style={labelBase}>Description <span style={{ fontWeight: 400, textTransform: 'none' }}>(used everywhere: The Happenings email, Monthly Flyer, printed Invite, the Events/Classes pages & Calendar)</span></label>
                 <div style={{ fontFamily: font.mono, fontSize: 13, color: C.textMuted, marginTop: 1 }}>aim for under 60 words - only go longer if the real details need it</div>
               </div>
               <AIWriteButton label="Draft" loading={aiLoading.flyer} onClick={generateFlyer} disabled={!hasEnoughForAI} />
@@ -914,7 +914,7 @@ export function AnnouncementForm({ announcement, initialOverrides, today, onSave
             {[
               { key: 'show_on_slides' as const, label: 'Sunday Slides' },
               { key: 'show_in_happenings' as const, label: 'The Happenings' },
-              { key: 'monthly_include' as const, label: 'Monthly Flyer & Bulletin' },
+              { key: 'monthly_include' as const, label: 'Monthly Flyer' },
               { key: 'show_on_stage' as const, label: 'Stage Announcement' },
             ].map(d => (
               <label key={d.key} style={{ display: 'flex', alignItems: 'center', gap: 8, fontFamily: font.body, fontSize: 16, color: C.textSec, cursor: 'pointer', padding: '8px 14px', border: `1px solid ${f[d.key] ? C.accent + '44' : C.border}`, borderRadius: 8, background: f[d.key] ? C.accentBg : C.card, transition: 'all 0.15s' }}>

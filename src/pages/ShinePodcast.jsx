@@ -11,6 +11,7 @@ export default function ShinePodcast() {
       accentColor="#2B433E"
       emptyStateText="Check back soon for new podcast episodes!"
       normalizeTitleCase
+      narrowSubtitle
     />
   );
 }
