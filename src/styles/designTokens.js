@@ -38,7 +38,10 @@ export const fonts = {
 };
 
 export const fontWeights = {
-  // Headings, buttons, labels - was 700 (Bold), bumped a step heavier.
-  heading: 800,
+  // Headings, buttons, labels. 700 (Bold) is the heaviest weight Arial
+  // has a real face for - 800+ has no true face, so browsers synthesize
+  // (faux-bold) it, which looks chunky/blotchy at heading sizes rather
+  // than actually bolder. Don't bump this past 700.
+  heading: 700,
   body: 400,
 };

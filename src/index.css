@@ -20,16 +20,17 @@
     font-size: 14px;
     font-weight: 400;
     line-height: 1.7;
-    background-image: radial-gradient(ellipse at 50% 0%, rgba(62,88,77,0.07) 0%, transparent 70%);
-    background-attachment: fixed;
   }
 
   h1, h2, h3, h4, h5, h6 {
     @apply text-text-primary;
     /* Literal, not @apply font-heading - see the body rule's comment.
-       font-weight matches designTokens.js's fontWeights.heading. */
+       font-weight matches designTokens.js's fontWeights.heading. Arial
+       only ships true 400/700 faces - 800 has no real face to use, so
+       browsers synthesize (faux-bold) it, which reads chunky/blotchy
+       at heading sizes. 700 is the heaviest clean weight Arial has. */
     font-family: Arial, Helvetica, sans-serif;
-    font-weight: 800;
+    font-weight: 700;
     line-height: 1.1;
     letter-spacing: -0.01em;
   }
@@ -61,13 +62,13 @@
   color: #1E2522;
 }
 .prose h1 {
-  @apply text-2xl font-extrabold;
+  @apply text-2xl font-bold;
 }
 .prose h2 {
-  @apply text-xl font-extrabold;
+  @apply text-xl font-bold;
 }
 .prose h3 {
-  @apply text-lg font-extrabold;
+  @apply text-lg font-bold;
 }
 .prose p {
   @apply mb-0.5 leading-normal;
@@ -211,6 +212,18 @@
    immune. card-clay/form-section/admin-shell aren't real Tailwind
    utilities (never @apply'd), so plain class selectors are fine for
    those. */
+
+/* Every page wraps its own root div in bg-accent (not just body) - the
+   same staleness that hit body's @apply bg-accent can in principle hit
+   the compiled .bg-accent utility these ~24 pages reference directly as
+   a className, since it's the exact same generated rule either way.
+   Forcing it here, as a literal property via attribute selector (same
+   technique as the block above, same reasoning), means the page
+   background is correct regardless of whether Tailwind's own utility
+   output for .bg-accent is current. */
+[class~="bg-accent"] {
+  background-color: #FFFFFF;
+}
 :is(.card-clay, .form-section, [class~="bg-white"], [class~="bg-accent-dark"], [class~="bg-accent-light"], .admin-shell) {
   color: #1E2522;
 }
@@ -295,7 +308,7 @@
 .happenings-script h3 {
   font-family: Arial, Helvetica, sans-serif;
   font-size: 1.5em;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.1;
   letter-spacing: -0.01em;
   color: inherit;
