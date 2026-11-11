@@ -176,7 +176,7 @@ const LivingStonesUpload = () => {
         animate={{ opacity: 1, scale: 1 }}
         className="bg-white rounded-xl shadow-md p-10 text-center"
       >
-        <div className="flex items-center justify-center w-16 h-16 rounded-full mx-auto mb-5" style={{ backgroundColor: '#E8E7E3' }}>
+        <div className="flex items-center justify-center w-16 h-16 rounded-full mx-auto mb-5" style={{ backgroundColor: '#EDE9DC' }}>
           <SafeIcon icon={FiCheck} className="h-8 w-8" style={{ color: '#2B433E' }} />
         </div>
         <h3 className="text-2xl mb-2" style={{ color: '#2B433E' }}>Photo Submitted!</h3>

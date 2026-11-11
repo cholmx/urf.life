@@ -135,44 +135,28 @@
   @apply bg-accent-light rounded-2xl shadow-modern transition-all duration-300 hover:shadow-modern-lg hover:-translate-y-1;
 }
 
-/* Claymorphism for public-page cards - a single flat, solid color (no
-   gradient, no blur) plus a soft dual-direction shadow: a light
-   highlight toward the upper-left, a darker shadow toward the
-   lower-right, and a thin inset rim on each edge, reading as a soft,
-   puffy 3D "clay" panel sitting on the off-white page.
+/* card-clay is plain white (not the page's own cream accent) so a card
+   reads as distinct content sitting on the page chrome, rather than
+   nearly the same tone as its background.
 
-   card-clay is plain white (not the page's own off-white accent) so a
-   card reads as distinct content sitting on the page chrome, rather
-   than nearly the same tone as its background - the two were close
-   enough to be hard to tell apart before this.
-
-   The shadow lives in --clay-shadow so it can be reused on surfaces
-   that aren't the white card-clay background (e.g. Home.jsx's colored
-   main buttons use .clay-shadow directly with their own bg-[...]).
-   It intentionally REPLACES each element's own shadow-md/shadow-lg/
-   shadow-modern utility (rather than composing with it the way the
-   earlier glass version did) - the dual shadow IS the whole effect,
-   and layering a generic drop shadow underneath it just muddies the
-   edge. Tuned much lighter than the dark-theme version - a 9px/22px/
-   65%-opacity shadow that read as a soft glow against a dark teal page
-   reads as a heavy dark smear against this light one, so the offset,
-   blur and opacity are all pulled back close to the site's existing
-   shadow-modern-lg utility (0 4px 16px/0 16px 32px, max 10% opacity). */
+   A single subtle, even shadow - the same shape as the site's
+   shadow-modern utility - lives in --card-shadow so it can be reused on
+   surfaces that aren't the white card-clay background (e.g. Home.jsx's
+   colored main buttons use .clay-shadow directly with their own
+   bg-[...]). It intentionally REPLACES each element's own shadow-md/
+   shadow-lg/shadow-modern utility (rather than composing with it), so
+   layering a generic drop shadow underneath it doesn't muddy the edge. */
 :root {
-  --clay-shadow:
-    -2px -2px 5px rgba(255, 255, 255, 0.7),
-    4px 4px 12px rgba(30, 37, 34, 0.12),
-    inset 1px 1px 1px rgba(255, 255, 255, 0.4),
-    inset -1px -1px 1px rgba(30, 37, 34, 0.05);
+  --card-shadow: 0 2px 8px rgba(30, 37, 34, 0.06), 0 8px 20px -4px rgba(30, 37, 34, 0.07);
 }
 .card-clay {
   background: #FFFFFF;
   border: none;
-  box-shadow: var(--clay-shadow);
+  box-shadow: var(--card-shadow);
 }
 .clay-shadow {
   border: none;
-  box-shadow: var(--clay-shadow);
+  box-shadow: var(--card-shadow);
 }
 
 /* The dark theme flips the site's default text color to light (see
@@ -280,7 +264,7 @@
 
 /* Discussion questions background */
 .discussion-questions-section {
-  background-color: #E8E7E3;
+  background-color: #EDE9DC;
   @apply border border-primary/20;
 }
 
@@ -421,7 +405,7 @@ input:focus, textarea:focus, select:focus {
      groove pressed into the card instead. */
   .form-section {
     @apply rounded-2xl p-5 space-y-4;
-    background: #E8E7E3;
+    background: #EDE9DC;
     box-shadow:
       inset 2px 2px 5px rgba(30, 37, 34, 0.1),
       inset -2px -2px 4px rgba(255, 255, 255, 0.7);

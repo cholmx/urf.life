@@ -22,7 +22,7 @@ export const colors = {
   // Three-tier neutral surface system, light to dark:
   page: '#FCF9F2',       // the page itself - body, every page's root wrapper
   white: '#FFFFFF',      // cards/panels sitting on the page - these "pop"
-  section: '#E8E7E3',    // a sub-area inside a card that needs to read as
+  section: '#EDE9DC',    // a sub-area inside a card that needs to read as
                          // its own group (a form section, a status/notice
                          // box, a selected/active state) without looking
                          // like a separate card of its own
