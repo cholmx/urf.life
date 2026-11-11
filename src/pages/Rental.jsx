@@ -6,7 +6,7 @@ import SafeIcon from '../common/SafeIcon';
 import PageNav from '../common/PageNav';
 import {submitFacilityRentalRequest,fetchRentalPricing} from '../lib/contactStorage';
 import {useToast} from '../hooks/useToast';
-import {formatTime} from '../utils/dateFormat';
+import {formatTime,getTodayDateString} from '../utils/dateFormat';
 import {ROOM_OPTIONS,SERVICE_OPTIONS,DEFAULT_PRICING,calculateRentalTotal,roomLabel,serviceLabel} from '../lib/rentalPricing';
 
 const {FiKey,FiCheckCircle,FiArrowRight,FiArrowLeft,FiPhone,FiMail,FiClock,FiUser,FiExternalLink,FiDollarSign}=FiIcons;
@@ -19,8 +19,6 @@ const STEPS=[
   {id: 3,label: 'Guidelines & Policies'},
   {id: 4,label: 'Agreement & Signature'},
 ];
-
-const todayStr=()=> new Date().toISOString().split('T')[0];
 
 // 15-minute increments only - a native <input type="time"> still lets you
 // scroll/type any minute even with a step attribute, so we use a plain
@@ -121,7 +119,7 @@ const Rental=()=> {
       if (!formData.purpose.trim()) return {field: 'purpose',message: 'Tell us the purpose of your event.'};
       if (!formData.guest_count) return {field: 'guest_count',message: 'Estimated number of guests is required.'};
       if (!formData.event_date) return {field: 'event_date',message: 'Event date is required.'};
-      if (formData.event_date < todayStr()) return {field: 'event_date',message: 'Event date cannot be in the past.'};
+      if (formData.event_date < getTodayDateString()) return {field: 'event_date',message: 'Event date cannot be in the past.'};
       if (!formData.event_start_time) return {field: 'event_start_time',message: 'Event start and end time are required.'};
       if (!formData.event_end_time) return {field: 'event_end_time',message: 'Event start and end time are required.'};
       if (!formData.setup_schedule) return {field: 'setup_schedule',message: 'Select your setup schedule.'};
@@ -199,7 +197,7 @@ const Rental=()=> {
         responsible_phone: formData.responsible_phone,
         return_address: formData.return_address,
         signature_name: formData.signature_name,
-        signature_date: todayStr(),
+        signature_date: getTodayDateString(),
         agreed_to_terms: formData.agreed_to_terms,
       });
       if (submitError) throw new Error(submitError);
@@ -386,7 +384,7 @@ const Rental=()=> {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <label className="form-label">Event Date *</label>
-                      <input type="date" name="event_date" value={formData.event_date} onChange={handleChange} min={todayStr()} className={`form-input ${invalidField==='event_date' ? 'form-input-error' : ''}`} />
+                      <input type="date" name="event_date" value={formData.event_date} onChange={handleChange} min={getTodayDateString()} className={`form-input ${invalidField==='event_date' ? 'form-input-error' : ''}`} />
                       {invalidField==='event_date' && <p className="form-error-text">{formData.event_date ? 'Event date cannot be in the past.' : 'Event date is required.'}</p>}
                     </div>
                     <div>
