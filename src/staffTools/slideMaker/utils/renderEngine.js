@@ -2,7 +2,7 @@ import { SW, SH } from '../constants/data';
 import { clipRounded, shadowColorForBg, drawOverlay } from './canvasUtils';
 import * as renderers from './templateRenderers';
 
-export function render(canvas, tmplId, data, brand, bgImg, overlayColor, ov, blur = 0, canvasW = SW, canvasH = SH, cornerR = 32) {
+export function render(canvas, tmplId, data, brand, bgImg, overlayColor, ov, blur = 0, canvasW = SW, canvasH = SH, cornerR = 0) {
   const ctx = canvas.getContext("2d"); canvas.width = canvasW; canvas.height = canvasH;
 
   ctx.fillStyle = "#000000"; ctx.fillRect(0, 0, canvasW, canvasH);

@@ -15,11 +15,10 @@ const SCOPE_ORDER = {whole_church: 0, ministry: 1, informational: 2};
 const DEFAULT_DATA = {
   line1: "HEADLINE",
   line2: "Input details here",
-  line3: "",
   dateNum: "5",
   dateMo: "APRIL",
   label: "JOIN US",
-  s1: 155, s2: 65, s3: 24,
+  s1: 155, s2: 65,
   uppercaseHeadline: true,
   autoFit: true,
   headLineHeight: 1.12,
@@ -252,11 +251,14 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
       ? [...a.event_dates].filter(Boolean).sort()
       : (a.event_date ? [a.event_date] : []);
     const dateStr = dates.map(d => formatDateNice(d)).join(' · ');
+    // Date/time and location used to split across the subhead and the
+    // now-removed detail line (with slide_override, when set, taking the
+    // subhead spot instead) - folded into the one remaining subhead line.
+    const dateLocation = [dateStr, a.event_location].filter(Boolean).join(' · ');
     setData(p => ({
       ...p,
       line1: a.title || '',
-      line2: a.slide_override || dateStr || '',
-      line3: a.slide_override ? [dateStr, a.event_location].filter(Boolean).join(' · ') : (a.event_location || ''),
+      line2: a.slide_override ? [a.slide_override, dateLocation].filter(Boolean).join(' · ') : dateLocation,
     }));
     setActiveQueueItem(a);
     setTab("content");
@@ -279,8 +281,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
 
   const clearActiveQueueItem = useCallback(() => setActiveQueueItem(null), []);
 
-  const cornerR = aspectRatio.id === "16:10" ? 80 : 0;
-  const slideProps = {tmplId, data, brand, bgImg: activePhoto, overlayColor, ov, blur, canvasW: aspectRatio.w, canvasH: aspectRatio.h, cornerR};
+  const slideProps = {tmplId, data, brand, bgImg: activePhoto, overlayColor, ov, blur, canvasW: aspectRatio.w, canvasH: aspectRatio.h, cornerR: 0};
 
   return (
     <div className="slide-maker" style={{fontFamily: ui.body, background: C.bg, minHeight: "100vh", display: "flex", flexDirection: "column"}}>

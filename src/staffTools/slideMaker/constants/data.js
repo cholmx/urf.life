@@ -1,6 +1,6 @@
 export const SW = 2560;
 export const SH = 1600; // 16:10
-export const CORNER_R = 32;
+export const CORNER_R = 0;
 
 export const ASPECT_RATIOS = [
   { id: "16:10", label: "16:10", w: 2560, h: 1600 },

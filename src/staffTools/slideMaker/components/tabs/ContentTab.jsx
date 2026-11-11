@@ -88,14 +88,6 @@ export default function ContentTab({ tmplId, data, ds, brand, setBrand }) {
         />
       </Field>
       <Slider label="Subtext Size" value={data.s2 || 65} min={20} max={160} onChange={v => ds("s2", v)} />
-
-      <Field label="Detail Line">
-        <textarea style={{ ...iS, minHeight: 48, resize: "vertical" }}
-          value={data.line3 || ""}
-          onChange={e => ds("line3", e.target.value)}
-        />
-      </Field>
-      <Slider label="Detail Size" value={data.s3 || 32} min={18} max={72} onChange={v => ds("s3", v)} />
     </div>
   );
 }

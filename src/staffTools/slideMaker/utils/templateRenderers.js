@@ -35,19 +35,16 @@ function computeHeadline(ctx, data, brand, maxW, weight, fallbackSize) {
 }
 
 // Shared layout math for every template below: measure the headline,
-// optionally measure a subtitle (line2) and a detail line (line3), and
-// sum their heights into one block - each template previously repeated
-// this ~15-line measurement (and the matching draw calls in
-// drawTextBlock) with only its x/width/weights/gaps/alignment differing.
+// optionally measure a subtitle (line2), and sum their heights into one
+// block - each template previously repeated this ~15-line measurement
+// (and the matching draw calls in drawTextBlock) with only its
+// x/width/weight/gap/alignment differing.
 function computeTextBlock(ctx, data, brand, {
   textW,
   headlineWeight,
   headlineFallbackSize,
   subGap = 32,
   subFallbackSize = 40,
-  detGap = 26,
-  detFallbackSize = 32,
-  includeDetail = true,
 }) {
   const { lines: headLines, headLH, headFont } = computeHeadline(ctx, data, brand, textW, headlineWeight, headlineFallbackSize);
   let totalH = blockHeight(headLines, headLH);
@@ -55,32 +52,21 @@ function computeTextBlock(ctx, data, brand, {
   let subLines = [], subLH = 0, subFont = '';
   if (data.line2) {
     const subSize = data.s2 || subFallbackSize;
-    subFont = `${bw(brand, 600)} ${subSize}px ${brand.bFont}`;
+    // Subhead is always italic Aleo, regardless of the headline's weight.
+    subFont = `italic ${bw(brand, 600)} ${subSize}px ${brand.bFont}`;
     subLines = wrapText(ctx, data.line2, subFont, textW, true);
     subLH = subSize * 1.35;
     totalH += subGap + blockHeight(subLines, subLH);
   }
 
-  let detLines = [], detLH = 0, detFont = '';
-  if (includeDetail && data.line3) {
-    const detSize = data.s3 || detFallbackSize;
-    detFont = `400 ${detSize}px ${brand.bFont}`;
-    detLines = wrapText(ctx, data.line3, detFont, textW, true);
-    detLH = detSize * 1.4;
-    totalH += detGap + blockHeight(detLines, detLH);
-  }
-
-  return { headLines, headLH, headFont, subLines, subLH, subFont, subGap, detLines, detLH, detFont, detGap, totalH };
+  return { headLines, headLH, headFont, subLines, subLH, subFont, subGap, totalH };
 }
 
 function drawTextBlock(ctx, block, brand, x, startY, align) {
   const hLS = brand.hLetterSpacing ?? 0;
   let y = drawLines(ctx, block.headLines, x, startY, block.headFont, brand.textColor, align, block.headLH, hLS, sh(brand));
   if (block.subLines.length) {
-    y = drawLines(ctx, block.subLines, x, y + block.subGap, block.subFont, brand.textColor, align, block.subLH, 0, sh(brand));
-  }
-  if (block.detLines.length) {
-    drawLines(ctx, block.detLines, x, y + block.detGap, block.detFont, brand.textColor, align, block.detLH, 0, sh(brand));
+    drawLines(ctx, block.subLines, x, y + block.subGap, block.subFont, brand.textColor, align, block.subLH, 0, sh(brand));
   }
 }
 
@@ -98,7 +84,7 @@ export const renderLeftBlock=(ctx,data,brand,contentW,margin,cw,ch)=> {
 export const renderMinimal=(ctx,data,brand,contentW,cw,ch)=> {
   const block = computeTextBlock(ctx, data, brand, {
     textW: contentW, headlineWeight: hw(brand, 900), headlineFallbackSize: 128,
-    subGap: 40, subFallbackSize: 45, includeDetail: false,
+    subGap: 40, subFallbackSize: 45,
   });
   drawTextBlock(ctx, block, brand, cw / 2, centerY(block.totalH, 0, ch), "center");
 };
