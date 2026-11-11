@@ -225,6 +225,13 @@
   background-image: url('/background-texture.png');
   background-repeat: repeat;
 }
+/* Same stale-@apply-cache risk as bg-accent above - .bg-white is also
+   @apply'd elsewhere in this file (.admin-input, .admin-card), so a card
+   that just wears className="bg-white" (BookCard's resource cards, etc.)
+   can pick up a stale cached background instead of white. */
+[class~="bg-white"] {
+  background-color: #FFFFFF;
+}
 /* Same stale-@apply-cache risk as body/h1-h6 above, but for text-text-*
    used directly in JSX classNames (e.g. className="text-text-primary"),
    anywhere on the page - not just inside a card/white surface, which is
