@@ -227,7 +227,7 @@ const HomeButton = ({ title, description, icon, path, isFeatured = false, isInte
     : `relative overflow-hidden p-5 rounded-2xl clay-shadow transition-all duration-300 hover:-translate-y-1 active:scale-[0.97] block text-center group flex flex-col justify-center items-center w-full${stretch ? ' h-full' : ' min-h-[160px] md:min-h-[200px]'}`;
 
   const featuredClasses = gradient ? "" : "text-white";
-  const mainClasses = "bg-[#2B433E] hover:bg-[#C74F2F] text-white";
+  const mainClasses = "bg-[#2B433E] hover:bg-[#597F5C] text-white";
 
   const iconColor = (isYellow || isOrange) ? 'text-text-primary' : 'text-white';
   const textColor = (isYellow || isOrange) ? 'text-text-primary' : 'text-white';
@@ -245,7 +245,7 @@ const HomeButton = ({ title, description, icon, path, isFeatured = false, isInte
             </div>
             <div className="text-left flex-1 min-w-0">
               <h3 className={`text-sm md:text-base font-bold font-gsans leading-tight ${textColor}`}>{title}</h3>
-              <p className={`font-caladea italic text-xs leading-tight mt-0.5 ${subTextColor}`}>{description}</p>
+              <p className={`font-sans italic text-xs leading-tight mt-0.5 ${subTextColor}`}>{description}</p>
             </div>
           </div>
           <div className={`flex items-center space-x-1 flex-shrink-0 ml-2 opacity-60 group-hover:opacity-100 transition-opacity duration-200 ${textColor}`}>
@@ -254,11 +254,11 @@ const HomeButton = ({ title, description, icon, path, isFeatured = false, isInte
         </div>
       ) : (
         <div className="relative z-10 flex flex-col items-center">
-          <div className="p-2.5 rounded-xl bg-[#597F5C] group-hover:bg-[#C74F2F] mb-2.5 md:mb-3 transition-all duration-300 group-hover:scale-110">
+          <div className="p-2.5 rounded-xl bg-[#597F5C] mb-2.5 md:mb-3 transition-all duration-300 group-hover:scale-110">
             <SafeIcon icon={icon} className="h-5 w-5 md:h-6 md:w-6 text-white" />
           </div>
           <h3 className="text-sm md:text-base font-bold font-gsans leading-tight text-white">{title}</h3>
-          <p className="font-caladea italic text-xs leading-tight text-white/70 mt-0.5">{description}</p>
+          <p className="font-sans italic text-xs leading-tight text-white/70 mt-0.5">{description}</p>
         </div>
       )}
     </>
