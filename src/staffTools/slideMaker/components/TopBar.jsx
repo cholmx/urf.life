@@ -2,7 +2,7 @@ import React from 'react';
 import {C, ui} from '../constants/styles';
 import {ASPECT_RATIOS} from '../constants/data';
 
-export default function TopBar({onDownload, onDownloadJpg, onCopy, aspectRatio, onAspectRatioChange, onUndo, canUndo, onToggleSidebar}) {
+export default function TopBar({onDownload, onDownloadJpg, onCopy, aspectRatio, onAspectRatioChange, onUndo, canUndo, onRedo, canRedo, onToggleSidebar}) {
   return (
     <div style={{
       background: C.card,
@@ -81,6 +81,28 @@ export default function TopBar({onDownload, onDownloadJpg, onCopy, aspectRatio, 
           title={canUndo ? "Undo last change" : "Nothing to undo"}
         >
           ↶ Undo
+        </button>
+
+        <button
+          onClick={onRedo}
+          disabled={!canRedo}
+          style={{
+            padding: "6px 12px",
+            border: `1px solid ${C.border}`,
+            borderRadius: 6,
+            background: "transparent",
+            color: canRedo ? C.textSec : C.textTer,
+            fontFamily: ui.display,
+            fontWeight: 600,
+            fontSize: 11,
+            letterSpacing: "0.05em",
+            textTransform: "uppercase",
+            cursor: canRedo ? "pointer" : "not-allowed",
+            whiteSpace: "nowrap",
+          }}
+          title={canRedo ? "Redo last undone change" : "Nothing to redo"}
+        >
+          ↷ Redo
         </button>
 
         <button onClick={onDownload} style={{...primaryBtn, whiteSpace: "nowrap"}} className="dl-png-btn">↓ PNG</button>

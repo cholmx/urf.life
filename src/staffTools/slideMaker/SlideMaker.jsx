@@ -86,13 +86,6 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     undoHistory.init({tmplId, data, brand, combo, palette, activePhoto, accentPhoto, ov, blur, aspectRatio});
   }, []);
 
-  const ds = useCallback((k, v) => {
-    setData(p => {
-      const next = {...p, [k]: v};
-      return next;
-    });
-  }, []);
-
   // Push undo state whenever tracked values change (after init)
   const pushUndo = useCallback((overrides = {}) => {
     undoHistory.push({
@@ -100,6 +93,34 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
       ...overrides,
     });
   }, [tmplId, data, brand, combo, palette, activePhoto, accentPhoto, ov, blur, aspectRatio, undoHistory]);
+
+  // ds() (every text field/slider in ContentTab) and setBrand() (color
+  // pickers, letter-spacing, the text-shadow toggle) fire on every
+  // keystroke/drag, so pushing a full undo snapshot on each call would make
+  // Undo only ever step back one character at a time. Debounced per gate
+  // key instead: the first change in a burst snapshots the pre-burst state,
+  // and later changes within the quiet window extend the same step rather
+  // than adding their own.
+  const undoGateRef = useRef({});
+  const pushUndoDebounced = useCallback((key) => {
+    const gates = undoGateRef.current;
+    if (!gates[key]) pushUndo();
+    clearTimeout(gates[key]);
+    gates[key] = setTimeout(() => { delete gates[key]; }, 700);
+  }, [pushUndo]);
+
+  const ds = useCallback((k, v) => {
+    pushUndoDebounced(`data.${k}`);
+    setData(p => {
+      const next = {...p, [k]: v};
+      return next;
+    });
+  }, [pushUndoDebounced]);
+
+  const updateBrand = useCallback((updater) => {
+    pushUndoDebounced('brand');
+    setBrand(updater);
+  }, [pushUndoDebounced]);
 
   const updateCombo = useCallback((c) => {
     pushUndo();
@@ -146,7 +167,23 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     if (prev.aspectRatio !== undefined) setAspectRatio(prev.aspectRatio);
   }, [undoHistory]);
 
+  const handleRedo = useCallback(() => {
+    const next = undoHistory.redo();
+    if (!next) return;
+    if (next.tmplId !== undefined) setTmplId(next.tmplId);
+    if (next.data !== undefined) setData(next.data);
+    if (next.brand !== undefined) setBrand(next.brand);
+    if (next.combo !== undefined) setCombo(next.combo);
+    if (next.palette !== undefined) setPalette(next.palette);
+    if (next.activePhoto !== undefined) setActivePhoto(next.activePhoto);
+    if (next.accentPhoto !== undefined) setAccentPhoto(next.accentPhoto);
+    if (next.ov !== undefined) setOv(next.ov);
+    if (next.blur !== undefined) setBlur(next.blur);
+    if (next.aspectRatio !== undefined) setAspectRatio(next.aspectRatio);
+  }, [undoHistory]);
+
   const canUndo = undoHistory.canUndo();
+  const canRedo = undoHistory.canRedo();
 
   const contrastWarning = useMemo(() => {
     const hasPhoto = !!activePhoto;
@@ -277,6 +314,8 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
         onAspectRatioChange={handleSetAspectRatio}
         onUndo={handleUndo}
         canUndo={canUndo}
+        onRedo={handleRedo}
+        canRedo={canRedo}
         onToggleSidebar={() => setSidebarOpen(o => !o)}
       />
       <div style={{
@@ -355,7 +394,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
             tab={tab} setTab={setTab}
             combo={combo} updateCombo={updateCombo}
             palette={palette} updatePalette={updatePalette}
-            brand={brand} setBrand={setBrand}
+            brand={brand} setBrand={updateBrand}
             tmplId={tmplId} setTmplId={handleSetTmplId}
             data={data} ds={ds}
             photos={photos} setPhotos={setPhotos}
@@ -400,7 +439,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
               tab={tab} setTab={setTab}
               combo={combo} updateCombo={updateCombo}
               palette={palette} updatePalette={updatePalette}
-              brand={brand} setBrand={setBrand}
+              brand={brand} setBrand={updateBrand}
               tmplId={tmplId} setTmplId={handleSetTmplId}
               data={data} ds={ds}
               photos={photos} setPhotos={setPhotos}

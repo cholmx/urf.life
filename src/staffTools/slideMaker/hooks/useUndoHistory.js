@@ -31,7 +31,17 @@ export function useUndoHistory(maxHistory = 50) {
     return previous;
   }, []);
 
-  const canUndo = useCallback(() => past.current.length > 0, []);
+  const redo = useCallback(() => {
+    if (future.current.length === 0) return null;
+    const next = future.current[0];
+    future.current = future.current.slice(1);
+    past.current = [...past.current, present.current];
+    present.current = next;
+    return next;
+  }, []);
 
-  return { init, push, undo, canUndo };
+  const canUndo = useCallback(() => past.current.length > 0, []);
+  const canRedo = useCallback(() => future.current.length > 0, []);
+
+  return { init, push, undo, redo, canUndo, canRedo };
 }
