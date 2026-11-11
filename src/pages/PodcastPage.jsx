@@ -188,7 +188,7 @@ export default function PodcastPage({ service, titleFallback, subtitleFallback, 
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.25, delay: index * 0.05 }}
-                  className="card-clay rounded-2xl shadow-modern overflow-hidden hover:shadow-modern-lg hover:-translate-y-1 transition-all duration-300"
+                  className="card-clay rounded-2xl overflow-hidden"
                 >
                   <div className="p-6">
                     <div className="flex items-start space-x-4">
