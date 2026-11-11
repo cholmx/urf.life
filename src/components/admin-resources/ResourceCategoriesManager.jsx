@@ -33,7 +33,7 @@ const ResourceCategoriesManager = ({ categories, showForm, onCancel, insertCateg
     <>
       {categories.length > 0 && (
         <div className="admin-card">
-          <h3 className="text-lg font-semibold text-text-primary mb-4 font-inter">
+          <h3 className="text-lg font-semibold text-text-primary mb-4">
             Categories ({categories.length})
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -42,7 +42,7 @@ const ResourceCategoriesManager = ({ categories, showForm, onCancel, insertCateg
                 <div className="flex justify-between items-start mb-2">
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-1">
-                      <h4 className="font-semibold text-text-primary font-inter">{category.name}</h4>
+                      <h4 className="font-semibold text-text-primary">{category.name}</h4>
                       <SafeIcon
                         icon={category.is_link_group ? FiLink : FiBookOpen}
                         className="h-4 w-4 text-primary"
@@ -71,7 +71,7 @@ const ResourceCategoriesManager = ({ categories, showForm, onCancel, insertCateg
 
       {showForm && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="admin-card">
-          <h3 className="text-lg font-semibold text-text-primary mb-4 font-inter">
+          <h3 className="text-lg font-semibold text-text-primary mb-4">
             Create New Category
           </h3>
           <form onSubmit={handleSubmit} className="space-y-4">

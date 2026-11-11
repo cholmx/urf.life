@@ -133,7 +133,7 @@ const DailyDevotionals=()=> {
           >
             <SafeIcon icon={FiBookOpen} className="h-8 w-8 text-primary" />
             <Link to="/" className="hover:text-primary transition-colors">
-              <h1 className="text-3xl md:text-4xl font-bold text-text-primary font-inter"> 
+              <h1 className="text-3xl md:text-4xl font-bold text-text-primary"> 
                 Daily Devotionals 
               </h1>
             </Link>
@@ -160,7 +160,7 @@ const DailyDevotionals=()=> {
             className="card-clay rounded-lg shadow-md p-12 text-center"
           >
             <SafeIcon icon={FiBookOpen} className="h-16 w-16 text-text-light mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-text-primary mb-2 font-inter"> 
+            <h2 className="text-2xl font-bold text-text-primary mb-2"> 
               No Devotionals Available 
             </h2>
             <p className="text-text-light font-inter"> 
@@ -176,7 +176,7 @@ const DailyDevotionals=()=> {
             {/* Navigation Header */}
             <div className="bg-secondary text-white p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold font-inter">Daily Devotional</h2>
+                <h2 className="text-2xl font-bold">Daily Devotional</h2>
                 <div className="flex items-center space-x-3">
                   <button 
                     onClick={()=> navigateDate('prev')} 
@@ -213,13 +213,13 @@ const DailyDevotionals=()=> {
               {currentDevotional ? (
                 <div className="space-y-6">
                   {/* Title */}
-                  <h3 className="text-3xl font-bold text-text-primary font-inter"> 
+                  <h3 className="text-3xl font-bold text-text-primary"> 
                     {currentDevotional.title} 
                   </h3>
 
                   {/* Subtitle */}
                   {currentDevotional.subtitle && (
-                    <h4 className="text-xl font-semibold text-primary font-inter"> 
+                    <h4 className="text-xl font-semibold text-primary"> 
                       {currentDevotional.subtitle} 
                     </h4>
                   )}
@@ -245,7 +245,7 @@ const DailyDevotionals=()=> {
                   {/* Response */}
                   {currentDevotional.response && (
                     <div className="bg-accent p-6 rounded-lg">
-                      <h5 className="font-semibold text-text-primary mb-3 text-lg font-inter">Response:</h5>
+                      <h5 className="font-semibold text-text-primary mb-3 text-lg">Response:</h5>
                       <p className="text-text-primary font-inter text-lg">{currentDevotional.response}</p>
                     </div>
                   )}
@@ -253,7 +253,7 @@ const DailyDevotionals=()=> {
                   {/* Prayer */}
                   {currentDevotional.prayer && (
                     <div className="bg-primary bg-opacity-10 p-6 rounded-lg">
-                      <h5 className="font-semibold text-text-primary mb-3 text-lg font-inter">Prayer:</h5>
+                      <h5 className="font-semibold text-text-primary mb-3 text-lg">Prayer:</h5>
                       <p className="text-text-primary italic font-inter text-lg">{currentDevotional.prayer}</p>
                     </div>
                   )}
@@ -261,7 +261,7 @@ const DailyDevotionals=()=> {
               ) : (
                 <div className="text-center py-12">
                   <SafeIcon icon={FiBookOpen} className="h-16 w-16 text-text-light mx-auto mb-4" />
-                  <h4 className="text-xl font-semibold text-text-primary mb-2 font-inter"> 
+                  <h4 className="text-xl font-semibold text-text-primary mb-2"> 
                     No Devotional for This Date 
                   </h4>
                   <p className="text-text-light font-inter"> 

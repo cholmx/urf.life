@@ -15,7 +15,7 @@
        plain CSS properties below always came through fresh on a push,
        while @apply bg-accent/font-sans kept resolving to the old
        cream/Inter values). Literal properties sidestep that cache. */
-    background-color: #EDE9DC;
+    background-color: #F8F6F1;
     font-family: 'Aleo', serif;
     font-size: 16px;
     font-weight: 400;
@@ -215,7 +215,7 @@
    background is correct regardless of whether Tailwind's own utility
    output for .bg-accent is current. */
 [class~="bg-accent"] {
-  background-color: #EDE9DC;
+  background-color: #F8F6F1;
 }
 :is(.card-clay, .form-section, [class~="bg-white"], [class~="bg-accent-dark"], [class~="bg-accent-light"], .admin-shell) {
   color: #1E2522;

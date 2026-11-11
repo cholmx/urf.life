@@ -180,7 +180,7 @@ const AdminResources = () => {
       )}
 
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-text-primary font-inter">
+        <h2 className="text-2xl font-bold text-text-primary">
           Manage Resources
         </h2>
         <div className="space-x-2">
@@ -236,7 +236,7 @@ const AdminResources = () => {
         <div className="flex items-start space-x-3">
           <SafeIcon icon={FiBookOpen} className="h-5 w-5 text-neutral-600 mt-0.5" />
           <div>
-            <h4 className="font-semibold text-neutral-800 mb-1 font-inter">
+            <h4 className="font-semibold text-neutral-800 mb-1">
               Resource Categories
             </h4>
             <p className="text-neutral-700 text-sm font-inter">

@@ -58,7 +58,7 @@ const ResourceList = ({ resources, categories, loading, onEdit, onDelete }) => {
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <div className="flex items-center space-x-3 mb-2">
-                      <h3 className="text-lg font-semibold text-text-primary font-inter">
+                      <h3 className="text-lg font-semibold text-text-primary">
                         {resource.title}
                       </h3>
                       {resource.category_id && (

@@ -78,11 +78,11 @@ const DevotionalBulkImport = ({ onImported, onCancel, onError }) => {
       animate={{ opacity: 1, y: 0 }}
       className="bg-white rounded-lg shadow-md p-6"
     >
-      <h3 className="text-lg font-semibold text-text-primary mb-4 font-inter">
+      <h3 className="text-lg font-semibold text-text-primary mb-4">
         Bulk Import Devotionals
       </h3>
       <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <h4 className="font-semibold text-blue-800 mb-2 font-inter">Expected Format</h4>
+        <h4 className="font-semibold text-blue-800 mb-2">Expected Format</h4>
         <p className="text-blue-700 text-sm font-inter mb-3">
           Upload a .txt file with devotionals in this format:
         </p>

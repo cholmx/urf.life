@@ -69,7 +69,7 @@ const DailyScripture=()=> {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-2">
             <SafeIcon icon={FiBookOpen} className="h-5 w-5 text-primary" />
-            <h3 className="text-lg font-semibold text-text-primary font-inter">
+            <h3 className="text-lg font-semibold text-text-primary">
               Today's Scripture
             </h3>
           </div>

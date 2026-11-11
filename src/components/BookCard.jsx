@@ -117,7 +117,7 @@ className="text-sm font-semibold text-text-primary mb-1 font-inter line-clamp-2 
 {resource.title}
 </a>
 ) : (
-<h3 className="text-sm font-semibold text-text-primary mb-1 font-inter line-clamp-2 leading-tight">
+<h3 className="text-sm font-semibold text-text-primary mb-1 line-clamp-2 leading-tight">
 {resource.title}
 </h3>
 )}

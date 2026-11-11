@@ -16,7 +16,7 @@ const AdminSermons = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-text-primary font-inter">
+        <h2 className="text-2xl font-bold text-text-primary">
           Manage Sermons
         </h2>
         <button onClick={() => setShowSeriesForm(true)} className="admin-btn-secondary">

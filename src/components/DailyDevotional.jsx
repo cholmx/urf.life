@@ -156,7 +156,7 @@ const DailyDevotional = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <SafeIcon icon={FiBookOpen} className="h-5 w-5" />
-            <h3 className="text-lg font-semibold font-inter">Daily Devotional</h3>
+            <h3 className="text-lg font-semibold">Daily Devotional</h3>
           </div>
           <div className="flex items-center space-x-2">
             <button
@@ -199,13 +199,13 @@ const DailyDevotional = () => {
             </div>
 
             {/* Title */}
-            <h4 className="text-xl font-bold text-text-primary font-inter">
+            <h4 className="text-xl font-bold text-text-primary">
               {currentDevotional.title}
             </h4>
 
             {/* Subtitle */}
             {currentDevotional.subtitle && (
-              <h5 className="text-lg font-semibold text-primary font-inter">
+              <h5 className="text-lg font-semibold text-primary">
                 {currentDevotional.subtitle}
               </h5>
             )}
@@ -231,7 +231,7 @@ const DailyDevotional = () => {
             {/* Response */}
             {currentDevotional.response && (
               <div className="bg-accent p-4 rounded-lg">
-                <h6 className="font-semibold text-text-primary mb-2 font-inter">Response:</h6>
+                <h6 className="font-semibold text-text-primary mb-2">Response:</h6>
                 <p className="text-text-primary font-inter">{currentDevotional.response}</p>
               </div>
             )}
@@ -239,7 +239,7 @@ const DailyDevotional = () => {
             {/* Prayer */}
             {currentDevotional.prayer && (
               <div className="bg-primary bg-opacity-10 p-4 rounded-lg">
-                <h6 className="font-semibold text-text-primary mb-2 font-inter">Prayer:</h6>
+                <h6 className="font-semibold text-text-primary mb-2">Prayer:</h6>
                 <p className="text-text-primary italic font-inter">{currentDevotional.prayer}</p>
               </div>
             )}
@@ -247,7 +247,7 @@ const DailyDevotional = () => {
         ) : (
           <div className="text-center py-8">
             <SafeIcon icon={FiBookOpen} className="h-12 w-12 text-text-light mx-auto mb-4" />
-            <h4 className="text-lg font-semibold text-text-primary mb-2 font-inter">
+            <h4 className="text-lg font-semibold text-text-primary mb-2">
               No Devotional for This Date
             </h4>
             <p className="text-text-light font-inter">

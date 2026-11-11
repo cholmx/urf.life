@@ -74,7 +74,7 @@ const DevotionalForm = ({ editingDevotional, insertItem, updateItem, onSaved, on
       animate={{ opacity: 1, y: 0 }}
       className="bg-white rounded-lg shadow-md p-6"
     >
-      <h3 className="text-lg font-semibold text-text-primary mb-4 font-inter">
+      <h3 className="text-lg font-semibold text-text-primary mb-4">
         {editingDevotional ? 'Edit Devotional' : 'New Devotional'}
       </h3>
       <form onSubmit={handleSubmit} className="space-y-4">

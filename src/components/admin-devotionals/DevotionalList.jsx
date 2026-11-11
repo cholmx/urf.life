@@ -14,7 +14,7 @@ const DevotionalList = ({ devotionals, loading, onEdit, onDelete }) => (
     ) : devotionals.length === 0 ? (
       <div className="p-8 text-center">
         <SafeIcon icon={FiBookOpen} className="h-16 w-16 text-text-light mx-auto mb-4" />
-        <h3 className="text-xl font-semibold text-text-primary mb-2 font-inter">No Devotionals Yet</h3>
+        <h3 className="text-xl font-semibold text-text-primary mb-2">No Devotionals Yet</h3>
         <p className="text-text-light font-inter">
           Create your first devotional or upload a file to get started!
         </p>
@@ -26,7 +26,7 @@ const DevotionalList = ({ devotionals, loading, onEdit, onDelete }) => (
             <div className="flex justify-between items-start">
               <div className="flex-1">
                 <div className="flex items-center space-x-3 mb-2">
-                  <h3 className="text-lg font-semibold text-text-primary font-inter">
+                  <h3 className="text-lg font-semibold text-text-primary">
                     {devotional.title}
                   </h3>
                   <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary text-white font-inter">

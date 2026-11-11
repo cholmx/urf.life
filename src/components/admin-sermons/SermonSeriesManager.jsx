@@ -74,14 +74,14 @@ const SermonSeriesManager = ({ showForm, onCloseForm, series, saving, insertItem
 
       {series.length > 0 && (
         <div className="admin-card mb-6">
-          <h3 className="text-lg font-semibold text-text-primary mb-4 font-inter">
+          <h3 className="text-lg font-semibold text-text-primary mb-4">
             Sermon Series
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {series.map((s) => (
               <div key={s.id} className="border border-accent-dark rounded-lg p-4">
                 <div className="flex justify-between items-start mb-2">
-                  <h4 className="font-semibold text-text-primary font-inter">{s.name}</h4>
+                  <h4 className="font-semibold text-text-primary">{s.name}</h4>
                   <button onClick={() => handleDelete(s.id)} className="text-red-500 hover:text-red-700">
                     <SafeIcon icon={FiTrash2} className="h-4 w-4" />
                   </button>
@@ -98,7 +98,7 @@ const SermonSeriesManager = ({ showForm, onCloseForm, series, saving, insertItem
 
       {showForm && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="admin-card mb-6">
-          <h3 className="text-lg font-semibold text-text-primary mb-4 font-inter">
+          <h3 className="text-lg font-semibold text-text-primary mb-4">
             Create New Sermon Series
           </h3>
           <form onSubmit={handleSubmit} className="space-y-4">

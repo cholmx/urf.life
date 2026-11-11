@@ -104,7 +104,7 @@ export default function PodcastPage({ service, titleFallback, subtitleFallback, 
           >
             <SafeIcon icon={FiMic} className="h-8 w-8 text-primary" />
             <Link to="/" className="hover:text-primary transition-colors">
-              <h1 className="text-3xl md:text-4xl font-bold text-text-primary font-inter">
+              <h1 className="text-3xl md:text-4xl font-bold text-text-primary">
                 {podcastData.channel?.title || titleFallback}
               </h1>
             </Link>
@@ -138,7 +138,7 @@ export default function PodcastPage({ service, titleFallback, subtitleFallback, 
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex items-center">
               <SafeIcon icon={FiFilter} className="h-5 w-5 text-primary mr-2" />
-              <h3 className="text-lg font-semibold text-text-primary font-inter">
+              <h3 className="text-lg font-semibold text-text-primary">
                 Filter Episodes
               </h3>
             </div>
@@ -168,7 +168,7 @@ export default function PodcastPage({ service, titleFallback, subtitleFallback, 
           isLoading={loading}
           skeleton={
             <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-text-primary font-inter">
+              <h2 className="text-2xl font-bold text-text-primary">
                 Episodes
               </h2>
               {Array.from({ length: 5 }).map((_, i) => (
@@ -179,7 +179,7 @@ export default function PodcastPage({ service, titleFallback, subtitleFallback, 
         >
           {podcastData.episodes && podcastData.episodes.length > 0 && (
             <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-text-primary font-inter">
+              <h2 className="text-2xl font-bold text-text-primary">
                 Episodes ({podcastData.episodes.length})
               </h2>
               {displayedEpisodes.map((episode, index) => (
@@ -317,7 +317,7 @@ export default function PodcastPage({ service, titleFallback, subtitleFallback, 
               className="card-clay rounded-lg shadow-md p-12 text-center"
             >
               <SafeIcon icon={FiMic} className="h-16 w-16 text-text-light mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-text-primary mb-2 font-inter">
+              <h2 className="text-2xl font-bold text-text-primary mb-2">
                 {searchTerm ? 'No Matching Episodes' : 'No Episodes Available'}
               </h2>
               <p className="text-text-light font-inter">

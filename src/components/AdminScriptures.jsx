@@ -248,7 +248,7 @@ const AdminScriptures = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-text-primary font-inter">
+        <h2 className="text-2xl font-bold text-text-primary">
           Daily Scripture Verses
         </h2>
         <div className="space-x-2">
@@ -283,7 +283,7 @@ const AdminScriptures = () => {
         <div className="flex items-start space-x-3">
           <SafeIcon icon={FiBookOpen} className="h-5 w-5 text-blue-600 mt-0.5" />
           <div>
-            <h4 className="font-semibold text-blue-800 mb-1 font-inter">
+            <h4 className="font-semibold text-blue-800 mb-1">
               How Daily Scriptures Work
             </h4>
             <p className="text-blue-700 text-sm font-inter">
@@ -300,12 +300,12 @@ const AdminScriptures = () => {
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-lg shadow-md p-6"
         >
-          <h3 className="text-lg font-semibold text-text-primary mb-4 font-inter">
+          <h3 className="text-lg font-semibold text-text-primary mb-4">
             Bulk Import Scriptures
           </h3>
 
           <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <h4 className="font-semibold text-yellow-800 mb-2 font-inter">
+            <h4 className="font-semibold text-yellow-800 mb-2">
               Format Instructions
             </h4>
             <p className="text-yellow-700 text-sm font-inter mb-2">
@@ -462,7 +462,7 @@ And we know that in all things God works for the good of those who love him, who
                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary text-white font-inter">
                         Day {index + 1}
                       </span>
-                      <h3 className="text-lg font-semibold text-text-primary font-inter">
+                      <h3 className="text-lg font-semibold text-text-primary">
                         {scripture.reference}
                       </h3>
                     </div>

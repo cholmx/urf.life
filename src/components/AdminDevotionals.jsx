@@ -136,7 +136,7 @@ const AdminDevotionals = () => {
       )}
 
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-text-primary font-inter">
+        <h2 className="text-2xl font-bold text-text-primary">
           Manage Daily Devotionals
         </h2>
         <div className="space-x-2">
@@ -203,7 +203,7 @@ const AdminDevotionals = () => {
 
       {devotionals.length > 0 && (
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-text-primary mb-4 font-inter">
+          <h3 className="text-lg font-semibold text-text-primary mb-4">
             Devotionals Overview
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

@@ -299,7 +299,7 @@ const SermonsManager = ({ sermonSeries }) => {
               <div key={sermon.id} className="p-6">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-text-primary font-inter mb-2">
+                    <h3 className="text-lg font-semibold text-text-primary mb-2">
                       {sermon.title}
                     </h3>
                     {sermon.sermon_series_id && (
