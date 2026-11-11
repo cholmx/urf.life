@@ -110,7 +110,7 @@ const Home=()=> {
         <header className="text-center mb-4 md:mb-6">
           <motion.h1
             initial={{opacity: 0,y: 20}} animate={{opacity: 1,y: 0}} transition={{duration: 0.35}}
-            className="font-gsans font-black text-xl md:text-3xl text-text-primary tracking-tight flex items-center justify-center gap-2.5"
+            className="font-gsans font-bold text-xl md:text-3xl text-text-primary tracking-tight flex items-center justify-center gap-2.5"
           >
             <img src="/logonegtransblack%20copy.png" alt="" className="h-[1.35em] w-auto" />
             <span>Upper Room Fellowship</span>
