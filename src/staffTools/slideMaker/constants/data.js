@@ -5,7 +5,6 @@ export const CORNER_R = 0;
 export const ASPECT_RATIOS = [
   { id: "16:10", label: "16:10", w: 2560, h: 1600 },
   { id: "16:9",  label: "16:9",  w: 2560, h: 1440 },
-  { id: "portrait_legal", label: "11x8.5", w: 2560, h: 3313 },
 ];
 
 // Fixed brand typography - Inter Tight Bold for the headline, Aleo for

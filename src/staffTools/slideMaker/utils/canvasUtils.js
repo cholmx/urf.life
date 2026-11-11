@@ -71,65 +71,6 @@ export function autoFitText(ctx, text, baseSize, weight, fontFamily, maxW, maxH,
   return { lines, fontSize: size, lineHeightPx };
 }
 
-export function bgLuminance(hex) {
-  const c = hex.replace('#','').match(/\w\w/g)?.map(x => {
-    const v = parseInt(x,16)/255;
-    return v <= 0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055,2.4);
-  }) || [0,0,0];
-  return 0.2126*c[0] + 0.7152*c[1] + 0.0722*c[2];
-}
-
-/**
- * Relative luminance of a color (0 = black, 1 = white).
- */
-export function relativeLuminance(hex) {
-  return bgLuminance(hex);
-}
-
-/**
- * WCAG contrast ratio between two hex colors. Returns a number 1-21.
- */
-export function contrastRatio(hex1, hex2) {
-  const l1 = relativeLuminance(hex1);
-  const l2 = relativeLuminance(hex2);
-  const lighter = Math.max(l1, l2);
-  const darker = Math.min(l1, l2);
-  return (lighter + 0.05) / (darker + 0.05);
-}
-
-/**
- * Checks if text color has sufficient contrast against the effective background.
- * When a photo is present with overlay, the effective background is darker.
- * Returns { ok, ratio, threshold }.
- */
-export function checkContrast(textColor, bgColor, hasPhoto, overlayStrength) {
-  let effectiveBg = bgColor;
-  if (hasPhoto) {
-    // With a photo + overlay, effective background gets darker proportional to overlay
-    const bgRgb = hexToRgb(bgColor);
-    const factor = overlayStrength / 100;
-    effectiveBg = rgbToHex(
-      Math.round(bgRgb.r * (1 - factor)),
-      Math.round(bgRgb.g * (1 - factor)),
-      Math.round(bgRgb.b * (1 - factor))
-    );
-  }
-  const ratio = contrastRatio(textColor, effectiveBg);
-  const threshold = 3.0; // WCAG AA for large text
-  return { ok: ratio >= threshold, ratio, threshold };
-}
-
-function hexToRgb(hex) {
-  const m = hex.replace('#','').match(/\w\w/g);
-  if (!m) return { r: 0, g: 0, b: 0 };
-  return { r: parseInt(m[0], 16), g: parseInt(m[1], 16), b: parseInt(m[2], 16) };
-}
-
-function rgbToHex(r, g, b) {
-  const toHex = (v) => Math.max(0, Math.min(255, v)).toString(16).padStart(2, '0');
-  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-}
-
 export function drawLines(ctx,lines,x,y,font,fill,align,lineH,letterSpacing=0) {
   ctx.fillStyle=fill;
   ctx.font=font;

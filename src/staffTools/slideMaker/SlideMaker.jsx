@@ -4,7 +4,7 @@ import {ToastProvider, useToast} from './hooks/useToast.jsx';
 import {useUndoHistory} from './hooks/useUndoHistory';
 import {BACKGROUNDS, HEADLINE_FONT, HEADLINE_WEIGHT, BODY_FONT, BODY_WEIGHT, ASPECT_RATIOS} from './constants/data';
 import {C, ui} from './constants/styles';
-import {sharpenCanvas, checkContrast} from './utils/canvasUtils';
+import {sharpenCanvas} from './utils/canvasUtils';
 import {isSlideActive, formatDateNice} from '../../staffComms/lib/helpers';
 import SlideCanvas from './components/SlideCanvas';
 import Sidebar from './components/Sidebar';
@@ -184,13 +184,6 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
   const canUndo = undoHistory.canUndo();
   const canRedo = undoHistory.canRedo();
 
-  const contrastWarning = useMemo(() => {
-    const hasPhoto = !!activePhoto;
-    const overlayStrength = activePhoto ? ((ov - 20) / 70) * 100 : 0;
-    const result = checkContrast(brand.textColor, brand.bgColor, hasPhoto, overlayStrength);
-    return result.ok ? null : result;
-  }, [brand.textColor, brand.bgColor, activePhoto, ov]);
-
   const dl = () => {
     if (canvasRef.current) {
       const sharpened = sharpenCanvas(canvasRef.current);
@@ -359,7 +352,6 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
           )}
           <div style={{
             border: `1px solid ${C.border}`,
-            borderRadius: 12,
             overflow: "hidden",
             boxShadow: "0 8px 32px rgba(0,0,0,0.14)",
             background: "#000",
@@ -368,17 +360,6 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
           }}>
             <SlideCanvas ref={canvasRef} {...slideProps} />
           </div>
-          {contrastWarning && (
-            <div style={{
-              marginTop: 8, padding: "8px 12px", borderRadius: 8,
-              background: "#FEF3C7", border: `1px solid #FCD34D`,
-              display: "flex", alignItems: "center", gap: 8,
-              fontFamily: ui.body, fontSize: 12, color: "#92400E",
-            }}>
-              <span style={{fontSize: 16}}>⚠️</span>
-              <span>Low text contrast — your headline may be hard to read against this background. Try a stronger overlay or a different text color.</span>
-            </div>
-          )}
         </div>
 
         {/* Right: Sidebar — desktop */}

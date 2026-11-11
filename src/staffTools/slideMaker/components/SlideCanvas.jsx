@@ -13,9 +13,9 @@ const SlideCanvas = React.forwardRef(({ tmplId, data, brand, bgImg, overlayColor
   }, [tmplId, data, brand, bgImg, overlayColor, ov, blur, canvasW, canvasH, cornerR]);
 
   return (
-    <canvas 
-      ref={internalRef} 
-      style={{ width: "100%", height: "auto", display: "block", borderRadius: 8, ...style }} 
+    <canvas
+      ref={internalRef}
+      style={{ width: "100%", height: "auto", display: "block", ...style }}
     />
   );
 });

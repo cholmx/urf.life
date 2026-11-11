@@ -14,7 +14,7 @@ export default function TemplatesTab({ tmplId, setTmplId, data, brand, bgImg, ov
           <div key={t.id} onClick={() => setTmplId(t.id)} style={{ cursor: "pointer" }}>
             <div style={{
               border: tmplId === t.id ? `3px solid ${C.accent}` : `2px solid ${C.border}`,
-              borderRadius: 8, overflow: "hidden",
+              overflow: "hidden",
               boxShadow: tmplId === t.id ? `0 0 0 3px ${C.accentBg}` : "none",
               transition: "border-color 0.15s",
             }}>
