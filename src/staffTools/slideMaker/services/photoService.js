@@ -107,7 +107,13 @@ export async function uploadPhoto(file) {
   };
 }
 
-export async function getPhotos() {
+// onPhotoReady(photo, index, total), when given, fires as each photo's
+// image finishes decoding instead of only once every photo has - the
+// gallery can then render thumbnails as they arrive rather than
+// blocking entirely on whichever one happens to load slowest. The
+// returned promise still resolves with the full array, in original
+// (created_at desc) order, for callers that just want the end result.
+export async function getPhotos(onPhotoReady) {
   const { data, error } = await supabase
     .from('staff_slide_photos_portal123')
     .select('*')
@@ -116,7 +122,7 @@ export async function getPhotos() {
   if (error) throw error;
 
   const photosWithImages = await Promise.all(
-    data.map(async (photo) => {
+    data.map(async (photo, index) => {
       const img = new Image();
       img.crossOrigin = 'anonymous';
       await new Promise((resolve, reject) => {
@@ -125,7 +131,7 @@ export async function getPhotos() {
         img.src = photo.thumbnail_url;
       });
 
-      return {
+      const result = {
         id: photo.id,
         name: photo.file_name,
         url: photo.thumbnail_url,
@@ -134,6 +140,8 @@ export async function getPhotos() {
         storagePath: photo.storage_path,
         file_size: photo.file_size,
       };
+      onPhotoReady?.(result, index, data.length);
+      return result;
     })
   );
 

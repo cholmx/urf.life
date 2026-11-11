@@ -4,6 +4,18 @@ const THUMBNAIL_BUCKET = 'staff-slide-preset-thumbnails';
 const THUMBNAIL_WIDTH = 400;
 const THUMBNAIL_HEIGHT = 250;
 
+function mapPresetRow(row) {
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description,
+    presetData: row.preset_data,
+    thumbnailUrl: row.thumbnail_url,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
 async function generateThumbnail(canvas) {
   return new Promise((resolve, reject) => {
     const thumbnailCanvas = document.createElement('canvas');
@@ -67,15 +79,7 @@ export async function savePreset(name, description, presetData, canvas) {
 
     if (error) throw error;
 
-    return {
-      id: data.id,
-      name: data.name,
-      description: data.description,
-      presetData: data.preset_data,
-      thumbnailUrl: data.thumbnail_url,
-      createdAt: data.created_at,
-      updatedAt: data.updated_at,
-    };
+    return mapPresetRow(data);
   } catch (error) {
     console.error('Error saving preset:', error);
     throw error;
@@ -91,15 +95,7 @@ export async function getPresets() {
 
     if (error) throw error;
 
-    return data.map(preset => ({
-      id: preset.id,
-      name: preset.name,
-      description: preset.description,
-      presetData: preset.preset_data,
-      thumbnailUrl: preset.thumbnail_url,
-      createdAt: preset.created_at,
-      updatedAt: preset.updated_at,
-    }));
+    return data.map(mapPresetRow);
   } catch (error) {
     console.error('Error fetching presets:', error);
     return [];
@@ -155,15 +151,7 @@ export async function updatePreset(id, name, description, presetData, canvas) {
 
     if (error) throw error;
 
-    return {
-      id: data.id,
-      name: data.name,
-      description: data.description,
-      presetData: data.preset_data,
-      thumbnailUrl: data.thumbnail_url,
-      createdAt: data.created_at,
-      updatedAt: data.updated_at,
-    };
+    return mapPresetRow(data);
   } catch (error) {
     console.error('Error updating preset:', error);
     throw error;

@@ -24,8 +24,16 @@ export default function PhotosTab({photos, setPhotos, activePhoto, setActivePhot
 
   const loadSavedPhotos = async () => {
     try {
-      const savedPhotos = await getPhotos();
-      setPhotos(savedPhotos);
+      // Thumbnails render as each photo's image finishes loading, instead
+      // of the whole grid waiting on whichever one is slowest - a gap at
+      // an index still loading is skipped by PhotoGrid's filter below.
+      await getPhotos((photo, index, total) => {
+        setPhotos(prev => {
+          const next = prev.length === total ? [...prev] : new Array(total);
+          next[index] = photo;
+          return next;
+        });
+      });
     } catch (error) {
       toast.show('Could not load your photo library.', 'error');
     }
@@ -110,7 +118,7 @@ export default function PhotosTab({photos, setPhotos, activePhoto, setActivePhot
 
   const PhotoGrid = ({selectedImg, onSelect}) => (
     <div style={{display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8}}>
-      {photos.map(p => (
+      {photos.filter(Boolean).map(p => (
         <div key={p.id} style={{position: "relative"}}>
           <div onClick={() => onSelect(p.img)} style={{
             borderRadius: 6, overflow: "hidden", cursor: "pointer", aspectRatio: "16/10",
