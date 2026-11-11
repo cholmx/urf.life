@@ -35,8 +35,8 @@ export const colors = {
 export const fontFamilies = {
   // Headings, buttons, labels, and any larger-than-body text - Inter Tight Bold.
   heading: ['Inter Tight', 'sans-serif'],
-  // Body copy and small reading text - Inter Regular.
-  body: ['Inter', 'sans-serif'],
+  // Body copy and small reading text - Aleo Regular.
+  body: ['Aleo', 'serif'],
 };
 
 export const fonts = {
@@ -45,10 +45,9 @@ export const fonts = {
 };
 
 export const fontWeights = {
-  // Inter Tight for headings/buttons/labels, Inter for body copy. Both
-  // are true variable fonts shipping real static instances across the
-  // weight range (no faux-bold synthesis concern the way Arial had
-  // above 700).
+  // Inter Tight Bold for headings/buttons/labels, Aleo Regular for body
+  // copy. Aleo's real static instances only go up to 700 (300/400/700),
+  // no 500 - 400 is its true regular weight, not a synthesized one.
   heading: 700,
-  body: 500,
+  body: 400,
 };
