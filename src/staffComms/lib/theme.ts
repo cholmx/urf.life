@@ -13,7 +13,7 @@ import { colors, fonts } from '../../styles/designTokens.js';
 export const scopeChipColors: Record<string, { bg: string; text: string; border: string }> = {
   whole_church:  { bg: colors.secondary, text: colors.white, border: colors.secondary },
   ministry:      { bg: colors.primary, text: colors.white, border: colors.primary },
-  informational: { bg: colors.white, text: colors.secondary, border: colors.secondary },
+  informational: { bg: colors.section, text: colors.secondary, border: colors.secondary },
 };
 
 export const scopeRangeColors: Record<string, string> = {
@@ -23,7 +23,7 @@ export const scopeRangeColors: Record<string, string> = {
 };
 
 export const happeningTypeChipColors: Record<string, { bg: string; text: string; border: string }> = {
-  announcement: { bg: colors.white, text: colors.secondary, border: colors.secondary },
+  announcement: { bg: colors.section, text: colors.secondary, border: colors.secondary },
   event:        { bg: colors.primary, text: colors.white, border: colors.primary },
   class:        { bg: colors.gold, text: colors.secondary, border: colors.gold },
   general:      { bg: colors.red, text: colors.white, border: colors.red },
@@ -42,10 +42,10 @@ export const recurringChipColor = { bg: colors.white, text: colors.gold, border:
 // colors.* values, not independently hand-typed hexes.
 export const C = {
   // Surfaces
-  bg:          colors.white,
-  bgSubtle:    colors.white,
+  bg:          colors.page,
+  bgSubtle:    colors.section,
   card:        colors.white,
-  cardAlt:     colors.white,
+  cardAlt:     colors.section,
   // Borders
   border:      colors.primary,
   borderMed:   colors.secondary,
@@ -57,17 +57,17 @@ export const C = {
   textMuted:   colors.primary,
   // Accent (matches the main site's admin buttons)
   accent:      colors.primary,
-  accentBg:    colors.white,
+  accentBg:    colors.section,
   accentDark:  colors.secondary,
   accentHover: colors.secondary,
   // Status
   warn:        colors.red,
-  warnBg:      colors.white,
+  warnBg:      colors.section,
   success:     colors.primary,
-  successBg:   colors.white,
+  successBg:   colors.section,
   // Interaction tints
   high:        colors.primary,
-  highBg:      colors.white,
+  highBg:      colors.section,
   // Dark panels
   stageBg:     colors.secondary,
   stageText:   colors.white,

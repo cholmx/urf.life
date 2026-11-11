@@ -16,7 +16,7 @@ const PRESET_COLORS = [
   { label: 'Black', value: '#111827' },
 ];
 
-const sectionContainerClass = "rounded-lg border border-primary/20 bg-white p-6 mb-6";
+const sectionContainerClass = "rounded-lg border border-primary/20 bg-section p-6 mb-6";
 const sectionTitleClass = "text-secondary text-[11px] font-bold tracking-[0.15em] uppercase mb-5 font-heading";
 const labelClass = "block text-light text-[10px] font-bold uppercase tracking-wider mb-2";
 const inputClass = "w-full bg-white border border-primary/20 rounded-md px-3 py-2.5 text-sm text-secondary focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary placeholder-text-light transition-shadow";
@@ -57,7 +57,7 @@ const SignupSheetBuilder = ({ sheetData, setSheetData, onPreview, happening, sav
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-accent">
       {/* Header */}
       <header className="bg-white border-b border-primary/20 px-8">
         <div className="flex justify-between items-center max-w-5xl mx-auto w-full">
@@ -126,7 +126,7 @@ const SignupSheetBuilder = ({ sheetData, setSheetData, onPreview, happening, sav
 
             {/* Intro */}
             <div className="mb-8">
-              <div className="bg-white border border-primary/20 rounded-lg p-5 text-sm text-light mb-6">
+              <div className="bg-section border border-primary/20 rounded-lg p-5 text-sm text-light mb-6">
                 Fill in the title and any details, then configure your columns below. Switch to the <b>Preview</b> tab to print or save as PDF.
               </div>
 

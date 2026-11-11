@@ -52,7 +52,7 @@ const SignupSheetPreview = ({ sheetData, setSheetData, onBack, happening, saveSt
   }, [sheetData.columns, setSheetData]);
 
   return (
-    <div className="min-h-screen bg-white print:bg-white">
+    <div className="min-h-screen bg-accent print:bg-white">
 
       {/* Header (Hidden when printing) */}
       <header className="bg-white border-b border-primary/20 px-8 print:hidden">
@@ -147,7 +147,7 @@ const SignupSheetPreview = ({ sheetData, setSheetData, onBack, happening, saveSt
             {/* Table */}
             <div className="sheet-table" ref={tableRef}>
               {/* Header Row */}
-              <div className="sheet-header-row" style={{ backgroundColor: colors.white }}>
+              <div className="sheet-header-row" style={{ backgroundColor: colors.section }}>
                 {sheetData.columns.map((column, index) => (
                   <div
                     key={index}

@@ -29,9 +29,10 @@ export default {
       colors: {
         primary: colors.primary,
         secondary: colors.secondary,
-        accent: colors.white, // page background
-        'accent-light': colors.white,
+        accent: colors.page, // page background
+        'accent-light': colors.white, // card/panel surfaces sitting on the page
         'accent-dark': colors.primary,
+        section: colors.section, // a differentiated sub-area inside a card
 
         'text-primary': colors.secondary,
         'text-secondary': colors.secondary,

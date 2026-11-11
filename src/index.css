@@ -15,7 +15,7 @@
        plain CSS properties below always came through fresh on a push,
        while @apply bg-accent/font-sans kept resolving to the old
        cream/Inter values). Literal properties sidestep that cache. */
-    background-color: #FFFFFF;
+    background-color: #FCF9F2;
     font-family: 'Merriweather', Georgia, serif;
     font-size: 14px;
     font-weight: 400;
@@ -32,7 +32,7 @@
     font-family: Arial, Helvetica, sans-serif;
     font-weight: 700;
     line-height: 1.1;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
   }
 
   p {
@@ -222,7 +222,7 @@
    background is correct regardless of whether Tailwind's own utility
    output for .bg-accent is current. */
 [class~="bg-accent"] {
-  background-color: #FFFFFF;
+  background-color: #FCF9F2;
 }
 :is(.card-clay, .form-section, [class~="bg-white"], [class~="bg-accent-dark"], [class~="bg-accent-light"], .admin-shell) {
   color: #1E2522;
@@ -280,7 +280,7 @@
 
 /* Discussion questions background */
 .discussion-questions-section {
-  background-color: #FFFFFF;
+  background-color: #E8E7E3;
   @apply border border-primary/20;
 }
 
@@ -310,7 +310,7 @@
   font-size: 1.5em;
   font-weight: 700;
   line-height: 1.1;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
   color: inherit;
   margin: 0 0 0.2em;
 }
@@ -421,7 +421,7 @@ input:focus, textarea:focus, select:focus {
      groove pressed into the card instead. */
   .form-section {
     @apply rounded-2xl p-5 space-y-4;
-    background: #FFFFFF;
+    background: #E8E7E3;
     box-shadow:
       inset 2px 2px 5px rgba(30, 37, 34, 0.1),
       inset -2px -2px 4px rgba(255, 255, 255, 0.7);

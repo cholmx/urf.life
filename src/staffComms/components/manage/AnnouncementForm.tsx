@@ -398,7 +398,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
               fontFamily: font.display, fontSize: 13, fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase',
               padding: '8px 14px', borderRadius: 8, cursor: 'pointer', transition: 'all 0.15s',
               border: `1px solid ${f.is_published ? '#2B433E' : C.borderMed}`,
-              background: f.is_published ? '#FFFFFF' : C.card,
+              background: f.is_published ? C.cardAlt : C.card,
               color: f.is_published ? '#2B433E' : C.textSec,
             }}
           >
@@ -409,7 +409,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
 
       <div style={{ padding: '24px 24px 20px' }}>
 
-        <div style={{ background: '#FFFFFF', borderRadius: 16, padding: '16px 20px', marginBottom: 24 }}>
+        <div style={{ background: C.cardAlt, borderRadius: 16, padding: '16px 20px', marginBottom: 24 }}>
           <div style={{ fontFamily: font.display, fontSize: 14, fontWeight: 800, color: '#1E2522', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
             Notes
           </div>
@@ -880,7 +880,7 @@ export function AnnouncementForm({ announcement, initialOverrides, onSave, onCan
           )}
 
           {f.event_date && (
-            <div style={{ background: '#FFFFFF', borderRadius: 12, padding: '12px 18px', fontFamily: font.mono, fontSize: 14, color: C.textTer, lineHeight: 1.8 }}>
+            <div style={{ background: C.cardAlt, borderRadius: 12, padding: '12px 18px', fontFamily: font.mono, fontSize: 14, color: C.textTer, lineHeight: 1.8 }}>
               <div style={{ fontFamily: font.display, fontSize: 11, fontWeight: 700, color: C.textMuted, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>Auto schedule</div>
               {retired ? (
                 <div style={{ color: C.warn, fontWeight: 600 }}>

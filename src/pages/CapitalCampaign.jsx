@@ -251,7 +251,7 @@ const CapitalCampaign = () => {
             <div key={i} className="card-clay rounded-lg shadow-md overflow-hidden px-6 py-5 flex items-center justify-between">
               <div className="flex items-center space-x-3 flex-1 pr-4">
                 <SkeletonBox width="w-5" height="h-5" rounded="rounded-full" />
-                <SkeletonBox width="w-2/3" height="h-5" className="bg-gray-300" />
+                <SkeletonBox width="w-2/3" height="h-5" className="bg-primary/15" />
               </div>
               <SkeletonBox width="w-5" height="h-5" />
             </div>
@@ -266,7 +266,7 @@ const CapitalCampaign = () => {
             <div key={i} className="card-clay rounded-lg shadow-md overflow-hidden">
               <SkeletonBox width="w-full" height="h-64" rounded="rounded-none" />
               <div className="p-8 space-y-3">
-                <SkeletonBox width="w-1/2" height="h-7" className="bg-gray-300" />
+                <SkeletonBox width="w-1/2" height="h-7" className="bg-primary/15" />
                 <SkeletonBox width="w-full" height="h-4" />
                 <SkeletonBox width="w-full" height="h-4" />
                 <SkeletonBox width="w-3/4" height="h-4" />

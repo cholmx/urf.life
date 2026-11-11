@@ -87,13 +87,13 @@ const ALL_TABS=NAV_SECTIONS.flatMap((section)=> section.items);
 const LoginSkeleton=()=> (
   <div className="bg-white rounded-3xl shadow-modern-lg p-8 max-w-md w-full mx-4">
     <div className="text-center mb-6 flex flex-col items-center">
-      <SkeletonBox width="w-16" height="h-16" rounded="rounded-full" className="mb-4 bg-gray-300" />
-      <SkeletonBox width="w-40" height="h-7" className="mb-2 bg-gray-300" />
+      <SkeletonBox width="w-16" height="h-16" rounded="rounded-full" className="mb-4 bg-primary/15" />
+      <SkeletonBox width="w-40" height="h-7" className="mb-2 bg-primary/15" />
       <SkeletonBox width="w-56" height="h-4" />
     </div>
     <div className="space-y-4">
       <SkeletonBox width="w-full" height="h-12" rounded="rounded-xl" />
-      <SkeletonBox width="w-full" height="h-12" rounded="rounded-xl" className="bg-gray-300" />
+      <SkeletonBox width="w-full" height="h-12" rounded="rounded-xl" className="bg-primary/15" />
     </div>
   </div>
 );

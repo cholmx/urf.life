@@ -17,7 +17,7 @@ const SubmissionsSkeleton = () => (
       <div key={i} className="p-6">
         <div className="flex justify-between items-start gap-4">
           <div className="flex-1 min-w-0 space-y-2">
-            <SkeletonBox width="w-1/2" height="h-4" className="bg-gray-300" />
+            <SkeletonBox width="w-1/2" height="h-4" className="bg-primary/15" />
             <SkeletonBox width="w-3/4" height="h-4" />
             <SkeletonBox width="w-24" height="h-3" />
           </div>

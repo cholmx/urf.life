@@ -16,9 +16,16 @@
 export const colors = {
   primary: '#2B433E',    // green
   secondary: '#1E2522',  // near-black charcoal
-  white: '#FFFFFF',       // every page/card/section background
   gold: '#EAA235',       // accent - hover states, highlights
   red: '#C74F2F',        // solid call-to-action buttons
+
+  // Three-tier neutral surface system, light to dark:
+  page: '#FCF9F2',       // the page itself - body, every page's root wrapper
+  white: '#FFFFFF',      // cards/panels sitting on the page - these "pop"
+  section: '#E8E7E3',    // a sub-area inside a card that needs to read as
+                         // its own group (a form section, a status/notice
+                         // box, a selected/active state) without looking
+                         // like a separate card of its own
 };
 
 // As arrays for tailwind.config.js's fontFamily (each entry joined with

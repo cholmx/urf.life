@@ -16,7 +16,7 @@ const shimmer = {
 
 // Generic skeleton component
 export const SkeletonBox = ({ width = 'w-full', height = 'h-4', className = '', rounded = 'rounded' }) => (
-  <div className={`${width} ${height} ${rounded} ${className} bg-gray-200 relative overflow-hidden`}>
+  <div className={`${width} ${height} ${rounded} ${className} bg-primary/10 relative overflow-hidden`}>
     <motion.div
       className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-50"
       {...shimmer}
@@ -38,7 +38,7 @@ export const SkeletonButton = ({ size = 'medium' }) => {
       width={sizes[size].split(' ')[0]}
       height={sizes[size].split(' ')[1]}
       rounded="rounded-lg"
-      className="bg-gray-300"
+      className="bg-primary/15"
     />
   );
 };
@@ -65,7 +65,7 @@ export const SkeletonCard = ({
     {/* Header */}
     <div className="flex items-start justify-between">
       <div className="flex-1 space-y-2">
-        <SkeletonBox width="w-3/4" height="h-6" className="bg-gray-300" />
+        <SkeletonBox width="w-3/4" height="h-6" className="bg-primary/15" />
         {showMeta && (
           <div className="flex items-center space-x-4">
             <SkeletonBox width="w-20" height="h-4" />
@@ -121,8 +121,8 @@ export const SkeletonEpisode = ({ showImage = true }) => (
       <div className="flex-1 space-y-3">
         {/* Title and play toggle */}
         <div className="flex items-start justify-between gap-3">
-          <SkeletonBox width="w-2/3" height="h-5" className="bg-gray-300" />
-          <SkeletonBox width="w-9" height="h-9" rounded="rounded-full" className="bg-gray-300 flex-shrink-0" />
+          <SkeletonBox width="w-2/3" height="h-5" className="bg-primary/15" />
+          <SkeletonBox width="w-9" height="h-9" rounded="rounded-full" className="bg-primary/15 flex-shrink-0" />
         </div>
 
         {/* Meta info */}
@@ -139,8 +139,8 @@ export const SkeletonEpisode = ({ showImage = true }) => (
 
         {/* Action buttons - full-width pills, matching StandardButton */}
         <div className="flex space-x-3 pt-1">
-          <SkeletonBox width="w-full" height="h-11" rounded="rounded-lg" className="bg-gray-300" />
-          <SkeletonBox width="w-full" height="h-11" rounded="rounded-lg" className="bg-gray-300" />
+          <SkeletonBox width="w-full" height="h-11" rounded="rounded-lg" className="bg-primary/15" />
+          <SkeletonBox width="w-full" height="h-11" rounded="rounded-lg" className="bg-primary/15" />
         </div>
       </div>
     </div>
@@ -155,13 +155,13 @@ export const SkeletonBookCard = () => (
     className="bg-white rounded-lg shadow-md overflow-hidden h-full"
   >
     {/* Book cover */}
-    <div className="relative w-full h-48 p-2" style={{ backgroundColor: '#FFFFFF' }}>
+    <div className="relative w-full h-48 p-2" style={{ backgroundColor: '#E8E7E3' }}>
       <SkeletonBox width="w-full" height="h-full" rounded="rounded" />
     </div>
     
     {/* Book details */}
     <div className="p-3 space-y-2">
-      <SkeletonBox width="w-full" height="h-4" className="bg-gray-300" />
+      <SkeletonBox width="w-full" height="h-4" className="bg-primary/15" />
       <SkeletonBox width="w-3/4" height="h-3" />
       <SkeletonBox width="w-1/2" height="h-3" />
     </div>
@@ -185,7 +185,7 @@ export const SkeletonTable = ({ rows = 5, columns = 4, rounded = 'rounded-2xl', 
       <div className="border-b border-gray-200 p-4">
         <div className={`grid ${gridColsClass} gap-4`}>
           {Array.from({ length: columns }).map((_, i) => (
-            <SkeletonBox key={i} width="w-full" height="h-4" className="bg-gray-300" />
+            <SkeletonBox key={i} width="w-full" height="h-4" className="bg-primary/15" />
           ))}
         </div>
       </div>
@@ -226,7 +226,7 @@ export const SkeletonForm = ({ fields = 4, textarea = true, buttons = 2, title =
     className="bg-white rounded-2xl shadow-modern p-6 space-y-6"
   >
     {/* Form title */}
-    {title && <SkeletonBox width="w-1/3" height="h-6" className="bg-gray-300" />}
+    {title && <SkeletonBox width="w-1/3" height="h-6" className="bg-primary/15" />}
 
     {/* Form fields */}
     <div className="space-y-4">
@@ -295,8 +295,8 @@ export const SkeletonStats = () => (
         transition={{ delay: i * 0.05 }}
         className="bg-white rounded-lg shadow-md p-6 text-center space-y-3"
       >
-        <SkeletonBox width="w-16" height="h-16" rounded="rounded-full" className="mx-auto bg-gray-300" />
-        <SkeletonBox width="w-12" height="h-8" className="mx-auto bg-gray-300" />
+        <SkeletonBox width="w-16" height="h-16" rounded="rounded-full" className="mx-auto bg-primary/15" />
+        <SkeletonBox width="w-12" height="h-8" className="mx-auto bg-primary/15" />
         <SkeletonBox width="w-24" height="h-4" className="mx-auto" />
       </motion.div>
     ))}
@@ -315,8 +315,8 @@ export const SkeletonGrid = ({ items = 6, columns = 3 }) => (
         className="bg-white rounded-lg shadow-md p-6 text-center space-y-3"
         style={{ width: '160px', height: '120px' }}
       >
-        <SkeletonBox width="w-8" height="h-8" rounded="rounded-full" className="mx-auto bg-gray-300" />
-        <SkeletonBox width="w-3/4" height="h-4" className="mx-auto bg-gray-300" />
+        <SkeletonBox width="w-8" height="h-8" rounded="rounded-full" className="mx-auto bg-primary/15" />
+        <SkeletonBox width="w-3/4" height="h-4" className="mx-auto bg-primary/15" />
         <SkeletonBox width="w-full" height="h-3" className="mx-auto" />
       </motion.div>
     ))}
@@ -330,7 +330,7 @@ export const SkeletonPage = ({ title = true, content = true, sidebar = false }) 
       {/* Header */}
       {title && (
         <div className="text-center mb-12 space-y-4">
-          <SkeletonBox width="w-64" height="h-8" className="mx-auto bg-gray-300" />
+          <SkeletonBox width="w-64" height="h-8" className="mx-auto bg-primary/15" />
           <SkeletonBox width="w-96" height="h-5" className="mx-auto" />
         </div>
       )}
