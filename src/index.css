@@ -403,36 +403,43 @@ input:focus, textarea:focus, select:focus {
      on a light surface (a white input, or a form-section/card-clay),
      and @apply would bake in the dark theme's light default without
      leaving a class the :is() override below can catch. */
+  /* Input text itself stays the body font (Aleo) - only the section
+     titles/labels below switch to Inter Tight Bold, not what's typed
+     into the box. */
   .form-input {
-    @apply w-full p-3 border border-accent-dark rounded-xl bg-white placeholder-text-light transition-all duration-200;
-    @apply focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary;
+    @apply w-full p-3 rounded-xl placeholder-text-light transition-all duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-primary/40;
+    background-color: #F7F5EE;
+    border: none;
+    box-shadow: none;
     color: #1E2522;
   }
   .form-input-error {
-    @apply border-red-400;
-    @apply focus:ring-red-300 focus:border-red-400;
+    @apply focus:ring-red-300;
+    /* The only remaining resting-state cue for an invalid field, now that
+       form-input has no border at all - without this an error is only
+       visible while that specific field is focused. */
+    background-color: #FBE7E3;
   }
   .form-error-text {
     @apply text-xs mt-1 font-medium;
     color: #C74F2F;
   }
   .form-label {
-    @apply block text-sm font-semibold mb-1.5;
+    @apply block text-sm font-bold mb-1.5;
+    font-family: 'Inter Tight', sans-serif;
     color: #1E2522;
   }
-  /* form-section is always nested inside a .card-clay container, so it
-     needs its own light, solid surface rather than the translucent
-     blur treatment it had under glassmorphism. A deeper cream than
-     card-clay's white, with an inset shadow, reads as a shallow
-     groove pressed into the card instead. */
+  /* form-section is always nested inside a .card-clay container - both
+     are plain white now, with no shadow or border between them, relying
+     on the section title and spacing alone to read as its own group. */
   .form-section {
     @apply rounded-2xl p-5 space-y-4;
-    background: #EDE9DC;
-    box-shadow:
-      inset 2px 2px 5px rgba(30, 37, 34, 0.1),
-      inset -2px -2px 4px rgba(255, 255, 255, 0.7);
+    background: #FFFFFF;
+    box-shadow: none;
   }
   .form-section-title {
     @apply text-xs font-bold uppercase tracking-widest text-primary mb-0;
+    font-family: 'Inter Tight', sans-serif;
   }
 }

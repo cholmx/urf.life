@@ -223,7 +223,7 @@ const Contact=()=> {
           <form onSubmit={handleSubmit} noValidate className="space-y-6">
             {/* Name */}
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-2">
+              <label className="form-label">
                 Full Name *
               </label>
               <div className="relative">
@@ -236,7 +236,7 @@ const Contact=()=> {
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  className={`pl-10 w-full p-3 border rounded-lg focus:ring-2 focus:border-transparent ${errors.name ? 'form-input-error' : 'border-accent-dark focus:ring-primary'}`}
+                  className={`form-input pl-10 ${errors.name ? 'form-input-error' : ''}`}
                   placeholder="Your full name"
                 />
               </div>
@@ -245,7 +245,7 @@ const Contact=()=> {
 
             {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-2">
+              <label className="form-label">
                 Email Address *
               </label>
               <div className="relative">
@@ -258,7 +258,7 @@ const Contact=()=> {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className={`pl-10 w-full p-3 border rounded-lg focus:ring-2 focus:border-transparent ${errors.email ? 'form-input-error' : 'border-accent-dark focus:ring-primary'}`}
+                  className={`form-input pl-10 ${errors.email ? 'form-input-error' : ''}`}
                   placeholder="your.email@example.com"
                 />
               </div>
@@ -267,7 +267,7 @@ const Contact=()=> {
 
             {/* Phone */}
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-2">
+              <label className="form-label">
                 Phone Number
               </label>
               <div className="relative">
@@ -280,7 +280,7 @@ const Contact=()=> {
                   name="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
-                  className="pl-10 w-full p-3 border border-accent-dark rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="form-input pl-10"
                   placeholder="(555) 123-4567"
                 />
               </div>
@@ -288,14 +288,14 @@ const Contact=()=> {
 
             {/* Subject */}
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-2">
+              <label className="form-label">
                 Subject *
               </label>
               <select
                 name="subject"
                 value={formData.subject}
                 onChange={handleInputChange}
-                className={`w-full p-3 border rounded-lg focus:ring-2 focus:border-transparent ${errors.subject ? 'form-input-error' : 'border-accent-dark focus:ring-primary'}`}
+                className={`form-input ${errors.subject ? 'form-input-error' : ''}`}
               >
                 <option value="">Select a subject</option>
                 <option value="general">General Inquiry</option>
@@ -312,7 +312,7 @@ const Contact=()=> {
 
             {/* Message */}
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-2">
+              <label className="form-label">
                 Message *
               </label>
               <div className="relative">
@@ -325,7 +325,7 @@ const Contact=()=> {
                   value={formData.message}
                   onChange={handleInputChange}
                   rows={6}
-                  className={`pl-10 w-full p-3 border rounded-lg focus:ring-2 focus:border-transparent resize-none ${errors.message ? 'form-input-error' : 'border-accent-dark focus:ring-primary'}`}
+                  className={`form-input pl-10 resize-none ${errors.message ? 'form-input-error' : ''}`}
                   placeholder="How can we help you?"
                 />
               </div>
