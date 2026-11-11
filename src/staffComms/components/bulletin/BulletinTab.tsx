@@ -152,7 +152,7 @@ export function BulletinTab({ announcements, today }: BulletinTabProps) {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
         <div>
-          <h3 style={{ fontFamily: font.display, fontSize: 16, fontWeight: 800, color: C.text, margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          <h3 style={{ fontFamily: font.display, fontSize: 16, fontWeight: 700, color: C.text, margin: '0 0 4px', letterSpacing: '-0.01em' }}>
             Monthly Bulletin
           </h3>
           <p style={{ fontFamily: font.body, fontSize: 13, color: C.textSec, margin: 0 }}>
@@ -253,7 +253,7 @@ function BulletinHeader() {
     <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>
       <img src={LOGO_URL} alt="URF" style={{ height: 52, width: 'auto', flexShrink: 0 }} />
       <div>
-        <div style={{ fontFamily: BULLETIN_FONT, fontSize: 22, fontWeight: 900, color: TEAL, lineHeight: 1, letterSpacing: '-0.01em' }}>
+        <div style={{ fontFamily: BULLETIN_FONT, fontSize: 22, fontWeight: 700, color: TEAL, lineHeight: 1, letterSpacing: '-0.01em' }}>
           Upper Room Fellowship
         </div>
         <div style={{ fontFamily: BULLETIN_FONT, fontSize: 16, fontWeight: 700, color: ORANGE, lineHeight: 1.1, marginTop: 2 }}>
@@ -267,7 +267,7 @@ function BulletinHeader() {
 function Footer() {
   return (
     <div style={{ borderTop: `1.5pt solid ${ORANGE}`, paddingTop: 9, textAlign: 'center', flexShrink: 0, marginTop: 10 }}>
-      <div style={{ fontFamily: font.body, fontSize: 7.5, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: TEAL }}>
+      <div style={{ fontFamily: font.body, fontSize: 7.5, fontWeight: 700, letterSpacing: '0.04em', color: TEAL }}>
         Upper Room Fellowship &nbsp;·&nbsp; urf.life &nbsp;·&nbsp; Info@urfellowship.com
       </div>
     </div>
@@ -306,7 +306,7 @@ function BulletinAnnouncement({ a, scale }: { a: Announcement; scale: BulletinSc
   return (
     <div style={{ padding: `${scale.itemPadV}px 0` }}>
       <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 4 }}>
-        <span style={{ fontFamily: BULLETIN_FONT, fontSize: scale.titleFontSize, fontWeight: 800, color: TEAL, textTransform: 'uppercase', letterSpacing: '0.01em' }}>{a.title}</span>
+        <span style={{ fontFamily: BULLETIN_FONT, fontSize: scale.titleFontSize, fontWeight: 700, color: TEAL, letterSpacing: '-0.01em' }}>{a.title}</span>
         {dateLabel && <span style={{ fontFamily: BULLETIN_FONT, fontSize: scale.dateFontSize, fontWeight: 700, color: ORANGE }}>{dateLabel}</span>}
         {a.ministry && <Pill fontSize={scale.contactFontSize}>{a.ministry}</Pill>}
       </div>
@@ -349,7 +349,7 @@ function buildItemHTML(a: Announcement, scale: BulletinScale): string {
   const contactInfo = escapeHtml(a.contact_info);
   return `<div style="padding:${scale.itemPadV}pt 0;">
     <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:4px;">
-      <span style="font-family:${BULLETIN_FONT};font-size:${scale.titleFontSize}pt;font-weight:800;color:${TEAL};text-transform:uppercase;letter-spacing:0.01em;">${title}</span>
+      <span style="font-family:${BULLETIN_FONT};font-size:${scale.titleFontSize}pt;font-weight:700;color:${TEAL};letter-spacing:-0.01em;">${title}</span>
       ${dateLabel ? `<span style="font-family:${BULLETIN_FONT};font-size:${scale.dateFontSize}pt;font-weight:700;color:${ORANGE};">${dateLabel}</span>` : ''}
       ${ministry ? `<span style="font-family:${font.body};font-size:${scale.contactFontSize}pt;font-weight:700;color:${TEAL};background:${TEAL_LIGHT};border-radius:999px;padding:2pt 7pt;">${ministry}</span>` : ''}
     </div>
@@ -403,7 +403,7 @@ function buildPrintBulletin(itemsHTML: string, monthLabel: string): string {
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
       <img src="${LOGO_URL}" alt="URF" style="height:52px;width:auto;flex-shrink:0;" />
       <div>
-        <div style="font-family:${BULLETIN_FONT};font-size:22pt;font-weight:900;color:${TEAL};line-height:1;letter-spacing:-0.01em;">Upper Room Fellowship</div>
+        <div style="font-family:${BULLETIN_FONT};font-size:22pt;font-weight:700;color:${TEAL};line-height:1;letter-spacing:-0.01em;">Upper Room Fellowship</div>
         <div style="font-family:${BULLETIN_FONT};font-size:16pt;font-weight:700;color:${ORANGE};line-height:1.1;margin-top:2px;">Monthly Announcements</div>
       </div>
     </div>
@@ -413,7 +413,7 @@ function buildPrintBulletin(itemsHTML: string, monthLabel: string): string {
       ${itemsHTML}
     </div>
     <div style="border-top:1.5pt solid ${ORANGE};padding-top:9px;text-align:center;flex-shrink:0;margin-top:10px;">
-      <div style="font-family:${font.body};font-size:7.5pt;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:${TEAL};">Upper Room Fellowship &nbsp;&middot;&nbsp; urf.life &nbsp;&middot;&nbsp; Info@urfellowship.com</div>
+      <div style="font-family:${font.body};font-size:7.5pt;font-weight:700;letter-spacing:0.04em;color:${TEAL};">Upper Room Fellowship &nbsp;&middot;&nbsp; urf.life &nbsp;&middot;&nbsp; Info@urfellowship.com</div>
     </div>
   </div>`;
 }
