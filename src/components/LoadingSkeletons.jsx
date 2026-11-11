@@ -303,20 +303,36 @@ export const SkeletonStats = () => (
   </div>
 );
 
-// Grid skeleton (for home page buttons)
-export const SkeletonGrid = ({ items = 6, columns = 3 }) => (
-  <div className={`grid grid-cols-2 md:grid-cols-${columns} gap-4`}>
+// Grid skeleton (for home page buttons). `columns` maps to a static
+// md:grid-cols-N class rather than being interpolated - Tailwind can't
+// resolve a dynamically-built class name (same bug this file's
+// SkeletonTable already had fixed via GRID_COLS, missed here).
+const MD_GRID_COLS = {
+  1: 'md:grid-cols-1', 2: 'md:grid-cols-2', 3: 'md:grid-cols-3',
+  4: 'md:grid-cols-4', 5: 'md:grid-cols-5', 6: 'md:grid-cols-6',
+};
+
+export const SkeletonGrid = ({
+  items = 6,
+  columns = 3,
+  gap = 'gap-4',
+  itemClassName = 'bg-white rounded-lg shadow-md p-6 text-center space-y-3',
+  itemStyle = { width: '160px', height: '120px' },
+  iconClassName = 'bg-primary/15',
+  titleClassName = 'bg-primary/15',
+}) => (
+  <div className={`grid grid-cols-2 ${MD_GRID_COLS[columns] || MD_GRID_COLS[3]} ${gap}`}>
     {Array.from({ length: items }).map((_, i) => (
       <motion.div
         key={i}
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: i * 0.025 }}
-        className="bg-white rounded-lg shadow-md p-6 text-center space-y-3"
-        style={{ width: '160px', height: '120px' }}
+        className={itemClassName}
+        style={itemStyle}
       >
-        <SkeletonBox width="w-8" height="h-8" rounded="rounded-full" className="mx-auto bg-primary/15" />
-        <SkeletonBox width="w-3/4" height="h-4" className="mx-auto bg-primary/15" />
+        <SkeletonBox width="w-8" height="h-8" rounded="rounded-full" className={`mx-auto ${iconClassName}`} />
+        <SkeletonBox width="w-3/4" height="h-4" className={`mx-auto ${titleClassName}`} />
         <SkeletonBox width="w-full" height="h-3" className="mx-auto" />
       </motion.div>
     ))}
