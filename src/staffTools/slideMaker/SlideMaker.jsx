@@ -19,7 +19,6 @@ const DEFAULT_DATA = {
   dateMo: "APRIL",
   label: "JOIN US",
   s1: 155, s2: 65,
-  uppercaseHeadline: true,
   autoFit: true,
   headLineHeight: 1.12,
 };
@@ -35,7 +34,6 @@ const DEFAULT_BRAND = {
   bWeight: BODY_WEIGHT,
   churchName: "UPPER ROOM FELLOWSHIP",
   hLetterSpacing: 0,
-  textShadow: true,
 };
 
 export default function SlideMaker({announcements, today, onToggleSlideMade}) {

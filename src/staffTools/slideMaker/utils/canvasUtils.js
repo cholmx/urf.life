@@ -51,11 +51,9 @@ export function wrapText(ctx,text,font,maxW,allowLineBreaks=false) {
  * @param {number} maxW - max width in px
  * @param {number} maxH - max height in px
  * @param {number} lineSpacing - line height multiplier (e.g. 1.12)
- * @param {boolean} uppercase
  * @returns {{lines: string[], fontSize: number, lineHeightPx: number}}
  */
-export function autoFitText(ctx, text, baseSize, weight, fontFamily, maxW, maxH, lineSpacing, uppercase) {
-  const formatted = uppercase ? text.toUpperCase() : text;
+export function autoFitText(ctx, text, baseSize, weight, fontFamily, maxW, maxH, lineSpacing) {
   let size = baseSize;
   const minSize = Math.max(24, Math.floor(baseSize * 0.3));
   let lines = [];
@@ -63,7 +61,7 @@ export function autoFitText(ctx, text, baseSize, weight, fontFamily, maxW, maxH,
 
   while (size >= minSize) {
     const font = `${weight} ${size}px ${fontFamily}`;
-    lines = wrapText(ctx, formatted, font, maxW);
+    lines = wrapText(ctx, text, font, maxW);
     lineHeightPx = size * lineSpacing;
     const totalH = lines.length * lineHeightPx;
     if (totalH <= maxH) break;
@@ -132,27 +130,13 @@ function rgbToHex(r, g, b) {
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
 
-export function shadowColorForBg(bgHex) {
-  return bgLuminance(bgHex) < 0.35 ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.55)';
-}
-
-export function drawLines(ctx,lines,x,y,font,fill,align,lineH,letterSpacing=0,shadowColor=null) {
+export function drawLines(ctx,lines,x,y,font,fill,align,lineH,letterSpacing=0) {
   ctx.fillStyle=fill;
   ctx.font=font;
   ctx.textAlign=align;
   ctx.textBaseline="top";
   ctx.letterSpacing = letterSpacing ? `${letterSpacing}px` : "0px";
-  if (shadowColor) {
-    ctx.shadowColor = shadowColor;
-    ctx.shadowBlur = 48;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 12;
-  }
   lines.forEach((l,i)=> ctx.fillText(l,x,y + i * lineH));
-  ctx.shadowColor = 'transparent';
-  ctx.shadowBlur = 0;
-  ctx.shadowOffsetX = 0;
-  ctx.shadowOffsetY = 0;
   ctx.letterSpacing = "0px";
   return y + lines.length * lineH;
 }

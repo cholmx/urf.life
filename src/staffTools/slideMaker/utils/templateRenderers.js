@@ -1,9 +1,7 @@
 import {wrapText,drawLines,blockHeight,autoFitText} from './canvasUtils';
 
-const formatHeadline = (text, uppercase) => uppercase ? text.toUpperCase() : text;
 const hw = (brand, fallback) => brand.hWeight ?? fallback;
 const bw = (brand, fallback) => brand.bWeight ?? fallback;
-const sh = (brand) => brand.shadowColor ?? null;
 
 /**
  * Compute headline lines, line height, and effective font size.
@@ -13,14 +11,14 @@ const sh = (brand) => brand.shadowColor ?? null;
 function computeHeadline(ctx, data, brand, maxW, weight, fallbackSize) {
   const baseSize = data.s1 || fallbackSize;
   const lineSpacing = data.headLineHeight ?? 1.12;
-  const headText = formatHeadline(data.line1 || "YOUR TEXT HERE", data.uppercaseHeadline);
+  const headText = data.line1 || "YOUR TEXT HERE";
   const fontFamily = brand.hFont;
 
   if (data.autoFit) {
     // maxH: roughly 60% of canvas height for headline
     const ch = ctx.canvas.height;
     const maxH = ch * 0.55;
-    const result = autoFitText(ctx, headText, baseSize, weight, fontFamily, maxW, maxH, lineSpacing, data.uppercaseHeadline);
+    const result = autoFitText(ctx, headText, baseSize, weight, fontFamily, maxW, maxH, lineSpacing);
     return {
       lines: result.lines,
       headLH: result.lineHeightPx,
@@ -64,9 +62,9 @@ function computeTextBlock(ctx, data, brand, {
 
 function drawTextBlock(ctx, block, brand, x, startY, align) {
   const hLS = brand.hLetterSpacing ?? 0;
-  let y = drawLines(ctx, block.headLines, x, startY, block.headFont, brand.textColor, align, block.headLH, hLS, sh(brand));
+  let y = drawLines(ctx, block.headLines, x, startY, block.headFont, brand.textColor, align, block.headLH, hLS);
   if (block.subLines.length) {
-    drawLines(ctx, block.subLines, x, y + block.subGap, block.subFont, brand.textColor, align, block.subLH, 0, sh(brand));
+    drawLines(ctx, block.subLines, x, y + block.subGap, block.subFont, brand.textColor, align, block.subLH, 0);
   }
 }
 

@@ -27,18 +27,6 @@ export default function ContentTab({ tmplId, data, ds, brand, setBrand }) {
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
         <input
           type="checkbox"
-          id="uppercase-toggle"
-          checked={data.uppercaseHeadline || false}
-          onChange={e => ds("uppercaseHeadline", e.target.checked)}
-          style={{ cursor: "pointer" }}
-        />
-        <label htmlFor="uppercase-toggle" style={{ ...lS, marginBottom: 0, cursor: "pointer" }}>
-          ALL UPPERCASE
-        </label>
-      </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-        <input
-          type="checkbox"
           id="autofit-toggle"
           checked={autoFit}
           onChange={e => ds("autoFit", e.target.checked)}

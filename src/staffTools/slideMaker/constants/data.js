@@ -23,9 +23,9 @@ export const BODY_WEIGHT = 400;
 // pair of allowed text colors, so picking a background always leaves a
 // readable, on-brand text color selected.
 export const BACKGROUNDS = [
-  { id: "dark", name: "Dark", bg: "#2B433E", textOptions: [
+  { id: "dark", name: "Dark", bg: "#1E2522", textOptions: [
     { id: "white", name: "White", color: "#FFFFFF" },
-    { id: "yellow", name: "Yellow", color: "#EAA235" },
+    { id: "yellow", name: "Yellow", color: "#FFD944" },
   ] },
   { id: "light", name: "Light", bg: "#FFFFFF", textOptions: [
     { id: "black", name: "Black", color: "#000000" },

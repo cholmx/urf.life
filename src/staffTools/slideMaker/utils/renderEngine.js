@@ -1,5 +1,5 @@
 import { SW, SH } from '../constants/data';
-import { clipRounded, shadowColorForBg, drawOverlay } from './canvasUtils';
+import { clipRounded, drawOverlay } from './canvasUtils';
 import * as renderers from './templateRenderers';
 
 export function render(canvas, tmplId, data, brand, bgImg, overlayColor, ov, blur = 0, canvasW = SW, canvasH = SH, cornerR = 0) {
@@ -24,12 +24,11 @@ export function render(canvas, tmplId, data, brand, bgImg, overlayColor, ov, blu
 
   const margin = 250;
   const contentW = canvasW - margin * 2;
-  const brandWithShadow = { ...brand, shadowColor: brand.textShadow !== false ? shadowColorForBg(brand.bgColor) : null };
 
   switch (tmplId) {
-    case "minimal": renderers.renderMinimal(ctx, data, brandWithShadow, contentW, canvasW, canvasH); break;
-    case "left_block": renderers.renderLeftBlock(ctx, data, brandWithShadow, contentW, margin, canvasW, canvasH); break;
-    default: renderers.renderLeftBlock(ctx, data, brandWithShadow, contentW, margin, canvasW, canvasH); break;
+    case "minimal": renderers.renderMinimal(ctx, data, brand, contentW, canvasW, canvasH); break;
+    case "left_block": renderers.renderLeftBlock(ctx, data, brand, contentW, margin, canvasW, canvasH); break;
+    default: renderers.renderLeftBlock(ctx, data, brand, contentW, margin, canvasW, canvasH); break;
   }
 
   ctx.restore();

@@ -126,7 +126,7 @@ export default function Sidebar(props) {
           />
         )}
         {tab === "palettes" && (
-          <ColorsTab brand={brand} setBrand={setBrand} updateBackground={updateBackground} updateTextColor={updateTextColor} />
+          <ColorsTab brand={brand} updateBackground={updateBackground} updateTextColor={updateTextColor} />
         )}
         {tab === "photos" && (
           <PhotosTab
