@@ -1,3 +1,4 @@
+import { formatTime12h } from '../../lib/helpers';
 import type { Announcement, RecurrenceType } from '../../types';
 
 const TEAL = '#1E2522';
@@ -104,25 +105,6 @@ function buildInviteHTML(d: InviteData): string {
   })();
 </script>
 </html>`;
-}
-
-function formatTime12h(time: string): string {
-  if (!time) return '';
-  const match = time.match(/^(\d{1,2}):(\d{2})\s*(am|pm)?$/i);
-  if (!match) return time;
-  let hours = parseInt(match[1], 10);
-  const minutes = match[2];
-  const period = match[3]?.toLowerCase() as 'am' | 'pm' | undefined;
-  let suffix: 'am' | 'pm';
-  if (period) {
-    suffix = period;
-    if (period === 'am' && hours === 12) hours = 0;
-  } else {
-    suffix = hours >= 12 ? 'pm' : 'am';
-    if (hours === 0) hours = 12;
-    if (hours > 12) hours -= 12;
-  }
-  return `${hours}:${minutes}${suffix}`;
 }
 
 export function buildInviteHTMLFromAnnouncement(a: Announcement): string {

@@ -42,7 +42,6 @@ export const recurringChipColor = { bg: colors.white, text: colors.gold, border:
 // colors.* values, not independently hand-typed hexes.
 export const C = {
   // Surfaces
-  bg:          colors.page,
   bgSubtle:    colors.section,
   card:        colors.white,
   cardAlt:     colors.section,
@@ -58,7 +57,6 @@ export const C = {
   // Accent (matches the main site's admin buttons)
   accent:      colors.primary,
   accentBg:    colors.section,
-  accentDark:  colors.secondary,
   accentHover: colors.secondary,
   // Status
   warn:        colors.red,
@@ -66,14 +64,9 @@ export const C = {
   success:     colors.primary,
   successBg:   colors.section,
   // Interaction tints
-  high:        colors.primary,
   highBg:      colors.section,
   // Dark panels
   stageBg:     colors.secondary,
-  stageText:   colors.white,
-  // Nav
-  navBg:       colors.secondary,
-  navText:     colors.white,
 } as const;
 
 // display is this suite's "title/header" font - used on every actual
