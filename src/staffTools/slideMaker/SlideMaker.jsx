@@ -5,6 +5,7 @@ import {useUndoHistory} from './hooks/useUndoHistory';
 import {BACKGROUNDS, HEADLINE_FONT, HEADLINE_WEIGHT, BODY_FONT, BODY_WEIGHT, ASPECT_RATIOS, TEXTURES} from './constants/data';
 import {C, ui} from './constants/styles';
 import {sharpenCanvas, loadImage, averageBrightness} from './utils/canvasUtils';
+import {getPhotos} from './services/photoService';
 import {isSlideActive, formatDateNice} from '../../staffComms/lib/helpers';
 import SlideCanvas from './components/SlideCanvas';
 import Sidebar from './components/Sidebar';
@@ -36,19 +37,28 @@ const DEFAULT_BRAND = {
   hLetterSpacing: 0,
 };
 
+// The automatic-background pool: the 10 built-in textures (as src strings,
+// loaded on demand) plus any photo in the library staff have flagged with
+// the ✨ toggle in the Photos tab (already loaded - see getPhotos below) -
+// lets the pool grow from the admin UI without a code change.
+function getTexturePool(photos) {
+  const library = (photos || []).filter(p => p && p.isTexture).map(p => ({img: p.img}));
+  return [...TEXTURES.map(src => ({src})), ...library];
+}
+
 // Deterministic per-event pick (same event always lands on the same
 // texture) so reopening an already-built slide doesn't shuffle its look.
-function pickTextureForId(id) {
+function pickTextureForId(pool, id) {
   const str = String(id ?? "");
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     hash = (hash * 31 + str.charCodeAt(i)) >>> 0;
   }
-  return TEXTURES[hash % TEXTURES.length];
+  return pool[hash % pool.length];
 }
 
-function pickRandomTexture() {
-  return TEXTURES[Math.floor(Math.random() * TEXTURES.length)];
+function pickRandomTexture(pool) {
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
 // Buckets the texture's average brightness into the dark/light background
@@ -101,6 +111,26 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
   // point of the queue existing, but it was never actually the default.
   const [tab, setTab] = useState(() => (queueItems.length > 0 ? "queue" : "content"));
   const [aspectRatio, setAspectRatio] = useState(ASPECT_RATIOS[0]);
+
+  // Loaded once here (not inside PhotosTab) so a staff-flagged texture is
+  // already part of the automatic-background pool the moment the queue is
+  // opened, rather than only after the Photos tab happens to have been
+  // visited this session.
+  useEffect(() => {
+    let cancelled = false;
+    getPhotos((photo, index, total) => {
+      if (cancelled) return;
+      setPhotos(prev => {
+        const next = prev.length === total ? [...prev] : new Array(total);
+        next[index] = photo;
+        return next;
+      });
+    }).catch(() => {
+      if (!cancelled) toast.show('Could not load your photo library.', 'error');
+    });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeQueueItem, setActiveQueueItem] = useState(null);
   const canvasRef = useRef(null);
@@ -264,13 +294,15 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     setSidebarOpen(false);
   };
 
-  // Loads a texture, samples its brightness, and applies the matching
-  // background/text/overlay colors - the automatic part of "build this
-  // event's slide." Failure just leaves whatever background was already
-  // set rather than blocking the rest of loadQueueItem.
-  const applyAutoBackground = useCallback(async (textureSrc) => {
+  // Loads a texture-pool entry (a built-in texture's src, or an
+  // already-loaded library photo's img), samples its brightness, and
+  // applies the matching background/text/overlay colors - the automatic
+  // part of "build this event's slide." Failure just leaves whatever
+  // background was already set rather than blocking the rest of
+  // loadQueueItem.
+  const applyAutoBackground = useCallback(async (entry) => {
     try {
-      const img = await loadImage(textureSrc);
+      const img = entry.img || await loadImage(entry.src);
       const auto = autoBrandForBrightness(averageBrightness(img));
       setActivePhoto(img);
       setBrand(b => ({...b, bgColor: auto.bgColor, textColor: auto.textColor}));
@@ -300,16 +332,16 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     // (same one each time this event is reopened), colors picked from
     // that texture's brightness, and the 16:9 size.
     setAspectRatio(ASPECT_RATIOS.find(r => r.id === "16:9") || ASPECT_RATIOS[ASPECT_RATIOS.length - 1]);
-    applyAutoBackground(pickTextureForId(a.id));
+    applyAutoBackground(pickTextureForId(getTexturePool(photos), a.id));
     setActiveQueueItem(a);
     setTab("content");
     setSidebarOpen(false);
-  }, [pushUndo, applyAutoBackground]);
+  }, [pushUndo, applyAutoBackground, photos]);
 
   const reshuffleBackground = useCallback(() => {
     pushUndo();
-    applyAutoBackground(pickRandomTexture());
-  }, [pushUndo, applyAutoBackground]);
+    applyAutoBackground(pickRandomTexture(getTexturePool(photos)));
+  }, [pushUndo, applyAutoBackground, photos]);
 
   // One click from "just finished this slide" to "building the next one" -
   // no manual trip back to the queue tab to find what's left.

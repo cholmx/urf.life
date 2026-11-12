@@ -104,6 +104,7 @@ export async function uploadPhoto(file) {
     dbId: photoRecord.id,
     storagePath: filePath,
     file_size: resizedFile.size,
+    isTexture: false,
   };
 }
 
@@ -139,6 +140,7 @@ export async function getPhotos(onPhotoReady) {
         dbId: photo.id,
         storagePath: photo.storage_path,
         file_size: photo.file_size,
+        isTexture: !!photo.is_texture,
       };
       onPhotoReady?.(result, index, data.length);
       return result;
@@ -154,6 +156,15 @@ export async function deletePhoto(dbId, storagePath) {
   const { error } = await supabase
     .from('staff_slide_photos_portal123')
     .delete()
+    .eq('id', dbId);
+
+  if (error) throw error;
+}
+
+export async function setPhotoIsTexture(dbId, isTexture) {
+  const { error } = await supabase
+    .from('staff_slide_photos_portal123')
+    .update({ is_texture: isTexture })
     .eq('id', dbId);
 
   if (error) throw error;

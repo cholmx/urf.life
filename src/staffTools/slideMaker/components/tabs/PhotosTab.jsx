@@ -1,7 +1,7 @@
-import React, {useRef, useState, useEffect} from 'react';
+import React, {useRef, useState} from 'react';
 import {C, ui} from '../../constants/styles';
 import Slider from '../Slider';
-import {uploadPhoto, getPhotos, deletePhoto, isDuplicatePhoto} from '../../services/photoService';
+import {uploadPhoto, deletePhoto, isDuplicatePhoto, setPhotoIsTexture} from '../../services/photoService';
 import {useToast} from '../../hooks/useToast';
 import ConfirmDialog from '../ConfirmDialog';
 
@@ -17,24 +17,14 @@ export default function PhotosTab({photos, setPhotos, activePhoto, setActivePhot
   const [confirmDelete, setConfirmDelete] = useState(null);
   const toast = useToast();
 
-  useEffect(() => {
-    loadSavedPhotos();
-  }, []);
-
-  const loadSavedPhotos = async () => {
+  const handleToggleTexture = async (photo) => {
+    const next = !photo.isTexture;
+    setPhotos(prev => prev.map(p => (p && p.id === photo.id ? {...p, isTexture: next} : p)));
     try {
-      // Thumbnails render as each photo's image finishes loading, instead
-      // of the whole grid waiting on whichever one is slowest - a gap at
-      // an index still loading is skipped by PhotoGrid's filter below.
-      await getPhotos((photo, index, total) => {
-        setPhotos(prev => {
-          const next = prev.length === total ? [...prev] : new Array(total);
-          next[index] = photo;
-          return next;
-        });
-      });
+      await setPhotoIsTexture(photo.dbId, next);
     } catch (error) {
-      toast.show('Could not load your photo library.', 'error');
+      setPhotos(prev => prev.map(p => (p && p.id === photo.id ? {...p, isTexture: !next} : p)));
+      toast.show('Could not update that photo. Please try again.', 'error');
     }
   };
 
@@ -125,6 +115,17 @@ export default function PhotosTab({photos, setPhotos, activePhoto, setActivePhot
             style={{position: "absolute", top: 3, right: 3, width: 18, height: 18, borderRadius: 9, border: "none", background: "rgba(0,0,0,0.7)", color: "#fff", fontSize: 10, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1}}>
             ×
           </button>
+          <button
+            onClick={() => handleToggleTexture(p)}
+            title={p.isTexture ? "Remove from automatic backgrounds" : "Add to automatic backgrounds"}
+            style={{
+              position: "absolute", top: 3, left: 3, width: 18, height: 18, borderRadius: 9, border: "none",
+              background: p.isTexture ? C.accent : "rgba(0,0,0,0.6)", color: "#fff", fontSize: 10, cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1,
+            }}
+          >
+            ✨
+          </button>
           {selectedImg === p.img && (
             <div style={{position: "absolute", bottom: 3, left: 3, background: C.accent, color: "#fff", borderRadius: 3, padding: "1px 5px", fontSize: 8, fontFamily: ui.display, fontWeight: 700}}>ACTIVE</div>
           )}
@@ -186,7 +187,14 @@ export default function PhotosTab({photos, setPhotos, activePhoto, setActivePhot
         </div>
       </div>
 
-      {photos.length > 0 && <PhotoGrid selectedImg={activePhoto} onSelect={setActivePhoto} />}
+      {photos.length > 0 && (
+        <>
+          <div style={{fontFamily: ui.body, fontSize: 10, color: C.textTer, marginBottom: 6}}>
+            ✨ on a photo adds it to the pool of automatic backgrounds used when building a slide from the queue, alongside the 10 built-in textures.
+          </div>
+          <PhotoGrid selectedImg={activePhoto} onSelect={setActivePhoto} />
+        </>
+      )}
 
       {activePhoto && (
         <div style={{marginTop: 12, background: C.cardAlt, borderRadius: 8, padding: 12, display: "flex", flexDirection: "column", gap: 12}}>
