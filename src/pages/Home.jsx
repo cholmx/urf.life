@@ -202,7 +202,7 @@ const Home=()=> {
                 <motion.a
                   key={social.name} href={social.url} target="_blank" rel="noopener noreferrer"
                   initial={{opacity: 0, scale: 0.8}} animate={{opacity: 1, scale: 1}} transition={{duration: 0.25, delay: 0.65 + i * 0.1}}
-                  className="p-3 rounded-full bg-[#597F5C] hover:bg-[#4a6d65] text-white transition-all duration-300 hover:scale-110"
+                  className="p-3 rounded-full bg-[#597F5C] hover:bg-[#2a3834] text-white transition-all duration-300 hover:scale-110"
                 >
                   <SafeIcon icon={social.icon} className="h-5 w-5" />
                 </motion.a>
@@ -227,7 +227,7 @@ const HomeButton = ({ title, description, icon, path, isFeatured = false, isInte
     : `relative overflow-hidden p-5 rounded-2xl clay-shadow transition-all duration-300 hover:-translate-y-1 active:scale-[0.97] block text-center group flex flex-col justify-center items-center w-full${stretch ? ' h-full' : ' min-h-[160px] md:min-h-[200px]'}`;
 
   const featuredClasses = gradient ? "" : "text-white";
-  const mainClasses = "bg-[#4a6d65] hover:bg-[#597F5C] text-white";
+  const mainClasses = "bg-[#2a3834] hover:bg-[#597F5C] text-white";
 
   const iconColor = (isYellow || isOrange) ? 'text-text-primary' : 'text-white';
   const textColor = (isYellow || isOrange) ? 'text-text-primary' : 'text-white';
@@ -265,7 +265,7 @@ const HomeButton = ({ title, description, icon, path, isFeatured = false, isInte
   );
 
   const gradientStyle = gradient
-    ? {background: 'linear-gradient(135deg, #4a6d65 0%, #1E2522 100%)'}
+    ? {background: 'linear-gradient(135deg, #2a3834 0%, #1E2522 100%)'}
     : isOrange
       ? {backgroundColor: '#EAA235'}
       : isYellow

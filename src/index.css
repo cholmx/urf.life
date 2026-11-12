@@ -243,7 +243,7 @@
   color: #1E2522;
 }
 [class~="text-text-light"] {
-  color: #4a6d65;
+  color: #2a3834;
 }
 :is(.card-clay, .form-section, [class~="bg-white"], [class~="bg-accent-dark"], [class~="bg-accent-light"], .admin-shell) {
   color: #1E2522;
@@ -258,7 +258,7 @@
    or it loses the "this is secondary text" contrast it's there for. */
 :is(.card-clay, .form-section, [class~="bg-white"], [class~="bg-accent-dark"], [class~="bg-accent-light"], .admin-shell)
   [class~="text-text-light"] {
-  color: #4a6d65;
+  color: #2a3834;
 }
 
 /* Specific overrides for rich text editor fields */
@@ -359,7 +359,7 @@
   font-style: italic;
 }
 .happenings-script a {
-  color: #4a6d65;
+  color: #2a3834;
   font-weight: 700;
   text-decoration: underline;
   text-underline-offset: 2px;

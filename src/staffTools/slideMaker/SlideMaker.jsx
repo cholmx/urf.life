@@ -70,7 +70,7 @@ function pickRandomTexture(pool) {
 // leaving it to the bucket's own random white/yellow pick.
 const DARK_OVERLAY_OPTIONS = [
   {color: "#000000", textColor: null},
-  {color: "#4a6d65", textColor: null},
+  {color: "#2a3834", textColor: null},
   {color: "#C74F2F", textColor: "#FFFFFF"},
   {color: "#EAA235", textColor: "#FFFFFF"},
   {color: "#597F5C", textColor: "#FFFFFF"},

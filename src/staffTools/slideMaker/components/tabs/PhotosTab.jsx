@@ -8,7 +8,7 @@ import ConfirmDialog from '../ConfirmDialog';
 const OVERLAY_COLORS = [
   { id: "black", name: "Black", color: "#000000" },
   { id: "white", name: "White", color: "#FFFFFF" },
-  { id: "green", name: "Green", color: "#4a6d65" },
+  { id: "green", name: "Green", color: "#2a3834" },
   { id: "red", name: "Red", color: "#C74F2F" },
   { id: "gold", name: "Gold", color: "#EAA235" },
   { id: "sage", name: "Sage", color: "#597F5C" },

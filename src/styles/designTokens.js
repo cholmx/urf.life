@@ -14,7 +14,7 @@
 // (theme.ts, with allowJs on) can import it directly.
 
 export const colors = {
-  primary: '#4a6d65',    // green
+  primary: '#2a3834',    // green
   secondary: '#1E2522',  // near-black charcoal
   gold: '#EAA235',       // accent - hover states, highlights
   red: '#C74F2F',        // solid call-to-action buttons

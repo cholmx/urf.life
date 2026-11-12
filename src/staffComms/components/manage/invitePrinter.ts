@@ -78,8 +78,8 @@ function buildInviteHTML(d: InviteData): string {
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #fff; }
     .page { width: 11in; height: 8.5in; page-break-after: always; break-after: page; display: flex; flex-wrap: wrap; position: relative; }
-    .cut-h { position: absolute; left: 0; right: 0; top: 4.25in; height: 0; border-top: 0.5pt dashed #4a6d65; pointer-events: none; }
-    .cut-v { position: absolute; top: 0; bottom: 0; left: 5.5in; width: 0; border-left: 0.5pt dashed #4a6d65; pointer-events: none; }
+    .cut-h { position: absolute; left: 0; right: 0; top: 4.25in; height: 0; border-top: 0.5pt dashed #2a3834; pointer-events: none; }
+    .cut-v { position: absolute; top: 0; bottom: 0; left: 5.5in; width: 0; border-left: 0.5pt dashed #2a3834; pointer-events: none; }
     @page { size: 11in 8.5in; margin: 0; }
     @media screen { body { background: #eee; padding: 20px; display: flex; justify-content: center; } .page { box-shadow: 0 4px 24px rgba(0,0,0,0.12); } }
   </style>

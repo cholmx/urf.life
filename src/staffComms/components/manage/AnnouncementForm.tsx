@@ -397,9 +397,9 @@ export function AnnouncementForm({ announcement, initialOverrides, today, onSave
             style={{
               fontFamily: font.display, fontSize: 13, fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase',
               padding: '8px 14px', borderRadius: 8, cursor: 'pointer', transition: 'all 0.15s',
-              border: `1px solid ${f.is_published ? '#4a6d65' : C.borderMed}`,
+              border: `1px solid ${f.is_published ? '#2a3834' : C.borderMed}`,
               background: f.is_published ? C.cardAlt : C.card,
-              color: f.is_published ? '#4a6d65' : C.textSec,
+              color: f.is_published ? '#2a3834' : C.textSec,
             }}
           >
             {f.is_published ? 'Published' : 'Unpublished'}
@@ -413,7 +413,7 @@ export function AnnouncementForm({ announcement, initialOverrides, today, onSave
           <div style={{ fontFamily: font.display, fontSize: 14, fontWeight: 800, color: '#1E2522', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
             Notes
           </div>
-          <div style={{ fontFamily: font.mono, fontSize: 13, color: '#4a6d65', margin: '3px 0 10px', lineHeight: 1.5 }}>
+          <div style={{ fontFamily: font.mono, fontSize: 13, color: '#2a3834', margin: '3px 0 10px', lineHeight: 1.5 }}>
             Write rough notes - what's happening, who it's for, any dates/times/location. One click fills in the type, dates, times, and recurrence below, and writes the Description for you to review before saving.
           </div>
           <textarea

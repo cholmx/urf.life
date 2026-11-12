@@ -76,7 +76,7 @@ const LivingStonesModeration = ({ onPendingCountChange }) => {
                     <button
                       onClick={() => handleApprovePhoto(photo.id)}
                       className="flex-1 flex items-center justify-center space-x-1 py-1.5 rounded-lg text-xs font-medium text-white transition-opacity hover:opacity-90"
-                      style={{ backgroundColor: '#4a6d65' }}
+                      style={{ backgroundColor: '#2a3834' }}
                     >
                       <SafeIcon icon={FiCheck} className="h-3 w-3" />
                       <span>Approve</span>
@@ -98,8 +98,8 @@ const LivingStonesModeration = ({ onPendingCountChange }) => {
 
       {pending.length === 0 && (
         <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
-          <SafeIcon icon={FiCheck} className="h-8 w-8 mx-auto mb-2" style={{ color: '#4a6d65' }} />
-          <p className="text-sm font-medium" style={{ color: '#4a6d65' }}>All caught up! No photos pending review.</p>
+          <SafeIcon icon={FiCheck} className="h-8 w-8 mx-auto mb-2" style={{ color: '#2a3834' }} />
+          <p className="text-sm font-medium" style={{ color: '#2a3834' }}>All caught up! No photos pending review.</p>
         </div>
       )}
 
