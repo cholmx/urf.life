@@ -8,6 +8,7 @@ import ConfirmDialog from '../ConfirmDialog';
 const OVERLAY_COLORS = [
   { id: "black", name: "Black", color: "#000000" },
   { id: "white", name: "White", color: "#FFFFFF" },
+  { id: "green", name: "Green", color: "#2B433E" },
 ];
 
 export default function PhotosTab({photos, setPhotos, activePhoto, setActivePhoto, ov, setOv, blur, setBlur, overlayColor, setOverlayColor}) {

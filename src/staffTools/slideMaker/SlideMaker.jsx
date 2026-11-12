@@ -61,17 +61,23 @@ function pickRandomTexture(pool) {
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
+// Overlay choices for a dark-bucket texture - black or the brand green,
+// picked at random for some variety between slides.
+const DARK_OVERLAY_COLORS = ["#000000", "#2B433E"];
+
 // Buckets the texture's average brightness into the dark/light background
-// it reads best against, picks that bucket's first text color, and an
-// overlay that nudges the texture toward a flatter, more even tone so text
-// stays readable over its own internal light/dark variation.
+// it reads best against, randomly picks one of that bucket's two allowed
+// text colors (so a dark-bucket slide sometimes lands on yellow instead of
+// always white), and an overlay that nudges the texture toward a flatter,
+// more even tone so text stays readable over its own internal light/dark
+// variation.
 function autoBrandForBrightness(brightness) {
   const bucket = brightness < 0.5 ? BACKGROUNDS[0] : BACKGROUNDS[1];
-  return {
-    bgColor: bucket.bg,
-    textColor: bucket.textOptions[0].color,
-    overlayColor: brightness < 0.5 ? "#000000" : "#FFFFFF",
-  };
+  const textColor = bucket.textOptions[Math.floor(Math.random() * bucket.textOptions.length)].color;
+  const overlayColor = brightness < 0.5
+    ? DARK_OVERLAY_COLORS[Math.floor(Math.random() * DARK_OVERLAY_COLORS.length)]
+    : "#FFFFFF";
+  return {bgColor: bucket.bg, textColor, overlayColor};
 }
 
 export default function SlideMaker({announcements, today, onToggleSlideMade}) {
@@ -307,7 +313,10 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
       setActivePhoto(img);
       setBrand(b => ({...b, bgColor: auto.bgColor, textColor: auto.textColor}));
       setOverlayColor(auto.overlayColor);
-      setOv(35);
+      setOv(55);
+      // A little randomized blur (never more than a light touch) so the
+      // texture isn't perfectly crisp behind the text on every slide.
+      setBlur(Math.round(Math.random() * 5));
     } catch (error) {
       toast.show('Could not load an automatic background for this slide.', 'error');
     }
