@@ -30,7 +30,7 @@ export default function Sidebar(props) {
     overlayColor, setOverlayColor,
     canvasRef,
     onLoadPreset,
-    queueItems, queuePreviews, onUseQueueItem, onToggleSlideMade,
+    queueItems, queuePreviews, onRegenerateQueuePreview, onUseQueueItem, onToggleSlideMade,
   } = props;
 
   // queueItems is already filtered to just what still needs a slide made.
@@ -112,6 +112,7 @@ export default function Sidebar(props) {
           <QueueTab
             items={queueItems || []}
             previews={queuePreviews}
+            onRegenerate={onRegenerateQueuePreview}
             onUseItem={onUseQueueItem}
             onToggleSlideMade={onToggleSlideMade}
           />

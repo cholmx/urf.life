@@ -84,14 +84,22 @@ const DARK_OVERLAY_OPTIONS = [
 // lands on yellow instead of always white). The overlay nudges the texture
 // toward a flatter, more even tone so text stays readable over its own
 // internal light/dark variation.
-function autoBrandForBrightness(brightness) {
+//
+// avoidOverlayColors excludes colors from the random pick entirely (not
+// just a reroll-and-hope) - used to keep adjacent queue slides from
+// landing on the same overlay color by chance, and to guarantee "try a
+// different background" actually gives back something different.
+function autoBrandForBrightness(brightness, avoidOverlayColors = []) {
   const bucket = brightness < 0.5 ? BACKGROUNDS[0] : BACKGROUNDS[1];
   const randomBucketTextColor = () => bucket.textOptions[Math.floor(Math.random() * bucket.textOptions.length)].color;
 
   if (brightness < 0.5) {
-    const overlay = DARK_OVERLAY_OPTIONS[Math.floor(Math.random() * DARK_OVERLAY_OPTIONS.length)];
+    const choices = DARK_OVERLAY_OPTIONS.filter(o => !avoidOverlayColors.includes(o.color));
+    const pool = choices.length > 0 ? choices : DARK_OVERLAY_OPTIONS;
+    const overlay = pool[Math.floor(Math.random() * pool.length)];
     return {bgColor: bucket.bg, textColor: overlay.textColor || randomBucketTextColor(), overlayColor: overlay.color};
   }
+  // Light bucket always washes white by design - nothing random to avoid.
   return {bgColor: bucket.bg, textColor: randomBucketTextColor(), overlayColor: "#FFFFFF"};
 }
 
@@ -100,9 +108,9 @@ function autoBrandForBrightness(brightness) {
 // any component state - shared by the live editor (applyAutoBackground)
 // and the off-screen queue-thumbnail generator below, so both produce the
 // same kind of result from the same inputs.
-async function computeAutoSlide(entry) {
+async function computeAutoSlide(entry, avoidOverlayColors = []) {
   const img = entry.img || await loadImage(entry.src);
-  const auto = autoBrandForBrightness(averageBrightness(img));
+  const auto = autoBrandForBrightness(averageBrightness(img), avoidOverlayColors);
   return {
     img,
     bgColor: auto.bgColor,
@@ -142,15 +150,15 @@ const QUEUE_PREVIEW_RATIO = ASPECT_RATIOS.find(r => r.id === "16:9") || ASPECT_R
 // off-screen - the same automatic texture/color/overlay pick a staffer
 // would get by opening it in the editor, but produced the moment the
 // queue loads so there's a PNG sitting there to grab without opening
-// anything.
-async function generateQueueThumbnail(a, pool) {
-  const entry = pickTextureForId(pool, a.id);
-  const auto = await computeAutoSlide(entry);
+// anything. Returns the overlay color alongside the image so the caller
+// can feed it forward as the next item's avoidOverlayColors.
+async function generateQueueThumbnailFromEntry(a, entry, avoidOverlayColors = []) {
+  const auto = await computeAutoSlide(entry, avoidOverlayColors);
   const data = {...DEFAULT_DATA, ...buildAutoSlideData(a)};
   const brand = {...DEFAULT_BRAND, bgColor: auto.bgColor, textColor: auto.textColor};
   const canvas = document.createElement('canvas');
   render(canvas, "left_block", data, brand, auto.img, auto.overlayColor, auto.ov, auto.blur, QUEUE_PREVIEW_RATIO.w, QUEUE_PREVIEW_RATIO.h, 0);
-  return sharpenCanvas(canvas).toDataURL("image/png");
+  return {dataUrl: sharpenCanvas(canvas).toDataURL("image/png"), overlayColor: auto.overlayColor};
 }
 
 export default function SlideMaker({announcements, today, onToggleSlideMade}) {
@@ -219,8 +227,13 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
   // staff can grab a finished slide straight from the queue list without
   // ever opening the editor. Generated one at a time in the background;
   // an item that's already cached (or still mid-generation from a prior
-  // run of this effect) is skipped.
+  // run of this effect) is skipped. Each entry also keeps the overlay
+  // color it landed on, so the next item generated can be steered away
+  // from repeating it - a plain React-state read would lag behind this
+  // same loop's own earlier iterations, so the ref is the one source of
+  // truth read while generating.
   const [queuePreviews, setQueuePreviews] = useState({});
+  const queuePreviewOverlayRef = useRef({});
   const generatingQueuePreviewsRef = useRef(new Set());
   // A plain "cancelled" flag closed over per effect run doesn't survive
   // React StrictMode's dev-only double-invoke (mount, cleanup, mount
@@ -244,8 +257,13 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     (async () => {
       for (const a of pending) {
         try {
-          const dataUrl = await generateQueueThumbnail(a, pool);
-          if (isMountedRef.current) setQueuePreviews(prev => ({...prev, [a.id]: dataUrl}));
+          const idx = queueItems.findIndex(q => q.id === a.id);
+          const prevId = idx > 0 ? queueItems[idx - 1].id : null;
+          const avoid = prevId && queuePreviewOverlayRef.current[prevId] ? [queuePreviewOverlayRef.current[prevId]] : [];
+          const entry = pickTextureForId(pool, a.id);
+          const result = await generateQueueThumbnailFromEntry(a, entry, avoid);
+          queuePreviewOverlayRef.current[a.id] = result.overlayColor;
+          if (isMountedRef.current) setQueuePreviews(prev => ({...prev, [a.id]: result}));
         } catch (error) {
           // Leave it unset - the queue just won't offer a direct download
           // for this one item, "Use This" still works as the fallback.
@@ -256,6 +274,30 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queueItems, photos]);
+
+  // "Try a different background" on a queue card - a fresh random texture
+  // (not the deterministic per-event pick) and an overlay steered away
+  // from both this item's own last color and its neighbor's, so clicking
+  // it is guaranteed to change something visible rather than risk landing
+  // right back on the same look by chance.
+  const regenerateQueuePreview = useCallback(async (a) => {
+    if (generatingQueuePreviewsRef.current.has(a.id)) return;
+    generatingQueuePreviewsRef.current.add(a.id);
+    try {
+      const pool = getTexturePool(photos);
+      const idx = queueItems.findIndex(q => q.id === a.id);
+      const prevId = idx > 0 ? queueItems[idx - 1].id : null;
+      const avoid = [queuePreviewOverlayRef.current[a.id], prevId && queuePreviewOverlayRef.current[prevId]].filter(Boolean);
+      const entry = pickRandomTexture(pool);
+      const result = await generateQueueThumbnailFromEntry(a, entry, avoid);
+      queuePreviewOverlayRef.current[a.id] = result.overlayColor;
+      if (isMountedRef.current) setQueuePreviews(prev => ({...prev, [a.id]: result}));
+    } catch (error) {
+      toast.show('Could not rebuild that slide. Please try again.', 'error');
+    } finally {
+      generatingQueuePreviewsRef.current.delete(a.id);
+    }
+  }, [photos, queueItems, toast]);
 
   const undoHistory = useUndoHistory(50);
 
@@ -422,9 +464,9 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
   // part of "build this event's slide." Failure just leaves whatever
   // background was already set rather than blocking the rest of
   // loadQueueItem.
-  const applyAutoBackground = useCallback(async (entry) => {
+  const applyAutoBackground = useCallback(async (entry, avoidOverlayColors = []) => {
     try {
-      const auto = await computeAutoSlide(entry);
+      const auto = await computeAutoSlide(entry, avoidOverlayColors);
       setActivePhoto(auto.img);
       setBrand(b => ({...b, bgColor: auto.bgColor, textColor: auto.textColor}));
       setOverlayColor(auto.overlayColor);
@@ -450,8 +492,11 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
 
   const reshuffleBackground = useCallback(() => {
     pushUndo();
-    applyAutoBackground(pickRandomTexture(getTexturePool(photos)));
-  }, [pushUndo, applyAutoBackground, photos]);
+    // Steer away from the overlay color already on screen - otherwise
+    // "Different Background" can land right back on the same color by
+    // chance and look like it didn't do anything.
+    applyAutoBackground(pickRandomTexture(getTexturePool(photos)), [overlayColor]);
+  }, [pushUndo, applyAutoBackground, photos, overlayColor]);
 
   // One click from "just finished this slide" to "building the next one" -
   // no manual trip back to the queue tab to find what's left.
@@ -588,6 +633,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
             onLoadPreset={loadPreset}
             queueItems={queueItems}
             queuePreviews={queuePreviews}
+            onRegenerateQueuePreview={regenerateQueuePreview}
             onUseQueueItem={loadQueueItem}
             onToggleSlideMade={onToggleSlideMade}
           />
@@ -633,6 +679,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
               onLoadPreset={loadPreset}
               queueItems={queueItems}
               queuePreviews={queuePreviews}
+              onRegenerateQueuePreview={regenerateQueuePreview}
               onUseQueueItem={loadQueueItem}
               onToggleSlideMade={onToggleSlideMade}
             />

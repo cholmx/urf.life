@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { C, ui } from '../../constants/styles';
 import { formatDateNice } from '../../../../staffComms/lib/helpers';
 
@@ -10,7 +10,22 @@ function downloadPreview(dataUrl, title) {
   a.click();
 }
 
-export default function QueueTab({ items, previews, onUseItem, onToggleSlideMade }) {
+export default function QueueTab({ items, previews, onRegenerate, onUseItem, onToggleSlideMade }) {
+  const [regeneratingIds, setRegeneratingIds] = useState(() => new Set());
+
+  const handleRegenerate = async (a) => {
+    setRegeneratingIds(prev => new Set(prev).add(a.id));
+    try {
+      await onRegenerate?.(a);
+    } finally {
+      setRegeneratingIds(prev => {
+        const next = new Set(prev);
+        next.delete(a.id);
+        return next;
+      });
+    }
+  };
+
   if (items.length === 0) {
     return (
       <p style={{ fontFamily: ui.body, fontSize: 12, color: C.textTer, textAlign: 'center', padding: '24px 8px' }}>
@@ -30,7 +45,9 @@ export default function QueueTab({ items, previews, onUseItem, onToggleSlideMade
             ? [...a.event_dates].filter(Boolean).sort()
             : (a.event_date ? [a.event_date] : []);
           const dateStr = dates.map(d => formatDateNice(d)).join(' · ');
-          const previewUrl = previews && previews[a.id];
+          const preview = previews && previews[a.id];
+          const previewUrl = preview && preview.dataUrl;
+          const regenerating = regeneratingIds.has(a.id);
 
           return (
             <div
@@ -43,6 +60,7 @@ export default function QueueTab({ items, previews, onUseItem, onToggleSlideMade
               }}
             >
               <div style={{
+                position: 'relative',
                 borderRadius: 6,
                 overflow: 'hidden',
                 marginBottom: 8,
@@ -53,9 +71,24 @@ export default function QueueTab({ items, previews, onUseItem, onToggleSlideMade
                 justifyContent: 'center',
               }}>
                 {previewUrl ? (
-                  <img src={previewUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  <img src={previewUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', opacity: regenerating ? 0.5 : 1 }} />
                 ) : (
                   <span style={{ fontFamily: ui.body, fontSize: 10, color: C.textTer }}>Building preview…</span>
+                )}
+                {previewUrl && (
+                  <button
+                    onClick={() => handleRegenerate(a)}
+                    disabled={regenerating}
+                    title="Try a different automatic background"
+                    style={{
+                      position: 'absolute', top: 6, right: 6, width: 24, height: 24, borderRadius: 12, border: 'none',
+                      background: 'rgba(0,0,0,0.65)', color: '#fff', fontSize: 12,
+                      cursor: regenerating ? 'wait' : 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1,
+                    }}
+                  >
+                    {regenerating ? '⏳' : '🔀'}
+                  </button>
                 )}
               </div>
               <div style={{
