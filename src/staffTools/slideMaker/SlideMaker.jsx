@@ -2,9 +2,9 @@ import React, {useState, useRef, useEffect, useCallback, useMemo} from 'react';
 import useGoogleFonts from './hooks/useGoogleFonts';
 import {ToastProvider, useToast} from './hooks/useToast.jsx';
 import {useUndoHistory} from './hooks/useUndoHistory';
-import {BACKGROUNDS, HEADLINE_FONT, HEADLINE_WEIGHT, BODY_FONT, BODY_WEIGHT, ASPECT_RATIOS} from './constants/data';
+import {BACKGROUNDS, HEADLINE_FONT, HEADLINE_WEIGHT, BODY_FONT, BODY_WEIGHT, ASPECT_RATIOS, TEXTURES} from './constants/data';
 import {C, ui} from './constants/styles';
-import {sharpenCanvas} from './utils/canvasUtils';
+import {sharpenCanvas, loadImage, averageBrightness} from './utils/canvasUtils';
 import {isSlideActive, formatDateNice} from '../../staffComms/lib/helpers';
 import SlideCanvas from './components/SlideCanvas';
 import Sidebar from './components/Sidebar';
@@ -35,6 +35,34 @@ const DEFAULT_BRAND = {
   churchName: "UPPER ROOM FELLOWSHIP",
   hLetterSpacing: 0,
 };
+
+// Deterministic per-event pick (same event always lands on the same
+// texture) so reopening an already-built slide doesn't shuffle its look.
+function pickTextureForId(id) {
+  const str = String(id ?? "");
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash * 31 + str.charCodeAt(i)) >>> 0;
+  }
+  return TEXTURES[hash % TEXTURES.length];
+}
+
+function pickRandomTexture() {
+  return TEXTURES[Math.floor(Math.random() * TEXTURES.length)];
+}
+
+// Buckets the texture's average brightness into the dark/light background
+// it reads best against, picks that bucket's first text color, and an
+// overlay that nudges the texture toward a flatter, more even tone so text
+// stays readable over its own internal light/dark variation.
+function autoBrandForBrightness(brightness) {
+  const bucket = brightness < 0.5 ? BACKGROUNDS[0] : BACKGROUNDS[1];
+  return {
+    bgColor: bucket.bg,
+    textColor: bucket.textOptions[0].color,
+    overlayColor: brightness < 0.5 ? "#000000" : "#FFFFFF",
+  };
+}
 
 export default function SlideMaker({announcements, today, onToggleSlideMade}) {
   return (
@@ -236,6 +264,23 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     setSidebarOpen(false);
   };
 
+  // Loads a texture, samples its brightness, and applies the matching
+  // background/text/overlay colors - the automatic part of "build this
+  // event's slide." Failure just leaves whatever background was already
+  // set rather than blocking the rest of loadQueueItem.
+  const applyAutoBackground = useCallback(async (textureSrc) => {
+    try {
+      const img = await loadImage(textureSrc);
+      const auto = autoBrandForBrightness(averageBrightness(img));
+      setActivePhoto(img);
+      setBrand(b => ({...b, bgColor: auto.bgColor, textColor: auto.textColor}));
+      setOverlayColor(auto.overlayColor);
+      setOv(35);
+    } catch (error) {
+      toast.show('Could not load an automatic background for this slide.', 'error');
+    }
+  }, [toast]);
+
   const loadQueueItem = useCallback((a) => {
     pushUndo();
     const dates = (a.event_dates && a.event_dates.length > 0)
@@ -251,10 +296,20 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
       line1: a.title || '',
       line2: a.slide_override ? [a.slide_override, dateLocation].filter(Boolean).join(' · ') : dateLocation,
     }));
+    // Every event gets a fully automatic slide: a texture background
+    // (same one each time this event is reopened), colors picked from
+    // that texture's brightness, and the 16:9 size.
+    setAspectRatio(ASPECT_RATIOS.find(r => r.id === "16:9") || ASPECT_RATIOS[ASPECT_RATIOS.length - 1]);
+    applyAutoBackground(pickTextureForId(a.id));
     setActiveQueueItem(a);
     setTab("content");
     setSidebarOpen(false);
-  }, [pushUndo]);
+  }, [pushUndo, applyAutoBackground]);
+
+  const reshuffleBackground = useCallback(() => {
+    pushUndo();
+    applyAutoBackground(pickRandomTexture());
+  }, [pushUndo, applyAutoBackground]);
 
   // One click from "just finished this slide" to "building the next one" -
   // no manual trip back to the queue tab to find what's left.
@@ -326,6 +381,17 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
                 Building: <strong>{activeQueueItem.title}</strong>
               </span>
               <div style={{display: "flex", gap: 8, alignItems: "center"}}>
+                <button
+                  onClick={reshuffleBackground}
+                  title="Try a different automatic background"
+                  style={{
+                    padding: "6px 10px", border: `1px solid ${C.border}`, borderRadius: 6,
+                    background: "transparent", color: C.textSec,
+                    fontFamily: ui.body, fontSize: 12, cursor: "pointer",
+                  }}
+                >
+                  🔀 Different Background
+                </button>
                 <button
                   onClick={markMadeAndNext}
                   style={{

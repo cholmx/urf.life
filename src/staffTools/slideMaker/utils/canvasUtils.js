@@ -1,5 +1,34 @@
 import {SW, SH, CORNER_R} from '../constants/data';
 
+export function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+// Downscales the image onto a tiny offscreen canvas and averages its
+// perceived luminance (0 = black, 1 = white) - cheap way to decide whether
+// an auto-picked background texture reads as "dark" or "light" overall,
+// without caring about its exact pixel dimensions.
+export function averageBrightness(img) {
+  const size = 16;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0, size, size);
+  const {data} = ctx.getImageData(0, 0, size, size);
+  let total = 0;
+  for (let i = 0; i < data.length; i += 4) {
+    total += (0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]) / 255;
+  }
+  return total / (size * size);
+}
+
 export function wrapText(ctx,text,font,maxW,allowLineBreaks=false) {
   ctx.font=font;
 

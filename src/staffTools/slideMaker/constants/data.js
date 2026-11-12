@@ -36,3 +36,14 @@ export const TEMPLATES = [
   { id: "minimal", name: "Centered" },
   { id: "left_block", name: "Left Aligned" },
 ];
+
+// Curated subtle backgrounds for automatic slide generation - picked per
+// event instead of a stock-photo search, so every auto-generated slide
+// looks intentional and on-brand rather than hit-or-miss relevant.
+export const TEXTURES = [
+  "/slide-textures/texture-1.jpg",
+  "/slide-textures/texture-2.jpg",
+  "/slide-textures/texture-3.jpg",
+  "/slide-textures/texture-4.jpg",
+  "/slide-textures/texture-5.jpg",
+];
