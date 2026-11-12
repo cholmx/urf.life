@@ -5,6 +5,7 @@ import {useUndoHistory} from './hooks/useUndoHistory';
 import {BACKGROUNDS, HEADLINE_FONT, HEADLINE_WEIGHT, BODY_FONT, BODY_WEIGHT, ASPECT_RATIOS, TEXTURES} from './constants/data';
 import {C, ui} from './constants/styles';
 import {sharpenCanvas, loadImage, averageBrightness} from './utils/canvasUtils';
+import {render} from './utils/renderEngine';
 import {getPhotos} from './services/photoService';
 import {isSlideActive, formatDateNice, stripLeadingTitle} from '../../staffComms/lib/helpers';
 import SlideCanvas from './components/SlideCanvas';
@@ -94,6 +95,64 @@ function autoBrandForBrightness(brightness) {
   return {bgColor: bucket.bg, textColor: randomBucketTextColor(), overlayColor: "#FFFFFF"};
 }
 
+// Loads a texture-pool entry and works out the full automatic look for it
+// (background/text/overlay colors, a light random blur) without touching
+// any component state - shared by the live editor (applyAutoBackground)
+// and the off-screen queue-thumbnail generator below, so both produce the
+// same kind of result from the same inputs.
+async function computeAutoSlide(entry) {
+  const img = entry.img || await loadImage(entry.src);
+  const auto = autoBrandForBrightness(averageBrightness(img));
+  return {
+    img,
+    bgColor: auto.bgColor,
+    textColor: auto.textColor,
+    overlayColor: auto.overlayColor,
+    ov: 55,
+    blur: Math.round(Math.random() * 5),
+  };
+}
+
+// The headline/subhead text for an event's automatic slide - same date and
+// "short line" formatting loadQueueItem applies when opening an item in
+// the editor, pulled out here so the off-screen queue generator below can
+// build the identical text without going through component state.
+function buildAutoSlideData(a) {
+  const dates = (a.event_dates && a.event_dates.length > 0)
+    ? [...a.event_dates].filter(Boolean).sort()
+    : (a.event_date ? [a.event_date] : []);
+  const dateStr = dates.map(d => formatDateNice(d)).join(' · ');
+  const dateLocation = [dateStr, a.event_location].filter(Boolean).join(' · ');
+  const shortLine = stripLeadingTitle(a.slide_override || '', a.title || '')
+    .replace(/^[\s,:;–—-]+/, '');
+  // generateSlide's current prompt already writes the date, time, and
+  // location into slide_override itself - so when it's set, it IS the
+  // subhead, not something to still append dateLocation onto. Appending
+  // both used to make sense when slide_override didn't reliably carry
+  // the date/location yet; now it just repeats them.
+  return {
+    line1: a.title || '',
+    line2: shortLine || dateLocation,
+  };
+}
+
+const QUEUE_PREVIEW_RATIO = ASPECT_RATIOS.find(r => r.id === "16:9") || ASPECT_RATIOS[ASPECT_RATIOS.length - 1];
+
+// Renders a finished, ready-to-download slide for a queue item entirely
+// off-screen - the same automatic texture/color/overlay pick a staffer
+// would get by opening it in the editor, but produced the moment the
+// queue loads so there's a PNG sitting there to grab without opening
+// anything.
+async function generateQueueThumbnail(a, pool) {
+  const entry = pickTextureForId(pool, a.id);
+  const auto = await computeAutoSlide(entry);
+  const data = {...DEFAULT_DATA, ...buildAutoSlideData(a)};
+  const brand = {...DEFAULT_BRAND, bgColor: auto.bgColor, textColor: auto.textColor};
+  const canvas = document.createElement('canvas');
+  render(canvas, "left_block", data, brand, auto.img, auto.overlayColor, auto.ov, auto.blur, QUEUE_PREVIEW_RATIO.w, QUEUE_PREVIEW_RATIO.h, 0);
+  return sharpenCanvas(canvas).toDataURL("image/png");
+}
+
 export default function SlideMaker({announcements, today, onToggleSlideMade}) {
   return (
     <ToastProvider>
@@ -154,6 +213,49 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeQueueItem, setActiveQueueItem] = useState(null);
   const canvasRef = useRef(null);
+
+  // Ready-to-download slide PNGs for the queue, keyed by announcement id -
+  // built off-screen the moment an item shows up in "Needs Making" so
+  // staff can grab a finished slide straight from the queue list without
+  // ever opening the editor. Generated one at a time in the background;
+  // an item that's already cached (or still mid-generation from a prior
+  // run of this effect) is skipped.
+  const [queuePreviews, setQueuePreviews] = useState({});
+  const generatingQueuePreviewsRef = useRef(new Set());
+  // A plain "cancelled" flag closed over per effect run doesn't survive
+  // React StrictMode's dev-only double-invoke (mount, cleanup, mount
+  // again, all before any awaited image load resolves) - it marks the
+  // real in-flight work as cancelled before it ever gets to commit a
+  // result. Tracking real mount state separately, updated on every mount
+  // and only cleared on actual unmount, avoids that false cancellation.
+  const isMountedRef = useRef(true);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
+  }, []);
+
+  useEffect(() => {
+    const pool = getTexturePool(photos);
+    const pending = queueItems.filter(a => !queuePreviews[a.id] && !generatingQueuePreviewsRef.current.has(a.id));
+    if (pending.length === 0) return;
+
+    pending.forEach(a => generatingQueuePreviewsRef.current.add(a.id));
+
+    (async () => {
+      for (const a of pending) {
+        try {
+          const dataUrl = await generateQueueThumbnail(a, pool);
+          if (isMountedRef.current) setQueuePreviews(prev => ({...prev, [a.id]: dataUrl}));
+        } catch (error) {
+          // Leave it unset - the queue just won't offer a direct download
+          // for this one item, "Use This" still works as the fallback.
+        } finally {
+          generatingQueuePreviewsRef.current.delete(a.id);
+        }
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queueItems, photos]);
 
   const undoHistory = useUndoHistory(50);
 
@@ -322,15 +424,12 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
   // loadQueueItem.
   const applyAutoBackground = useCallback(async (entry) => {
     try {
-      const img = entry.img || await loadImage(entry.src);
-      const auto = autoBrandForBrightness(averageBrightness(img));
-      setActivePhoto(img);
+      const auto = await computeAutoSlide(entry);
+      setActivePhoto(auto.img);
       setBrand(b => ({...b, bgColor: auto.bgColor, textColor: auto.textColor}));
       setOverlayColor(auto.overlayColor);
-      setOv(55);
-      // A little randomized blur (never more than a light touch) so the
-      // texture isn't perfectly crisp behind the text on every slide.
-      setBlur(Math.round(Math.random() * 5));
+      setOv(auto.ov);
+      setBlur(auto.blur);
     } catch (error) {
       toast.show('Could not load an automatic background for this slide.', 'error');
     }
@@ -338,32 +437,11 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
 
   const loadQueueItem = useCallback((a) => {
     pushUndo();
-    const dates = (a.event_dates && a.event_dates.length > 0)
-      ? [...a.event_dates].filter(Boolean).sort()
-      : (a.event_date ? [a.event_date] : []);
-    const dateStr = dates.map(d => formatDateNice(d)).join(' · ');
-    // Date/time and location used to split across the subhead and the
-    // now-removed detail line (with slide_override, when set, taking the
-    // subhead spot instead) - folded into the one remaining subhead line.
-    const dateLocation = [dateStr, a.event_location].filter(Boolean).join(' · ');
-    // slide_override (the AI "Short Line") is written to open with the
-    // event name - fine standalone, but line1 already is that name, so
-    // left as-is it repeats the title on every slide. Same leading-title
-    // stripping MonthlyTab already applies to this same field. That helper
-    // only absorbs a trailing :/-/–/— after the title, not the comma
-    // generateSlide's own prompt actually uses ("Title, May 6, 7 PM,
-    // Location") - the second replace mops up that leftover ", ".
-    const shortLine = stripLeadingTitle(a.slide_override || '', a.title || '')
-      .replace(/^[\s,:;–—-]+/, '');
-    setData(p => ({
-      ...p,
-      line1: a.title || '',
-      line2: shortLine ? [shortLine, dateLocation].filter(Boolean).join(' · ') : dateLocation,
-    }));
+    setData(p => ({...p, ...buildAutoSlideData(a)}));
     // Every event gets a fully automatic slide: a texture background
     // (same one each time this event is reopened), colors picked from
     // that texture's brightness, and the 16:9 size.
-    setAspectRatio(ASPECT_RATIOS.find(r => r.id === "16:9") || ASPECT_RATIOS[ASPECT_RATIOS.length - 1]);
+    setAspectRatio(QUEUE_PREVIEW_RATIO);
     applyAutoBackground(pickTextureForId(getTexturePool(photos), a.id));
     setActiveQueueItem(a);
     setTab("content");
@@ -509,6 +587,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
             canvasRef={canvasRef}
             onLoadPreset={loadPreset}
             queueItems={queueItems}
+            queuePreviews={queuePreviews}
             onUseQueueItem={loadQueueItem}
             onToggleSlideMade={onToggleSlideMade}
           />
@@ -553,6 +632,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
               canvasRef={canvasRef}
               onLoadPreset={loadPreset}
               queueItems={queueItems}
+              queuePreviews={queuePreviews}
               onUseQueueItem={loadQueueItem}
               onToggleSlideMade={onToggleSlideMade}
             />
