@@ -6,7 +6,7 @@ import {BACKGROUNDS, HEADLINE_FONT, HEADLINE_WEIGHT, BODY_FONT, BODY_WEIGHT, ASP
 import {C, ui} from './constants/styles';
 import {sharpenCanvas, loadImage, averageBrightness} from './utils/canvasUtils';
 import {getPhotos} from './services/photoService';
-import {isSlideActive, formatDateNice} from '../../staffComms/lib/helpers';
+import {isSlideActive, formatDateNice, stripLeadingTitle} from '../../staffComms/lib/helpers';
 import SlideCanvas from './components/SlideCanvas';
 import Sidebar from './components/Sidebar';
 import TopBar from './components/TopBar';
@@ -332,10 +332,19 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     // now-removed detail line (with slide_override, when set, taking the
     // subhead spot instead) - folded into the one remaining subhead line.
     const dateLocation = [dateStr, a.event_location].filter(Boolean).join(' · ');
+    // slide_override (the AI "Short Line") is written to open with the
+    // event name - fine standalone, but line1 already is that name, so
+    // left as-is it repeats the title on every slide. Same leading-title
+    // stripping MonthlyTab already applies to this same field. That helper
+    // only absorbs a trailing :/-/–/— after the title, not the comma
+    // generateSlide's own prompt actually uses ("Title, May 6, 7 PM,
+    // Location") - the second replace mops up that leftover ", ".
+    const shortLine = stripLeadingTitle(a.slide_override || '', a.title || '')
+      .replace(/^[\s,:;–—-]+/, '');
     setData(p => ({
       ...p,
       line1: a.title || '',
-      line2: a.slide_override ? [a.slide_override, dateLocation].filter(Boolean).join(' · ') : dateLocation,
+      line2: shortLine ? [shortLine, dateLocation].filter(Boolean).join(' · ') : dateLocation,
     }));
     // Every event gets a fully automatic slide: a texture background
     // (same one each time this event is reopened), colors picked from
