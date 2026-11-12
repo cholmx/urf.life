@@ -18,9 +18,12 @@ export const BODY_FONT = "'Aleo',serif";
 // designTokens.js's own note on this).
 export const BODY_WEIGHT = 400;
 
-// Two fixed background swatches - no custom color picker. Each has its own
-// pair of allowed text colors, so picking a background always leaves a
-// readable, on-brand text color selected.
+// Fixed background swatches - no custom color picker. Each has its own set
+// of allowed text colors, so picking a background always leaves a readable,
+// on-brand text color selected. Red and Gold are full-opacity solid
+// backgrounds in their own right here (not just the semi-transparent
+// texture overlays of the same colors used by automatic generation - see
+// DARK_OVERLAY_OPTIONS in SlideMaker.jsx, which is separate from this).
 export const BACKGROUNDS = [
   { id: "dark", name: "Dark", bg: "#1E2522", textOptions: [
     { id: "white", name: "White", color: "#FFFFFF" },
@@ -28,6 +31,14 @@ export const BACKGROUNDS = [
   ] },
   { id: "light", name: "Light", bg: "#FFFFFF", textOptions: [
     { id: "black", name: "Black", color: "#000000" },
+    { id: "charcoal", name: "#1E2522", color: "#1E2522" },
+  ] },
+  { id: "red", name: "Red", bg: "#C74F2F", textOptions: [
+    { id: "white", name: "White", color: "#FFFFFF" },
+    { id: "yellow", name: "Yellow", color: "#FFD944" },
+  ] },
+  { id: "gold", name: "Gold", bg: "#EAA235", textOptions: [
+    { id: "white", name: "White", color: "#FFFFFF" },
     { id: "charcoal", name: "#1E2522", color: "#1E2522" },
   ] },
 ];
