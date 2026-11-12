@@ -68,12 +68,17 @@ function pickRandomTexture(pool) {
 // accent colors (red, gold, sage) are medium-brightness, not dark/light -
 // they only read reliably with white text, so they force it rather than
 // leaving it to the bucket's own random white/yellow pick.
+//
+// ov is each color's own overlay strength - red and gold are the two the
+// texture shows through the most at the standard 55%, washing them out
+// toward a muddy brown instead of a clean brand red/gold, so they get a
+// stronger wash to stay recognizably on-brand.
 const DARK_OVERLAY_OPTIONS = [
-  {color: "#000000", textColor: null},
-  {color: "#2a3834", textColor: null},
-  {color: "#C74F2F", textColor: "#FFFFFF"},
-  {color: "#EAA235", textColor: "#FFFFFF"},
-  {color: "#597F5C", textColor: "#FFFFFF"},
+  {color: "#000000", textColor: null, ov: 55},
+  {color: "#2a3834", textColor: null, ov: 55},
+  {color: "#C74F2F", textColor: "#FFFFFF", ov: 80},
+  {color: "#EAA235", textColor: "#FFFFFF", ov: 80},
+  {color: "#597F5C", textColor: "#FFFFFF", ov: 55},
 ];
 
 // Buckets the texture's average brightness into the dark/light background
@@ -97,10 +102,10 @@ function autoBrandForBrightness(brightness, avoidOverlayColors = []) {
     const choices = DARK_OVERLAY_OPTIONS.filter(o => !avoidOverlayColors.includes(o.color));
     const pool = choices.length > 0 ? choices : DARK_OVERLAY_OPTIONS;
     const overlay = pool[Math.floor(Math.random() * pool.length)];
-    return {bgColor: bucket.bg, textColor: overlay.textColor || randomBucketTextColor(), overlayColor: overlay.color};
+    return {bgColor: bucket.bg, textColor: overlay.textColor || randomBucketTextColor(), overlayColor: overlay.color, ov: overlay.ov};
   }
   // Light bucket always washes white by design - nothing random to avoid.
-  return {bgColor: bucket.bg, textColor: randomBucketTextColor(), overlayColor: "#FFFFFF"};
+  return {bgColor: bucket.bg, textColor: randomBucketTextColor(), overlayColor: "#FFFFFF", ov: 55};
 }
 
 // Loads a texture-pool entry and works out the full automatic look for it
@@ -116,7 +121,7 @@ async function computeAutoSlide(entry, avoidOverlayColors = []) {
     bgColor: auto.bgColor,
     textColor: auto.textColor,
     overlayColor: auto.overlayColor,
-    ov: 55,
+    ov: auto.ov,
     blur: Math.round(Math.random() * 5),
   };
 }

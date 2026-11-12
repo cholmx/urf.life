@@ -20,10 +20,12 @@ export const BODY_WEIGHT = 400;
 
 // Fixed background swatches - no custom color picker. Each has its own set
 // of allowed text colors, so picking a background always leaves a readable,
-// on-brand text color selected. Red and Gold are full-opacity solid
-// backgrounds in their own right here (not just the semi-transparent
-// texture overlays of the same colors used by automatic generation - see
-// DARK_OVERLAY_OPTIONS in SlideMaker.jsx, which is separate from this).
+// on-brand text color selected. Every brand/overlay color (see
+// DARK_OVERLAY_OPTIONS in SlideMaker.jsx, used for the semi-transparent
+// texture overlays of automatic generation) is also available here as a
+// full-opacity solid background in its own right - the two systems share
+// colors but not opacity. White isn't repeated as its own swatch since
+// Light already is that color.
 export const BACKGROUNDS = [
   { id: "dark", name: "Dark", bg: "#1E2522", textOptions: [
     { id: "white", name: "White", color: "#FFFFFF" },
@@ -33,6 +35,14 @@ export const BACKGROUNDS = [
     { id: "black", name: "Black", color: "#000000" },
     { id: "charcoal", name: "#1E2522", color: "#1E2522" },
   ] },
+  { id: "black", name: "Black", bg: "#000000", textOptions: [
+    { id: "white", name: "White", color: "#FFFFFF" },
+    { id: "yellow", name: "Yellow", color: "#FFD944" },
+  ] },
+  { id: "green", name: "Green", bg: "#2a3834", textOptions: [
+    { id: "white", name: "White", color: "#FFFFFF" },
+    { id: "yellow", name: "Yellow", color: "#FFD944" },
+  ] },
   { id: "red", name: "Red", bg: "#C74F2F", textOptions: [
     { id: "white", name: "White", color: "#FFFFFF" },
     { id: "yellow", name: "Yellow", color: "#FFD944" },
@@ -40,6 +50,10 @@ export const BACKGROUNDS = [
   { id: "gold", name: "Gold", bg: "#EAA235", textOptions: [
     { id: "white", name: "White", color: "#FFFFFF" },
     { id: "charcoal", name: "#1E2522", color: "#1E2522" },
+  ] },
+  { id: "sage", name: "Sage", bg: "#597F5C", textOptions: [
+    { id: "white", name: "White", color: "#FFFFFF" },
+    { id: "yellow", name: "Yellow", color: "#FFD944" },
   ] },
 ];
 
