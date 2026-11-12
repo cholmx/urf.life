@@ -96,7 +96,7 @@ export function AnnouncementCard({ a, today, onEdit, onDelete, onTogglePublish, 
             {a.is_published && (
               <span style={{
                 fontFamily: font.display, fontSize: 9, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
-                color: '#FFFFFF', background: '#2B433E', border: '1px solid #2B433E', borderRadius: 4, padding: '2px 7px',
+                color: '#FFFFFF', background: '#4a6d65', border: '1px solid #4a6d65', borderRadius: 4, padding: '2px 7px',
               }}>Published</span>
             )}
           </div>

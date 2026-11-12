@@ -8,7 +8,7 @@ export default function SermonPodcast() {
       service={sermonPodcastRSSService}
       titleFallback="Sermon Podcast"
       subtitleFallback="Listen to our latest sermon episodes"
-      accentColor="#2B433E"
+      accentColor="#4a6d65"
       emptyStateText="Check back soon for new sermon episodes!"
     />
   );

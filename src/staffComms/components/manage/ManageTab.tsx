@@ -136,28 +136,28 @@ export function ManageTab({ announcements, today, onSave, onDelete, onTogglePubl
           <DashboardStat
             label="Slides Due"
             value={slidesPending.length}
-            accent={slidesPending.length > 0 ? '#EAA235' : '#2B433E'}
+            accent={slidesPending.length > 0 ? '#EAA235' : '#4a6d65'}
             sub={slidesPending.length > 0 ? 'Need making' : 'All caught up'}
             onClick={() => onNavigateTab?.('slideMaker')}
           />
           <DashboardStat
             label="Unpublished"
             value={unpublishedCount}
-            accent={unpublishedCount > 0 ? '#EAA235' : '#2B433E'}
+            accent={unpublishedCount > 0 ? '#EAA235' : '#4a6d65'}
             sub={unpublishedCount > 0 ? 'Not live yet' : 'All published'}
             onClick={() => { setUnpublishedOnly(v => !v); setStaleOnly(false); }}
           />
           <DashboardStat
             label="Stale Descriptions"
             value={staleCount}
-            accent={staleCount > 0 ? '#EAA235' : '#2B433E'}
+            accent={staleCount > 0 ? '#EAA235' : '#4a6d65'}
             sub={staleCount > 0 ? 'Written for a past date' : 'All up to date'}
             onClick={() => { setStaleOnly(v => !v); setUnpublishedOnly(false); }}
           />
           <DashboardStat
             label="Rental Requests"
             value={pendingRentals ?? 0}
-            accent={(pendingRentals ?? 0) > 0 ? '#EAA235' : '#2B433E'}
+            accent={(pendingRentals ?? 0) > 0 ? '#EAA235' : '#4a6d65'}
             sub={pendingRentals === null ? 'Loading...' : pendingRentals > 0 ? 'Awaiting review' : 'All handled'}
             onClick={() => onNavigateTab?.('rentals')}
           />

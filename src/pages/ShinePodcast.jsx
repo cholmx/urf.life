@@ -8,7 +8,7 @@ export default function ShinePodcast() {
       service={podcastRSSService}
       titleFallback="Shine Podcast"
       subtitleFallback="Listen to our latest podcast episodes"
-      accentColor="#2B433E"
+      accentColor="#4a6d65"
       emptyStateText="Check back soon for new podcast episodes!"
       normalizeTitleCase
       narrowSubtitle
