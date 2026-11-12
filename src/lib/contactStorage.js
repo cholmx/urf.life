@@ -37,7 +37,7 @@ export const submitContactForm = async (formData) => {
     return { data: null, error: null };
   } catch (error) {
     console.error('Error submitting contact form:', error);
-    return { data: null, error: error.message };
+    return { data: null, error: 'We could not send your message. Please try again.' };
   }
 };
 
@@ -71,7 +71,7 @@ export const submitRealmSignup = async (formData) => {
     return { data: null, error: null };
   } catch (error) {
     console.error('Error submitting realm signup:', error);
-    return { data: null, error: error.message };
+    return { data: null, error: 'We could not save your signup. Please try again.' };
   }
 };
 
@@ -119,7 +119,7 @@ export const submitFacilityRentalRequest = async (formData) => {
     return { data: null, error: null };
   } catch (error) {
     console.error('Error submitting facility rental request:', error);
-    return { data: null, error: error.message };
+    return { data: null, error: 'We could not submit your rental request. Please try again.' };
   }
 };
 
@@ -166,6 +166,6 @@ export const submitTableGroupSignup = async (formData) => {
     return { data: null, error: null };
   } catch (error) {
     console.error('Error submitting table group signup:', error);
-    return { data: null, error: error.message };
+    return { data: null, error: 'We could not save your signup. Please try again.' };
   }
 };
