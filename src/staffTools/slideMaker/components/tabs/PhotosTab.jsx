@@ -9,6 +9,9 @@ const OVERLAY_COLORS = [
   { id: "black", name: "Black", color: "#000000" },
   { id: "white", name: "White", color: "#FFFFFF" },
   { id: "green", name: "Green", color: "#2B433E" },
+  { id: "red", name: "Red", color: "#C74F2F" },
+  { id: "gold", name: "Gold", color: "#EAA235" },
+  { id: "sage", name: "Sage", color: "#597F5C" },
 ];
 
 export default function PhotosTab({photos, setPhotos, activePhoto, setActivePhoto, ov, setOv, blur, setBlur, overlayColor, setOverlayColor}) {
@@ -203,10 +206,10 @@ export default function PhotosTab({photos, setPhotos, activePhoto, setActivePhot
             <div style={{fontFamily: ui.display, fontSize: 10, fontWeight: 700, color: C.textSec, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6}}>
               Overlay Color
             </div>
-            <div style={{display: "flex", gap: 8}}>
+            <div style={{display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8}}>
               {OVERLAY_COLORS.map(o => (
                 <div key={o.id} onClick={() => setOverlayColor(o.color)} style={{
-                  flex: 1, display: "flex", alignItems: "center", gap: 6, padding: "6px 10px", cursor: "pointer",
+                  display: "flex", alignItems: "center", gap: 6, padding: "6px 10px", cursor: "pointer",
                   border: `2px solid ${overlayColor === o.color ? C.accent : C.border}`,
                   borderRadius: 6,
                   background: overlayColor === o.color ? C.accentBg : "transparent",

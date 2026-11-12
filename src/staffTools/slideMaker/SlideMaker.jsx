@@ -61,23 +61,37 @@ function pickRandomTexture(pool) {
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
-// Overlay choices for a dark-bucket texture - black or the brand green,
-// picked at random for some variety between slides.
-const DARK_OVERLAY_COLORS = ["#000000", "#2B433E"];
+// Overlay choices for a dark-bucket texture, picked at random for some
+// variety between slides. Black and the brand green pair fine with either
+// of the dark bucket's text colors (white or yellow). The three brand
+// accent colors (red, gold, sage) are medium-brightness, not dark/light -
+// they only read reliably with white text, so they force it rather than
+// leaving it to the bucket's own random white/yellow pick.
+const DARK_OVERLAY_OPTIONS = [
+  {color: "#000000", textColor: null},
+  {color: "#2B433E", textColor: null},
+  {color: "#C74F2F", textColor: "#FFFFFF"},
+  {color: "#EAA235", textColor: "#FFFFFF"},
+  {color: "#597F5C", textColor: "#FFFFFF"},
+];
 
 // Buckets the texture's average brightness into the dark/light background
-// it reads best against, randomly picks one of that bucket's two allowed
-// text colors (so a dark-bucket slide sometimes lands on yellow instead of
-// always white), and an overlay that nudges the texture toward a flatter,
-// more even tone so text stays readable over its own internal light/dark
-// variation.
+// it reads best against, picks an overlay (dark bucket: one of the five
+// options above; light bucket: always white), and a text color - the
+// overlay's own forced color when it has one, otherwise a random pick from
+// the bucket's two allowed text colors (so a dark-bucket slide sometimes
+// lands on yellow instead of always white). The overlay nudges the texture
+// toward a flatter, more even tone so text stays readable over its own
+// internal light/dark variation.
 function autoBrandForBrightness(brightness) {
   const bucket = brightness < 0.5 ? BACKGROUNDS[0] : BACKGROUNDS[1];
-  const textColor = bucket.textOptions[Math.floor(Math.random() * bucket.textOptions.length)].color;
-  const overlayColor = brightness < 0.5
-    ? DARK_OVERLAY_COLORS[Math.floor(Math.random() * DARK_OVERLAY_COLORS.length)]
-    : "#FFFFFF";
-  return {bgColor: bucket.bg, textColor, overlayColor};
+  const randomBucketTextColor = () => bucket.textOptions[Math.floor(Math.random() * bucket.textOptions.length)].color;
+
+  if (brightness < 0.5) {
+    const overlay = DARK_OVERLAY_OPTIONS[Math.floor(Math.random() * DARK_OVERLAY_OPTIONS.length)];
+    return {bgColor: bucket.bg, textColor: overlay.textColor || randomBucketTextColor(), overlayColor: overlay.color};
+  }
+  return {bgColor: bucket.bg, textColor: randomBucketTextColor(), overlayColor: "#FFFFFF"};
 }
 
 export default function SlideMaker({announcements, today, onToggleSlideMade}) {
