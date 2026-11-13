@@ -66,7 +66,8 @@ export default function PhotosTab({photos, setPhotos, activePhoto, setActivePhot
       await setPhotoIsTexture(photo.dbId, next);
     } catch (error) {
       setPhotos(prev => prev.map(p => (p && p.id === photo.id ? {...p, isTexture: !next} : p)));
-      toast.show('Could not update that photo. Please try again.', 'error');
+      console.error('Could not update is_texture for photo', photo.dbId, error);
+      toast.show(`Could not update that photo: ${error?.message || 'unknown error'}`, 'error');
     }
   };
 

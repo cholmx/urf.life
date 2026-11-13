@@ -217,8 +217,9 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
         next[index] = photo;
         return next;
       });
-    }).catch(() => {
-      if (!cancelled) toast.show('Could not load your photo library.', 'error');
+    }).catch((error) => {
+      console.error('Could not load the photo library:', error);
+      if (!cancelled) toast.show(`Could not load your photo library: ${error?.message || 'unknown error'}`, 'error');
     });
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -305,7 +306,8 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
       queuePreviewOverlayRef.current[a.id] = result.overlayColor;
       if (isMountedRef.current) setQueuePreviews(prev => ({...prev, [a.id]: result}));
     } catch (error) {
-      toast.show('Could not rebuild that slide. Please try again.', 'error');
+      console.error('Could not rebuild that slide:', error);
+      toast.show(`Could not rebuild that slide: ${error?.message || 'unknown error'}`, 'error');
     } finally {
       generatingQueuePreviewsRef.current.delete(a.id);
     }
@@ -485,7 +487,8 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
       setOv(auto.ov);
       setBlur(auto.blur);
     } catch (error) {
-      toast.show('Could not load an automatic background for this slide.', 'error');
+      console.error('Could not load an automatic background:', error);
+      toast.show(`Could not load an automatic background: ${error?.message || 'unknown error'}`, 'error');
     }
   }, [toast]);
 
