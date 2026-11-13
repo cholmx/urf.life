@@ -31,19 +31,31 @@ export default function PhotosTab({photos, setPhotos, activePhoto, setActivePhot
 
   const handleImportBuiltIns = async () => {
     setImporting(true);
-    try {
-      const existingNames = new Set(photos.filter(Boolean).map(p => p.name));
-      for (const path of TEXTURES) {
-        const name = path.split('/').pop();
-        if (existingNames.has(name)) continue;
+    const existingNames = new Set(photos.filter(Boolean).map(p => p.name));
+    let succeeded = 0;
+    let failed = 0;
+    // Each file gets its own try/catch - one bad file (a one-off network
+    // blip, a duplicate name) shouldn't abort the whole batch and leave
+    // every other texture unimported too.
+    for (const path of TEXTURES) {
+      const name = path.split('/').pop();
+      if (existingNames.has(name)) continue;
+      try {
         const photo = await importBuiltInTexture(path);
         setPhotos(prev => [...prev, photo]);
+        succeeded += 1;
+      } catch (error) {
+        failed += 1;
+        console.error(`Could not import built-in texture "${name}":`, error);
       }
-      toast.show('Built-in textures added to your library.', 'success');
-    } catch (error) {
-      toast.show('Could not import the built-in textures. Please try again.', 'error');
-    } finally {
-      setImporting(false);
+    }
+    setImporting(false);
+    if (failed === 0) {
+      toast.show(succeeded > 0 ? 'Built-in textures added to your library.' : 'Already imported.', 'success');
+    } else if (succeeded > 0) {
+      toast.show(`Imported ${succeeded}, but ${failed} failed. Check the browser console for details.`, 'warning');
+    } else {
+      toast.show('Could not import the built-in textures. Check the browser console for details.', 'error');
     }
   };
 
