@@ -1,15 +1,8 @@
-import { colors, fonts } from '../../styles/designTokens.js';
+import { colors, categoryColors, fonts } from '../../styles/designTokens.js';
 
-// Every color below is one of the site's five literal hexes, imported
-// from the one shared designTokens.js file (also consumed by
-// tailwind.config.js) instead of re-typed here - no invented tint, shade
-// or opacity blend standing in as a would-be sixth color. The category
-// badges (scope/happening_type/recurring) used to keep their own
-// informational hues (blue for event, purple for class, etc.), distinct
-// from the site's own chrome, so each type was instantly recognizable
-// without reading the label - now limited to the same five, so some of
-// that at-a-glance distinction is gone; they're differentiated by
-// bg/text/border combination instead of by hue.
+// Scope stays on the five core brand colors - whole_church/ministry read
+// as deliberately different weights of "how official is this" (near-black
+// vs the brand green), which is its own useful signal.
 export const scopeChipColors: Record<string, { bg: string; text: string; border: string }> = {
   whole_church:  { bg: colors.secondary, text: colors.white, border: colors.secondary },
   ministry:      { bg: colors.primary, text: colors.white, border: colors.primary },
@@ -22,10 +15,15 @@ export const scopeRangeColors: Record<string, string> = {
   informational: colors.gold,
 };
 
+// Happening type uses two of the core colors (gold, red) plus the two
+// category-only colors from designTokens.js - event used to share the
+// same dark green as the ministry scope pill right next to it on the
+// same card, so the two looked like one undifferentiated dark badge
+// instead of two separate pieces of information.
 export const happeningTypeChipColors: Record<string, { bg: string; text: string; border: string }> = {
-  announcement: { bg: colors.section, text: colors.secondary, border: colors.secondary },
-  event:        { bg: colors.primary, text: colors.white, border: colors.primary },
-  class:        { bg: colors.gold, text: colors.secondary, border: colors.gold },
+  announcement: { bg: categoryColors.blue, text: colors.white, border: categoryColors.blue },
+  event:        { bg: colors.gold, text: colors.secondary, border: colors.gold },
+  class:        { bg: categoryColors.plum, text: colors.white, border: categoryColors.plum },
   general:      { bg: colors.red, text: colors.white, border: colors.red },
 };
 

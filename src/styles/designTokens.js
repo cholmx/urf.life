@@ -28,6 +28,20 @@ export const colors = {
                          // like a separate card of its own
 };
 
+// A deliberately separate, small set from the five core colors above -
+// those five intentionally read as near-neutrals (dark green, near-black
+// charcoal) so they work as chrome (buttons, borders, text) anywhere on
+// the site, but that's exactly why two of them side by side on a small
+// category badge (e.g. the admin announcement list's "Event" type next
+// to its "Ministry" scope) both just read as "a dark pill" instead of as
+// two different categories. These two exist only so category badges -
+// ScopePill/HappeningTypePill in staffComms/lib/theme.ts - can tell their
+// options apart at a glance; nothing else should use them.
+export const categoryColors = {
+  blue: '#3D6B8C',  // muted slate blue
+  plum: '#7D5577',  // muted plum
+};
+
 // As arrays for tailwind.config.js's fontFamily (each entry joined with
 // ", " at build time) and as the equivalent pre-joined strings for every
 // other consumer - literal CSS, inline styles, generated HTML - which
