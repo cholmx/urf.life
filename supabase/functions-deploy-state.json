@@ -1,13 +1,17 @@
 {
   "projectId": "60094306",
   "functions": {
-    "admin-login": {
+    "admin-bootstrap": {
       "hasChanged": false,
-      "hash": "e4154845867c72a50987e339042c66396a31bfce7fa34c7197c442bc6fb43d87"
+      "hash": "3119b6f0c0c1845506c413b3efbf1799320b119925a3ff74719a82d34b32374e"
     },
     "generate-script": {
       "hasChanged": false,
       "hash": "dfdeed64379d5204be4d8c75436e258ee8a8508bc51ac3352724d871e8340267"
+    },
+    "invite-staff": {
+      "hasChanged": false,
+      "hash": "57715372f89e2f43cc49930a084c643237ad9e52cdab6e4d3ebe4b45703fb8f7"
     },
     "send-rental-email": {
       "hasChanged": false,
