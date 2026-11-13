@@ -1,7 +1,8 @@
 import React, {useRef, useState} from 'react';
 import {C, ui} from '../../constants/styles';
+import {TEXTURES} from '../../constants/data';
 import Slider from '../Slider';
-import {uploadPhoto, deletePhoto, isDuplicatePhoto, setPhotoIsTexture} from '../../services/photoService';
+import {uploadPhoto, deletePhoto, isDuplicatePhoto, setPhotoIsTexture, importBuiltInTexture} from '../../services/photoService';
 import {useToast} from '../../hooks/useToast';
 import ConfirmDialog from '../ConfirmDialog';
 
@@ -19,7 +20,32 @@ export default function PhotosTab({photos, setPhotos, activePhoto, setActivePhot
   const [dragging, setDragging] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [importing, setImporting] = useState(false);
   const toast = useToast();
+
+  // One-time action: pulls the app's bundled seed textures into this same
+  // library (as real, deletable, toggleable photos) instead of them living
+  // as a separate hardcoded pool - once any of them (or anything else) is
+  // flagged as a texture, there's no need to keep offering this.
+  const hasAnyTexture = photos.some(p => p && p.isTexture);
+
+  const handleImportBuiltIns = async () => {
+    setImporting(true);
+    try {
+      const existingNames = new Set(photos.filter(Boolean).map(p => p.name));
+      for (const path of TEXTURES) {
+        const name = path.split('/').pop();
+        if (existingNames.has(name)) continue;
+        const photo = await importBuiltInTexture(path);
+        setPhotos(prev => [...prev, photo]);
+      }
+      toast.show('Built-in textures added to your library.', 'success');
+    } catch (error) {
+      toast.show('Could not import the built-in textures. Please try again.', 'error');
+    } finally {
+      setImporting(false);
+    }
+  };
 
   const handleToggleTexture = async (photo) => {
     const next = !photo.isTexture;
@@ -191,10 +217,25 @@ export default function PhotosTab({photos, setPhotos, activePhoto, setActivePhot
         </div>
       </div>
 
+      {!hasAnyTexture && (
+        <button
+          onClick={handleImportBuiltIns}
+          disabled={importing}
+          style={{
+            width: "100%", marginBottom: 10, padding: "8px 12px", border: `1px solid ${C.border}`,
+            borderRadius: 8, background: C.cardAlt, color: C.accentDark,
+            fontFamily: ui.display, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em",
+            cursor: importing ? "wait" : "pointer",
+          }}
+        >
+          {importing ? "Importing…" : "⬇ Import the 15 Built-in Textures"}
+        </button>
+      )}
+
       {photos.length > 0 && (
         <>
           <div style={{fontFamily: ui.body, fontSize: 10, color: C.textTer, marginBottom: 6}}>
-            ✨ on a photo adds it to the pool of automatic backgrounds used when building a slide from the queue, alongside the 10 built-in textures.
+            ✨ on a photo adds it to the pool of automatic backgrounds used when building a slide from the queue.
           </div>
           <PhotoGrid selectedImg={activePhoto} onSelect={setActivePhoto} />
         </>

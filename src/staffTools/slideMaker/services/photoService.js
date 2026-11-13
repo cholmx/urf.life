@@ -169,3 +169,19 @@ export async function setPhotoIsTexture(dbId, isTexture) {
 
   if (error) throw error;
 }
+
+// Pulls one of the app's bundled /slide-textures seed images in as a real
+// library photo (upload + flag is_texture), so it behaves exactly like
+// anything staff upload themselves - same storage, same delete/un-texture
+// controls, same automatic-background pool - instead of living as a
+// separate hardcoded list. Used by the Photos tab's one-time "Import
+// built-in textures" action.
+export async function importBuiltInTexture(path) {
+  const response = await fetch(path);
+  const blob = await response.blob();
+  const name = path.split('/').pop();
+  const file = new File([blob], name, { type: blob.type || 'image/jpeg' });
+  const photo = await uploadPhoto(file);
+  await setPhotoIsTexture(photo.dbId, true);
+  return { ...photo, isTexture: true };
+}

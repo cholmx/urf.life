@@ -2,7 +2,7 @@ import React, {useState, useRef, useEffect, useCallback, useMemo} from 'react';
 import useGoogleFonts from './hooks/useGoogleFonts';
 import {ToastProvider, useToast} from './hooks/useToast.jsx';
 import {useUndoHistory} from './hooks/useUndoHistory';
-import {BACKGROUNDS, HEADLINE_FONT, HEADLINE_WEIGHT, BODY_FONT, BODY_WEIGHT, ASPECT_RATIOS, TEXTURES} from './constants/data';
+import {BACKGROUNDS, HEADLINE_FONT, HEADLINE_WEIGHT, BODY_FONT, BODY_WEIGHT, ASPECT_RATIOS} from './constants/data';
 import {C, ui} from './constants/styles';
 import {sharpenCanvas, loadImage, averageBrightness} from './utils/canvasUtils';
 import {render} from './utils/renderEngine';
@@ -38,13 +38,13 @@ const DEFAULT_BRAND = {
   hLetterSpacing: 0,
 };
 
-// The automatic-background pool: the 10 built-in textures (as src strings,
-// loaded on demand) plus any photo in the library staff have flagged with
-// the ✨ toggle in the Photos tab (already loaded - see getPhotos below) -
-// lets the pool grow from the admin UI without a code change.
+// The automatic-background pool is simply every photo in the library
+// flagged as a texture with the ✨ toggle in the Photos tab (already
+// loaded - see getPhotos below) - built-in or staff-uploaded, no
+// distinction. See PhotosTab's "Import built-in textures" action for how
+// the original set gets into that same library in the first place.
 function getTexturePool(photos) {
-  const library = (photos || []).filter(p => p && p.isTexture).map(p => ({img: p.img}));
-  return [...TEXTURES.map(src => ({src})), ...library];
+  return (photos || []).filter(p => p && p.isTexture).map(p => ({img: p.img}));
 }
 
 // Deterministic per-event pick (same event always lands on the same

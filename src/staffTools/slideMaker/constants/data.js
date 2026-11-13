@@ -62,9 +62,12 @@ export const TEMPLATES = [
   { id: "left_block", name: "Left Aligned" },
 ];
 
-// Curated subtle backgrounds for automatic slide generation - picked per
-// event instead of a stock-photo search, so every auto-generated slide
-// looks intentional and on-brand rather than hit-or-miss relevant.
+// Seed images for the Photos tab's one-time "Import built-in textures"
+// action (see PhotosTab.jsx / photoService.js's importBuiltInTexture) -
+// not read anywhere else. Once imported they're ordinary photo-library
+// rows like anything staff upload themselves, and the automatic
+// background pool (SlideMaker.jsx's getTexturePool) reads only from that
+// library, never from this array directly.
 export const TEXTURES = [
   "/slide-textures/texture-1.jpg",
   "/slide-textures/texture-2.jpg",
