@@ -78,8 +78,13 @@ Deno.serve(async (req: Request) => {
     // Supabase errors here if this email already has an account (e.g.
     // re-inviting someone who already accepted and signed in once) - the
     // role row above is what actually matters in that case, so only a
-    // genuine failure should abort the request.
-    if (inviteError && !/already registered|already exists/i.test(inviteError.message || '')) {
+    // genuine failure should abort the request. Checked loosely (not an
+    // exact phrase) since Supabase's actual wording is "already been
+    // registered", not "already registered" back to back.
+    const lowerMsg = (inviteError?.message || '').toLowerCase();
+    const isAlreadyRegistered = lowerMsg.includes('already')
+      && (lowerMsg.includes('regist') || lowerMsg.includes('exist'));
+    if (inviteError && !isAlreadyRegistered) {
       throw inviteError;
     }
 

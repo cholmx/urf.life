@@ -3,7 +3,7 @@ import {Link} from 'react-router-dom';
 import {motion,AnimatePresence} from 'framer-motion';
 import { FiPlay, FiBookOpen, FiHome, FiLock, FiStar, FiHeart, FiUsers, FiUserPlus, FiTrendingUp, FiMessageSquare, FiGrid, FiLogOut, FiInbox, FiMic, FiPrinter, FiCalendar, FiArchive, FiMail, FiImage, FiClipboard, FiMenu, FiX, FiKey } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
-import supabase from '../lib/supabase';
+import supabase, {extractFunctionErrorMessage} from '../lib/supabase';
 import {SkeletonBox,LoadingTransition} from '../components/LoadingSkeletons';
 import {StaffCommsStyles} from '../staffComms/components/StaffCommsStyles';
 import {ErrorToastContainer} from '../staffComms/components/ui/ErrorToast';
@@ -259,9 +259,10 @@ const Admin=()=> {
       const {data,error: bootstrapError}=await supabase.functions.invoke('admin-bootstrap',{
         body: {redirectTo: window.location.origin}
       });
-      if (bootstrapError || data?.error) {
-        throw new Error(data?.error || bootstrapError?.message || 'Could not send the setup link.');
+      if (bootstrapError) {
+        throw new Error(await extractFunctionErrorMessage(bootstrapError,'Could not send the setup link.'));
       }
+      if (data?.error) throw new Error(data.error);
       setBootstrapSent(true);
     } catch (err) {
       console.error('Admin bootstrap failed:',err);

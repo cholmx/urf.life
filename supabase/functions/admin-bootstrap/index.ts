@@ -89,10 +89,17 @@ Deno.serve(async (req: Request) => {
 
     // Already has an account (e.g. bootstrapped once before) - nothing left
     // to do here, the normal sign-in-link path now works for this address.
-    if (inviteError && !/already registered|already exists/i.test(inviteError.message || '')) {
+    // Supabase's actual wording is "already been registered" (not
+    // "already registered" back to back), so this checks loosely for both
+    // words appearing rather than an exact phrase, to not misfire into the
+    // 500 below on a harmless re-bootstrap attempt.
+    const alreadyRegistered = (inviteError?.message || '').toLowerCase();
+    const isAlreadyRegistered = alreadyRegistered.includes('already')
+      && (alreadyRegistered.includes('regist') || alreadyRegistered.includes('exist'));
+    if (inviteError && !isAlreadyRegistered) {
       recordFailure(key, now);
       console.error('admin-bootstrap inviteUserByEmail failed:', inviteError);
-      return new Response(JSON.stringify({ error: 'Could not send the sign-in link.' }), {
+      return new Response(JSON.stringify({ error: inviteError.message || 'Could not send the sign-in link.' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });

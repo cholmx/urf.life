@@ -5,7 +5,7 @@ import { SkeletonTable, LoadingTransition } from './LoadingSkeletons';
 import { useSupabaseCrud } from '../hooks/useSupabaseCrud';
 import { useToast } from '../hooks/useToast';
 import { useConfirm } from '../hooks/useConfirm';
-import supabase from '../lib/supabase';
+import supabase, { extractFunctionErrorMessage } from '../lib/supabase';
 
 const ADMIN_EMAIL = 'chris@urfellowship.com';
 
@@ -37,9 +37,10 @@ const AdminStaffAccess = () => {
           redirectTo: window.location.origin,
         },
       });
-      if (error || data?.error) {
-        throw new Error(data?.error || error?.message || 'Could not send the invite.');
+      if (error) {
+        throw new Error(await extractFunctionErrorMessage(error, 'Could not send the invite.'));
       }
+      if (data?.error) throw new Error(data.error);
       toast.success(`Invited ${cleanEmail}.`);
       setEmail('');
       await fetchItems();
