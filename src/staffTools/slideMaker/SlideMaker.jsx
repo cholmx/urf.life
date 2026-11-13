@@ -298,6 +298,9 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     generatingQueuePreviewsRef.current.add(a.id);
     try {
       const pool = getTexturePool(photos);
+      if (pool.length === 0) {
+        throw new Error('No background textures are flagged yet. Mark some photos with the sparkle icon in the Photos tab.');
+      }
       const idx = queueItems.findIndex(q => q.id === a.id);
       const prevId = idx > 0 ? queueItems[idx - 1].id : null;
       const avoid = [queuePreviewOverlayRef.current[a.id], prevId && queuePreviewOverlayRef.current[prevId]].filter(Boolean);
