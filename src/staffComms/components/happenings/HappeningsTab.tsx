@@ -29,7 +29,7 @@ export function HappeningsTab({ announcements, today }: HappeningsTabProps) {
   const [copied, copy] = useCopyToClipboard();
 
   const active = announcements.filter(a => isHappeningsActive(a, today));
-  const assembledHtml = useMemo(() => buildHappeningsScript(active), [active]);
+  const assembledHtml = useMemo(() => buildHappeningsScript(active, today), [active, today]);
 
   // Recurring items' Description is free text staff wrote once (often for
   // a specific past occurrence, e.g. "join us this Thursday the 4th") -

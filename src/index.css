@@ -328,9 +328,9 @@
 }
 .happenings-script h3 {
   font-family: 'Inter Tight', sans-serif;
-  font-size: 2.25em;
+  font-size: 1.75em;
   font-weight: 700;
-  line-height: 1.1;
+  line-height: 1.25;
   letter-spacing: -0.02em;
   /* !important: the happenings-script container is always rendered
      inside a .card-clay card (both the public page and the admin
@@ -341,16 +341,24 @@
      win over the other. */
   color: #1E2522 !important;
   margin: 0 0 0.2em;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  column-gap: 0.6em;
 }
 .happenings-script h3:not(:first-child) {
   margin-top: 1.4em;
 }
-.happenings-script h3 + p {
-  margin: 0 0 1.2em;
+/* The when/where text - now a span inside the title itself rather than
+   its own paragraph below it, so it reads beside the title instead of
+   on its own line. The h3's flex layout above is what actually puts it
+   there; this just sizes/colors it smaller and lighter than the title. */
+.happenings-script h3 .happening-when {
   font-family: 'Inter Tight', sans-serif;
-  font-size: 1.3em;
+  font-size: 0.5em;
   color: #597F5C;
   font-weight: 700;
+  letter-spacing: 0;
 }
 .happenings-script strong {
   font-weight: 700;

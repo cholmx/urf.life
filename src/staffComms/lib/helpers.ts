@@ -100,10 +100,19 @@ const HAPPENINGS_RECURRING_LABEL_TYPES: RecurrenceType[] = ['weekly', 'biweekly'
 
 // Mirrors the "when" label shown elsewhere (e.g. the printed weekly
 // bulletin) - prefer the human-written recurrence_label for anything that
-// repeats, otherwise fall back to the actual date(s).
-function happeningsWhenLabel(a: Announcement): string {
+// repeats, otherwise fall back to the actual date(s). The date fallback
+// goes through getNextOccurrenceDate rather than reading a.event_date
+// directly - for a one-time item that's a no-op (it just returns
+// event_date unchanged), but for a recurring item with no recurrence_label
+// written yet, a.event_date is only ever its very first-ever session, so
+// reading it straight would show that same date forever, the same bug
+// EventRegistration.jsx had on the public Events page.
+function happeningsWhenLabel(a: Announcement, today: string): string {
   if (HAPPENINGS_RECURRING_LABEL_TYPES.includes(a.recurrence_type) && a.recurrence_label) return a.recurrence_label;
-  if (a.event_date) return formatDateNice(a.event_date);
+  if (a.event_date) {
+    const next = getNextOccurrenceDate(a, today);
+    if (next) return formatDateNice(next);
+  }
   if (a.event_dates?.length) return a.event_dates.map(formatDateNice).join(', ');
   return '';
 }
@@ -116,19 +125,25 @@ function happeningsWhenLabel(a: Announcement): string {
 // the item is what goes out. Shared by the admin Happenings tab's live
 // preview and the public /announcements page's live render, so both
 // always show exactly the same thing with no separate build/save step.
-export function buildHappeningsScript(items: Announcement[]): string {
+export function buildHappeningsScript(items: Announcement[], today: string): string {
   if (items.length === 0) {
     return scriptTextToHtml(`Nothing officially scheduled this week, but we'd still love to see you. Check urf.life for anything that might come up.`);
   }
   const sections = items.map(a => {
     const description = (a.flyer_text || a.short_version || '').trim();
     const whenWhere = [
-      [happeningsWhenLabel(a), a.event_time ? formatTime12h(a.event_time) : ''].filter(Boolean).join(' · '),
+      [happeningsWhenLabel(a, today), a.event_time ? formatTime12h(a.event_time) : ''].filter(Boolean).join(' · '),
       a.event_location || '',
     ].filter(Boolean).join(' · ');
 
-    let html = `<h3>${escapeHtml(a.title)}</h3>`;
-    if (whenWhere) html += `<p><strong>${escapeHtml(whenWhere)}</strong></p>`;
+    // when/where sits inside the same <h3> as the title (as a trailing
+    // span), not in its own paragraph below it - see the CSS for how
+    // that's laid out. The literal space before the span keeps plain-text
+    // copies (scriptHtmlToText) reading as "Title When · Where" on one
+    // line instead of running the two together with no separator.
+    let html = `<h3>${escapeHtml(a.title)}`;
+    if (whenWhere) html += ` <span class="happening-when">${escapeHtml(whenWhere)}</span>`;
+    html += `</h3>`;
     if (description) html += scriptTextToHtml(description);
     if (a.link) html += `<p><a href="${escapeHtml(a.link)}" target="_blank" rel="noopener noreferrer">Register Here</a></p>`;
     return html;

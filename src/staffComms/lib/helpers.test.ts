@@ -489,7 +489,7 @@ describe('getActiveMonthlyItems', () => {
 // output for the same items, with no separate build/save step in between.
 describe('buildHappeningsScript', () => {
   it('falls back to a friendly message when nothing is active', () => {
-    expect(buildHappeningsScript([])).toContain('Nothing officially scheduled this week');
+    expect(buildHappeningsScript([], TODAY)).toContain('Nothing officially scheduled this week');
   });
 
   it('includes the title, when/where, and description', () => {
@@ -500,8 +500,11 @@ describe('buildHappeningsScript', () => {
       event_location: 'Fellowship Hall',
       flyer_text: 'Join us for food and fellowship.',
     });
-    const html = buildHappeningsScript([a]);
-    expect(html).toContain('<h3>Men\'s Breakfast</h3>');
+    const html = buildHappeningsScript([a], TODAY);
+    // Title and when/where now share one <h3> (the when/where is a nested
+    // span) rather than the title getting its own closing tag before a
+    // separate paragraph - see buildHappeningsScript's own comment.
+    expect(html).toContain('<h3>Men\'s Breakfast <span class="happening-when">');
     expect(html).toContain('Fellowship Hall');
     expect(html).toContain('Join us for food and fellowship.');
   });
@@ -514,14 +517,35 @@ describe('buildHappeningsScript', () => {
       recurrence_label: 'Every Wednesday',
       event_date: '2026-11-04',
     });
-    const html = buildHappeningsScript([a]);
+    const html = buildHappeningsScript([a], TODAY);
     expect(html).toContain('Every Wednesday');
     expect(html).not.toContain('Nov 4');
   });
 
+  // The actual bug: a recurring item with no recurrence_label yet (an
+  // admin can leave it blank) used to fall back to a.event_date, which
+  // only ever holds the very first session - URFamily Lunch showed
+  // "Sep 13" long after that date had passed, same root cause as the
+  // public Events page bug. The fallback now goes through
+  // getNextOccurrenceDate instead, same as every other consumer.
+  it('falls back to the next occurrence, not the stale first-ever date, when there is no recurrence_label', () => {
+    const a = makeAnnouncement({
+      title: 'URFamily Lunch',
+      is_recurring: true,
+      recurrence_type: 'monthly',
+      recurrence_day: 'Sunday',
+      recurrence_week_of_month: 'second',
+      recurrence_label: '',
+      event_date: '2026-01-11', // second Sunday of January - long past TODAY
+    });
+    const html = buildHappeningsScript([a], TODAY);
+    expect(html).not.toContain('Jan 11');
+    expect(html).toContain('Oct 11'); // second Sunday of October, the real next occurrence from TODAY
+  });
+
   it('links to the registration URL when the item has one', () => {
     const a = makeAnnouncement({ title: 'Fall Retreat', link: 'https://example.com/retreat' });
-    const html = buildHappeningsScript([a]);
+    const html = buildHappeningsScript([a], TODAY);
     expect(html).toContain('href="https://example.com/retreat"');
     expect(html).toContain('Register Here');
   });
@@ -529,7 +553,7 @@ describe('buildHappeningsScript', () => {
   it('joins multiple items in order', () => {
     const a = makeAnnouncement({ title: 'First Item' });
     const b = makeAnnouncement({ title: 'Second Item' });
-    const html = buildHappeningsScript([a, b]);
+    const html = buildHappeningsScript([a, b], TODAY);
     expect(html.indexOf('First Item')).toBeLessThan(html.indexOf('Second Item'));
   });
 });

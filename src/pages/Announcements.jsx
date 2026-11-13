@@ -39,7 +39,7 @@ const Announcements=()=> {
         .eq('show_in_happenings',true);
       if (itemsError) throw itemsError;
       const active=(items || []).filter(a=> isHappeningsActive(a,today));
-      const assembledHtml=buildHappeningsScript(active);
+      const assembledHtml=buildHappeningsScript(active,today);
 
       // The Weekly Note is the one piece staff actually write and save -
       // only shown if they've written one for this exact week, no
