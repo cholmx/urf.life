@@ -1,7 +1,7 @@
 import React,{useState,useEffect,lazy,Suspense} from 'react';
 import {Link} from 'react-router-dom';
 import {motion,AnimatePresence} from 'framer-motion';
-import { FiPlay, FiBookOpen, FiHome, FiLock, FiStar, FiHeart, FiUsers, FiTrendingUp, FiMessageSquare, FiGrid, FiLogOut, FiInbox, FiMic, FiPrinter, FiCalendar, FiArchive, FiMail, FiImage, FiClipboard, FiMenu, FiX, FiKey } from 'react-icons/fi';
+import { FiPlay, FiBookOpen, FiHome, FiLock, FiStar, FiHeart, FiUsers, FiUserPlus, FiTrendingUp, FiMessageSquare, FiGrid, FiLogOut, FiInbox, FiMic, FiPrinter, FiCalendar, FiArchive, FiMail, FiImage, FiClipboard, FiMenu, FiX, FiKey } from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import supabase from '../lib/supabase';
 import {SkeletonBox,LoadingTransition} from '../components/LoadingSkeletons';
@@ -27,6 +27,7 @@ const AdminMinistries = lazy(() => import('../components/AdminMinistries'));
 const AdminStaffContacts = lazy(() => import('../components/AdminStaffContacts'));
 const AdminCapitalCampaign = lazy(() => import('../components/AdminCapitalCampaign'));
 const AdminComments = lazy(() => import('../components/AdminComments'));
+const AdminStaffAccess = lazy(() => import('../components/AdminStaffAccess'));
 const AdminDashboard = lazy(() => import('../components/AdminDashboard'));
 const AdminSubmissions = lazy(() => import('../components/AdminSubmissions'));
 const AdminRentals = lazy(() => import('../components/AdminRentals'));
@@ -75,12 +76,34 @@ const NAV_SECTIONS=[
       {id: 'signupSheet',label: 'Sign-up Sheets',icon: FiClipboard},
     ],
   },
+  {
+    label: 'Admin',
+    items: [
+      {id: 'staffAccess',label: 'Staff Access',icon: FiUserPlus},
+    ],
+  },
 ];
 
 const ALL_TABS=NAV_SECTIONS.flatMap((section)=> section.items);
 
+// The one real admin identity - see the staff_users_portal123 migration
+// and the invite-staff edge function, which both hardcode this same
+// address as the only one allowed to invite/manage other staff logins.
+const ADMIN_EMAIL='chris@urfellowship.com';
+
+// Every section a `staff`-role login is allowed to see, both in the nav
+// and (defensively, in renderContent below) even if activeTab somehow
+// ends up pointed at something restricted. Everything NOT listed here
+// (Archive, Sermons, Resources, Ministries, Staff Contacts, Featured
+// Buttons, Growth Campaign, Comments, and this file's own Staff Access
+// screen) is admin-only.
+const STAFF_ALLOWED_TABS=new Set([
+  'overview','submissions','rentals','calendar','happenings',
+  'stageScript','printables','slideMaker','signupSheet',
+]);
+
 // Matches the real login card's shape (icon circle, title, subtitle, one
-// password field, one submit button) rather than the generic multi-field
+// email field, one submit button) rather than the generic multi-field
 // SkeletonForm, which was roughly 4x too big for this one-field form.
 const LoginSkeleton=()=> (
   <div className="bg-white rounded-3xl shadow-modern-lg p-8 max-w-md w-full mx-4">
@@ -110,7 +133,13 @@ const AdminSectionSkeleton=()=> (
 const Admin=()=> {
   const [isAuthenticated,setIsAuthenticated]=useState(false);
   const [checkingSession,setCheckingSession]=useState(true);
-  const [password,setPassword]=useState('');
+  // null while unknown/resolving, 'admin' | 'staff' once resolved, or
+  // 'denied' for a real session whose email has no staff_users_portal123
+  // row - see the resolveRole/signOut effects below.
+  const [role,setRole]=useState(null);
+  const [deniedEmail,setDeniedEmail]=useState(null);
+  const [email,setEmail]=useState('');
+  const [linkSent,setLinkSent]=useState(false);
   const [error,setError]=useState('');
   const [activeTab,setActiveTab]=useState('overview');
   const [loading,setLoading]=useState(false);
@@ -124,37 +153,69 @@ const Admin=()=> {
   const happenings=useHappeningsData(isAuthenticated,()=> setActiveTab('overview'));
 
   useEffect(()=> {
+    let cancelled=false;
+
+    // A real Supabase session only proves someone clicked a sign-in link
+    // for that email - it says nothing about whether they're actually
+    // allowed into /admin. staff_users_portal123 is the real gate: no row
+    // there means no access, regardless of how legitimate the session is.
+    const resolveRole=async (session)=> {
+      const sessionEmail=session?.user?.email || null;
+      if (!sessionEmail) {
+        setRole(null);
+        return;
+      }
+      const {data,error: roleError}=await supabase
+        .from('staff_users_portal123')
+        .select('role')
+        .eq('email',sessionEmail.toLowerCase())
+        .maybeSingle();
+      if (cancelled) return;
+      if (roleError || !data) {
+        setDeniedEmail(sessionEmail);
+        setRole('denied');
+        return;
+      }
+      setDeniedEmail(null);
+      setRole(data.role);
+    };
+
     supabase.auth.getSession().then(({data: {session}})=> {
       setIsAuthenticated(!!session);
-      setCheckingSession(false);
+      resolveRole(session).finally(()=> { if (!cancelled) setCheckingSession(false); });
     });
     const {data: listener}=supabase.auth.onAuthStateChange((_event,session)=> {
       setIsAuthenticated(!!session);
+      resolveRole(session);
     });
-    return ()=> listener.subscription.unsubscribe();
+    return ()=> { cancelled=true; listener.subscription.unsubscribe(); };
   },[]);
 
-  const handlePasswordSubmit=async (e)=> {
+  // A denied login shouldn't linger with a live session just because the
+  // UI hasn't gotten around to signing it out yet - deniedEmail (set just
+  // above, right before this fires) is what actually drives the message
+  // shown on the login screen afterward.
+  useEffect(()=> {
+    if (role==='denied') {
+      supabase.auth.signOut();
+    }
+  },[role]);
+
+  const handleEmailSubmit=async (e)=> {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setDeniedEmail(null);
     try {
-      const {data,error: fnError}=await supabase.functions.invoke('admin-login',{
-        body: {password}
-      });
-      if (fnError || data?.error) {
-        throw new Error(data?.error || fnError?.message || 'Invalid password');
-      }
-      const {error: otpError}=await supabase.auth.verifyOtp({
-        token_hash: data.token,
-        type: 'magiclink'
+      const {error: otpError}=await supabase.auth.signInWithOtp({
+        email: email.trim().toLowerCase(),
+        options: {emailRedirectTo: `${window.location.origin}/#/admin`}
       });
       if (otpError) throw otpError;
-      setPassword('');
+      setLinkSent(true);
     } catch (err) {
-      console.error('Admin login failed:',err);
-      setError(err?.message || 'Login failed. Please try again.');
-      setPassword('');
+      console.error('Sign-in link request failed:',err);
+      setError(err?.message || 'Could not send the sign-in link. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -196,6 +257,19 @@ const Admin=()=> {
   };
 
   const renderContent=()=> {
+    // Defense in depth: the nav already hides restricted sections from a
+    // `staff` login, but activeTab is still plain state - this stops a
+    // forced/stale value (e.g. the bell's deep link, or state left over
+    // from before a role downgrade) from ever actually rendering one.
+    if (role!=='admin' && !STAFF_ALLOWED_TABS.has(activeTab)) {
+      return (
+        <div className="bg-white rounded-2xl shadow-modern p-8 text-center">
+          <p className="text-neutral-600">
+            You don't have access to this section. Contact {ADMIN_EMAIL} if you think this is a mistake.
+          </p>
+        </div>
+      );
+    }
     switch (activeTab) {
       case 'overview':
         return (
@@ -284,6 +358,8 @@ const Admin=()=> {
         return <AdminCapitalCampaign />;
       case 'comments':
         return <AdminComments />;
+      case 'staffAccess':
+        return <AdminStaffAccess />;
       case 'slideMaker':
         return (
           <SlideMaker
@@ -304,15 +380,25 @@ const Admin=()=> {
     }
   };
 
-  // Password protection screen
-  if (!isAuthenticated) {
-    if (checkingSession) {
-      return (
-        <div className="admin-shell min-h-screen py-12 flex items-center justify-center bg-accent">
-          <LoginSkeleton />
-        </div>
-      );
-    }
+  // Still finding out whether there's a session, and - if there is - what
+  // its email is actually allowed to do. Shown for the initial check AND
+  // for the brief window right after a session appears (fresh sign-in,
+  // or returning with one already) while the role lookup is in flight -
+  // without this, a `staff` login would flash the full nav for an
+  // instant before narrowing down to its real sections.
+  const resolvingRole=isAuthenticated && role===null;
+  if (checkingSession || resolvingRole) {
+    return (
+      <div className="admin-shell min-h-screen py-12 flex items-center justify-center bg-accent">
+        <LoginSkeleton />
+      </div>
+    );
+  }
+
+  // Login screen: no session yet, or a session whose email isn't in
+  // staff_users_portal123 (role==='denied' - see the signOut effect above,
+  // which is already unwinding that session as this renders).
+  if (!isAuthenticated || role==='denied') {
     return (
       <div className="admin-shell min-h-screen py-12 flex items-center justify-center relative bg-accent">
         {/* Back to Home Button - Top Right */}
@@ -341,35 +427,54 @@ const Admin=()=> {
                 Admin Access
               </h1>
               <p className="text-neutral-500">
-                Please enter the admin password to continue
+                {linkSent
+                  ? 'Check your email for a sign-in link.'
+                  : "Enter your email and we'll send you a one-click sign-in link."}
               </p>
             </div>
-            <form onSubmit={handlePasswordSubmit} className="space-y-4">
-              <div>
-                <label className="admin-label">Password</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e)=> setPassword(e.target.value)}
-                  required
-                  className="admin-input"
-                  placeholder="Enter admin password"
-                  autoFocus
-                />
+
+            {deniedEmail && (
+              <div className="text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm mb-4">
+                {deniedEmail} isn't authorized for admin access. Contact {ADMIN_EMAIL} to request access.
               </div>
-              {error && (
-                <div className="text-red-600 text-sm">
-                  {error}
-                </div>
-              )}
+            )}
+
+            {linkSent ? (
               <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-neutral-900 text-white py-3 px-6 rounded-xl font-semibold hover:bg-neutral-700 transition-colors disabled:opacity-50 active:scale-[0.98]"
+                type="button"
+                onClick={()=> { setLinkSent(false); setEmail(''); }}
+                className="w-full bg-white border border-neutral-200 text-neutral-700 py-3 px-6 rounded-xl font-semibold hover:bg-neutral-50 transition-colors"
               >
-                {loading ? 'Authenticating...' : 'Access Admin Dashboard'}
+                Use a different email
               </button>
-            </form>
+            ) : (
+              <form onSubmit={handleEmailSubmit} className="space-y-4">
+                <div>
+                  <label className="admin-label">Email</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e)=> setEmail(e.target.value)}
+                    required
+                    className="admin-input"
+                    placeholder="you@example.com"
+                    autoFocus
+                  />
+                </div>
+                {error && (
+                  <div className="text-red-600 text-sm">
+                    {error}
+                  </div>
+                )}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-neutral-900 text-white py-3 px-6 rounded-xl font-semibold hover:bg-neutral-700 transition-colors disabled:opacity-50 active:scale-[0.98]"
+                >
+                  {loading ? 'Sending...' : 'Send Sign-in Link'}
+                </button>
+              </form>
+            )}
           </motion.div>
         </LoadingTransition>
       </div>
@@ -378,9 +483,17 @@ const Admin=()=> {
 
   const activeLabel=ALL_TABS.find((t)=> t.id===activeTab)?.label || 'Overview';
 
+  // A `staff` login only ever sees the sections it's allowed into - an
+  // admin still sees every section, same as before this all existed.
+  const visibleNavSections=role==='admin'
+    ? NAV_SECTIONS
+    : NAV_SECTIONS
+        .map((section)=> ({...section,items: section.items.filter((item)=> STAFF_ALLOWED_TABS.has(item.id))}))
+        .filter((section)=> section.items.length > 0);
+
   const NavList=()=> (
     <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-6">
-      {NAV_SECTIONS.map((section,i)=> (
+      {visibleNavSections.map((section,i)=> (
         <div key={section.label || `top-${i}`}>
           {section.label && (
             <div className="px-3 mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-white/35">
