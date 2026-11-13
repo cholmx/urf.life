@@ -1,5 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
+import { Image, EyeOff, Clock, Key, Search } from 'lucide-react';
 import { C, font, scopeChipColors, happeningTypeChipColors, recurringChipColor } from '../../lib/theme';
+import { colors } from '../../../styles/designTokens.js';
 import { btnPrimary, btnGhost } from '../ui/inputs';
 import { AnnouncementCard } from './AnnouncementCard';
 import { AnnouncementForm } from './AnnouncementForm';
@@ -132,102 +134,119 @@ export function ManageTab({ announcements, today, onSave, onDelete, onTogglePubl
 
       {/* Weekly status dashboard */}
       {!loading && announcements.length > 0 && (
-        <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 10, marginBottom: 24, flexWrap: 'wrap' }}>
           <DashboardStat
+            icon={Image}
             label="Slides Due"
             value={slidesPending.length}
-            accent={slidesPending.length > 0 ? '#EAA235' : '#2a3834'}
+            accent={slidesPending.length > 0 ? colors.gold : colors.primary}
             sub={slidesPending.length > 0 ? 'Need making' : 'All caught up'}
             onClick={() => onNavigateTab?.('slideMaker')}
           />
           <DashboardStat
+            icon={EyeOff}
             label="Unpublished"
             value={unpublishedCount}
-            accent={unpublishedCount > 0 ? '#EAA235' : '#2a3834'}
+            accent={unpublishedCount > 0 ? colors.gold : colors.primary}
             sub={unpublishedCount > 0 ? 'Not live yet' : 'All published'}
             onClick={() => { setUnpublishedOnly(v => !v); setStaleOnly(false); }}
           />
           <DashboardStat
+            icon={Clock}
             label="Stale Descriptions"
             value={staleCount}
-            accent={staleCount > 0 ? '#EAA235' : '#2a3834'}
+            accent={staleCount > 0 ? colors.gold : colors.primary}
             sub={staleCount > 0 ? 'Written for a past date' : 'All up to date'}
             onClick={() => { setStaleOnly(v => !v); setUnpublishedOnly(false); }}
           />
           <DashboardStat
+            icon={Key}
             label="Rental Requests"
             value={pendingRentals ?? 0}
-            accent={(pendingRentals ?? 0) > 0 ? '#EAA235' : '#2a3834'}
+            accent={(pendingRentals ?? 0) > 0 ? colors.gold : colors.primary}
             sub={pendingRentals === null ? 'Loading...' : pendingRentals > 0 ? 'Awaiting review' : 'All handled'}
             onClick={() => onNavigateTab?.('rentals')}
           />
         </div>
       )}
 
-      {/* Search bar */}
+      {/* Search + filters - one grouped card instead of loose controls
+          floating on the page, with a small label over each filter
+          cluster so it's clear at a glance what each group of chips means. */}
       {!loading && announcements.length > 0 && (
-        <div style={{ marginBottom: 10 }}>
-          <input
-            type="text"
-            placeholder="Search by title, text, assignee, category..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '7px 12px',
-              border: `1px solid ${C.border}`,
-              borderRadius: 6,
-              fontFamily: font.body,
-              fontSize: 13,
-              color: C.text,
-              background: C.card,
-              outline: 'none',
-              boxSizing: 'border-box',
-            }}
-          />
-        </div>
-      )}
-
-      {/* Filter chips */}
-      {!loading && announcements.length > 0 && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
-          {HAPPENING_TYPE_OPTIONS.map(opt => (
-            <FilterChip
-              key={opt.value}
-              label={opt.label}
-              active={typeFilter === opt.value}
-              colors={happeningTypeChipColors[opt.value]}
-              onClick={() => setTypeFilter(v => v === opt.value ? null : opt.value)}
-            />
-          ))}
-          <span style={{ width: 1, height: 16, background: C.border, margin: '0 2px' }} />
-          {SCOPE_OPTIONS.map(opt => (
-            <FilterChip
-              key={opt.value}
-              label={opt.label}
-              active={scopeFilter === opt.value}
-              colors={scopeChipColors[opt.value]}
-              onClick={() => setScopeFilter(v => v === opt.value ? null : opt.value)}
-            />
-          ))}
-          <span style={{ width: 1, height: 16, background: C.border, margin: '0 2px' }} />
-          <FilterChip
-            label="Recurring"
-            active={recurringOnly}
-            colors={recurringChipColor}
-            onClick={() => setRecurringOnly(v => !v)}
-          />
-          {anyFilterActive && (
-            <button
-              onClick={() => { setTypeFilter(null); setScopeFilter(null); setRecurringOnly(false); setUnpublishedOnly(false); setStaleOnly(false); }}
+        <div style={{
+          background: C.card,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.06), 0 8px 20px -4px rgba(0,0,0,0.07)',
+          borderRadius: 16,
+          padding: '14px 16px',
+          marginBottom: 20,
+        }}>
+          <div style={{ position: 'relative', marginBottom: 14 }}>
+            <Search size={14} color={C.textMuted} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+            <input
+              type="text"
+              placeholder="Search by title, text, assignee, category..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
               style={{
-                fontFamily: font.display, fontSize: 10, fontWeight: 700, color: C.textMuted,
-                background: 'none', border: 'none', cursor: 'pointer', padding: '4px 6px', letterSpacing: '0.03em', textTransform: 'uppercase',
+                width: '100%',
+                padding: '8px 12px 8px 32px',
+                border: `1px solid ${C.border}33`,
+                borderRadius: 8,
+                fontFamily: font.body,
+                fontSize: 13,
+                color: C.text,
+                background: C.bgSubtle,
+                outline: 'none',
+                boxSizing: 'border-box',
               }}
-            >
-              Clear filters
-            </button>
-          )}
+            />
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 18, flexWrap: 'wrap' }}>
+            <FilterGroup label="Type">
+              {HAPPENING_TYPE_OPTIONS.map(opt => (
+                <FilterChip
+                  key={opt.value}
+                  label={opt.label}
+                  active={typeFilter === opt.value}
+                  colors={happeningTypeChipColors[opt.value]}
+                  onClick={() => setTypeFilter(v => v === opt.value ? null : opt.value)}
+                />
+              ))}
+            </FilterGroup>
+            <FilterGroup label="Scope">
+              {SCOPE_OPTIONS.map(opt => (
+                <FilterChip
+                  key={opt.value}
+                  label={opt.label}
+                  active={scopeFilter === opt.value}
+                  colors={scopeChipColors[opt.value]}
+                  onClick={() => setScopeFilter(v => v === opt.value ? null : opt.value)}
+                />
+              ))}
+            </FilterGroup>
+            <FilterGroup label="Schedule">
+              <FilterChip
+                label="Recurring"
+                active={recurringOnly}
+                colors={recurringChipColor}
+                onClick={() => setRecurringOnly(v => !v)}
+              />
+            </FilterGroup>
+            {anyFilterActive && (
+              <button
+                onClick={() => { setTypeFilter(null); setScopeFilter(null); setRecurringOnly(false); setUnpublishedOnly(false); setStaleOnly(false); }}
+                style={{
+                  fontFamily: font.display, fontSize: 10, fontWeight: 700, color: C.textMuted,
+                  background: 'none', border: 'none', cursor: 'pointer', padding: '18px 6px 4px', letterSpacing: '0.03em', textTransform: 'uppercase',
+                  marginLeft: 'auto',
+                }}
+              >
+                Clear filters
+              </button>
+            )}
+          </div>
         </div>
       )}
 
@@ -326,6 +345,22 @@ function SavedNextSteps({ saved, onNavigateTab, onOpenSignupSheet, onDismiss }: 
   );
 }
 
+// One labeled cluster within the filter card (Type / Scope / Schedule) -
+// the label makes each group of chips self-explanatory instead of relying
+// on a bare divider line to imply "these are a different kind of filter".
+function FilterGroup({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <div style={{ fontFamily: font.mono, fontSize: 9, fontWeight: 700, color: C.textMuted, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
+        {label}
+      </div>
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 // Toggleable chip for the type/scope/recurring filter row - unselected
 // chips stay neutral outline so the active ones (using the same colors
 // as the badges on each card) are what draws the eye.
@@ -353,31 +388,41 @@ function FilterChip({ label, active, colors, onClick }: {
   );
 }
 
-function DashboardStat({ label, value, accent, sub, onClick }: { label: string; value: number; accent: string; sub: string; onClick?: () => void }) {
+function DashboardStat({ icon: Icon, label, value, accent, sub, onClick }: { icon: React.ComponentType<{ size?: number; color?: string }>; label: string; value: number; accent: string; sub: string; onClick?: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
       style={{
-        flex: '1 1 120px',
-        minWidth: 120,
+        flex: '1 1 150px',
+        minWidth: 150,
         background: C.card,
         boxShadow: '0 2px 8px rgba(0,0,0,0.06), 0 8px 20px -4px rgba(0,0,0,0.07)',
-        borderRadius: 16,
-        padding: '12px 14px',
+        borderRadius: 14,
+        borderLeft: `4px solid ${accent}`,
+        padding: '12px 16px',
         textAlign: 'left',
         fontFamily: 'inherit',
         cursor: onClick ? 'pointer' : 'default',
-        transition: 'box-shadow 0.15s',
+        transition: 'box-shadow 0.15s, transform 0.15s',
       }}
-      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 16px rgba(0,0,0,0.08), 0 16px 32px -8px rgba(0,0,0,0.10)'; }}
-      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 8px rgba(0,0,0,0.06), 0 8px 20px -4px rgba(0,0,0,0.07)'; }}
+      onMouseEnter={e => {
+        (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 16px rgba(0,0,0,0.08), 0 16px 32px -8px rgba(0,0,0,0.10)';
+        (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)';
+      }}
+      onMouseLeave={e => {
+        (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 8px rgba(0,0,0,0.06), 0 8px 20px -4px rgba(0,0,0,0.07)';
+        (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
+      }}
     >
-      <div style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 4 }}>
-        {label}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+        <Icon size={13} color={accent} />
+        <span style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+          {label}
+        </span>
       </div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-        <span style={{ fontFamily: font.display, fontSize: 24, fontWeight: 900, color: accent, lineHeight: 1 }}>
+        <span style={{ fontFamily: font.display, fontSize: 26, fontWeight: 900, color: accent, lineHeight: 1 }}>
           {value}
         </span>
         <span style={{ fontFamily: font.body, fontSize: 11, color: C.textTer }}>

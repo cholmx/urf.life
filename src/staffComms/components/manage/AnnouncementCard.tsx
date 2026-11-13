@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { C, font, recurringChipColor } from '../../lib/theme';
+import { colors } from '../../../styles/designTokens.js';
 import { ScopePill, HappeningTypePill, Pill } from '../ui/Pill';
 import { formatDateNice, weeksUntil } from '../../lib/helpers';
 import { getNextOccurrenceDate } from '../../lib/calendar-grid';
@@ -75,7 +76,7 @@ export function AnnouncementCard({ a, today, onEdit, onDelete, onTogglePublish, 
       boxShadow: expanded
         ? '0 4px 16px rgba(0,0,0,0.08), 0 16px 32px -8px rgba(0,0,0,0.10)'
         : '0 2px 8px rgba(0,0,0,0.06), 0 8px 20px -4px rgba(0,0,0,0.07)',
-      borderRadius: 24,
+      borderRadius: 14,
       overflow: 'hidden',
       transition: 'box-shadow 0.15s',
     }}>
@@ -96,7 +97,7 @@ export function AnnouncementCard({ a, today, onEdit, onDelete, onTogglePublish, 
             {a.is_published && (
               <span style={{
                 fontFamily: font.display, fontSize: 9, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
-                color: '#FFFFFF', background: '#2a3834', border: '1px solid #2a3834', borderRadius: 4, padding: '2px 7px',
+                color: colors.white, background: colors.primary, border: `1px solid ${colors.primary}`, borderRadius: 4, padding: '2px 7px',
               }}>Published</span>
             )}
           </div>
