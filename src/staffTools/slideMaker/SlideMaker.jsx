@@ -240,6 +240,12 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
   const [queuePreviews, setQueuePreviews] = useState({});
   const queuePreviewOverlayRef = useRef({});
   const generatingQueuePreviewsRef = useRef(new Set());
+  // Whether there's anything in the automatic-background pool at all -
+  // with no photo anywhere in the library flagged ✨, generation has
+  // nothing to build from and would otherwise fail silently over and
+  // over, leaving every queue card stuck on "Building preview..." forever
+  // with no indication why. The queue surfaces this directly instead.
+  const hasTextures = useMemo(() => getTexturePool(photos).length > 0, [photos]);
   // A plain "cancelled" flag closed over per effect run doesn't survive
   // React StrictMode's dev-only double-invoke (mount, cleanup, mount
   // again, all before any awaited image load resolves) - it marks the
@@ -254,6 +260,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
 
   useEffect(() => {
     const pool = getTexturePool(photos);
+    if (pool.length === 0) return;
     const pending = queueItems.filter(a => !queuePreviews[a.id] && !generatingQueuePreviewsRef.current.has(a.id));
     if (pending.length === 0) return;
 
@@ -638,6 +645,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
             onLoadPreset={loadPreset}
             queueItems={queueItems}
             queuePreviews={queuePreviews}
+            hasTextures={hasTextures}
             onRegenerateQueuePreview={regenerateQueuePreview}
             onUseQueueItem={loadQueueItem}
             onToggleSlideMade={onToggleSlideMade}
@@ -684,6 +692,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
               onLoadPreset={loadPreset}
               queueItems={queueItems}
               queuePreviews={queuePreviews}
+              hasTextures={hasTextures}
               onRegenerateQueuePreview={regenerateQueuePreview}
               onUseQueueItem={loadQueueItem}
               onToggleSlideMade={onToggleSlideMade}

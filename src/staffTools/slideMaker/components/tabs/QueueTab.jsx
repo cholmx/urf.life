@@ -10,7 +10,7 @@ function downloadPreview(dataUrl, title) {
   a.click();
 }
 
-export default function QueueTab({ items, previews, onRegenerate, onUseItem, onToggleSlideMade }) {
+export default function QueueTab({ items, previews, hasTextures, onGoToPhotos, onRegenerate, onUseItem, onToggleSlideMade }) {
   const [regeneratingIds, setRegeneratingIds] = useState(() => new Set());
 
   const handleRegenerate = async (a) => {
@@ -36,6 +36,30 @@ export default function QueueTab({ items, previews, onRegenerate, onUseItem, onT
 
   return (
     <div>
+      {!hasTextures && (
+        <div style={{
+          border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', marginBottom: 12,
+          background: C.accentBg, fontFamily: ui.body, fontSize: 12, color: C.text, lineHeight: 1.5,
+        }}>
+          No automatic backgrounds are set up yet, so previews below won't finish building.
+          Go to the <strong>Photos</strong> tab and tap ✨ on at least one photo (or use its
+          "Import the 15 Built-in Textures" button) to turn this on.
+          {onGoToPhotos && (
+            <div style={{ marginTop: 6 }}>
+              <button
+                onClick={onGoToPhotos}
+                style={{
+                  padding: '5px 10px', border: 'none', borderRadius: 5,
+                  background: C.accentDark, color: '#fff',
+                  fontFamily: ui.display, fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                }}
+              >
+                Go to Photos
+              </button>
+            </div>
+          )}
+        </div>
+      )}
       <div style={{ fontFamily: ui.body, fontSize: 11, color: C.textTer, marginBottom: 12 }}>
         {items.length} still need{items.length === 1 ? 's' : ''} a slide — a ready-made one is building for each below; download it directly, or open it to tweak.
       </div>
