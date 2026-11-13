@@ -9,17 +9,14 @@ import supabase from '../lib/supabase';
 
 const ADMIN_EMAIL = 'chris@urfellowship.com';
 
-// Admin-only screen for inviting other staff to log into /admin and
-// seeing/revoking who already has access. Every invited person is a
-// "staff" role, limited in the nav/content switch (see Admin.jsx's
-// STAFF_ALLOWED_TABS) to a fixed subset of sections - there's no UI here
-// to grant anyone else the admin role, on purpose: that's a one-person,
-// hardcoded identity (see the staff_users_portal123 migration), not
-// something this screen hands out.
+// Admin-only screen for inviting people to log into /admin, promoting
+// them between the "staff" (editor) and "admin" roles, and revoking
+// access. Editors see the restricted set of sections in Admin.jsx's
+// STAFF_ALLOWED_TABS; admins see everything.
 const AdminStaffAccess = () => {
   const toast = useToast();
   const confirm = useConfirm();
-  const { items: staffUsers, loading, fetchItems, deleteItem } = useSupabaseCrud(
+  const { items: staffUsers, loading, fetchItems, updateItem, deleteItem } = useSupabaseCrud(
     'staff_users_portal123',
     { orderBy: 'created_at', ascending: true }
   );
@@ -51,6 +48,19 @@ const AdminStaffAccess = () => {
       toast.error(err.message || 'Could not send the invite. Please try again.');
     } finally {
       setInviting(false);
+    }
+  };
+
+  const handleRoleChange = async (staffUser) => {
+    const nextRole = staffUser.role === 'admin' ? 'staff' : 'admin';
+    const nextLabel = nextRole === 'admin' ? 'an admin' : 'an editor';
+    if (!(await confirm(`Make ${staffUser.email} ${nextLabel}?`))) return;
+    try {
+      await updateItem(staffUser.id, { role: nextRole });
+      toast.success(`${staffUser.email} is now ${nextLabel}.`);
+    } catch (err) {
+      console.error('Error changing staff role:', err);
+      toast.error('Could not change the role. Please try again.');
     }
   };
 
@@ -107,17 +117,25 @@ const AdminStaffAccess = () => {
                     <SafeIcon icon={su.role === 'admin' ? FiShield : FiMail} className="h-4 w-4 text-neutral-400 flex-shrink-0" />
                     <div className="min-w-0">
                       <div className="font-medium text-neutral-900 truncate">{su.email}</div>
-                      <div className="text-xs text-neutral-500 capitalize">{su.role}</div>
+                      <div className="text-xs text-neutral-500">{su.role === 'admin' ? 'Admin' : 'Editor'}</div>
                     </div>
                   </div>
                   {su.email.toLowerCase() !== ADMIN_EMAIL && (
-                    <button
-                      onClick={() => handleRevoke(su)}
-                      title="Revoke access"
-                      className="flex-shrink-0 p-2 text-neutral-400 hover:text-red-600 transition-colors"
-                    >
-                      <SafeIcon icon={FiTrash2} className="h-4 w-4" />
-                    </button>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <button
+                        onClick={() => handleRoleChange(su)}
+                        className="px-3 py-1.5 text-sm font-medium text-neutral-700 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors"
+                      >
+                        {su.role === 'admin' ? 'Make editor' : 'Make admin'}
+                      </button>
+                      <button
+                        onClick={() => handleRevoke(su)}
+                        title="Revoke access"
+                        className="p-2 text-neutral-400 hover:text-red-600 transition-colors"
+                      >
+                        <SafeIcon icon={FiTrash2} className="h-4 w-4" />
+                      </button>
+                    </div>
                   )}
                 </li>
               ))}
