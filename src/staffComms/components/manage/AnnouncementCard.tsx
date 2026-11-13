@@ -12,7 +12,7 @@ import type { Announcement, DestinationKey } from '../../types';
 const DEST_LABELS: { key: DestinationKey; short: string }[] = [
   { key: 'show_on_slides' as const,     short: 'Slides' },
   { key: 'show_in_happenings' as const, short: 'The Happenings' },
-  { key: 'monthly_include' as const,    short: 'Flyer & Bulletin' },
+  { key: 'monthly_include' as const,    short: 'Flyer' },
 ];
 
 const STAGE_DEST = { key: 'show_on_stage' as const, short: 'Stage' };
