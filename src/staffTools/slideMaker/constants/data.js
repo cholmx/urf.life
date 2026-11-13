@@ -76,4 +76,9 @@ export const TEXTURES = [
   "/slide-textures/texture-8.jpg",
   "/slide-textures/texture-9.jpg",
   "/slide-textures/texture-10.jpg",
+  "/slide-textures/texture-11.jpg",
+  "/slide-textures/texture-12.jpg",
+  "/slide-textures/texture-13.jpg",
+  "/slide-textures/texture-14.jpg",
+  "/slide-textures/texture-15.jpg",
 ];
