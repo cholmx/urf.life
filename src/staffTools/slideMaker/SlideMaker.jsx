@@ -581,7 +581,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
           now, not a queue tab squeezed in beside Content/Layout/Colors/
           Photos/Presets. */}
       <div style={{
-        display: "flex", gap: 8, maxWidth: 1280, margin: "0 auto", width: "100%", padding: "12px 16px 0",
+        display: "flex", gap: 8, maxWidth: mode === "auto" ? 1800 : 1280, margin: "0 auto", width: "100%", padding: "12px 16px 0",
       }}>
         {[
           {key: "auto", label: "📋 Auto Slides"},
@@ -613,7 +613,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
       </div>
 
       {mode === "auto" && (
-        <div style={{maxWidth: 1280, margin: "0 auto", width: "100%", padding: 16}}>
+        <div style={{maxWidth: 1800, margin: "0 auto", width: "100%", padding: 16}}>
           <QueueTab
             items={queueItems}
             previews={queuePreviews}

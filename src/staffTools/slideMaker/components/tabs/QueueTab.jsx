@@ -39,7 +39,7 @@ export default function QueueTab({ items, previews, onRegenerate, onUseItem, onT
       <div style={{ fontFamily: ui.body, fontSize: 13, color: C.textTer, marginBottom: 16 }}>
         {items.length} still need{items.length === 1 ? 's' : ''} a slide — a ready-made one is building for each below; download it directly, or open it to tweak.
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(420px, 1fr))', gap: 20 }}>
         {items.map(a => {
           const dates = (a.event_dates && a.event_dates.length > 0)
             ? [...a.event_dates].filter(Boolean).sort()
@@ -54,16 +54,16 @@ export default function QueueTab({ items, previews, onRegenerate, onUseItem, onT
               key={a.id}
               style={{
                 border: `1px solid ${C.border}`,
-                borderRadius: 8,
-                padding: '10px 12px',
+                borderRadius: 10,
+                padding: '14px 16px',
                 background: C.card,
               }}
             >
               <div style={{
                 position: 'relative',
-                borderRadius: 6,
+                borderRadius: 8,
                 overflow: 'hidden',
-                marginBottom: 8,
+                marginBottom: 12,
                 aspectRatio: '16/9',
                 background: C.cardAlt,
                 display: 'flex',
@@ -73,7 +73,7 @@ export default function QueueTab({ items, previews, onRegenerate, onUseItem, onT
                 {previewUrl ? (
                   <img src={previewUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', opacity: regenerating ? 0.5 : 1 }} />
                 ) : (
-                  <span style={{ fontFamily: ui.body, fontSize: 10, color: C.textTer }}>Building preview…</span>
+                  <span style={{ fontFamily: ui.body, fontSize: 12, color: C.textTer }}>Building preview…</span>
                 )}
                 {previewUrl && (
                   <button
@@ -81,8 +81,8 @@ export default function QueueTab({ items, previews, onRegenerate, onUseItem, onT
                     disabled={regenerating}
                     title="Try a different automatic background"
                     style={{
-                      position: 'absolute', top: 6, right: 6, width: 24, height: 24, borderRadius: 12, border: 'none',
-                      background: 'rgba(0,0,0,0.65)', color: '#fff', fontSize: 12,
+                      position: 'absolute', top: 10, right: 10, width: 32, height: 32, borderRadius: 16, border: 'none',
+                      background: 'rgba(0,0,0,0.65)', color: '#fff', fontSize: 16,
                       cursor: regenerating ? 'wait' : 'pointer',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1,
                     }}
@@ -93,30 +93,30 @@ export default function QueueTab({ items, previews, onRegenerate, onUseItem, onT
               </div>
               <div style={{
                 fontFamily: ui.display,
-                fontSize: 13,
+                fontSize: 16,
                 fontWeight: 700,
                 color: C.text,
-                marginBottom: 2,
+                marginBottom: 3,
               }}>
                 {a.title}
               </div>
               {dateStr && (
-                <div style={{ fontFamily: ui.body, fontSize: 11, color: C.textTer, marginBottom: 8 }}>
+                <div style={{ fontFamily: ui.body, fontSize: 13, color: C.textTer, marginBottom: 12 }}>
                   {dateStr}
                 </div>
               )}
-              <div style={{ display: 'flex', gap: 6 }}>
+              <div style={{ display: 'flex', gap: 8 }}>
                 <button
                   onClick={() => onUseItem(a)}
                   style={{
                     flex: 1,
-                    padding: '5px 8px',
+                    padding: '8px 10px',
                     border: `1px solid ${C.border}`,
-                    borderRadius: 5,
+                    borderRadius: 6,
                     background: C.accentBg,
                     color: C.accentDark,
                     fontFamily: ui.body,
-                    fontSize: 11,
+                    fontSize: 13,
                     fontWeight: 600,
                     cursor: 'pointer',
                   }}
@@ -129,13 +129,13 @@ export default function QueueTab({ items, previews, onRegenerate, onUseItem, onT
                     title="Download this slide now, no editing needed"
                     style={{
                       flex: '0 0 auto',
-                      width: 32,
-                      padding: '5px 0',
+                      width: 40,
+                      padding: '8px 0',
                       border: `1px solid ${C.border}`,
-                      borderRadius: 5,
+                      borderRadius: 6,
                       background: 'transparent',
                       color: C.textSec,
-                      fontSize: 13,
+                      fontSize: 15,
                       cursor: 'pointer',
                     }}
                   >
@@ -147,13 +147,13 @@ export default function QueueTab({ items, previews, onRegenerate, onUseItem, onT
                   title="Removes it from this list"
                   style={{
                     flex: 1,
-                    padding: '5px 8px',
+                    padding: '8px 10px',
                     border: `1px solid ${C.border}`,
-                    borderRadius: 5,
+                    borderRadius: 6,
                     background: C.accentDark,
                     color: '#fff',
                     fontFamily: ui.body,
-                    fontSize: 11,
+                    fontSize: 13,
                     fontWeight: 600,
                     cursor: 'pointer',
                   }}
