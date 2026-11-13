@@ -64,7 +64,7 @@ export default function QueueTab({ items, previews, onRegenerate, onUseItem, onT
                 borderRadius: 8,
                 overflow: 'hidden',
                 marginBottom: 12,
-                aspectRatio: '16/9',
+                aspectRatio: '16/10',
                 background: C.cardAlt,
                 display: 'flex',
                 alignItems: 'center',

@@ -162,7 +162,7 @@ function buildAutoSlideData(a) {
   };
 }
 
-const QUEUE_PREVIEW_RATIO = ASPECT_RATIOS.find(r => r.id === "16:9") || ASPECT_RATIOS[ASPECT_RATIOS.length - 1];
+const QUEUE_PREVIEW_RATIO = ASPECT_RATIOS.find(r => r.id === "16:10") || ASPECT_RATIOS[0];
 
 // Renders a finished, ready-to-download slide for a queue item entirely
 // off-screen - the same automatic texture/color/overlay pick a staffer
@@ -511,7 +511,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     setData(p => ({...p, ...buildAutoSlideData(a)}));
     // Every event gets a fully automatic slide: a texture background
     // (same one each time this event is reopened), colors picked from
-    // that texture's brightness, and the 16:9 size.
+    // that texture's brightness, and the 16:10 size.
     setAspectRatio(QUEUE_PREVIEW_RATIO);
     applyAutoBackground(pickTextureForId(getAutoBackgroundPool(photos), a.id));
     setActiveQueueItem(a);
