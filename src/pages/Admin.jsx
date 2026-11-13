@@ -206,12 +206,32 @@ const Admin=()=> {
     setLoading(true);
     setError('');
     setDeniedEmail(null);
+    const cleanEmail=email.trim().toLowerCase();
     try {
       const {error: otpError}=await supabase.auth.signInWithOtp({
-        email: email.trim().toLowerCase(),
+        email: cleanEmail,
         options: {emailRedirectTo: `${window.location.origin}/#/admin`}
       });
-      if (otpError) throw otpError;
+      if (otpError) {
+        // This project has public self-service signups disabled, so the
+        // one true admin's very first-ever login has no existing account
+        // for signInWithOtp to send a link to, and it refuses to create
+        // one ("Signups not allowed for this instance"). admin-bootstrap
+        // uses a privileged, admin-only API to create that one hardcoded
+        // account and email him a real sign-in link instead - every login
+        // after this one goes through the normal path above, since his
+        // account then already exists.
+        if (cleanEmail===ADMIN_EMAIL && /signup/i.test(otpError.message || '')) {
+          const {data,error: bootstrapError}=await supabase.functions.invoke('admin-bootstrap',{
+            body: {redirectTo: `${window.location.origin}/#/admin`}
+          });
+          if (bootstrapError || data?.error) {
+            throw new Error(data?.error || bootstrapError?.message || 'Could not send the sign-in link.');
+          }
+        } else {
+          throw otpError;
+        }
+      }
       setLinkSent(true);
     } catch (err) {
       console.error('Sign-in link request failed:',err);
