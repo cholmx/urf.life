@@ -11,6 +11,7 @@ import {isSlideActive, formatDateNice, stripLeadingTitle} from '../../staffComms
 import SlideCanvas from './components/SlideCanvas';
 import Sidebar from './components/Sidebar';
 import TopBar from './components/TopBar';
+import QueueTab from './components/tabs/QueueTab';
 
 const SCOPE_ORDER = {whole_church: 0, ministry: 1, informational: 2};
 
@@ -38,13 +39,18 @@ const DEFAULT_BRAND = {
   hLetterSpacing: 0,
 };
 
-// The automatic-background pool is simply every photo in the library
-// flagged as a texture with the ✨ toggle in the Photos tab (already
-// loaded - see getPhotos below) - built-in or staff-uploaded, no
-// distinction. See PhotosTab's "Import built-in textures" action for how
-// the original set gets into that same library in the first place.
-function getTexturePool(photos) {
-  return (photos || []).filter(p => p && p.isTexture).map(p => ({img: p.img}));
+// The automatic-background pool mixes two kinds of entry: every photo in
+// the library flagged as a texture with the ✨ toggle in the Photos tab
+// (built-in or staff-uploaded, no distinction - see PhotosTab's "Import
+// built-in textures" action for how the original set gets in there), plus
+// the 7 solid Colors-tab backgrounds themselves ({solid: bgOption}) - so a
+// plain Dark/Light/Red/Gold/etc. slide with no photo at all is a real,
+// regularly-occurring possible outcome, not just a texture tinted to look
+// dark or light.
+function getAutoBackgroundPool(photos) {
+  const textures = (photos || []).filter(p => p && p.isTexture).map(p => ({img: p.img}));
+  const solids = BACKGROUNDS.map(bg => ({solid: bg}));
+  return [...textures, ...solids];
 }
 
 // Deterministic per-event pick (same event always lands on the same
@@ -108,12 +114,19 @@ function autoBrandForBrightness(brightness, avoidOverlayColors = []) {
   return {bgColor: bucket.bg, textColor: randomBucketTextColor(), overlayColor: "#FFFFFF", ov: 55};
 }
 
-// Loads a texture-pool entry and works out the full automatic look for it
+// Loads a pool entry and works out the full automatic look for it
 // (background/text/overlay colors, a light random blur) without touching
 // any component state - shared by the live editor (applyAutoBackground)
 // and the off-screen queue-thumbnail generator below, so both produce the
-// same kind of result from the same inputs.
+// same kind of result from the same inputs. A {solid} entry (one of the
+// Colors-tab backgrounds) skips the photo entirely - no image, no
+// overlay, just that color and one of its own allowed text colors.
 async function computeAutoSlide(entry, avoidOverlayColors = []) {
+  if (entry.solid) {
+    const bg = entry.solid;
+    const textColor = bg.textOptions[Math.floor(Math.random() * bg.textOptions.length)].color;
+    return {img: null, bgColor: bg.bg, textColor, overlayColor: null, ov: 0, blur: 0};
+  }
   const img = entry.img || await loadImage(entry.src);
   const auto = autoBrandForBrightness(averageBrightness(img), avoidOverlayColors);
   return {
@@ -163,7 +176,10 @@ async function generateQueueThumbnailFromEntry(a, entry, avoidOverlayColors = []
   const brand = {...DEFAULT_BRAND, bgColor: auto.bgColor, textColor: auto.textColor};
   const canvas = document.createElement('canvas');
   render(canvas, "left_block", data, brand, auto.img, auto.overlayColor, auto.ov, auto.blur, QUEUE_PREVIEW_RATIO.w, QUEUE_PREVIEW_RATIO.h, 0);
-  return {dataUrl: sharpenCanvas(canvas).toDataURL("image/png"), overlayColor: auto.overlayColor};
+  // A solid entry has no overlay color (auto.overlayColor is null) - its
+  // own background color is the thing adjacent slides should steer away
+  // from repeating instead.
+  return {dataUrl: sharpenCanvas(canvas).toDataURL("image/png"), overlayColor: auto.overlayColor || auto.bgColor};
 }
 
 export default function SlideMaker({announcements, today, onToggleSlideMade}) {
@@ -198,11 +214,15 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
   const [ov, setOv] = useState(86);
   const [blur, setBlur] = useState(0);
   const [overlayColor, setOverlayColor] = useState("#000000");
-  // Land on the queue whenever there's something pending, instead of
-  // always opening to whatever was last on the canvas - that's the whole
-  // point of the queue existing, but it was never actually the default.
-  const [tab, setTab] = useState(() => (queueItems.length > 0 ? "queue" : "content"));
+  const [tab, setTab] = useState("content");
   const [aspectRatio, setAspectRatio] = useState(ASPECT_RATIOS[0]);
+  // Top-level mode: Auto Slides (the queue, as its own full-width gallery)
+  // versus the Custom Editor (canvas + Content/Layout/Colors/Photos/Presets).
+  // These used to share one screen, with the queue squeezed in as just
+  // another narrow sidebar tab next to everything else - landing on
+  // whichever one there's actually pending work for, same as the old
+  // default did for the tab itself.
+  const [mode, setMode] = useState(() => (queueItems.length > 0 ? "auto" : "custom"));
 
   // Loaded once here (not inside PhotosTab) so a staff-flagged texture is
   // already part of the automatic-background pool the moment the queue is
@@ -241,12 +261,6 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
   const [queuePreviews, setQueuePreviews] = useState({});
   const queuePreviewOverlayRef = useRef({});
   const generatingQueuePreviewsRef = useRef(new Set());
-  // Whether there's anything in the automatic-background pool at all -
-  // with no photo anywhere in the library flagged ✨, generation has
-  // nothing to build from and would otherwise fail silently over and
-  // over, leaving every queue card stuck on "Building preview..." forever
-  // with no indication why. The queue surfaces this directly instead.
-  const hasTextures = useMemo(() => getTexturePool(photos).length > 0, [photos]);
   // A plain "cancelled" flag closed over per effect run doesn't survive
   // React StrictMode's dev-only double-invoke (mount, cleanup, mount
   // again, all before any awaited image load resolves) - it marks the
@@ -260,7 +274,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
   }, []);
 
   useEffect(() => {
-    const pool = getTexturePool(photos);
+    const pool = getAutoBackgroundPool(photos);
     if (pool.length === 0) return;
     const pending = queueItems.filter(a => !queuePreviews[a.id] && !generatingQueuePreviewsRef.current.has(a.id));
     if (pending.length === 0) return;
@@ -297,10 +311,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     if (generatingQueuePreviewsRef.current.has(a.id)) return;
     generatingQueuePreviewsRef.current.add(a.id);
     try {
-      const pool = getTexturePool(photos);
-      if (pool.length === 0) {
-        throw new Error('No background textures are flagged yet. Mark some photos with the sparkle icon in the Photos tab.');
-      }
+      const pool = getAutoBackgroundPool(photos);
       const idx = queueItems.findIndex(q => q.id === a.id);
       const prevId = idx > 0 ? queueItems[idx - 1].id : null;
       const avoid = [queuePreviewOverlayRef.current[a.id], prevId && queuePreviewOverlayRef.current[prevId]].filter(Boolean);
@@ -502,9 +513,10 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     // (same one each time this event is reopened), colors picked from
     // that texture's brightness, and the 16:9 size.
     setAspectRatio(QUEUE_PREVIEW_RATIO);
-    applyAutoBackground(pickTextureForId(getTexturePool(photos), a.id));
+    applyAutoBackground(pickTextureForId(getAutoBackgroundPool(photos), a.id));
     setActiveQueueItem(a);
     setTab("content");
+    setMode("custom");
     setSidebarOpen(false);
   }, [pushUndo, applyAutoBackground, photos]);
 
@@ -513,11 +525,11 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     // Steer away from the overlay color already on screen - otherwise
     // "Different Background" can land right back on the same color by
     // chance and look like it didn't do anything.
-    applyAutoBackground(pickRandomTexture(getTexturePool(photos)), [overlayColor]);
+    applyAutoBackground(pickRandomTexture(getAutoBackgroundPool(photos)), [overlayColor]);
   }, [pushUndo, applyAutoBackground, photos, overlayColor]);
 
   // One click from "just finished this slide" to "building the next one" -
-  // no manual trip back to the queue tab to find what's left.
+  // no manual trip back to Auto Slides to find what's left.
   const markMadeAndNext = useCallback(() => {
     if (!activeQueueItem) return;
     onToggleSlideMade(activeQueueItem.id, true);
@@ -526,7 +538,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
       loadQueueItem(next);
     } else {
       setActiveQueueItem(null);
-      setTab("queue");
+      setMode("auto");
     }
   }, [activeQueueItem, queueItems, onToggleSlideMade, loadQueueItem]);
 
@@ -564,6 +576,55 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
         canRedo={canRedo}
         onToggleSidebar={() => setSidebarOpen(o => !o)}
       />
+
+      {/* Auto Slides vs Custom Editor - two genuinely separate screens
+          now, not a queue tab squeezed in beside Content/Layout/Colors/
+          Photos/Presets. */}
+      <div style={{
+        display: "flex", gap: 8, maxWidth: 1280, margin: "0 auto", width: "100%", padding: "12px 16px 0",
+      }}>
+        {[
+          {key: "auto", label: "📋 Auto Slides"},
+          {key: "custom", label: "🎨 Custom Editor"},
+        ].map(m => (
+          <button
+            key={m.key}
+            onClick={() => setMode(m.key)}
+            style={{
+              padding: "8px 16px", borderRadius: 8, cursor: "pointer",
+              border: `2px solid ${mode === m.key ? C.accent : C.border}`,
+              background: mode === m.key ? C.accentBg : C.card,
+              color: mode === m.key ? C.accentDark : C.textSec,
+              fontFamily: ui.display, fontSize: 12, fontWeight: 700, letterSpacing: "0.03em",
+            }}
+          >
+            {m.label}
+            {m.key === "auto" && queueItems.length > 0 && (
+              <span style={{
+                marginLeft: 7, display: "inline-block", minWidth: 16, padding: "0 4px", borderRadius: 999,
+                background: mode === m.key ? C.accentDark : C.textTer, color: "#fff",
+                fontSize: 10, fontWeight: 700, lineHeight: "16px", textAlign: "center",
+              }}>
+                {queueItems.length}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {mode === "auto" && (
+        <div style={{maxWidth: 1280, margin: "0 auto", width: "100%", padding: 16}}>
+          <QueueTab
+            items={queueItems}
+            previews={queuePreviews}
+            onRegenerate={regenerateQueuePreview}
+            onUseItem={loadQueueItem}
+            onToggleSlideMade={onToggleSlideMade}
+          />
+        </div>
+      )}
+
+      {mode === "custom" && (
       <div style={{
         display: "flex",
         flex: 1,
@@ -649,16 +710,13 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
             slideProps={slideProps}
             canvasRef={canvasRef}
             onLoadPreset={loadPreset}
-            queueItems={queueItems}
-            queuePreviews={queuePreviews}
-            hasTextures={hasTextures}
-            onRegenerateQueuePreview={regenerateQueuePreview}
-            onUseQueueItem={loadQueueItem}
-            onToggleSlideMade={onToggleSlideMade}
           />
         </div>
       </div>
+      )}
 
+      {mode === "custom" && (
+      <>
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <>
@@ -696,15 +754,11 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
               slideProps={slideProps}
               canvasRef={canvasRef}
               onLoadPreset={loadPreset}
-              queueItems={queueItems}
-              queuePreviews={queuePreviews}
-              hasTextures={hasTextures}
-              onRegenerateQueuePreview={regenerateQueuePreview}
-              onUseQueueItem={loadQueueItem}
-              onToggleSlideMade={onToggleSlideMade}
             />
           </div>
         </>
+      )}
+      </>
       )}
     </div>
   );
