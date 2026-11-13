@@ -137,6 +137,19 @@ export function getNextOccurrenceDate(a: Announcement, today: string): string | 
   return null;
 }
 
+// The one place a public page should get the date it displays for an
+// event - never a.event_date directly, which only ever holds a recurring
+// item's very first session and goes stale the moment that occurrence
+// passes (exactly what showed a months-old date on the public Events
+// page: it read event_date straight off the row instead of calling
+// getNextOccurrenceDate itself, and nothing forced it to). Call this
+// right after fetching/filtering and render .displayDate from here on,
+// so a future page can't reintroduce the same bug by hand-rolling the
+// same "read event_date" shortcut again.
+export function withDisplayDate<T extends Announcement>(rows: T[], today: string): (T & { displayDate: string | null })[] {
+  return rows.map(a => ({ ...a, displayDate: getNextOccurrenceDate(a, today) }));
+}
+
 export function getRangeItems(
   day: string,
   announcements: Announcement[],

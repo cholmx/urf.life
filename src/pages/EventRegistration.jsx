@@ -12,6 +12,7 @@ import {plainTextToHtml} from '../lib/textToHtml';
 import {formatDate,formatTime,getTodayDateString} from '../utils/dateFormat';
 import AddToCalendarButton from '../components/AddToCalendarButton';
 import {isArchived} from '../staffComms/lib/helpers';
+import {withDisplayDate} from '../staffComms/lib/calendar-grid';
 
 const EventRegistration=()=> {
   const [events,setEvents]=useState([]);
@@ -26,12 +27,16 @@ const EventRegistration=()=> {
       // Events are now managed in the Communication Organizer (Type: Event)
       // rather than a dedicated admin panel - this reads the same unified,
       // published-only table the Organizer and public Calendar use.
+      // Sorted client-side below instead of in this query - event_date
+      // isn't actually the right sort key for a recurring event (see the
+      // withDisplayDate comment just below), so ordering by it here would
+      // still put a recurring event in the wrong position even once its
+      // displayed date is correct.
       const {data,error}=await supabase
         .from('staff_announcements_portal123')
         .select('*')
         .eq('happening_type','event')
-        .eq('is_published',true)
-        .order('event_date',{ascending: true,nullsFirst: false});
+        .eq('is_published',true);
 
       if (error) throw error;
       // Unlike ClassRegistration's grace window, an event drops off the
@@ -39,7 +44,14 @@ const EventRegistration=()=> {
       // after it started" case for a one-time event. isArchived also
       // correctly keeps recurring/multi-date events listed.
       const today=getTodayDateString();
-      setEvents((data || []).filter(e=> !isArchived(e,today)));
+      const withDates=withDisplayDate((data || []).filter(e=> !isArchived(e,today)),today);
+      withDates.sort((a,b)=> {
+        if (a.displayDate && b.displayDate) return a.displayDate < b.displayDate ? -1 : a.displayDate > b.displayDate ? 1 : 0;
+        if (a.displayDate) return -1;
+        if (b.displayDate) return 1;
+        return 0;
+      });
+      setEvents(withDates);
     } catch (error) {
       console.error('Error fetching events:',error);
     } finally {
@@ -114,9 +126,9 @@ const EventRegistration=()=> {
                 <h3 className="text-xl font-extrabold font-gsans text-text-primary mb-2">
                   {event.title}
                 </h3>
-                {event.event_date && (
+                {event.displayDate && (
                   <p className="text-sm text-text-light mb-4">
-                    {formatDate(event.event_date, {weekday: 'long',year: 'numeric',month: 'long',day: 'numeric'})}
+                    {formatDate(event.displayDate, {weekday: 'long',year: 'numeric',month: 'long',day: 'numeric'})}
                     {event.event_time && ` at ${formatTime(event.event_time)}`}
                     {event.event_location && ` · ${event.event_location}`}
                   </p>
@@ -137,7 +149,7 @@ const EventRegistration=()=> {
                   <AddToCalendarButton
                     title={event.title}
                     description={event.flyer_text}
-                    date={event.event_date}
+                    date={event.displayDate}
                     startTime={event.event_time}
                     endTime={event.end_time}
                     location={event.event_location}
