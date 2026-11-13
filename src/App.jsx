@@ -1,5 +1,5 @@
-import {lazy, Suspense} from 'react'
-import {HashRouter as Router,Routes,Route,useLocation} from 'react-router-dom'
+import {lazy, Suspense, useEffect} from 'react'
+import {HashRouter as Router,Routes,Route,useLocation,useNavigate} from 'react-router-dom'
 import {AnimatePresence,motion} from 'framer-motion'
 import './App.css'
 
@@ -8,6 +8,7 @@ import ErrorBoundary from './components/ErrorBoundary'
 import { LoadingSpinner } from './components/LoadingSpinner'
 import { ToastProvider } from './hooks/useToast'
 import { ConfirmProvider } from './hooks/useConfirm'
+import supabase from './lib/supabase'
 
 const About = lazy(() => import('./pages/About'))
 const Services = lazy(() => import('./pages/Services'))
@@ -46,6 +47,51 @@ const PageLoader = () => (
     <LoadingSpinner size="lg" />
   </div>
 )
+
+// Supabase delivers magic-link sessions by appending `#access_token=...`
+// (or `#error=...` for an expired/used link) onto the redirect URL we gave
+// it - which is just the plain origin (see Admin.jsx/AdminStaffAccess.jsx),
+// since with HashRouter the route itself already lives in the hash and
+// can't share it with a second, nested `#`. That means every magic-link
+// click lands here as if visiting an unmapped hash path, with Supabase's
+// own client already having read the token out of that hash during its
+// own initialization. This runs once on mount, regardless of which route
+// matched, and sends the browser on to /admin - the only place in this
+// app a magic link is ever used - so Admin.jsx's existing session/role
+// resolution can pick up the session supabase-js already established.
+const AuthRedirectBridge = () => {
+  const navigate = useNavigate()
+  useEffect(() => {
+    const hash = window.location.hash
+    if (!hash.includes('access_token=') && !hash.includes('error=')) return
+
+    // HashRouter owns this same hash for routing, so navigating before
+    // Supabase has actually read the token out of it would overwrite -
+    // and lose - the very data Supabase needs. getSession() internally
+    // awaits Supabase's own hash-processing before resolving, so by the
+    // time it returns we know whether a session landed, and it's safe to
+    // take the hash over for routing either way.
+    let cancelled = false
+    const goToAdmin = () => {
+      if (!cancelled) navigate('/admin', {replace: true})
+    }
+    supabase.auth.getSession().then(({data: {session}}) => {
+      if (cancelled) return
+      if (session) {
+        goToAdmin()
+        return
+      }
+      // A used/expired link lands here with no session - still move on to
+      // /admin so the normal login form shows there instead of a blank
+      // unmapped hash.
+      goToAdmin()
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [navigate])
+  return null
+}
 
 const AnimatedRoutes = () => {
   const location = useLocation()
@@ -102,6 +148,7 @@ function App() {
         <ConfirmProvider>
           <Router>
             <div className="min-h-screen bg-accent">
+              <AuthRedirectBridge />
               <AnimatedRoutes />
             </div>
           </Router>

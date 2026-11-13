@@ -35,7 +35,9 @@ const AdminStaffAccess = () => {
       const { data, error } = await supabase.functions.invoke('invite-staff', {
         body: {
           email: cleanEmail,
-          redirectTo: `${window.location.origin}/#/admin`,
+          // Plain origin - see the comment on emailRedirectTo in Admin.jsx's
+          // handleEmailSubmit for why this can't include a `#/admin` hash.
+          redirectTo: window.location.origin,
         },
       });
       if (error || data?.error) {

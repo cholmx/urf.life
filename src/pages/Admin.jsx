@@ -210,7 +210,15 @@ const Admin=()=> {
     try {
       const {error: otpError}=await supabase.auth.signInWithOtp({
         email: cleanEmail,
-        options: {emailRedirectTo: `${window.location.origin}/#/admin`}
+        // Plain origin, not `${origin}/#/admin` - with HashRouter the route
+        // already lives in the URL's hash, and Supabase delivers the magic
+        // link's session by appending its OWN `#access_token=...` onto
+        // whatever redirect URL we give it. Baking a hash into this URL
+        // produces a double hash (`#/admin#access_token=...`) that
+        // Supabase's own client can't parse back out - the AuthRedirectBridge
+        // in App.jsx is what actually routes a returning magic-link click
+        // into /admin once the token lands in a clean hash.
+        options: {emailRedirectTo: window.location.origin}
       });
       if (otpError) {
         // This project has public self-service signups disabled, so the
@@ -223,7 +231,7 @@ const Admin=()=> {
         // account then already exists.
         if (cleanEmail===ADMIN_EMAIL && /signup/i.test(otpError.message || '')) {
           const {data,error: bootstrapError}=await supabase.functions.invoke('admin-bootstrap',{
-            body: {redirectTo: `${window.location.origin}/#/admin`}
+            body: {redirectTo: window.location.origin}
           });
           if (bootstrapError || data?.error) {
             throw new Error(data?.error || bootstrapError?.message || 'Could not send the sign-in link.');
