@@ -78,6 +78,18 @@ const AuthRedirectBridge = () => {
     supabase.auth.getSession().then(({data: {session}}) => {
       if (cancelled) return
       if (session) {
+        // The only ways a session ever arrives via this hash are: accepting
+        // a staff/admin invite, or clicking a "forgot password" reset link -
+        // both one-time, both meant to end in setting a real password
+        // rather than dropping straight into the dashboard. Admin.jsx reads
+        // this flag once on mount to show that form instead.
+        try {
+          sessionStorage.setItem('urf_needs_password_setup', '1')
+        } catch {
+          // Private browsing / blocked storage - worst case the person
+          // lands straight in the dashboard instead of being asked to set
+          // a password here. Not load-bearing for the session itself.
+        }
         goToAdmin()
         return
       }

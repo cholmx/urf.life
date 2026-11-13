@@ -102,9 +102,9 @@ const STAFF_ALLOWED_TABS=new Set([
   'stageScript','printables','slideMaker','signupSheet',
 ]);
 
-// Matches the real login card's shape (icon circle, title, subtitle, one
-// email field, one submit button) rather than the generic multi-field
-// SkeletonForm, which was roughly 4x too big for this one-field form.
+// Matches the real login card's shape (icon circle, title, subtitle,
+// email field, password field, one submit button) rather than the
+// generic multi-field SkeletonForm, which doesn't match this card at all.
 const LoginSkeleton=()=> (
   <div className="bg-white rounded-3xl shadow-modern-lg p-8 max-w-md w-full mx-4">
     <div className="text-center mb-6 flex flex-col items-center">
@@ -113,6 +113,7 @@ const LoginSkeleton=()=> (
       <SkeletonBox width="w-56" height="h-4" />
     </div>
     <div className="space-y-4">
+      <SkeletonBox width="w-full" height="h-12" rounded="rounded-xl" />
       <SkeletonBox width="w-full" height="h-12" rounded="rounded-xl" />
       <SkeletonBox width="w-full" height="h-12" rounded="rounded-xl" className="bg-primary/15" />
     </div>
@@ -139,7 +140,24 @@ const Admin=()=> {
   const [role,setRole]=useState(null);
   const [deniedEmail,setDeniedEmail]=useState(null);
   const [email,setEmail]=useState('');
-  const [linkSent,setLinkSent]=useState(false);
+  const [password,setPassword]=useState('');
+  const [resetSent,setResetSent]=useState(false);
+  const [bootstrapSent,setBootstrapSent]=useState(false);
+  const [showBootstrapHint,setShowBootstrapHint]=useState(false);
+  // Set once, synchronously, from the flag AuthRedirectBridge leaves behind
+  // when a session just arrived via an invite/reset link rather than a
+  // normal password login - see handleSetPassword and the render branch
+  // below. Read directly (not in an effect) so it's correct on the very
+  // first render instead of flashing the dashboard for a tick first.
+  const [needsPasswordSetup,setNeedsPasswordSetup]=useState(()=> {
+    try {
+      return sessionStorage.getItem('urf_needs_password_setup')==='1';
+    } catch {
+      return false;
+    }
+  });
+  const [newPassword,setNewPassword]=useState('');
+  const [confirmPassword,setConfirmPassword]=useState('');
   const [error,setError]=useState('');
   const [activeTab,setActiveTab]=useState('overview');
   const [loading,setLoading]=useState(false);
@@ -201,55 +219,117 @@ const Admin=()=> {
     }
   },[role]);
 
-  const handleEmailSubmit=async (e)=> {
+  const handleLoginSubmit=async (e)=> {
     e.preventDefault();
     setLoading(true);
     setError('');
     setDeniedEmail(null);
+    setShowBootstrapHint(false);
     const cleanEmail=email.trim().toLowerCase();
     try {
-      const {error: otpError}=await supabase.auth.signInWithOtp({
+      const {error: loginError}=await supabase.auth.signInWithPassword({
         email: cleanEmail,
-        // Plain origin, not `${origin}/#/admin` - with HashRouter the route
-        // already lives in the URL's hash, and Supabase delivers the magic
-        // link's session by appending its OWN `#access_token=...` onto
-        // whatever redirect URL we give it. Baking a hash into this URL
-        // produces a double hash (`#/admin#access_token=...`) that
-        // Supabase's own client can't parse back out - the AuthRedirectBridge
-        // in App.jsx is what actually routes a returning magic-link click
-        // into /admin once the token lands in a clean hash.
-        options: {emailRedirectTo: window.location.origin}
+        password,
       });
-      if (otpError) {
-        // This project has public self-service signups disabled, so the
-        // one true admin's very first-ever login has no existing account
-        // for signInWithOtp to send a link to, and it refuses to create
-        // one ("Signups not allowed for this instance"). admin-bootstrap
-        // uses a privileged, admin-only API to create that one hardcoded
-        // account and email him a real sign-in link instead - every login
-        // after this one goes through the normal path above, since his
-        // account then already exists.
-        if (cleanEmail===ADMIN_EMAIL && /signup/i.test(otpError.message || '')) {
-          const {data,error: bootstrapError}=await supabase.functions.invoke('admin-bootstrap',{
-            body: {redirectTo: window.location.origin}
-          });
-          if (bootstrapError || data?.error) {
-            throw new Error(data?.error || bootstrapError?.message || 'Could not send the sign-in link.');
-          }
-        } else {
-          throw otpError;
-        }
+      if (loginError) {
+        // "Invalid login credentials" covers both a wrong password AND no
+        // account existing yet - those look the same to this call on
+        // purpose (so a login attempt can't be used to probe which emails
+        // have accounts). For the one real admin specifically, that also
+        // covers his very first-ever login, before any account exists for
+        // him at all - surface the one-time setup link as a possibility
+        // rather than guessing which case this is.
+        if (cleanEmail===ADMIN_EMAIL) setShowBootstrapHint(true);
+        throw loginError;
       }
-      setLinkSent(true);
+      // onAuthStateChange (see the effect above) picks up the new session
+      // and resolves its role on its own - nothing else to do here.
     } catch (err) {
-      console.error('Sign-in link request failed:',err);
-      setError(err?.message || 'Could not send the sign-in link. Please try again.');
+      console.error('Login failed:',err);
+      setError(err?.message || 'Could not log in. Please check your email and password.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBootstrap=async ()=> {
+    setLoading(true);
+    setError('');
+    try {
+      const {data,error: bootstrapError}=await supabase.functions.invoke('admin-bootstrap',{
+        body: {redirectTo: window.location.origin}
+      });
+      if (bootstrapError || data?.error) {
+        throw new Error(data?.error || bootstrapError?.message || 'Could not send the setup link.');
+      }
+      setBootstrapSent(true);
+    } catch (err) {
+      console.error('Admin bootstrap failed:',err);
+      setError(err?.message || 'Could not send the setup link. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword=async ()=> {
+    const cleanEmail=email.trim().toLowerCase();
+    if (!cleanEmail) {
+      setError('Enter your email above, then click "Forgot password?".');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    try {
+      const {error: resetError}=await supabase.auth.resetPasswordForEmail(cleanEmail,{
+        redirectTo: window.location.origin
+      });
+      if (resetError) throw resetError;
+      setResetSent(true);
+    } catch (err) {
+      console.error('Password reset request failed:',err);
+      setError(err?.message || 'Could not send the reset link. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSetPassword=async (e)=> {
+    e.preventDefault();
+    setError('');
+    if (newPassword.length < 8) {
+      setError('Password must be at least 8 characters.');
+      return;
+    }
+    if (newPassword!==confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+    setLoading(true);
+    try {
+      const {error: updateError}=await supabase.auth.updateUser({password: newPassword});
+      if (updateError) throw updateError;
+      try {
+        sessionStorage.removeItem('urf_needs_password_setup');
+      } catch {
+        // Best-effort, same as the set() in App.jsx's AuthRedirectBridge.
+      }
+      setNeedsPasswordSetup(false);
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err) {
+      console.error('Setting password failed:',err);
+      setError(err?.message || 'Could not set your password. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   const handleLogout=async ()=> {
+    try {
+      sessionStorage.removeItem('urf_needs_password_setup');
+    } catch {
+      // Best-effort.
+    }
     await supabase.auth.signOut();
   };
 
@@ -423,6 +503,86 @@ const Admin=()=> {
     );
   }
 
+  // A session just arrived via an invite or password-reset link (see
+  // AuthRedirectBridge in App.jsx) - make them set a real password before
+  // treating this as a normal logged-in session. Checked ahead of the
+  // denied/login branch below since this is still a genuine, allowed
+  // session; role resolution for it proceeds normally underneath.
+  if (isAuthenticated && needsPasswordSetup) {
+    return (
+      <div className="admin-shell min-h-screen py-12 flex items-center justify-center relative bg-accent">
+        <div className="fixed top-6 right-6 z-50">
+          <Link
+            to="/"
+            className="inline-flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 bg-neutral-900"
+            title="Back to Home"
+          >
+            <SafeIcon icon={FiHome} className="h-5 w-5 text-white" />
+          </Link>
+        </div>
+
+        <motion.div
+          initial={{opacity: 0,scale: 0.9}}
+          animate={{opacity: 1,scale: 1}}
+          transition={{duration: 0.25}}
+          className="bg-white rounded-3xl shadow-modern-lg p-8 max-w-md w-full mx-4"
+        >
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 bg-neutral-900 rounded-full flex items-center justify-center mx-auto mb-4">
+              <SafeIcon icon={FiKey} className="h-8 w-8 text-white" />
+            </div>
+            <h1 className="text-2xl font-bold text-neutral-900 mb-2">
+              Set Your Password
+            </h1>
+            <p className="text-neutral-500">
+              Choose a password for your urf.life admin login.
+            </p>
+          </div>
+
+          <form onSubmit={handleSetPassword} className="space-y-4">
+            <div>
+              <label className="admin-label">New Password</label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e)=> setNewPassword(e.target.value)}
+                required
+                minLength={8}
+                className="admin-input"
+                placeholder="At least 8 characters"
+                autoFocus
+              />
+            </div>
+            <div>
+              <label className="admin-label">Confirm Password</label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e)=> setConfirmPassword(e.target.value)}
+                required
+                minLength={8}
+                className="admin-input"
+                placeholder="Re-enter your password"
+              />
+            </div>
+            {error && (
+              <div className="text-red-600 text-sm">
+                {error}
+              </div>
+            )}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-neutral-900 text-white py-3 px-6 rounded-xl font-semibold hover:bg-neutral-700 transition-colors disabled:opacity-50 active:scale-[0.98]"
+            >
+              {loading ? 'Saving...' : 'Save Password'}
+            </button>
+          </form>
+        </motion.div>
+      </div>
+    );
+  }
+
   // Login screen: no session yet, or a session whose email isn't in
   // staff_users_portal123 (role==='denied' - see the signOut effect above,
   // which is already unwinding that session as this renders).
@@ -455,9 +615,11 @@ const Admin=()=> {
                 Admin Access
               </h1>
               <p className="text-neutral-500">
-                {linkSent
-                  ? 'Check your email for a sign-in link.'
-                  : "Enter your email and we'll send you a one-click sign-in link."}
+                {resetSent
+                  ? `Check ${email.trim().toLowerCase()} for a password reset link.`
+                  : bootstrapSent
+                  ? `Check ${ADMIN_EMAIL} for a one-time setup link.`
+                  : 'Enter your email and password to sign in.'}
               </p>
             </div>
 
@@ -467,41 +629,75 @@ const Admin=()=> {
               </div>
             )}
 
-            {linkSent ? (
+            {resetSent || bootstrapSent ? (
               <button
                 type="button"
-                onClick={()=> { setLinkSent(false); setEmail(''); }}
+                onClick={()=> { setResetSent(false); setBootstrapSent(false); }}
                 className="w-full bg-white border border-neutral-200 text-neutral-700 py-3 px-6 rounded-xl font-semibold hover:bg-neutral-50 transition-colors"
               >
-                Use a different email
+                Back to sign in
               </button>
             ) : (
-              <form onSubmit={handleEmailSubmit} className="space-y-4">
-                <div>
-                  <label className="admin-label">Email</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e)=> setEmail(e.target.value)}
-                    required
-                    className="admin-input"
-                    placeholder="you@example.com"
-                    autoFocus
-                  />
-                </div>
-                {error && (
-                  <div className="text-red-600 text-sm">
-                    {error}
+              <>
+                <form onSubmit={handleLoginSubmit} className="space-y-4">
+                  <div>
+                    <label className="admin-label">Email</label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e)=> setEmail(e.target.value)}
+                      required
+                      className="admin-input"
+                      placeholder="you@example.com"
+                      autoFocus
+                    />
+                  </div>
+                  <div>
+                    <label className="admin-label">Password</label>
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e)=> setPassword(e.target.value)}
+                      required
+                      className="admin-input"
+                      placeholder="Your password"
+                    />
+                  </div>
+                  {error && (
+                    <div className="text-red-600 text-sm">
+                      {error}
+                    </div>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-neutral-900 text-white py-3 px-6 rounded-xl font-semibold hover:bg-neutral-700 transition-colors disabled:opacity-50 active:scale-[0.98]"
+                  >
+                    {loading ? 'Signing in...' : 'Log In'}
+                  </button>
+                </form>
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  disabled={loading}
+                  className="w-full text-center text-sm text-neutral-500 hover:text-neutral-700 mt-4 transition-colors"
+                >
+                  Forgot password?
+                </button>
+                {showBootstrapHint && (
+                  <div className="text-neutral-600 bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm mt-4">
+                    First time logging in as the admin?{' '}
+                    <button
+                      type="button"
+                      onClick={handleBootstrap}
+                      disabled={loading}
+                      className="font-semibold underline underline-offset-2 hover:text-neutral-900"
+                    >
+                      Get started
+                    </button>
                   </div>
                 )}
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-neutral-900 text-white py-3 px-6 rounded-xl font-semibold hover:bg-neutral-700 transition-colors disabled:opacity-50 active:scale-[0.98]"
-                >
-                  {loading ? 'Sending...' : 'Send Sign-in Link'}
-                </button>
-              </form>
+              </>
             )}
           </motion.div>
         </LoadingTransition>
