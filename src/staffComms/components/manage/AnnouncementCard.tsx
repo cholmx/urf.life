@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react';
 import { C, font, recurringChipColor } from '../../lib/theme';
 import { colors } from '../../../styles/designTokens.js';
 import { ScopePill, HappeningTypePill, Pill } from '../ui/Pill';
-import { formatDateNice, weeksUntil } from '../../lib/helpers';
+import { formatDateNice, weeksUntil, isSlideActive, isFlyerTextStale } from '../../lib/helpers';
 import { getNextOccurrenceDate } from '../../lib/calendar-grid';
 import { buildInviteHTMLFromAnnouncement } from './invitePrinter';
 import { printHtml } from '../../lib/printHtml';
@@ -40,6 +40,7 @@ export function AnnouncementCard({ a, today, onEdit, onDelete, onTogglePublish, 
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [togglingKeys, setTogglingKeys] = useState<Set<DestinationKey>>(new Set());
+  const [hovered, setHovered] = useState(false);
 
   const handleToggleDestination = async (key: DestinationKey) => {
     setTogglingKeys(prev => new Set(prev).add(key));
@@ -64,65 +65,85 @@ export function AnnouncementCard({ a, today, onEdit, onDelete, onTogglePublish, 
   const displayDate = getNextOccurrenceDate(a, today);
   const wks = weeksUntil(displayDate, today);
 
+  // Surfaced right on the collapsed row instead of only being visible by
+  // opening the Dashboard's "Slides Due"/"Stale Descriptions" filters -
+  // those stats say something needs attention somewhere in the list; this
+  // is what points at exactly which card.
+  const slideNeeded = isSlideActive(a, today) && !a.slide_made;
+  const descriptionStale = isFlyerTextStale(a, today);
+  const attentionReasons = [
+    slideNeeded && 'Slide needed',
+    descriptionStale && 'Description written for a past date',
+  ].filter(Boolean).join(' · ');
+
   const printInvite = () => {
     printHtml(buildInviteHTMLFromAnnouncement(a));
   };
 
-  const btnBase: React.CSSProperties = { fontFamily: font.display, fontSize: 10, fontWeight: 700, borderRadius: 5, padding: '4px 10px', cursor: 'pointer', letterSpacing: '0.04em', textTransform: 'uppercase' };
+  const btnBase: React.CSSProperties = { fontFamily: font.display, fontSize: 12, fontWeight: 700, borderRadius: 6, padding: '6px 13px', cursor: 'pointer', letterSpacing: '0.04em', textTransform: 'uppercase' };
 
   return (
-    <div style={{
-      background: C.card,
-      boxShadow: expanded
-        ? '0 4px 16px rgba(0,0,0,0.08), 0 16px 32px -8px rgba(0,0,0,0.10)'
-        : '0 2px 8px rgba(0,0,0,0.06), 0 8px 20px -4px rgba(0,0,0,0.07)',
-      borderRadius: 14,
-      overflow: 'hidden',
-      transition: 'box-shadow 0.15s',
-    }}>
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        background: hovered && !expanded ? C.bgSubtle : C.card,
+        boxShadow: expanded
+          ? '0 4px 16px rgba(0,0,0,0.08), 0 16px 32px -8px rgba(0,0,0,0.10)'
+          : '0 2px 8px rgba(0,0,0,0.06), 0 8px 20px -4px rgba(0,0,0,0.07)',
+        borderRadius: 14,
+        overflow: 'hidden',
+        transition: 'box-shadow 0.15s, background 0.1s',
+      }}>
       {/* Header row - click anywhere to expand/collapse */}
       <div
         onClick={() => setExpanded(v => !v)}
-        style={{ padding: '9px 14px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', userSelect: 'none' }}
+        style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer', userSelect: 'none' }}
       >
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap', marginBottom: 2 }}>
-            <ScopePill scope={a.scope} />
-            <HappeningTypePill type={a.happening_type} />
+          <h4 style={{
+            fontFamily: font.display, fontSize: 16, fontWeight: 800, color: C.text, margin: '0 0 5px', letterSpacing: '-0.01em', lineHeight: 1.3,
+            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          }}>
+            {a.title}
+          </h4>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+            <ScopePill scope={a.scope} size="md" />
+            <HappeningTypePill type={a.happening_type} size="md" />
             {a.is_recurring && (
-              <Pill color={recurringChipColor.text} bg={recurringChipColor.bg} border={recurringChipColor.border}>
+              <Pill color={recurringChipColor.text} bg={recurringChipColor.bg} border={recurringChipColor.border} size="md">
                 Recurring
               </Pill>
             )}
             {a.is_published && (
               <span style={{
-                fontFamily: font.display, fontSize: 9, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
-                color: colors.white, background: colors.primary, border: `1px solid ${colors.primary}`, borderRadius: 4, padding: '2px 7px',
+                fontFamily: font.display, fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
+                color: colors.white, background: colors.primary, border: `1px solid ${colors.primary}`, borderRadius: 4, padding: '4px 10px',
               }}>Published</span>
             )}
           </div>
-          <h4 style={{
-            fontFamily: font.display, fontSize: 14, fontWeight: 800, color: C.text, margin: 0, letterSpacing: '-0.01em', lineHeight: 1.3,
-            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-          }}>
-            {a.title}
-          </h4>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+          {attentionReasons && (
+            <span title={attentionReasons} style={{ display: 'flex', alignItems: 'center', color: colors.gold }}>
+              <AlertTriangle size={16} />
+            </span>
+          )}
+
           {displayDate && (
-            <span style={{ fontFamily: font.mono, fontSize: 11, color: C.textMuted, letterSpacing: '0.02em' }}>
+            <span style={{ fontFamily: font.mono, fontSize: 13, color: C.textMuted, letterSpacing: '0.02em' }}>
               {formatDateNice(displayDate)}
               {wks !== null && wks > 0 && <span style={{ color: C.textMuted, opacity: 0.6 }}> · {wks}w</span>}
             </span>
           )}
           {!displayDate && a.is_recurring && (
-            <span style={{ fontFamily: font.mono, fontSize: 11, color: C.textMuted }}>recurring</span>
+            <span style={{ fontFamily: font.mono, fontSize: 13, color: C.textMuted }}>recurring</span>
           )}
 
           {confirmDelete ? (
             <>
-              <span style={{ fontFamily: font.display, fontSize: 10, color: C.textTer }}>Remove?</span>
+              <span style={{ fontFamily: font.display, fontSize: 12, color: C.textTer }}>Remove?</span>
               <button
                 onClick={e => { e.stopPropagation(); onDelete(a.id); }}
                 style={{ ...btnBase, color: C.warn, background: C.warnBg, border: `1px solid ${C.warn}33` }}
@@ -151,7 +172,7 @@ export function AnnouncementCard({ a, today, onEdit, onDelete, onTogglePublish, 
           )}
 
           <span style={{ color: C.textMuted, display: 'flex', alignItems: 'center' }}>
-            {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            {expanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
           </span>
         </div>
       </div>
@@ -201,18 +222,18 @@ export function AnnouncementCard({ a, today, onEdit, onDelete, onTogglePublish, 
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-              <span style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, letterSpacing: '0.03em' }}>
+              <span style={{ fontFamily: font.mono, fontSize: 12, color: C.textMuted, letterSpacing: '0.03em' }}>
                 {a.category}
               </span>
               {a.assigned_to && (
-                <span style={{ fontFamily: font.mono, fontSize: 10, color: C.textMuted, letterSpacing: '0.03em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <span style={{ fontFamily: font.mono, fontSize: 12, color: C.textMuted, letterSpacing: '0.03em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   · {a.assigned_to}
                 </span>
               )}
               {a.signup_mode && a.signup_mode !== 'none' && (
                 <span
                   title="Edit this happening to manage sign-ups"
-                  style={{ fontFamily: font.display, fontSize: 10, fontWeight: 700, color: C.textSec, letterSpacing: '0.04em', textTransform: 'uppercase', padding: '4px 10px', border: `1px solid ${C.border}`, borderRadius: 5, background: C.card }}
+                  style={{ fontFamily: font.display, fontSize: 12, fontWeight: 700, color: C.textSec, letterSpacing: '0.04em', textTransform: 'uppercase', padding: '4px 10px', border: `1px solid ${C.border}`, borderRadius: 5, background: C.card }}
                 >
                   {SIGNUP_MODE_LABELS[a.signup_mode] || 'Sign-up'}
                 </span>

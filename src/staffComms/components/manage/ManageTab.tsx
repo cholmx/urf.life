@@ -6,6 +6,7 @@ import { btnPrimary, btnGhost } from '../ui/inputs';
 import { AnnouncementCard } from './AnnouncementCard';
 import { AnnouncementForm } from './AnnouncementForm';
 import { isSlideActive, isFlyerTextStale } from '../../lib/helpers';
+import { getNextOccurrenceDate } from '../../lib/calendar-grid';
 import { HAPPENING_TYPE_OPTIONS, SCOPE_OPTIONS } from '../../lib/constants';
 import { supabase } from '../../lib/supabase';
 import type { Announcement, DestinationKey } from '../../types';
@@ -53,7 +54,7 @@ export function ManageTab({ announcements, today, onSave, onDelete, onTogglePubl
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return announcements.filter(a => {
+    const matches = announcements.filter(a => {
       if (typeFilter && a.happening_type !== typeFilter) return false;
       if (scopeFilter && a.scope !== scopeFilter) return false;
       if (recurringOnly && !a.is_recurring) return false;
@@ -67,6 +68,21 @@ export function ManageTab({ announcements, today, onSave, onDelete, onTogglePubl
         (a.assigned_to || '').toLowerCase().includes(q) ||
         a.category.toLowerCase().includes(q)
       );
+    });
+
+    // Soonest-upcoming first, not newest-entered first - the fetch's own
+    // order (created_at desc) is about when staff happened to type each
+    // one in, which has nothing to do with what's actually coming up next.
+    // Anything with no resolvable date (a recurring item past its last
+    // occurrence, or one that's never had a date at all) sorts after
+    // every dated item, keeping its original relative order among itself.
+    return [...matches].sort((a, b) => {
+      const dateA = getNextOccurrenceDate(a, today);
+      const dateB = getNextOccurrenceDate(b, today);
+      if (dateA && dateB) return dateA < dateB ? -1 : dateA > dateB ? 1 : 0;
+      if (dateA) return -1;
+      if (dateB) return 1;
+      return 0;
     });
   }, [announcements, search, typeFilter, scopeFilter, recurringOnly, unpublishedOnly, staleOnly, today]);
 

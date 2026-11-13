@@ -5,18 +5,29 @@ interface PillProps {
   color?: string;
   bg?: string;
   border?: string;
+  // 'sm' (the original size) stays the default for every existing call
+  // site (Archive, the Calendar day panel) - 'md' exists only for the
+  // Dashboard's announcement list, which needed bigger text/padding
+  // without resizing this shared component everywhere else it's used.
+  size?: 'sm' | 'md';
 }
 
-export function Pill({ children, color = C.textTer, bg = C.cardAlt, border }: PillProps) {
+const SIZES = {
+  sm: { fontSize: 10, padding: '2px 7px' },
+  md: { fontSize: 12, padding: '4px 10px' },
+};
+
+export function Pill({ children, color = C.textTer, bg = C.cardAlt, border, size = 'sm' }: PillProps) {
+  const { fontSize, padding } = SIZES[size];
   return (
     <span style={{
       display: 'inline-flex',
       alignItems: 'center',
-      fontSize: 10,
+      fontSize,
       fontWeight: 600,
       letterSpacing: '0.05em',
       textTransform: 'uppercase',
-      padding: '2px 7px',
+      padding,
       borderRadius: 4,
       background: bg,
       color,
@@ -29,7 +40,7 @@ export function Pill({ children, color = C.textTer, bg = C.cardAlt, border }: Pi
   );
 }
 
-export function ScopePill({ scope }: { scope: string }) {
+export function ScopePill({ scope, size }: { scope: string; size?: 'sm' | 'md' }) {
   const colors = scopeChipColors[scope] || scopeChipColors.informational;
   const labels: Record<string, string> = {
     whole_church: 'Whole Church',
@@ -37,13 +48,13 @@ export function ScopePill({ scope }: { scope: string }) {
     informational: 'Info',
   };
   return (
-    <Pill color={colors.text} bg={colors.bg} border={colors.border}>
+    <Pill color={colors.text} bg={colors.bg} border={colors.border} size={size}>
       {labels[scope] ?? scope}
     </Pill>
   );
 }
 
-export function HappeningTypePill({ type }: { type: string }) {
+export function HappeningTypePill({ type, size }: { type: string; size?: 'sm' | 'md' }) {
   const colors = happeningTypeChipColors[type] || happeningTypeChipColors.announcement;
   const labels: Record<string, string> = {
     announcement: 'Announcement',
@@ -52,7 +63,7 @@ export function HappeningTypePill({ type }: { type: string }) {
     general: 'General',
   };
   return (
-    <Pill color={colors.text} bg={colors.bg} border={colors.border}>
+    <Pill color={colors.text} bg={colors.bg} border={colors.border} size={size}>
       {labels[type] ?? type}
     </Pill>
   );
