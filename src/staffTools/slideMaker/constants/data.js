@@ -110,6 +110,32 @@ export const MARK_OVERLAYS_LIGHT = [
   "/slide-marks/mark-corners-light.png",
 ];
 
+// A third pool, added alongside the two above rather than folded into
+// either - these are grayscale darkening treatments (a layered mountain-
+// ridge silhouette, a diagonal corner wedge, top/bottom bars, a grain
+// texture, a bottom gradient) rather than a brand-colored ink, so they
+// read fine over any background regardless of light or dark. pickMarkOverlay
+// in SlideMaker.jsx always mixes this pool in alongside whichever of the
+// two above fits the slide's background.
+export const MARK_OVERLAYS_UNIVERSAL = [
+  "/slide-marks/mark-ridge.png",
+  "/slide-marks/mark-wedge.png",
+  "/slide-marks/mark-bars.png",
+  "/slide-marks/mark-grain.png",
+  "/slide-marks/mark-lowerthird.png",
+];
+
+// A thin rounded-rectangle border, inset from the slide's edge - drawn
+// natively on the canvas (see drawMarkFrame in renderEngine.js) rather
+// than as an image, so it scales cleanly to any canvas size instead of
+// being a fixed-proportion image stretched to fit. "pill" rounds all
+// four corners the same; "diagonal" rounds only the top-left and
+// bottom-right, leaving the other two square. Mixed into the same random
+// pick as the image-based overlays above (see pickMarkOverlay in
+// SlideMaker.jsx) - picking one of these means a frame instead of an
+// image, not on top of one.
+export const FRAME_STYLES = ["pill", "diagonal"];
+
 // Seed images for the Photos tab's one-time "Import built-in textures"
 // action (see PhotosTab.jsx / photoService.js's importBuiltInTexture) -
 // not read anywhere else. Once imported they're ordinary photo-library

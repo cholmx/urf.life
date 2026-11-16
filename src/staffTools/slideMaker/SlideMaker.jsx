@@ -2,7 +2,7 @@ import React, {useState, useRef, useEffect, useCallback, useMemo} from 'react';
 import useGoogleFonts from './hooks/useGoogleFonts';
 import {ToastProvider, useToast} from './hooks/useToast.jsx';
 import {useUndoHistory} from './hooks/useUndoHistory';
-import {BACKGROUNDS, HEADLINE_FONT, HEADLINE_WEIGHT, BODY_FONT, BODY_WEIGHT, AUTO_FONT_PAIRINGS, ASPECT_RATIOS, MARK_OVERLAYS, MARK_OVERLAYS_LIGHT} from './constants/data';
+import {BACKGROUNDS, HEADLINE_FONT, HEADLINE_WEIGHT, BODY_FONT, BODY_WEIGHT, AUTO_FONT_PAIRINGS, ASPECT_RATIOS, MARK_OVERLAYS, MARK_OVERLAYS_LIGHT, MARK_OVERLAYS_UNIVERSAL, FRAME_STYLES} from './constants/data';
 import {C, ui} from './constants/styles';
 import {sharpenCanvas, loadImage, averageBrightness} from './utils/canvasUtils';
 import {render} from './utils/renderEngine';
@@ -56,6 +56,7 @@ const DEFAULT_BRAND = {
   hLetterSpacing: 0,
   markImg: null,
   markOpacity: 0,
+  markFrame: null,
 };
 
 // The automatic-background pool mixes two kinds of entry: every photo in
@@ -164,29 +165,49 @@ function pickAutoTemplate() {
 const MARK_OPACITY_MIN = 0.06;
 const MARK_OPACITY_MAX = 0.16;
 
+// A frame's single thin stroke needs far more opacity than an image mark
+// to read as an intentional border at all - nowhere near as much ink on
+// the slide as a filled graphic, even before its own low opacity.
+const FRAME_OPACITY_MIN = 0.3;
+const FRAME_OPACITY_MAX = 0.5;
+
 // How often an automatic slide gets a watermark at all, solid-color or
 // photo-backed alike - the rest come back plain so it reads as an
 // occasional accent rather than something on literally every slide.
 const MARK_SHOW_CHANCE = 0.8;
 
-// Resolves the watermark for one automatic slide: an 80% chance of one of
-// MARK_OVERLAYS (white ink, for every background except Light/Mint) or
-// MARK_OVERLAYS_LIGHT (black ink, for those two pale ones), at a random
-// low opacity. A failed image load (slow connection, one bad file)
-// shouldn't take down the whole slide - better a plain background than a
-// card stuck forever on "Building preview..." because of a decorative
-// extra, so a load failure resolves to no watermark rather than throwing.
+// Resolves the watermark for one automatic slide: an 80% chance of one
+// entry from the combined pool - MARK_OVERLAYS (white ink, for every
+// background except Light/Mint) or MARK_OVERLAYS_LIGHT (black ink, for
+// those two pale ones), MARK_OVERLAYS_UNIVERSAL (grayscale darkening
+// treatments that aren't a brand-colored ink, so no light/dark split of
+// their own), and FRAME_STYLES (a native rounded-rectangle border, not
+// an image - see drawMarkFrame in renderEngine.js). A frame pick returns
+// markImg/markOpacity null and markFrame set instead; an image pick is
+// the other way around - never both from one pick. A failed image load
+// (slow connection, one bad file) shouldn't take down the whole slide -
+// better a plain background than a card stuck forever on "Building
+// preview..." because of a decorative extra, so a load failure resolves
+// to no watermark rather than throwing.
 async function pickMarkOverlay(isLight) {
-  if (Math.random() >= MARK_SHOW_CHANCE) return {markImg: null, markOpacity: 0};
+  if (Math.random() >= MARK_SHOW_CHANCE) return {markImg: null, markOpacity: 0, markFrame: null};
+  const pool = [
+    ...(isLight ? MARK_OVERLAYS_LIGHT : MARK_OVERLAYS).map(src => ({kind: "image", src})),
+    ...MARK_OVERLAYS_UNIVERSAL.map(src => ({kind: "image", src})),
+    ...FRAME_STYLES.map(style => ({kind: "frame", style})),
+  ];
+  const pick = pool[Math.floor(Math.random() * pool.length)];
+  if (pick.kind === "frame") {
+    const opacity = FRAME_OPACITY_MIN + Math.random() * (FRAME_OPACITY_MAX - FRAME_OPACITY_MIN);
+    return {markImg: null, markOpacity: 0, markFrame: {style: pick.style, color: isLight ? "#000000" : "#FFFFFF", opacity}};
+  }
   try {
-    const pool = isLight ? MARK_OVERLAYS_LIGHT : MARK_OVERLAYS;
-    const src = pool[Math.floor(Math.random() * pool.length)];
     const markOpacity = MARK_OPACITY_MIN + Math.random() * (MARK_OPACITY_MAX - MARK_OPACITY_MIN);
-    const markImg = await loadImage(src);
-    return {markImg, markOpacity};
+    const markImg = await loadImage(pick.src);
+    return {markImg, markOpacity, markFrame: null};
   } catch (error) {
     console.error('Could not load the slide watermark:', error);
-    return {markImg: null, markOpacity: 0};
+    return {markImg: null, markOpacity: 0, markFrame: null};
   }
 }
 
@@ -260,7 +281,7 @@ const QUEUE_PREVIEW_RATIO = ASPECT_RATIOS.find(r => r.id === "16:10") || ASPECT_
 async function generateQueueThumbnailFromEntry(a, entry, avoidOverlayColors = []) {
   const auto = await computeAutoSlide(entry, avoidOverlayColors);
   const data = {...DEFAULT_DATA, ...buildAutoSlideData(a)};
-  const brand = {...DEFAULT_BRAND, bgColor: auto.bgColor, textColor: auto.textColor, hFont: auto.hFont, hWeight: auto.hWeight, hItalic: auto.hItalic, bFont: auto.bFont, bWeight: auto.bWeight, bItalic: auto.bItalic, markImg: auto.markImg, markOpacity: auto.markOpacity};
+  const brand = {...DEFAULT_BRAND, bgColor: auto.bgColor, textColor: auto.textColor, hFont: auto.hFont, hWeight: auto.hWeight, hItalic: auto.hItalic, bFont: auto.bFont, bWeight: auto.bWeight, bItalic: auto.bItalic, markImg: auto.markImg, markOpacity: auto.markOpacity, markFrame: auto.markFrame};
   const canvas = document.createElement('canvas');
   render(canvas, auto.tmpl, data, brand, auto.img, auto.overlayColor, auto.ov, auto.blur, QUEUE_PREVIEW_RATIO.w, QUEUE_PREVIEW_RATIO.h, 0);
   // A solid entry has no overlay color (auto.overlayColor is null) - its
@@ -583,7 +604,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     try {
       const auto = await computeAutoSlide(entry, avoidOverlayColors);
       setActivePhoto(auto.img);
-      setBrand(b => ({...b, bgColor: auto.bgColor, textColor: auto.textColor, hFont: auto.hFont, hWeight: auto.hWeight, hItalic: auto.hItalic, bFont: auto.bFont, bWeight: auto.bWeight, bItalic: auto.bItalic, markImg: auto.markImg, markOpacity: auto.markOpacity}));
+      setBrand(b => ({...b, bgColor: auto.bgColor, textColor: auto.textColor, hFont: auto.hFont, hWeight: auto.hWeight, hItalic: auto.hItalic, bFont: auto.bFont, bWeight: auto.bWeight, bItalic: auto.bItalic, markImg: auto.markImg, markOpacity: auto.markOpacity, markFrame: auto.markFrame}));
       setOverlayColor(auto.overlayColor);
       setOv(auto.ov);
       setBlur(auto.blur);
