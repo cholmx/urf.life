@@ -212,7 +212,11 @@ export function ManageTab({ announcements, today, onSave, onDelete, onTogglePubl
                 fontFamily: font.body,
                 fontSize: 13,
                 color: C.text,
-                background: C.bgSubtle,
+                // Not C.bgSubtle - that token is the full-strength brand
+                // teal (see theme.ts), too bold for a search field's own
+                // fill. The site's cream reads as a quiet, neutral surface
+                // here instead.
+                background: colors.page,
                 outline: 'none',
                 boxSizing: 'border-box',
               }}
