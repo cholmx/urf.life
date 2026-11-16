@@ -105,13 +105,11 @@ function pickRandomTexture(pool) {
 // ov is each color's own overlay strength - copper and sandy brown are
 // the two the texture shows through the most at the teals' own 65%,
 // washing them out toward a muddy brown instead of a clean brand color,
-// so they get a stronger wash to stay recognizably on-brand. Black needs
-// a heavier wash than the teals for the same reason white does below -
-// a true neutral (no hue of its own to read as "on-brand" even faintly)
-// shows through as "barely tinted photo" rather than "black slide" at
-// the same strength that works for an actual brand color.
+// so they get a stronger wash to stay recognizably on-brand. No plain
+// black wash option here (removed on request) - black stays available
+// as a text color (see BACKGROUNDS' Light/Mint textOptions), just not
+// as a photo-overlay tint.
 const DARK_OVERLAY_OPTIONS = [
-  {color: "#000000", textColor: null, ov: 80},
   {color: "#172B2C", textColor: null, ov: 65},
   {color: "#C65D3B", textColor: "#FFFFFF", ov: 88},
   {color: "#F9AB55", textColor: "#FFFFFF", ov: 88},
