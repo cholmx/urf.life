@@ -81,11 +81,22 @@ export const TEMPLATES = [
 // see pickMarkOverlay in SlideMaker.jsx), between the flat color fill and
 // the headline/subhead text. Each is a transparent PNG with the URF
 // chevron mark drawn in white, at the same 16:10 aspect ratio as the
-// slide canvas so it can be stretched to fill it with no distortion.
+// slide canvas so it can be stretched to fill it with no distortion. Used
+// on every background except Light/Mint (see MARK_OVERLAYS_LIGHT) - white
+// ink on a near-white fill wouldn't read at all.
 export const MARK_OVERLAYS = [
   "/slide-marks/mark-top.png",
   "/slide-marks/mark-pattern.png",
   "/slide-marks/mark-bottom.png",
+  "/slide-marks/mark-pattern-dense.png",
+  "/slide-marks/mark-corners.png",
+];
+
+// The Light/Mint counterpart to MARK_OVERLAYS above - same idea, drawn in
+// black ink instead of white so it actually shows up on those two pale
+// backgrounds.
+export const MARK_OVERLAYS_LIGHT = [
+  "/slide-marks/mark-corners-light.png",
 ];
 
 // Seed images for the Photos tab's one-time "Import built-in textures"

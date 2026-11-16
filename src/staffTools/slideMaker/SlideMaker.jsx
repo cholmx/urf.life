@@ -2,7 +2,7 @@ import React, {useState, useRef, useEffect, useCallback, useMemo} from 'react';
 import useGoogleFonts from './hooks/useGoogleFonts';
 import {ToastProvider, useToast} from './hooks/useToast.jsx';
 import {useUndoHistory} from './hooks/useUndoHistory';
-import {BACKGROUNDS, HEADLINE_FONT, HEADLINE_WEIGHT, BODY_FONT, BODY_WEIGHT, AUTO_FONT_PAIRINGS, ASPECT_RATIOS, MARK_OVERLAYS} from './constants/data';
+import {BACKGROUNDS, HEADLINE_FONT, HEADLINE_WEIGHT, BODY_FONT, BODY_WEIGHT, AUTO_FONT_PAIRINGS, ASPECT_RATIOS, MARK_OVERLAYS, MARK_OVERLAYS_LIGHT} from './constants/data';
 import {C, ui} from './constants/styles';
 import {sharpenCanvas, loadImage, averageBrightness} from './utils/canvasUtils';
 import {render} from './utils/renderEngine';
@@ -153,8 +153,12 @@ function pickAutoTemplate() {
 const MARK_OPACITY_MIN = 0.06;
 const MARK_OPACITY_MAX = 0.16;
 
-function pickMarkOverlay() {
-  const src = MARK_OVERLAYS[Math.floor(Math.random() * MARK_OVERLAYS.length)];
+// Light and Mint are pale enough that the white-ink marks above would be
+// invisible on them - pulls from the black-ink MARK_OVERLAYS_LIGHT pool
+// instead for just those two swatches.
+function pickMarkOverlay(bgId) {
+  const pool = (bgId === "light" || bgId === "mint") ? MARK_OVERLAYS_LIGHT : MARK_OVERLAYS;
+  const src = pool[Math.floor(Math.random() * pool.length)];
   const opacity = MARK_OPACITY_MIN + Math.random() * (MARK_OPACITY_MAX - MARK_OPACITY_MIN);
   return {src, opacity};
 }
@@ -180,7 +184,7 @@ async function computeAutoSlide(entry, avoidOverlayColors = []) {
     // forever on "Building preview..." because of a decorative extra.
     let markImg = null, markOpacity = 0;
     try {
-      const mark = pickMarkOverlay();
+      const mark = pickMarkOverlay(bg.id);
       markImg = await loadImage(mark.src);
       markOpacity = mark.opacity;
     } catch (error) {
