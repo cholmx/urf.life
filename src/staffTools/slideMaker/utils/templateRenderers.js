@@ -13,20 +13,23 @@ function computeHeadline(ctx, data, brand, maxW, weight, fallbackSize) {
   const lineSpacing = data.headLineHeight ?? 1.12;
   const headText = data.line1 || "YOUR TEXT HERE";
   const fontFamily = brand.hFont;
+  // The automatic slide maker's font pairing decides this per slide (see
+  // computeAutoSlide); the Custom Editor's own default is upright.
+  const styledWeight = brand.hItalic ? `italic ${weight}` : `${weight}`;
 
   if (data.autoFit) {
     // maxH: roughly 60% of canvas height for headline
     const ch = ctx.canvas.height;
     const maxH = ch * 0.55;
-    const result = autoFitText(ctx, headText, baseSize, weight, fontFamily, maxW, maxH, lineSpacing);
+    const result = autoFitText(ctx, headText, baseSize, styledWeight, fontFamily, maxW, maxH, lineSpacing);
     return {
       lines: result.lines,
       headLH: result.lineHeightPx,
-      headFont: `${weight} ${result.fontSize}px ${fontFamily}`,
+      headFont: `${styledWeight} ${result.fontSize}px ${fontFamily}`,
     };
   }
 
-  const headFont = `${weight} ${baseSize}px ${fontFamily}`;
+  const headFont = `${styledWeight} ${baseSize}px ${fontFamily}`;
   const lines = wrapText(ctx, headText, headFont, maxW);
   const headLH = baseSize * lineSpacing;
   return { lines, headLH, headFont };
@@ -50,8 +53,12 @@ function computeTextBlock(ctx, data, brand, {
   let subLines = [], subLH = 0, subFont = '';
   if (data.line2) {
     const subSize = data.s2 || subFallbackSize;
-    // Subhead is always italic Aleo, regardless of the headline's weight.
-    subFont = `italic ${bw(brand, 600)} ${subSize}px ${brand.bFont}`;
+    // Italic/weight/family now come from the brand's font pairing (the
+    // Custom Editor's own default is always italic Aleo, same as before
+    // this was configurable - see DEFAULT_BRAND) rather than being fixed
+    // here regardless of what's actually been picked for this slide.
+    const subStyledWeight = brand.bItalic ? `italic ${bw(brand, 600)}` : `${bw(brand, 600)}`;
+    subFont = `${subStyledWeight} ${subSize}px ${brand.bFont}`;
     subLines = wrapText(ctx, data.line2, subFont, textW, true);
     subLH = subSize * 1.35;
     totalH += subGap + blockHeight(subLines, subLH);

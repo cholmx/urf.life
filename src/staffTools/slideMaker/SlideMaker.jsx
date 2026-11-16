@@ -2,7 +2,7 @@ import React, {useState, useRef, useEffect, useCallback, useMemo} from 'react';
 import useGoogleFonts from './hooks/useGoogleFonts';
 import {ToastProvider, useToast} from './hooks/useToast.jsx';
 import {useUndoHistory} from './hooks/useUndoHistory';
-import {BACKGROUNDS, HEADLINE_FONT, HEADLINE_WEIGHT, BODY_FONT, BODY_WEIGHT, ASPECT_RATIOS} from './constants/data';
+import {BACKGROUNDS, HEADLINE_FONT, HEADLINE_WEIGHT, BODY_FONT, BODY_WEIGHT, AUTO_FONT_PAIRINGS, ASPECT_RATIOS} from './constants/data';
 import {C, ui} from './constants/styles';
 import {sharpenCanvas, loadImage, averageBrightness} from './utils/canvasUtils';
 import {render} from './utils/renderEngine';
@@ -28,6 +28,10 @@ const DEFAULT_DATA = {
 
 // Fixed brand typography and the "Dark" swatch's default text color - no
 // font picker and no custom color pickers (see constants/data.js).
+// bItalic:true matches this same pairing's long-standing behavior (the
+// subhead has always rendered in italic); the automatic slide maker
+// overrides both hItalic/bItalic per its own randomly picked pairing -
+// see computeAutoSlide below.
 const DEFAULT_BRAND = {
   bgColor: BACKGROUNDS[0].bg,
   textColor: BACKGROUNDS[0].textOptions[0].color,
@@ -35,6 +39,8 @@ const DEFAULT_BRAND = {
   bFont: BODY_FONT,
   hWeight: HEADLINE_WEIGHT,
   bWeight: BODY_WEIGHT,
+  hItalic: false,
+  bItalic: true,
   churchName: "UPPER ROOM FELLOWSHIP",
   hLetterSpacing: 0,
 };
@@ -114,18 +120,30 @@ function autoBrandForBrightness(brightness, avoidOverlayColors = []) {
   return {bgColor: bucket.bg, textColor: randomBucketTextColor(), overlayColor: "#FFFFFF", ov: 55};
 }
 
+// Picks one of AUTO_FONT_PAIRINGS and resolves its headline italic style -
+// either fixed (hItalic) or, for the Aleo-headline pairing, a coin flip
+// (hItalicRandom) - into the concrete hFont/bFont/weight/italic values
+// computeTextBlock actually reads off brand.
+function pickAutoFontPairing() {
+  const pairing = AUTO_FONT_PAIRINGS[Math.floor(Math.random() * AUTO_FONT_PAIRINGS.length)];
+  const hItalic = pairing.hItalicRandom ? Math.random() < 0.5 : !!pairing.hItalic;
+  return {hFont: pairing.hFont, hWeight: pairing.hWeight, hItalic, bFont: pairing.bFont, bWeight: pairing.bWeight, bItalic: pairing.bItalic};
+}
+
 // Loads a pool entry and works out the full automatic look for it
-// (background/text/overlay colors, a light random blur) without touching
-// any component state - shared by the live editor (applyAutoBackground)
-// and the off-screen queue-thumbnail generator below, so both produce the
-// same kind of result from the same inputs. A {solid} entry (one of the
-// Colors-tab backgrounds) skips the photo entirely - no image, no
-// overlay, just that color and one of its own allowed text colors.
+// (background/text/overlay colors, a light random blur, a font pairing)
+// without touching any component state - shared by the live editor
+// (applyAutoBackground) and the off-screen queue-thumbnail generator
+// below, so both produce the same kind of result from the same inputs.
+// A {solid} entry (one of the Colors-tab backgrounds) skips the photo
+// entirely - no image, no overlay, just that color and one of its own
+// allowed text colors.
 async function computeAutoSlide(entry, avoidOverlayColors = []) {
+  const font = pickAutoFontPairing();
   if (entry.solid) {
     const bg = entry.solid;
     const textColor = bg.textOptions[Math.floor(Math.random() * bg.textOptions.length)].color;
-    return {img: null, bgColor: bg.bg, textColor, overlayColor: null, ov: 0, blur: 0};
+    return {img: null, bgColor: bg.bg, textColor, overlayColor: null, ov: 0, blur: 0, ...font};
   }
   const img = entry.img || await loadImage(entry.src);
   const auto = autoBrandForBrightness(averageBrightness(img), avoidOverlayColors);
@@ -135,6 +153,7 @@ async function computeAutoSlide(entry, avoidOverlayColors = []) {
     textColor: auto.textColor,
     overlayColor: auto.overlayColor,
     ov: auto.ov,
+    ...font,
     blur: Math.round(Math.random() * 5),
   };
 }
@@ -173,7 +192,7 @@ const QUEUE_PREVIEW_RATIO = ASPECT_RATIOS.find(r => r.id === "16:10") || ASPECT_
 async function generateQueueThumbnailFromEntry(a, entry, avoidOverlayColors = []) {
   const auto = await computeAutoSlide(entry, avoidOverlayColors);
   const data = {...DEFAULT_DATA, ...buildAutoSlideData(a)};
-  const brand = {...DEFAULT_BRAND, bgColor: auto.bgColor, textColor: auto.textColor};
+  const brand = {...DEFAULT_BRAND, bgColor: auto.bgColor, textColor: auto.textColor, hFont: auto.hFont, hWeight: auto.hWeight, hItalic: auto.hItalic, bFont: auto.bFont, bWeight: auto.bWeight, bItalic: auto.bItalic};
   const canvas = document.createElement('canvas');
   render(canvas, "left_block", data, brand, auto.img, auto.overlayColor, auto.ov, auto.blur, QUEUE_PREVIEW_RATIO.w, QUEUE_PREVIEW_RATIO.h, 0);
   // A solid entry has no overlay color (auto.overlayColor is null) - its
@@ -496,7 +515,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     try {
       const auto = await computeAutoSlide(entry, avoidOverlayColors);
       setActivePhoto(auto.img);
-      setBrand(b => ({...b, bgColor: auto.bgColor, textColor: auto.textColor}));
+      setBrand(b => ({...b, bgColor: auto.bgColor, textColor: auto.textColor, hFont: auto.hFont, hWeight: auto.hWeight, hItalic: auto.hItalic, bFont: auto.bFont, bWeight: auto.bWeight, bItalic: auto.bItalic}));
       setOverlayColor(auto.overlayColor);
       setOv(auto.ov);
       setBlur(auto.blur);

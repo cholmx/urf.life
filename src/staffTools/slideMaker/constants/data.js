@@ -7,9 +7,9 @@ export const ASPECT_RATIOS = [
   { id: "16:9",  label: "16:9",  w: 2560, h: 1440 },
 ];
 
-// Fixed brand typography - Inter Tight Bold for the headline, Aleo for
-// everything else, matching the public site's own type system
-// (designTokens.js). No font picker: this is the only combo.
+// Fixed brand typography for the Custom Editor - Inter Tight Bold for the
+// headline, Aleo for the subhead. No font picker: this is the only combo
+// a manually-built slide gets.
 export const HEADLINE_FONT = "'Inter Tight',sans-serif";
 export const HEADLINE_WEIGHT = 700;
 export const BODY_FONT = "'Aleo',serif";
@@ -17,6 +17,19 @@ export const BODY_FONT = "'Aleo',serif";
 // 400 is its true regular weight, not a synthesized one (see
 // designTokens.js's own note on this).
 export const BODY_WEIGHT = 400;
+
+// The automatic slide maker (random backgrounds/colors/blur) also
+// randomly picks one of these two headline/subhead font pairings per
+// generated slide, alongside its other random choices - see
+// computeAutoSlide in SlideMaker.jsx. Pairing 2 is exactly the Custom
+// Editor's own default above (Inter Tight Bold headline, Aleo italic
+// subhead); Pairing 1 flips the roles with Aleo Bold for the headline,
+// which also randomizes between its upright and italic faces
+// (hItalicRandom) rather than being fixed either way.
+export const AUTO_FONT_PAIRINGS = [
+  { hFont: "'Aleo',serif", hWeight: 700, hItalicRandom: true, bFont: "'Inter Tight',sans-serif", bWeight: 700, bItalic: false },
+  { hFont: HEADLINE_FONT, hWeight: HEADLINE_WEIGHT, hItalicRandom: false, hItalic: false, bFont: BODY_FONT, bWeight: BODY_WEIGHT, bItalic: true },
+];
 
 // Fixed background swatches - no custom color picker. Each has its own set
 // of allowed text colors, so picking a background always leaves a readable,
