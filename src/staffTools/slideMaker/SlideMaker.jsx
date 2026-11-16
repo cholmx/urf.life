@@ -175,9 +175,18 @@ async function computeAutoSlide(entry, avoidOverlayColors = []) {
   if (entry.solid) {
     const bg = entry.solid;
     const textColor = bg.textOptions[Math.floor(Math.random() * bg.textOptions.length)].color;
-    const mark = pickMarkOverlay();
-    const markImg = await loadImage(mark.src);
-    return {img: null, bgColor: bg.bg, textColor, overlayColor: null, ov: 0, blur: 0, tmpl, markImg, markOpacity: mark.opacity, ...font};
+    // A failed watermark load (slow connection, one bad file) shouldn't
+    // take down the whole slide - better a plain color than a card stuck
+    // forever on "Building preview..." because of a decorative extra.
+    let markImg = null, markOpacity = 0;
+    try {
+      const mark = pickMarkOverlay();
+      markImg = await loadImage(mark.src);
+      markOpacity = mark.opacity;
+    } catch (error) {
+      console.error('Could not load the slide watermark:', error);
+    }
+    return {img: null, bgColor: bg.bg, textColor, overlayColor: null, ov: 0, blur: 0, tmpl, markImg, markOpacity, ...font};
   }
   const img = entry.img || await loadImage(entry.src);
   const auto = autoBrandForBrightness(averageBrightness(img), avoidOverlayColors);
