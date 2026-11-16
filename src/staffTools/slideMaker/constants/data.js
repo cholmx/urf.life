@@ -104,21 +104,23 @@ export const MARK_OVERLAYS = [
   "/slide-marks/mark-cropframe.png",
   "/slide-marks/mark-spotlight.png",
   "/slide-marks/mark-halftone.png",
+  "/slide-marks/mark-pattern-dots.png",
+  "/slide-marks/mark-ripple.png",
+  "/slide-marks/mark-beam.png",
 ];
 
 // The Light/Mint counterpart to MARK_OVERLAYS above - same idea, drawn in
 // black ink instead of white so it actually shows up on those two pale
-// backgrounds. Empty for now (its one entry, a code-generated corner
-// cluster, was deleted) - pickMarkOverlay's pool-merge in SlideMaker.jsx
-// handles an empty array here fine, so Light/Mint slides still get
-// MARK_OVERLAYS_UNIVERSAL and FRAME_STYLES, just no dedicated image mark
-// of their own until a real black-ink asset is added.
+// backgrounds. mark-cornerstamp is a black diagonal corner wedge (plus the
+// chevron badge) that reads clearly on White/Cream but all but disappears
+// on a dark fill, which is why it lives here instead of MARK_OVERLAYS.
 export const MARK_OVERLAYS_LIGHT = [
+  "/slide-marks/mark-cornerstamp.png",
 ];
 
 // A third pool, added alongside the two above rather than folded into
-// either - these are grayscale darkening treatments (a layered mountain-
-// ridge silhouette, a diagonal corner wedge, top/bottom bars, two grain/
+// either - these are grayscale darkening treatments (layered mountain-
+// ridge silhouettes, a diagonal corner wedge, top/bottom bars, two grain/
 // noise textures, a bottom gradient, a corner vignette) rather than a
 // brand-colored ink, so they read fine over any background regardless of
 // light or dark. pickMarkOverlay in SlideMaker.jsx always mixes this
@@ -132,6 +134,7 @@ export const MARK_OVERLAYS_UNIVERSAL = [
   "/slide-marks/mark-lowerthird.png",
   "/slide-marks/mark-vignette.png",
   "/slide-marks/mark-noise.png",
+  "/slide-marks/mark-ridgeline.png",
 ];
 
 // A thin rounded-rectangle border, inset from the slide's edge - drawn
