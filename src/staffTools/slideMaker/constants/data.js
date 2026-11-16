@@ -8,24 +8,27 @@ export const ASPECT_RATIOS = [
 ];
 
 // Fixed brand typography for the Custom Editor - Inter Tight Bold for the
-// headline, Bitter for the subhead. No font picker: this is the only
-// combo a manually-built slide gets.
+// headline, Playfair Display for the subhead. No font picker: this is
+// the only combo a manually-built slide gets. Inter Tight and Playfair
+// Display are the only two fonts the Slide Maker uses anywhere, in
+// either role depending on which pairing below gets picked.
 export const HEADLINE_FONT = "'Inter Tight',sans-serif";
 export const HEADLINE_WEIGHT = 700;
-export const BODY_FONT = "'Bitter',serif";
+export const BODY_FONT = "'Playfair Display',serif";
 export const BODY_WEIGHT = 400;
 
 // The automatic slide maker (random backgrounds/colors/blur) also
 // randomly picks one of these two headline/subhead font pairings per
 // generated slide, alongside its other random choices - see
 // computeAutoSlide in SlideMaker.jsx. Pairing 2 is exactly the Custom
-// Editor's own default above (Inter Tight Bold headline, Bitter italic
-// subhead); Pairing 1 flips the roles with Bitter Black (900 - Bitter's
-// heaviest real static weight, not a synthesized bold) for the headline,
-// which also randomizes between its upright and italic faces
-// (hItalicRandom) rather than being fixed either way.
+// Editor's own default above (Inter Tight Bold headline, Playfair
+// Display italic subhead); Pairing 1 flips the roles with Playfair
+// Display Black (900 - its heaviest real static weight, not a
+// synthesized bold) for the headline, which also randomizes between its
+// upright and italic faces (hItalicRandom) rather than being fixed
+// either way.
 export const AUTO_FONT_PAIRINGS = [
-  { hFont: "'Bitter',serif", hWeight: 900, hItalicRandom: true, bFont: "'Inter Tight',sans-serif", bWeight: 700, bItalic: false },
+  { hFont: "'Playfair Display',serif", hWeight: 900, hItalicRandom: true, bFont: "'Inter Tight',sans-serif", bWeight: 700, bItalic: false },
   { hFont: HEADLINE_FONT, hWeight: HEADLINE_WEIGHT, hItalicRandom: false, hItalic: false, bFont: BODY_FONT, bWeight: BODY_WEIGHT, bItalic: true },
 ];
 

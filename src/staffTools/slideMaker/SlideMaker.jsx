@@ -131,9 +131,9 @@ function autoBrandForBrightness(brightness, avoidOverlayColors = []) {
 }
 
 // Picks one of AUTO_FONT_PAIRINGS and resolves its headline italic style -
-// either fixed (hItalic) or, for the Bitter-headline pairing, a coin flip
-// (hItalicRandom) - into the concrete hFont/bFont/weight/italic values
-// computeTextBlock actually reads off brand.
+// either fixed (hItalic) or, for the Playfair Display-headline pairing, a
+// coin flip (hItalicRandom) - into the concrete hFont/bFont/weight/italic
+// values computeTextBlock actually reads off brand.
 function pickAutoFontPairing() {
   const pairing = AUTO_FONT_PAIRINGS[Math.floor(Math.random() * AUTO_FONT_PAIRINGS.length)];
   const hItalic = pairing.hItalicRandom ? Math.random() < 0.5 : !!pairing.hItalic;

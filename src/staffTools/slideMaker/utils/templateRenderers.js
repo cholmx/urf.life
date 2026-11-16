@@ -54,9 +54,10 @@ function computeTextBlock(ctx, data, brand, {
   if (data.line2) {
     const subSize = data.s2 || subFallbackSize;
     // Italic/weight/family now come from the brand's font pairing (the
-    // Custom Editor's own default is always italic Bitter, same as before
-    // this was configurable - see DEFAULT_BRAND) rather than being fixed
-    // here regardless of what's actually been picked for this slide.
+    // Custom Editor's own default is always italic Playfair Display, same
+    // as before this was configurable - see DEFAULT_BRAND) rather than
+    // being fixed here regardless of what's actually been picked for
+    // this slide.
     const subStyledWeight = brand.bItalic ? `italic ${bw(brand, 600)}` : `${bw(brand, 600)}`;
     subFont = `${subStyledWeight} ${subSize}px ${brand.bFont}`;
     subLines = wrapText(ctx, data.line2, subFont, textW, true);

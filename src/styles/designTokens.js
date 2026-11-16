@@ -49,8 +49,8 @@ export const categoryColors = {
 export const fontFamilies = {
   // Headings, buttons, labels, and any larger-than-body text - Inter Tight Bold.
   heading: ['Inter Tight', 'sans-serif'],
-  // Body copy and small reading text - Bitter Regular.
-  body: ['Bitter', 'serif'],
+  // Body copy and small reading text - Aleo Regular.
+  body: ['Aleo', 'serif'],
 };
 
 export const fonts = {
@@ -59,7 +59,9 @@ export const fonts = {
 };
 
 export const fontWeights = {
-  // Inter Tight Bold for headings/buttons/labels, Bitter Regular for body copy.
+  // Inter Tight Bold for headings/buttons/labels, Aleo Regular for body
+  // copy. Aleo itself only ships 300/400/700 as real static weights (no
+  // 500/600/800/900) - fine here since body text never asks for one.
   heading: 700,
   body: 400,
 };

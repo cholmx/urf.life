@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Aleo:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@100..900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Caladea:ital,wght@0,400;1,400;1,700&display=swap');
 
@@ -22,7 +22,7 @@
     background-color: #F8F6F1;
     background-image: url('/background-texture.png');
     background-repeat: repeat;
-    font-family: 'Bitter', serif;
+    font-family: 'Aleo', serif;
     font-size: 16px;
     font-weight: 400;
     line-height: 1.7;
@@ -292,11 +292,11 @@
 
 .page-subtitle {
   @apply font-normal text-base -mt-2;
-  font-family: 'Bitter', serif;
+  font-family: 'Aleo', serif;
 }
 
 .font-inter {
-  font-family: 'Bitter', serif;
+  font-family: 'Aleo', serif;
 }
 
 /* Discussion questions background */
@@ -376,13 +376,13 @@
   color: #1E2522;
 }
 
-/* Admin dashboard: Bitter Regular for body text (headings already inherit
+/* Admin dashboard: Aleo Regular for body text (headings already inherit
    Inter Tight Bold from the base h1-h6 rule above). Same green/cream/near-black
    palette as the public site - admin-input/admin-card/admin-btn-* below
    use Tailwind's neutral-* scale, which tailwind.config.js overrides
    end to end to match that palette instead of staying plain gray. */
 .admin-shell {
-  font-family: 'Bitter', serif;
+  font-family: 'Aleo', serif;
 }
 
 @layer components {
@@ -439,7 +439,7 @@ input:focus, textarea:focus, select:focus {
      on a light surface (a white input, or a form-section/card-clay),
      and @apply would bake in the dark theme's light default without
      leaving a class the :is() override below can catch. */
-  /* Input text itself stays the body font (Bitter) - only the section
+  /* Input text itself stays the body font (Aleo) - only the section
      titles/labels below switch to Inter Tight Bold, not what's typed
      into the box. */
   .form-input {
