@@ -8,7 +8,7 @@ export default function Green() {
       service={greenPodcastRSSService}
       titleFallback="Green Podcast"
       subtitleFallback="Listen to our latest episodes"
-      accentColor="#003235"
+      accentColor="#172B2C"
       emptyStateText="Check back soon for new episodes!"
     />
   );

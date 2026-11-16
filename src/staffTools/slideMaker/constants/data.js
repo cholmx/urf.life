@@ -60,7 +60,7 @@ export const BACKGROUNDS = [
     { id: "black", name: "Black", color: "#000000" },
     { id: "charcoal", name: "#1C2A2B", color: "#1C2A2B" },
   ] },
-  { id: "green", name: "Dark Teal", bg: "#003235", textOptions: [
+  { id: "green", name: "Dark Teal", bg: "#172B2C", textOptions: [
     { id: "white", name: "White", color: "#FFFFFF" },
     { id: "yellow", name: "Yellow", color: "#FFEAB7" },
     { id: "mint", name: "Cream", color: "#F4ECDD" },
@@ -75,7 +75,7 @@ export const BACKGROUNDS = [
     { id: "charcoal", name: "#1C2A2B", color: "#1C2A2B" },
     { id: "mint", name: "Cream", color: "#F4ECDD" },
   ] },
-  { id: "sage", name: "Jungle Teal", bg: "#5D947B", textOptions: [
+  { id: "sage", name: "Jungle Teal", bg: "#5B8B75", textOptions: [
     { id: "white", name: "White", color: "#FFFFFF" },
     { id: "yellow", name: "Yellow", color: "#FFEAB7" },
     { id: "mint", name: "Cream", color: "#F4ECDD" },

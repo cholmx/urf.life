@@ -249,7 +249,7 @@ const CapitalCampaign = () => {
               className={`flex items-center space-x-2 px-6 py-2.5 rounded-full text-sm transition-all duration-300 ${
                 activeTab === 'vision' ? 'text-white shadow-md' : 'text-text-light hover:text-text-primary'
               }`}
-              style={{ fontFamily: "'Inter Tight', sans-serif", fontWeight: 700, ...(activeTab === 'vision' ? { backgroundColor: '#003235' } : {}) }}
+              style={{ fontFamily: "'Inter Tight', sans-serif", fontWeight: 700, ...(activeTab === 'vision' ? { backgroundColor: '#172B2C' } : {}) }}
             >
               <SafeIcon icon={FiEye} className="h-4 w-4" />
               <span>Vision</span>
@@ -260,7 +260,7 @@ const CapitalCampaign = () => {
               className={`flex items-center space-x-2 px-6 py-2.5 rounded-full text-sm transition-all duration-300 ${
                 activeTab === 'faqs' ? 'text-white shadow-md' : 'text-text-light hover:text-text-primary'
               }`}
-              style={{ fontFamily: "'Inter Tight', sans-serif", fontWeight: 700, ...(activeTab === 'faqs' ? { backgroundColor: '#003235' } : {}) }}
+              style={{ fontFamily: "'Inter Tight', sans-serif", fontWeight: 700, ...(activeTab === 'faqs' ? { backgroundColor: '#172B2C' } : {}) }}
             >
               <SafeIcon icon={FiHelpCircle} className="h-4 w-4" />
               <span>Q&A</span>

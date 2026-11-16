@@ -11,7 +11,7 @@ const SIZES = {
   lg: { dot: 13, gap: 9 },
 };
 
-export const LoadingSpinner = ({ size = 'md', color = '#003235', className = '' }) => {
+export const LoadingSpinner = ({ size = 'md', color = '#172B2C', className = '' }) => {
   const { dot, gap } = SIZES[size] || SIZES.md;
   return (
     <div

@@ -97,7 +97,7 @@ const ResourceList = ({ resources, categories, loading, onEdit, onDelete }) => {
                           href={link}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="bg-[#003235] hover:bg-[#1C2A2B] text-white px-2 py-1 rounded text-xs font-medium transition-colors font-inter"
+                          className="bg-[#172B2C] hover:bg-[#1C2A2B] text-white px-2 py-1 rounded text-xs font-medium transition-colors font-inter"
                         >
                           {getWebsiteName(link)}
                         </a>

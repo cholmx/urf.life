@@ -243,7 +243,7 @@
   color: #1C2A2B;
 }
 [class~="text-text-light"] {
-  color: #003235;
+  color: #172B2C;
 }
 :is(.card-clay, .form-section, [class~="bg-white"], [class~="bg-accent-dark"], [class~="bg-accent-light"], .admin-shell) {
   color: #1C2A2B;
@@ -258,7 +258,7 @@
    or it loses the "this is secondary text" contrast it's there for. */
 :is(.card-clay, .form-section, [class~="bg-white"], [class~="bg-accent-dark"], [class~="bg-accent-light"], .admin-shell)
   [class~="text-text-light"] {
-  color: #003235;
+  color: #172B2C;
 }
 
 /* Specific overrides for rich text editor fields */
@@ -301,7 +301,7 @@
 
 /* Discussion questions background */
 .discussion-questions-section {
-  background-color: #5D947B;
+  background-color: #5B8B75;
   @apply border border-primary/20;
 }
 
@@ -356,7 +356,7 @@
 .happenings-script h3 .happening-when {
   font-family: 'Inter Tight', sans-serif;
   font-size: 0.62em;
-  color: #5D947B;
+  color: #5B8B75;
   font-weight: 700;
   letter-spacing: 0;
 }
@@ -367,7 +367,7 @@
   font-style: italic;
 }
 .happenings-script a {
-  color: #003235;
+  color: #172B2C;
   font-weight: 700;
   text-decoration: underline;
   text-underline-offset: 2px;

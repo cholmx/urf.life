@@ -202,7 +202,7 @@ const Home=()=> {
                 <motion.a
                   key={social.name} href={social.url} target="_blank" rel="noopener noreferrer"
                   initial={{opacity: 0, scale: 0.8}} animate={{opacity: 1, scale: 1}} transition={{duration: 0.25, delay: 0.65 + i * 0.1}}
-                  className="p-3 rounded-full bg-[#5D947B] hover:bg-[#003235] text-white transition-all duration-300 hover:scale-110"
+                  className="p-3 rounded-full bg-[#5B8B75] hover:bg-[#172B2C] text-white transition-all duration-300 hover:scale-110"
                 >
                   <SafeIcon icon={social.icon} className="h-5 w-5" />
                 </motion.a>
@@ -227,7 +227,7 @@ const HomeButton = ({ title, description, icon, path, isFeatured = false, isInte
     : `relative overflow-hidden p-5 rounded-2xl clay-shadow transition-all duration-300 hover:-translate-y-1 active:scale-[0.97] block text-center group flex flex-col justify-center items-center w-full${stretch ? ' h-full' : ' min-h-[160px] md:min-h-[200px]'}`;
 
   const featuredClasses = gradient ? "" : "text-white";
-  const mainClasses = "bg-[#003235] hover:bg-[#5D947B] text-white";
+  const mainClasses = "bg-[#172B2C] hover:bg-[#5B8B75] text-white";
 
   const iconColor = (isYellow || isOrange) ? 'text-text-primary' : 'text-white';
   const textColor = (isYellow || isOrange) ? 'text-text-primary' : 'text-white';
@@ -254,7 +254,7 @@ const HomeButton = ({ title, description, icon, path, isFeatured = false, isInte
         </div>
       ) : (
         <div className="relative z-10 flex flex-col items-center">
-          <div className="p-2.5 rounded-xl bg-[#5D947B] mb-2.5 md:mb-3 transition-all duration-300 group-hover:scale-110">
+          <div className="p-2.5 rounded-xl bg-[#5B8B75] mb-2.5 md:mb-3 transition-all duration-300 group-hover:scale-110">
             <SafeIcon icon={icon} className="h-5 w-5 md:h-6 md:w-6 text-white" />
           </div>
           <h3 className="text-sm md:text-base font-bold font-gsans leading-tight text-white">{title}</h3>
@@ -265,7 +265,7 @@ const HomeButton = ({ title, description, icon, path, isFeatured = false, isInte
   );
 
   const gradientStyle = gradient
-    ? {background: 'linear-gradient(135deg, #003235 0%, #1C2A2B 100%)'}
+    ? {background: 'linear-gradient(135deg, #172B2C 0%, #1C2A2B 100%)'}
     : isOrange
       ? {backgroundColor: '#F9AB55'}
       : isYellow

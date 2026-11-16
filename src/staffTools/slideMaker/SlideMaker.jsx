@@ -101,10 +101,10 @@ function pickRandomTexture(pool) {
 // so they get a stronger wash to stay recognizably on-brand.
 const DARK_OVERLAY_OPTIONS = [
   {color: "#000000", textColor: null, ov: 55},
-  {color: "#003235", textColor: null, ov: 55},
+  {color: "#172B2C", textColor: null, ov: 55},
   {color: "#C65D3B", textColor: "#FFFFFF", ov: 80},
   {color: "#F9AB55", textColor: "#FFFFFF", ov: 80},
-  {color: "#5D947B", textColor: "#FFFFFF", ov: 55},
+  {color: "#5B8B75", textColor: "#FFFFFF", ov: 55},
 ];
 
 // Buckets the texture's average brightness into the dark/light background

@@ -9,10 +9,10 @@ import ConfirmDialog from '../ConfirmDialog';
 const OVERLAY_COLORS = [
   { id: "black", name: "Black", color: "#000000" },
   { id: "white", name: "White", color: "#FFFFFF" },
-  { id: "green", name: "Dark Teal", color: "#003235" },
+  { id: "green", name: "Dark Teal", color: "#172B2C" },
   { id: "red", name: "Rosy Copper", color: "#C65D3B" },
   { id: "gold", name: "Sandy Brown", color: "#F9AB55" },
-  { id: "sage", name: "Jungle Teal", color: "#5D947B" },
+  { id: "sage", name: "Jungle Teal", color: "#5B8B75" },
 ];
 
 export default function PhotosTab({photos, setPhotos, activePhoto, setActivePhoto, ov, setOv, blur, setBlur, overlayColor, setOverlayColor}) {

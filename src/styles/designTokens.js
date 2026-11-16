@@ -14,7 +14,7 @@
 // (theme.ts, with allowJs on) can import it directly.
 
 export const colors = {
-  primary: '#003235',    // dark teal
+  primary: '#172B2C',    // dark teal
   secondary: '#1C2A2B',  // jet black
   gold: '#F9AB55',       // sandy brown - accent, hover states, highlights
   red: '#C65D3B',        // rosy copper - solid call-to-action buttons
@@ -22,7 +22,7 @@ export const colors = {
   // Neutral surface system:
   page: '#F4ECDD',       // cream - the page itself, body, every page's root wrapper
   white: '#FFFFFF',      // cards/panels sitting on the page - these "pop"
-  section: '#5D947B',    // jungle teal - a sub-area inside a card that
+  section: '#5B8B75',    // jungle teal - a sub-area inside a card that
                          // needs to read as its own group (a form section,
                          // a status/notice box, a selected/active state)
                          // without looking like a separate card of its own
