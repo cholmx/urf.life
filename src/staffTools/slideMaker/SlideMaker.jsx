@@ -98,9 +98,13 @@ function pickRandomTexture(pool) {
 // ov is each color's own overlay strength - copper and sandy brown are
 // the two the texture shows through the most at the standard 55%,
 // washing them out toward a muddy brown instead of a clean brand color,
-// so they get a stronger wash to stay recognizably on-brand.
+// so they get a stronger wash to stay recognizably on-brand. Black needs
+// a heavier wash than the teals for the same reason white does below -
+// a true neutral (no hue of its own to read as "on-brand" even faintly)
+// shows through as "barely tinted photo" rather than "black slide" at
+// the same strength that works for an actual brand color.
 const DARK_OVERLAY_OPTIONS = [
-  {color: "#000000", textColor: null, ov: 55},
+  {color: "#000000", textColor: null, ov: 70},
   {color: "#172B2C", textColor: null, ov: 55},
   {color: "#C65D3B", textColor: "#FFFFFF", ov: 80},
   {color: "#F9AB55", textColor: "#FFFFFF", ov: 80},
@@ -131,7 +135,9 @@ function autoBrandForBrightness(brightness, avoidOverlayColors = []) {
     return {bgColor: bucket.bg, textColor: overlay.textColor || randomBucketTextColor(), overlayColor: overlay.color, ov: overlay.ov};
   }
   // Light bucket always washes white by design - nothing random to avoid.
-  return {bgColor: bucket.bg, textColor: randomBucketTextColor(), overlayColor: "#FFFFFF", ov: 55};
+  // Same heavier wash as black above and for the same reason (white has
+  // no hue of its own to read as intentional at a lighter strength).
+  return {bgColor: bucket.bg, textColor: randomBucketTextColor(), overlayColor: "#FFFFFF", ov: 70};
 }
 
 // Picks one of AUTO_FONT_PAIRINGS and resolves its headline italic style -
