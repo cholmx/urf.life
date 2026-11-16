@@ -31,24 +31,27 @@ export const AUTO_FONT_PAIRINGS = [
 
 // Fixed background swatches - no custom color picker. Each has its own set
 // of allowed text colors, so picking a background always leaves a readable,
-// on-brand text color selected. Every brand/overlay color (see
-// DARK_OVERLAY_OPTIONS in SlideMaker.jsx, used for the semi-transparent
-// texture overlays of automatic generation) is also available here as a
-// full-opacity solid background in its own right - the two systems share
-// colors but not opacity. White isn't repeated as its own swatch since
-// Light already is that color.
+// on-brand text color selected. Most of these (see DARK_OVERLAY_OPTIONS in
+// SlideMaker.jsx, used for the semi-transparent texture overlays of
+// automatic generation) are also available here as a full-opacity solid
+// background in their own right - the two systems share colors but not
+// opacity. White isn't repeated as its own swatch since Light already is
+// that color. Dark and Black were dropped from this list (no longer
+// pickable, manually or by the automatic generator) - Pine and Mint below
+// stand in for them as the dark/light bucket automatic photo-texture
+// overlays fall back to (see DARK_BUCKET/LIGHT_BUCKET in SlideMaker.jsx).
 export const BACKGROUNDS = [
-  { id: "dark", name: "Dark", bg: "#1E2522", textOptions: [
-    { id: "white", name: "White", color: "#FFFFFF" },
-    { id: "yellow", name: "Yellow", color: "#FFD944" },
-  ] },
   { id: "light", name: "Light", bg: "#FFFFFF", textOptions: [
     { id: "black", name: "Black", color: "#000000" },
     { id: "charcoal", name: "#1E2522", color: "#1E2522" },
   ] },
-  { id: "black", name: "Black", bg: "#000000", textOptions: [
+  { id: "pine", name: "Pine", bg: "#04443F", textOptions: [
     { id: "white", name: "White", color: "#FFFFFF" },
     { id: "yellow", name: "Yellow", color: "#FFD944" },
+  ] },
+  { id: "mint", name: "Mint", bg: "#C9E8D7", textOptions: [
+    { id: "black", name: "Black", color: "#000000" },
+    { id: "charcoal", name: "#1E2522", color: "#1E2522" },
   ] },
   { id: "green", name: "Green", bg: "#2a3834", textOptions: [
     { id: "white", name: "White", color: "#FFFFFF" },
@@ -71,6 +74,18 @@ export const BACKGROUNDS = [
 export const TEMPLATES = [
   { id: "minimal", name: "Centered" },
   { id: "left_block", name: "Left Aligned" },
+];
+
+// Subtle branded watermark images the automatic slide maker layers over a
+// solid-color background (one picked at random, at a random low opacity -
+// see pickMarkOverlay in SlideMaker.jsx), between the flat color fill and
+// the headline/subhead text. Each is a transparent PNG with the URF
+// chevron mark drawn in white, at the same 16:10 aspect ratio as the
+// slide canvas so it can be stretched to fill it with no distortion.
+export const MARK_OVERLAYS = [
+  "/slide-marks/mark-top.png",
+  "/slide-marks/mark-pattern.png",
+  "/slide-marks/mark-bottom.png",
 ];
 
 // Seed images for the Photos tab's one-time "Import built-in textures"

@@ -2,7 +2,7 @@ import React, {useState, useRef, useEffect, useCallback, useMemo} from 'react';
 import useGoogleFonts from './hooks/useGoogleFonts';
 import {ToastProvider, useToast} from './hooks/useToast.jsx';
 import {useUndoHistory} from './hooks/useUndoHistory';
-import {BACKGROUNDS, HEADLINE_FONT, HEADLINE_WEIGHT, BODY_FONT, BODY_WEIGHT, AUTO_FONT_PAIRINGS, ASPECT_RATIOS} from './constants/data';
+import {BACKGROUNDS, HEADLINE_FONT, HEADLINE_WEIGHT, BODY_FONT, BODY_WEIGHT, AUTO_FONT_PAIRINGS, ASPECT_RATIOS, MARK_OVERLAYS} from './constants/data';
 import {C, ui} from './constants/styles';
 import {sharpenCanvas, loadImage, averageBrightness} from './utils/canvasUtils';
 import {render} from './utils/renderEngine';
@@ -26,15 +26,23 @@ const DEFAULT_DATA = {
   headLineHeight: 1.12,
 };
 
-// Fixed brand typography and the "Dark" swatch's default text color - no
+// Dark/light buckets a photo's own average brightness is sorted into for
+// its color overlay wash (see autoBrandForBrightness below) - looked up by
+// id rather than relying on BACKGROUNDS' order, since that order is just
+// picker/pool display order and has already shuffled once (Pine took over
+// the dropped Dark swatch's spot).
+const DARK_BUCKET = BACKGROUNDS.find(b => b.id === "pine");
+const LIGHT_BUCKET = BACKGROUNDS.find(b => b.id === "light");
+
+// Fixed brand typography and the Pine swatch's default text color - no
 // font picker and no custom color pickers (see constants/data.js).
 // bItalic:true matches this same pairing's long-standing behavior (the
 // subhead has always rendered in italic); the automatic slide maker
 // overrides both hItalic/bItalic per its own randomly picked pairing -
 // see computeAutoSlide below.
 const DEFAULT_BRAND = {
-  bgColor: BACKGROUNDS[0].bg,
-  textColor: BACKGROUNDS[0].textOptions[0].color,
+  bgColor: DARK_BUCKET.bg,
+  textColor: DARK_BUCKET.textOptions[0].color,
   hFont: HEADLINE_FONT,
   bFont: BODY_FONT,
   hWeight: HEADLINE_WEIGHT,
@@ -43,6 +51,8 @@ const DEFAULT_BRAND = {
   bItalic: true,
   churchName: "UPPER ROOM FELLOWSHIP",
   hLetterSpacing: 0,
+  markImg: null,
+  markOpacity: 0,
 };
 
 // The automatic-background pool mixes two kinds of entry: every photo in
@@ -50,7 +60,7 @@ const DEFAULT_BRAND = {
 // (built-in or staff-uploaded, no distinction - see PhotosTab's "Import
 // built-in textures" action for how the original set gets in there), plus
 // the 7 solid Colors-tab backgrounds themselves ({solid: bgOption}) - so a
-// plain Dark/Light/Red/Gold/etc. slide with no photo at all is a real,
+// plain Pine/Light/Red/Gold/etc. slide with no photo at all is a real,
 // regularly-occurring possible outcome, not just a texture tinted to look
 // dark or light.
 function getAutoBackgroundPool(photos) {
@@ -107,7 +117,7 @@ const DARK_OVERLAY_OPTIONS = [
 // landing on the same overlay color by chance, and to guarantee "try a
 // different background" actually gives back something different.
 function autoBrandForBrightness(brightness, avoidOverlayColors = []) {
-  const bucket = brightness < 0.5 ? BACKGROUNDS[0] : BACKGROUNDS[1];
+  const bucket = brightness < 0.5 ? DARK_BUCKET : LIGHT_BUCKET;
   const randomBucketTextColor = () => bucket.textOptions[Math.floor(Math.random() * bucket.textOptions.length)].color;
 
   if (brightness < 0.5) {
@@ -137,21 +147,37 @@ function pickAutoTemplate() {
   return Math.random() < 0.5 ? "left_block" : "minimal";
 }
 
+// How faint the branded chevron-mark watermark (see MARK_OVERLAYS) reads
+// on a solid-color automatic slide - low enough to stay a texture, not a
+// second graphic competing with the headline.
+const MARK_OPACITY_MIN = 0.06;
+const MARK_OPACITY_MAX = 0.16;
+
+function pickMarkOverlay() {
+  const src = MARK_OVERLAYS[Math.floor(Math.random() * MARK_OVERLAYS.length)];
+  const opacity = MARK_OPACITY_MIN + Math.random() * (MARK_OPACITY_MAX - MARK_OPACITY_MIN);
+  return {src, opacity};
+}
+
 // Loads a pool entry and works out the full automatic look for it
 // (background/text/overlay colors, a light random blur, a font pairing,
-// a left-aligned-or-centered template) without touching any component
-// state - shared by the live editor (applyAutoBackground) and the
-// off-screen queue-thumbnail generator below, so both produce the same
-// kind of result from the same inputs. A {solid} entry (one of the
-// Colors-tab backgrounds) skips the photo entirely - no image, no
-// overlay, just that color and one of its own allowed text colors.
+// a left-aligned-or-centered template, a faint chevron-mark watermark)
+// without touching any component state - shared by the live editor
+// (applyAutoBackground) and the off-screen queue-thumbnail generator
+// below, so both produce the same kind of result from the same inputs.
+// A {solid} entry (one of the Colors-tab backgrounds) skips the photo
+// entirely - no image, no overlay, just that color, one of its own
+// allowed text colors, and the watermark (a photo already has its own
+// texture, so it skips the mark rather than layering a second one on).
 async function computeAutoSlide(entry, avoidOverlayColors = []) {
   const font = pickAutoFontPairing();
   const tmpl = pickAutoTemplate();
   if (entry.solid) {
     const bg = entry.solid;
     const textColor = bg.textOptions[Math.floor(Math.random() * bg.textOptions.length)].color;
-    return {img: null, bgColor: bg.bg, textColor, overlayColor: null, ov: 0, blur: 0, tmpl, ...font};
+    const mark = pickMarkOverlay();
+    const markImg = await loadImage(mark.src);
+    return {img: null, bgColor: bg.bg, textColor, overlayColor: null, ov: 0, blur: 0, tmpl, markImg, markOpacity: mark.opacity, ...font};
   }
   const img = entry.img || await loadImage(entry.src);
   const auto = autoBrandForBrightness(averageBrightness(img), avoidOverlayColors);
@@ -162,6 +188,8 @@ async function computeAutoSlide(entry, avoidOverlayColors = []) {
     overlayColor: auto.overlayColor,
     ov: auto.ov,
     tmpl,
+    markImg: null,
+    markOpacity: 0,
     ...font,
     blur: Math.round(Math.random() * 5),
   };
@@ -201,7 +229,7 @@ const QUEUE_PREVIEW_RATIO = ASPECT_RATIOS.find(r => r.id === "16:10") || ASPECT_
 async function generateQueueThumbnailFromEntry(a, entry, avoidOverlayColors = []) {
   const auto = await computeAutoSlide(entry, avoidOverlayColors);
   const data = {...DEFAULT_DATA, ...buildAutoSlideData(a)};
-  const brand = {...DEFAULT_BRAND, bgColor: auto.bgColor, textColor: auto.textColor, hFont: auto.hFont, hWeight: auto.hWeight, hItalic: auto.hItalic, bFont: auto.bFont, bWeight: auto.bWeight, bItalic: auto.bItalic};
+  const brand = {...DEFAULT_BRAND, bgColor: auto.bgColor, textColor: auto.textColor, hFont: auto.hFont, hWeight: auto.hWeight, hItalic: auto.hItalic, bFont: auto.bFont, bWeight: auto.bWeight, bItalic: auto.bItalic, markImg: auto.markImg, markOpacity: auto.markOpacity};
   const canvas = document.createElement('canvas');
   render(canvas, auto.tmpl, data, brand, auto.img, auto.overlayColor, auto.ov, auto.blur, QUEUE_PREVIEW_RATIO.w, QUEUE_PREVIEW_RATIO.h, 0);
   // A solid entry has no overlay color (auto.overlayColor is null) - its
@@ -524,7 +552,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     try {
       const auto = await computeAutoSlide(entry, avoidOverlayColors);
       setActivePhoto(auto.img);
-      setBrand(b => ({...b, bgColor: auto.bgColor, textColor: auto.textColor, hFont: auto.hFont, hWeight: auto.hWeight, hItalic: auto.hItalic, bFont: auto.bFont, bWeight: auto.bWeight, bItalic: auto.bItalic}));
+      setBrand(b => ({...b, bgColor: auto.bgColor, textColor: auto.textColor, hFont: auto.hFont, hWeight: auto.hWeight, hItalic: auto.hItalic, bFont: auto.bFont, bWeight: auto.bWeight, bItalic: auto.bItalic, markImg: auto.markImg, markOpacity: auto.markOpacity}));
       setOverlayColor(auto.overlayColor);
       setOv(auto.ov);
       setBlur(auto.blur);
