@@ -29,13 +29,16 @@ const DEFAULT_DATA = {
 // Dark/light buckets a photo's own average brightness is sorted into for
 // its color overlay wash (see autoBrandForBrightness below) - looked up by
 // id rather than relying on BACKGROUNDS' order, since that order is just
-// picker/pool display order and has already shuffled once (Pine took over
-// the dropped Dark swatch's spot).
+// picker/pool display order. The "pine" id is the dark bucket regardless
+// of what that swatch is actually named/colored today (currently Jet
+// Black) - ids stayed put across both the Dark/Black-removal rebrand and
+// the later site-wide color rebrand, only names and hexes moved.
 const DARK_BUCKET = BACKGROUNDS.find(b => b.id === "pine");
 const LIGHT_BUCKET = BACKGROUNDS.find(b => b.id === "light");
 
-// Fixed brand typography and the Pine swatch's default text color - no
-// font picker and no custom color pickers (see constants/data.js).
+// Fixed brand typography and the dark-bucket swatch's (currently Jet
+// Black) default text color - no font picker and no custom color pickers
+// (see constants/data.js).
 // bItalic:true matches this same pairing's long-standing behavior (the
 // subhead has always rendered in italic); the automatic slide maker
 // overrides both hItalic/bItalic per its own randomly picked pairing -
@@ -60,9 +63,9 @@ const DEFAULT_BRAND = {
 // (built-in or staff-uploaded, no distinction - see PhotosTab's "Import
 // built-in textures" action for how the original set gets in there), plus
 // the 7 solid Colors-tab backgrounds themselves ({solid: bgOption}) - so a
-// plain Pine/Light/Red/Gold/etc. slide with no photo at all is a real,
-// regularly-occurring possible outcome, not just a texture tinted to look
-// dark or light.
+// plain Jet Black/White/Rosy Copper/Sandy Brown/etc. slide with no photo
+// at all is a real, regularly-occurring possible outcome, not just a
+// texture tinted to look dark or light.
 function getAutoBackgroundPool(photos) {
   const textures = (photos || []).filter(p => p && p.isTexture).map(p => ({img: p.img}));
   const solids = BACKGROUNDS.map(bg => ({solid: bg}));
@@ -85,22 +88,23 @@ function pickRandomTexture(pool) {
 }
 
 // Overlay choices for a dark-bucket texture, picked at random for some
-// variety between slides. Black and the brand green pair fine with either
-// of the dark bucket's text colors (white or yellow). The three brand
-// accent colors (red, gold, sage) are medium-brightness, not dark/light -
-// they only read reliably with white text, so they force it rather than
-// leaving it to the bucket's own random white/yellow pick.
+// variety between slides. Black and the brand dark teal pair fine with
+// either of the dark bucket's text colors (white or yellow). The three
+// brand accent colors (rosy copper, sandy brown, jungle teal) are
+// medium-brightness, not dark/light - they only read reliably with white
+// text, so they force it rather than leaving it to the bucket's own
+// random white/yellow pick.
 //
-// ov is each color's own overlay strength - red and gold are the two the
-// texture shows through the most at the standard 55%, washing them out
-// toward a muddy brown instead of a clean brand red/gold, so they get a
-// stronger wash to stay recognizably on-brand.
+// ov is each color's own overlay strength - copper and sandy brown are
+// the two the texture shows through the most at the standard 55%,
+// washing them out toward a muddy brown instead of a clean brand color,
+// so they get a stronger wash to stay recognizably on-brand.
 const DARK_OVERLAY_OPTIONS = [
   {color: "#000000", textColor: null, ov: 55},
-  {color: "#2a3834", textColor: null, ov: 55},
-  {color: "#C74F2F", textColor: "#FFFFFF", ov: 80},
-  {color: "#EAA235", textColor: "#FFFFFF", ov: 80},
-  {color: "#597F5C", textColor: "#FFFFFF", ov: 55},
+  {color: "#003235", textColor: null, ov: 55},
+  {color: "#C65D3B", textColor: "#FFFFFF", ov: 80},
+  {color: "#F9AB55", textColor: "#FFFFFF", ov: 80},
+  {color: "#5D947B", textColor: "#FFFFFF", ov: 55},
 ];
 
 // Buckets the texture's average brightness into the dark/light background

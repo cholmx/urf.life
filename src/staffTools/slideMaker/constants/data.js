@@ -38,44 +38,47 @@ export const AUTO_FONT_PAIRINGS = [
 // SlideMaker.jsx, used for the semi-transparent texture overlays of
 // automatic generation) are also available here as a full-opacity solid
 // background in their own right - the two systems share colors but not
-// opacity. White isn't repeated as its own swatch since Light already is
-// that color. Dark and Black were dropped from this list (no longer
-// pickable, manually or by the automatic generator) - Pine and Mint below
-// stand in for them as the dark/light bucket automatic photo-texture
-// overlays fall back to (see DARK_BUCKET/LIGHT_BUCKET in SlideMaker.jsx).
+// opacity. White isn't repeated as its own swatch since the first entry
+// already is that color.
+//
+// These seven match the site's own rebranded palette (designTokens.js)
+// exactly - ids are kept stable from before the rebrand (pine/mint/green/
+// red/gold/sage) since SlideMaker.jsx looks several of them up by id
+// (DARK_BUCKET/LIGHT_BUCKET, pickMarkOverlay's light-background check);
+// only the display name and hex actually changed.
 export const BACKGROUNDS = [
-  { id: "light", name: "Light", bg: "#FFFFFF", textOptions: [
+  { id: "light", name: "White", bg: "#FFFFFF", textOptions: [
     { id: "black", name: "Black", color: "#000000" },
-    { id: "charcoal", name: "#1E2522", color: "#1E2522" },
+    { id: "charcoal", name: "#1C2A2B", color: "#1C2A2B" },
   ] },
-  { id: "pine", name: "Pine", bg: "#04443F", textOptions: [
+  { id: "pine", name: "Jet Black", bg: "#1C2A2B", textOptions: [
     { id: "white", name: "White", color: "#FFFFFF" },
     { id: "yellow", name: "Yellow", color: "#FFEAB7" },
-    { id: "mint", name: "Mint", color: "#D3E5DB" },
+    { id: "mint", name: "Cream", color: "#F4ECDD" },
   ] },
-  { id: "mint", name: "Mint", bg: "#D3E5DB", textOptions: [
+  { id: "mint", name: "Cream", bg: "#F4ECDD", textOptions: [
     { id: "black", name: "Black", color: "#000000" },
-    { id: "charcoal", name: "#1E2522", color: "#1E2522" },
+    { id: "charcoal", name: "#1C2A2B", color: "#1C2A2B" },
   ] },
-  { id: "green", name: "Green", bg: "#2a3834", textOptions: [
+  { id: "green", name: "Dark Teal", bg: "#003235", textOptions: [
     { id: "white", name: "White", color: "#FFFFFF" },
     { id: "yellow", name: "Yellow", color: "#FFEAB7" },
-    { id: "mint", name: "Mint", color: "#D3E5DB" },
+    { id: "mint", name: "Cream", color: "#F4ECDD" },
   ] },
-  { id: "red", name: "Red", bg: "#C74F2F", textOptions: [
+  { id: "red", name: "Rosy Copper", bg: "#C65D3B", textOptions: [
     { id: "white", name: "White", color: "#FFFFFF" },
     { id: "yellow", name: "Yellow", color: "#FFEAB7" },
-    { id: "mint", name: "Mint", color: "#D3E5DB" },
+    { id: "mint", name: "Cream", color: "#F4ECDD" },
   ] },
-  { id: "gold", name: "Gold", bg: "#EAA235", textOptions: [
+  { id: "gold", name: "Sandy Brown", bg: "#F9AB55", textOptions: [
     { id: "white", name: "White", color: "#FFFFFF" },
-    { id: "charcoal", name: "#1E2522", color: "#1E2522" },
-    { id: "mint", name: "Mint", color: "#D3E5DB" },
+    { id: "charcoal", name: "#1C2A2B", color: "#1C2A2B" },
+    { id: "mint", name: "Cream", color: "#F4ECDD" },
   ] },
-  { id: "sage", name: "Sage", bg: "#597F5C", textOptions: [
+  { id: "sage", name: "Jungle Teal", bg: "#5D947B", textOptions: [
     { id: "white", name: "White", color: "#FFFFFF" },
     { id: "yellow", name: "Yellow", color: "#FFEAB7" },
-    { id: "mint", name: "Mint", color: "#D3E5DB" },
+    { id: "mint", name: "Cream", color: "#F4ECDD" },
   ] },
 ];
 
