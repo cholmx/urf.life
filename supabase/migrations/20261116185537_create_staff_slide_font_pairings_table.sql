@@ -46,6 +46,8 @@ CREATE TABLE IF NOT EXISTS staff_slide_font_pairings_portal123 (
 
 ALTER TABLE staff_slide_font_pairings_portal123 ENABLE ROW LEVEL SECURITY;
 
+GRANT SELECT, INSERT, UPDATE, DELETE ON staff_slide_font_pairings_portal123 TO authenticated;
+
 DROP POLICY IF EXISTS "Authenticated users can view staff slide font pairings" ON staff_slide_font_pairings_portal123;
 CREATE POLICY "Authenticated users can view staff slide font pairings"
   ON staff_slide_font_pairings_portal123 FOR SELECT
