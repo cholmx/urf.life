@@ -44,53 +44,56 @@ export const BUILT_IN_FONT_PAIRINGS = [
   { hFont: "Poppins", hGeneric: "sans-serif", hWeight: 900, hItalic: false, hUppercase: false, bFont: "Cormorant Garamond", bGeneric: "serif", bWeight: 500, bItalic: false },
 ];
 
-// Fixed background swatches - no custom color picker. Each has its own set
-// of allowed text colors, so picking a background always leaves a readable,
-// on-brand text color selected. Most of these (see DARK_OVERLAY_OPTIONS in
-// SlideMaker.jsx, used for the semi-transparent texture overlays of
-// automatic generation) are also available here as a full-opacity solid
-// background in their own right - the two systems share colors but not
-// opacity. White isn't repeated as its own swatch since the first entry
-// already is that color.
+// Seed list for the Palette tab's one-time "Import built-in backgrounds"
+// action (see PaletteTab.jsx / backgroundColorService.js's
+// importBuiltInBackgroundColor) - the same role TEXTURES/BUILT_IN_MARKS/
+// BUILT_IN_FONT_PAIRINGS play for their own tabs. Once imported, each
+// becomes an ordinary row in staff_slide_background_colors_portal123,
+// editable/deletable (except the two bucket roles below) from that tab;
+// the live Custom Editor and automatic generator read that DB-backed
+// state (see backgroundColors in SlideMaker.jsx), never this array
+// directly - it only matters the one time a background gets imported.
 //
-// These seven match the site's own rebranded palette (designTokens.js)
-// exactly - ids are kept stable from before the rebrand (pine/mint/green/
-// red/gold/sage) since SlideMaker.jsx looks several of them up by id
-// (DARK_BUCKET/LIGHT_BUCKET, pickMarkOverlay's light-background check);
-// only the display name and hex actually changed.
-export const BACKGROUNDS = [
-  { id: "light", name: "White", bg: "#FFFFFF", textOptions: [
-    { id: "black", name: "Black", color: "#000000" },
-    { id: "charcoal", name: "#1C2A2B", color: "#1C2A2B" },
+// role marks White and Jet Black as the two structural buckets every
+// photo/texture gets brightness-sorted into (see autoBrandForBrightness
+// in SlideMaker.jsx) - they can be retinted/renamed but never deleted
+// (see deleteBackgroundColor's guard). White also starts with
+// inAutoRotation: false (too many plain-white auto slides - see the
+// commit that excluded it) even though it still anchors the light
+// bucket; the other five are purely decorative and fully staff-editable.
+export const BUILT_IN_BACKGROUND_COLORS = [
+  { name: "White", hex: "#FFFFFF", role: "light_bucket", inAutoRotation: false, textColors: [
+    { name: "Black", hex: "#000000" },
+    { name: "#1C2A2B", hex: "#1C2A2B" },
   ] },
-  { id: "pine", name: "Jet Black", bg: "#1C2A2B", textOptions: [
-    { id: "white", name: "White", color: "#FFFFFF" },
-    { id: "yellow", name: "Yellow", color: "#FFEAB7" },
-    { id: "mint", name: "Cream", color: "#F4ECDD" },
+  { name: "Jet Black", hex: "#1C2A2B", role: "dark_bucket", inAutoRotation: true, textColors: [
+    { name: "White", hex: "#FFFFFF" },
+    { name: "Yellow", hex: "#FFEAB7" },
+    { name: "Cream", hex: "#F4ECDD" },
   ] },
-  { id: "mint", name: "Cream", bg: "#F4ECDD", textOptions: [
-    { id: "black", name: "Black", color: "#000000" },
-    { id: "charcoal", name: "#1C2A2B", color: "#1C2A2B" },
+  { name: "Cream", hex: "#F4ECDD", role: null, inAutoRotation: true, textColors: [
+    { name: "Black", hex: "#000000" },
+    { name: "#1C2A2B", hex: "#1C2A2B" },
   ] },
-  { id: "green", name: "Dark Teal", bg: "#172B2C", textOptions: [
-    { id: "white", name: "White", color: "#FFFFFF" },
-    { id: "yellow", name: "Yellow", color: "#FFEAB7" },
-    { id: "mint", name: "Cream", color: "#F4ECDD" },
+  { name: "Dark Teal", hex: "#172B2C", role: null, inAutoRotation: true, textColors: [
+    { name: "White", hex: "#FFFFFF" },
+    { name: "Yellow", hex: "#FFEAB7" },
+    { name: "Cream", hex: "#F4ECDD" },
   ] },
-  { id: "red", name: "Rosy Copper", bg: "#C65D3B", textOptions: [
-    { id: "white", name: "White", color: "#FFFFFF" },
-    { id: "yellow", name: "Yellow", color: "#FFEAB7" },
-    { id: "mint", name: "Cream", color: "#F4ECDD" },
+  { name: "Rosy Copper", hex: "#C65D3B", role: null, inAutoRotation: true, textColors: [
+    { name: "White", hex: "#FFFFFF" },
+    { name: "Yellow", hex: "#FFEAB7" },
+    { name: "Cream", hex: "#F4ECDD" },
   ] },
-  { id: "gold", name: "Sandy Brown", bg: "#F9AB55", textOptions: [
-    { id: "white", name: "White", color: "#FFFFFF" },
-    { id: "charcoal", name: "#1C2A2B", color: "#1C2A2B" },
-    { id: "mint", name: "Cream", color: "#F4ECDD" },
+  { name: "Sandy Brown", hex: "#F9AB55", role: null, inAutoRotation: true, textColors: [
+    { name: "White", hex: "#FFFFFF" },
+    { name: "#1C2A2B", hex: "#1C2A2B" },
+    { name: "Cream", hex: "#F4ECDD" },
   ] },
-  { id: "sage", name: "Jungle Teal", bg: "#5B8B75", textOptions: [
-    { id: "white", name: "White", color: "#FFFFFF" },
-    { id: "yellow", name: "Yellow", color: "#FFEAB7" },
-    { id: "mint", name: "Cream", color: "#F4ECDD" },
+  { name: "Jungle Teal", hex: "#5B8B75", role: null, inAutoRotation: true, textColors: [
+    { name: "White", hex: "#FFFFFF" },
+    { name: "Yellow", hex: "#FFEAB7" },
+    { name: "Cream", hex: "#F4ECDD" },
   ] },
 ];
 

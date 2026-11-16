@@ -2,13 +2,14 @@ import React, {useState, useRef, useEffect, useCallback, useMemo} from 'react';
 import useGoogleFonts from './hooks/useGoogleFonts';
 import {ToastProvider, useToast} from './hooks/useToast.jsx';
 import {useUndoHistory} from './hooks/useUndoHistory';
-import {BACKGROUNDS, HEADLINE_FONT, HEADLINE_WEIGHT, BODY_FONT, BODY_WEIGHT, ASPECT_RATIOS, FRAME_STYLES} from './constants/data';
+import {HEADLINE_FONT, HEADLINE_WEIGHT, BODY_FONT, BODY_WEIGHT, ASPECT_RATIOS, FRAME_STYLES} from './constants/data';
 import {C, ui} from './constants/styles';
 import {sharpenCanvas, loadImage, averageBrightness} from './utils/canvasUtils';
 import {render} from './utils/renderEngine';
 import {getPhotos} from './services/photoService';
 import {getMarks} from './services/markService';
 import {getFontPairings} from './services/fontPairingService';
+import {getBackgroundColors} from './services/backgroundColorService';
 import {isSlideActive, formatDateNice, stripLeadingTitle} from '../../staffComms/lib/helpers';
 import SlideCanvas from './components/SlideCanvas';
 import Sidebar from './components/Sidebar';
@@ -29,25 +30,45 @@ const DEFAULT_DATA = {
 };
 
 // Dark/light buckets a photo's own average brightness is sorted into for
-// its color overlay wash (see autoBrandForBrightness below) - looked up by
-// id rather than relying on BACKGROUNDS' order, since that order is just
-// picker/pool display order. The "pine" id is the dark bucket regardless
-// of what that swatch is actually named/colored today (currently Jet
-// Black) - ids stayed put across both the Dark/Black-removal rebrand and
-// the later site-wide color rebrand, only names and hexes moved.
-const DARK_BUCKET = BACKGROUNDS.find(b => b.id === "pine");
-const LIGHT_BUCKET = BACKGROUNDS.find(b => b.id === "light");
+// its color overlay wash (see autoBrandForBrightness below) - looked up
+// by role (not id/name, which staff can freely rename) in the Palette
+// tab's staff-managed backgroundColors state - see findBucket. These
+// two fallbacks are only for the brief window before that state loads
+// (or the vanishingly unlikely case neither role survived) - they're
+// what "dark"/"light" meant before the Palette tab existed, not a bucket
+// identity of their own.
+const FALLBACK_DARK_BUCKET = {hex: "#1C2A2B", textColors: [{name: "White", hex: "#FFFFFF"}]};
+const FALLBACK_LIGHT_BUCKET = {hex: "#FFFFFF", textColors: [{name: "Black", hex: "#000000"}]};
+
+function findBucket(backgroundColors, role, fallback) {
+  return (backgroundColors || []).find(b => b.role === role) || fallback;
+}
+
+// Standard perceptual luminance (0 = black, 1 = white) - used wherever a
+// background's own brightness (not a fixed id like the old "light"/
+// "mint") decides whether white or black ink reads on it (see
+// pickMarkOverlay's isLight argument in computeAutoSlide).
+function hexBrightness(hex) {
+  const h = (hex || "#000000").replace("#", "");
+  const r = parseInt(h.substring(0, 2), 16) || 0;
+  const g = parseInt(h.substring(2, 4), 16) || 0;
+  const b = parseInt(h.substring(4, 6), 16) || 0;
+  return (r * 299 + g * 587 + b * 114) / 1000 / 255;
+}
 
 // Fixed brand typography and the dark-bucket swatch's (currently Jet
 // Black) default text color - no font picker and no custom color pickers
-// (see constants/data.js).
+// (see constants/data.js). The literal hex/white here are just a sane
+// first paint before backgroundColors loads - DEFAULT_BRAND can't read
+// that state (it's evaluated once at module load); applyAutoBackground
+// and loadQueueItem override both the moment a real pick is made.
 // bItalic:true matches this same pairing's long-standing behavior (the
 // subhead has always rendered in italic); the automatic slide maker
 // overrides both hItalic/bItalic per its own randomly picked pairing -
 // see computeAutoSlide below.
 const DEFAULT_BRAND = {
-  bgColor: DARK_BUCKET.bg,
-  textColor: DARK_BUCKET.textOptions[0].color,
+  bgColor: FALLBACK_DARK_BUCKET.hex,
+  textColor: FALLBACK_DARK_BUCKET.textColors[0].hex,
   hFont: HEADLINE_FONT,
   bFont: BODY_FONT,
   hWeight: HEADLINE_WEIGHT,
@@ -66,16 +87,17 @@ const DEFAULT_BRAND = {
 // the library flagged as a texture with the ✨ toggle in the Photos tab
 // (built-in or staff-uploaded, no distinction - see PhotosTab's "Import
 // built-in textures" action for how the original set gets in there), plus
-// 6 of the 7 solid Colors-tab backgrounds themselves ({solid: bgOption}) -
-// so a plain Jet Black/Rosy Copper/Sandy Brown/etc. slide with no photo at
-// all is a real, regularly-occurring possible outcome, not just a texture
-// tinted to look dark or light. White is excluded here (too many
-// plain-white auto slides) but stays a normal manual choice in the
-// Custom Editor's own Colors tab - this only narrows what gets picked
-// for you.
-function getAutoBackgroundPool(photos) {
+// every Palette tab background with its own inAutoRotation flag on
+// ({solid: bgOption}) - so a plain Jet Black/Rosy Copper/Sandy Brown/etc.
+// slide with no photo at all is a real, regularly-occurring possible
+// outcome, not just a texture tinted to look dark or light. White ships
+// with inAutoRotation off by default (too many plain-white auto slides)
+// but stays a normal manual choice in the Custom Editor's own Colors tab
+// - staff can flip it back on from the Palette tab any time, same as any
+// other background.
+function getAutoBackgroundPool(photos, backgroundColors) {
   const textures = (photos || []).filter(p => p && p.isTexture).map(p => ({img: p.img}));
-  const solids = BACKGROUNDS.filter(bg => bg.id !== "light").map(bg => ({solid: bg}));
+  const solids = (backgroundColors || []).filter(bg => bg.inAutoRotation).map(bg => ({solid: bg}));
   return [...textures, ...solids];
 }
 
@@ -107,8 +129,8 @@ function pickRandomTexture(pool) {
 // washing them out toward a muddy brown instead of a clean brand color,
 // so they get a stronger wash to stay recognizably on-brand. No plain
 // black wash option here (removed on request) - black stays available
-// as a text color (see BACKGROUNDS' Light/Mint textOptions), just not
-// as a photo-overlay tint.
+// as a text color (see the Palette tab's White/Cream text-color options),
+// just not as a photo-overlay tint.
 const DARK_OVERLAY_OPTIONS = [
   {color: "#172B2C", textColor: null, ov: 65},
   {color: "#C65D3B", textColor: "#FFFFFF", ov: 88},
@@ -129,20 +151,23 @@ const DARK_OVERLAY_OPTIONS = [
 // just a reroll-and-hope) - used to keep adjacent queue slides from
 // landing on the same overlay color by chance, and to guarantee "try a
 // different background" actually gives back something different.
-function autoBrandForBrightness(brightness, avoidOverlayColors = []) {
-  const bucket = brightness < 0.5 ? DARK_BUCKET : LIGHT_BUCKET;
-  const randomBucketTextColor = () => bucket.textOptions[Math.floor(Math.random() * bucket.textOptions.length)].color;
+// darkBucket/lightBucket come from the Palette tab's staff-managed
+// backgroundColors (see findBucket) - whatever two backgrounds carry
+// the dark_bucket/light_bucket role right now, not a fixed pair.
+function autoBrandForBrightness(brightness, avoidOverlayColors = [], darkBucket, lightBucket) {
+  const bucket = brightness < 0.5 ? darkBucket : lightBucket;
+  const randomBucketTextColor = () => bucket.textColors[Math.floor(Math.random() * bucket.textColors.length)].hex;
 
   if (brightness < 0.5) {
     const choices = DARK_OVERLAY_OPTIONS.filter(o => !avoidOverlayColors.includes(o.color));
     const pool = choices.length > 0 ? choices : DARK_OVERLAY_OPTIONS;
     const overlay = pool[Math.floor(Math.random() * pool.length)];
-    return {bgColor: bucket.bg, textColor: overlay.textColor || randomBucketTextColor(), overlayColor: overlay.color, ov: overlay.ov};
+    return {bgColor: bucket.hex, textColor: overlay.textColor || randomBucketTextColor(), overlayColor: overlay.color, ov: overlay.ov};
   }
   // Light bucket always washes white by design - nothing random to avoid.
   // Same heavier wash as black above and for the same reason (white has
   // no hue of its own to read as intentional at a lighter strength).
-  return {bgColor: bucket.bg, textColor: randomBucketTextColor(), overlayColor: "#FFFFFF", ov: 80};
+  return {bgColor: bucket.hex, textColor: randomBucketTextColor(), overlayColor: "#FFFFFF", ov: 80};
 }
 
 // Picks one of the Fonts tab's staff-managed pairings (fontPairings -
@@ -236,18 +261,20 @@ async function pickMarkOverlay(isLight, marks) {
 // entirely - no image, just that color and one of its own allowed text
 // colors. The watermark applies either way (see pickMarkOverlay) - drawn
 // over the photo's own texture/color wash, not instead of it.
-async function computeAutoSlide(entry, avoidOverlayColors = [], marks = [], fontPairings = []) {
+async function computeAutoSlide(entry, avoidOverlayColors = [], marks = [], fontPairings = [], backgroundColors = []) {
   const font = pickAutoFontPairing(fontPairings);
   const tmpl = pickAutoTemplate();
   if (entry.solid) {
     const bg = entry.solid;
-    const textColor = bg.textOptions[Math.floor(Math.random() * bg.textOptions.length)].color;
-    const mark = await pickMarkOverlay(bg.id === "light" || bg.id === "mint", marks);
-    return {img: null, bgColor: bg.bg, textColor, overlayColor: null, ov: 0, blur: 0, tmpl, ...mark, ...font};
+    const textColor = bg.textColors[Math.floor(Math.random() * bg.textColors.length)].hex;
+    const mark = await pickMarkOverlay(hexBrightness(bg.hex) >= 0.5, marks);
+    return {img: null, bgColor: bg.hex, textColor, overlayColor: null, ov: 0, blur: 0, tmpl, ...mark, ...font};
   }
   const img = entry.img || await loadImage(entry.src);
   const brightness = averageBrightness(img);
-  const auto = autoBrandForBrightness(brightness, avoidOverlayColors);
+  const darkBucket = findBucket(backgroundColors, "dark_bucket", FALLBACK_DARK_BUCKET);
+  const lightBucket = findBucket(backgroundColors, "light_bucket", FALLBACK_LIGHT_BUCKET);
+  const auto = autoBrandForBrightness(brightness, avoidOverlayColors, darkBucket, lightBucket);
   const mark = await pickMarkOverlay(brightness >= 0.5, marks);
   return {
     img,
@@ -293,8 +320,8 @@ const QUEUE_PREVIEW_RATIO = ASPECT_RATIOS.find(r => r.id === "16:10") || ASPECT_
 // queue loads so there's a PNG sitting there to grab without opening
 // anything. Returns the overlay color alongside the image so the caller
 // can feed it forward as the next item's avoidOverlayColors.
-async function generateQueueThumbnailFromEntry(a, entry, avoidOverlayColors = [], marks = [], fontPairings = []) {
-  const auto = await computeAutoSlide(entry, avoidOverlayColors, marks, fontPairings);
+async function generateQueueThumbnailFromEntry(a, entry, avoidOverlayColors = [], marks = [], fontPairings = [], backgroundColors = []) {
+  const auto = await computeAutoSlide(entry, avoidOverlayColors, marks, fontPairings, backgroundColors);
   const data = {...DEFAULT_DATA, ...buildAutoSlideData(a)};
   const brand = {...DEFAULT_BRAND, bgColor: auto.bgColor, textColor: auto.textColor, hFont: auto.hFont, hWeight: auto.hWeight, hItalic: auto.hItalic, hUppercase: auto.hUppercase, bFont: auto.bFont, bWeight: auto.bWeight, bItalic: auto.bItalic, markImg: auto.markImg, markOpacity: auto.markOpacity, markFrame: auto.markFrame};
   const canvas = document.createElement('canvas');
@@ -334,6 +361,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
   const [photos, setPhotos] = useState([]);
   const [marks, setMarks] = useState([]);
   const [fontPairings, setFontPairings] = useState([]);
+  const [backgroundColors, setBackgroundColors] = useState([]);
   useGoogleFonts(fontPairings);
   const [activePhoto, setActivePhoto] = useState(null);
   const [ov, setOv] = useState(86);
@@ -408,6 +436,22 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // The Palette tab's library, loaded here (not inside PaletteTab) for
+  // the same reason as the three effects above - a staff-added
+  // background or rotation-toggle flip is already live for the queue
+  // the moment it's opened. Also pure data, one fetch is enough.
+  useEffect(() => {
+    let cancelled = false;
+    getBackgroundColors().then((colors) => {
+      if (!cancelled) setBackgroundColors(colors);
+    }).catch((error) => {
+      console.error('Could not load the background color library:', error);
+      if (!cancelled) toast.show(`Could not load your background colors: ${error?.message || 'unknown error'}`, 'error');
+    });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeQueueItem, setActiveQueueItem] = useState(null);
   const canvasRef = useRef(null);
@@ -438,7 +482,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
   }, []);
 
   useEffect(() => {
-    const pool = getAutoBackgroundPool(photos);
+    const pool = getAutoBackgroundPool(photos, backgroundColors);
     if (pool.length === 0) return;
     const pending = queueItems.filter(a => !queuePreviews[a.id] && !generatingQueuePreviewsRef.current.has(a.id));
     if (pending.length === 0) return;
@@ -452,7 +496,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
           const prevId = idx > 0 ? queueItems[idx - 1].id : null;
           const avoid = prevId && queuePreviewOverlayRef.current[prevId] ? [queuePreviewOverlayRef.current[prevId]] : [];
           const entry = pickTextureForId(pool, a.id);
-          const result = await generateQueueThumbnailFromEntry(a, entry, avoid, marks, fontPairings);
+          const result = await generateQueueThumbnailFromEntry(a, entry, avoid, marks, fontPairings, backgroundColors);
           queuePreviewOverlayRef.current[a.id] = result.overlayColor;
           if (isMountedRef.current) setQueuePreviews(prev => ({...prev, [a.id]: result}));
         } catch (error) {
@@ -464,7 +508,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queueItems, photos, marks, fontPairings]);
+  }, [queueItems, photos, marks, fontPairings, backgroundColors]);
 
   // "Try a different background" on a queue card - a fresh random texture
   // (not the deterministic per-event pick) and an overlay steered away
@@ -475,12 +519,12 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     if (generatingQueuePreviewsRef.current.has(a.id)) return;
     generatingQueuePreviewsRef.current.add(a.id);
     try {
-      const pool = getAutoBackgroundPool(photos);
+      const pool = getAutoBackgroundPool(photos, backgroundColors);
       const idx = queueItems.findIndex(q => q.id === a.id);
       const prevId = idx > 0 ? queueItems[idx - 1].id : null;
       const avoid = [queuePreviewOverlayRef.current[a.id], prevId && queuePreviewOverlayRef.current[prevId]].filter(Boolean);
       const entry = pickRandomTexture(pool);
-      const result = await generateQueueThumbnailFromEntry(a, entry, avoid, marks, fontPairings);
+      const result = await generateQueueThumbnailFromEntry(a, entry, avoid, marks, fontPairings, backgroundColors);
       queuePreviewOverlayRef.current[a.id] = result.overlayColor;
       if (isMountedRef.current) setQueuePreviews(prev => ({...prev, [a.id]: result}));
     } catch (error) {
@@ -489,7 +533,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     } finally {
       generatingQueuePreviewsRef.current.delete(a.id);
     }
-  }, [photos, marks, fontPairings, queueItems, toast]);
+  }, [photos, marks, fontPairings, backgroundColors, queueItems, toast]);
 
   const undoHistory = useUndoHistory(50);
 
@@ -539,7 +583,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
   // one of the new bucket's two allowed options.
   const updateBackground = useCallback((bgOption) => {
     pushUndo();
-    setBrand(b => ({...b, bgColor: bgOption.bg, textColor: bgOption.textOptions[0].color}));
+    setBrand(b => ({...b, bgColor: bgOption.hex, textColor: bgOption.textColors[0].hex}));
   }, [pushUndo]);
 
   const updateTextColor = useCallback((color) => {
@@ -658,7 +702,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
   // loadQueueItem.
   const applyAutoBackground = useCallback(async (entry, avoidOverlayColors = []) => {
     try {
-      const auto = await computeAutoSlide(entry, avoidOverlayColors, marks, fontPairings);
+      const auto = await computeAutoSlide(entry, avoidOverlayColors, marks, fontPairings, backgroundColors);
       setActivePhoto(auto.img);
       setBrand(b => ({...b, bgColor: auto.bgColor, textColor: auto.textColor, hFont: auto.hFont, hWeight: auto.hWeight, hItalic: auto.hItalic, hUppercase: auto.hUppercase, bFont: auto.bFont, bWeight: auto.bWeight, bItalic: auto.bItalic, markImg: auto.markImg, markOpacity: auto.markOpacity, markFrame: auto.markFrame}));
       setOverlayColor(auto.overlayColor);
@@ -669,7 +713,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
       console.error('Could not load an automatic background:', error);
       toast.show(`Could not load an automatic background: ${error?.message || 'unknown error'}`, 'error');
     }
-  }, [toast, marks, fontPairings]);
+  }, [toast, marks, fontPairings, backgroundColors]);
 
   const loadQueueItem = useCallback((a) => {
     pushUndo();
@@ -678,20 +722,20 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     // (same one each time this event is reopened), colors picked from
     // that texture's brightness, and the 16:10 size.
     setAspectRatio(QUEUE_PREVIEW_RATIO);
-    applyAutoBackground(pickTextureForId(getAutoBackgroundPool(photos), a.id));
+    applyAutoBackground(pickTextureForId(getAutoBackgroundPool(photos, backgroundColors), a.id));
     setActiveQueueItem(a);
     setTab("content");
     setMode("custom");
     setSidebarOpen(false);
-  }, [pushUndo, applyAutoBackground, photos]);
+  }, [pushUndo, applyAutoBackground, photos, backgroundColors]);
 
   const reshuffleBackground = useCallback(() => {
     pushUndo();
     // Steer away from the overlay color already on screen - otherwise
     // "Different Background" can land right back on the same color by
     // chance and look like it didn't do anything.
-    applyAutoBackground(pickRandomTexture(getAutoBackgroundPool(photos)), [overlayColor]);
-  }, [pushUndo, applyAutoBackground, photos, overlayColor]);
+    applyAutoBackground(pickRandomTexture(getAutoBackgroundPool(photos, backgroundColors)), [overlayColor]);
+  }, [pushUndo, applyAutoBackground, photos, backgroundColors, overlayColor]);
 
   // One click from "just finished this slide" to "building the next one" -
   // no manual trip back to Auto Slides to find what's left.
@@ -870,6 +914,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
             photos={photos} setPhotos={setPhotos}
             marks={marks} setMarks={setMarks}
             fontPairings={fontPairings} setFontPairings={setFontPairings}
+            backgroundColors={backgroundColors} setBackgroundColors={setBackgroundColors}
             activePhoto={activePhoto} setActivePhoto={setActivePhoto}
             ov={ov} setOv={handleSetOv}
             blur={blur} setBlur={handleSetBlur}
@@ -916,6 +961,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
               photos={photos} setPhotos={setPhotos}
               marks={marks} setMarks={setMarks}
               fontPairings={fontPairings} setFontPairings={setFontPairings}
+              backgroundColors={backgroundColors} setBackgroundColors={setBackgroundColors}
               activePhoto={activePhoto} setActivePhoto={setActivePhoto}
               ov={ov} setOv={handleSetOv}
               blur={blur} setBlur={handleSetBlur}

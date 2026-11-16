@@ -6,6 +6,7 @@ import ContentTab from './tabs/ContentTab';
 import PhotosTab from './tabs/PhotosTab';
 import MarksTab from './tabs/MarksTab';
 import FontsTab from './tabs/FontsTab';
+import PaletteTab from './tabs/PaletteTab';
 import PresetsTab from './tabs/PresetsTab';
 
 const TABS = [
@@ -15,6 +16,7 @@ const TABS = [
   {key: "photos", label: "🖼 Photos"},
   {key: "marks", label: "💧 Marks"},
   {key: "fonts", label: "🔤 Fonts"},
+  {key: "palette", label: "🖍 Palette"},
   {key: "presets", label: "💾 Presets"},
 ];
 
@@ -28,6 +30,7 @@ export default function Sidebar(props) {
     photos, setPhotos,
     marks, setMarks,
     fontPairings, setFontPairings,
+    backgroundColors, setBackgroundColors,
     activePhoto, setActivePhoto,
     ov, setOv,
     blur, setBlur,
@@ -102,7 +105,7 @@ export default function Sidebar(props) {
           />
         )}
         {tab === "palettes" && (
-          <ColorsTab brand={brand} updateBackground={updateBackground} updateTextColor={updateTextColor} />
+          <ColorsTab brand={brand} backgroundColors={backgroundColors} updateBackground={updateBackground} updateTextColor={updateTextColor} />
         )}
         {tab === "photos" && (
           <PhotosTab
@@ -118,6 +121,9 @@ export default function Sidebar(props) {
         )}
         {tab === "fonts" && (
           <FontsTab fontPairings={fontPairings} setFontPairings={setFontPairings} />
+        )}
+        {tab === "palette" && (
+          <PaletteTab backgroundColors={backgroundColors} setBackgroundColors={setBackgroundColors} />
         )}
         {tab === "presets" && (
           <PresetsTab
