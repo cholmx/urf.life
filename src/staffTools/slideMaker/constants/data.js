@@ -90,39 +90,48 @@ export const TEMPLATES = [
 // Subtle branded watermark images the automatic slide maker layers over a
 // solid-color background (one picked at random, at a random low opacity -
 // see pickMarkOverlay in SlideMaker.jsx), between the flat color fill and
-// the headline/subhead text. Each is a transparent PNG with the URF
-// chevron mark drawn in white, at the same 16:10 aspect ratio as the
-// slide canvas so it can be stretched to fill it with no distortion. Used
-// on every background except Light/Mint (see MARK_OVERLAYS_LIGHT) - white
-// ink on a near-white fill wouldn't read at all.
+// the headline/subhead text. Each is a transparent PNG at the same 16:10
+// aspect ratio as the slide canvas so it can be stretched to fill it with
+// no distortion, drawn in white ink (the URF chevron mark itself, or
+// another graphic built around it). Used on every background except
+// Light/Mint (see MARK_OVERLAYS_LIGHT) - white ink on a near-white fill
+// wouldn't read at all.
 export const MARK_OVERLAYS = [
   "/slide-marks/mark-top.png",
   "/slide-marks/mark-pattern.png",
   "/slide-marks/mark-bottom.png",
   "/slide-marks/mark-pattern-dense.png",
-  "/slide-marks/mark-corners.png",
+  "/slide-marks/mark-cropframe.png",
+  "/slide-marks/mark-spotlight.png",
+  "/slide-marks/mark-halftone.png",
 ];
 
 // The Light/Mint counterpart to MARK_OVERLAYS above - same idea, drawn in
 // black ink instead of white so it actually shows up on those two pale
-// backgrounds.
+// backgrounds. Empty for now (its one entry, a code-generated corner
+// cluster, was deleted) - pickMarkOverlay's pool-merge in SlideMaker.jsx
+// handles an empty array here fine, so Light/Mint slides still get
+// MARK_OVERLAYS_UNIVERSAL and FRAME_STYLES, just no dedicated image mark
+// of their own until a real black-ink asset is added.
 export const MARK_OVERLAYS_LIGHT = [
-  "/slide-marks/mark-corners-light.png",
 ];
 
 // A third pool, added alongside the two above rather than folded into
 // either - these are grayscale darkening treatments (a layered mountain-
-// ridge silhouette, a diagonal corner wedge, top/bottom bars, a grain
-// texture, a bottom gradient) rather than a brand-colored ink, so they
-// read fine over any background regardless of light or dark. pickMarkOverlay
-// in SlideMaker.jsx always mixes this pool in alongside whichever of the
-// two above fits the slide's background.
+// ridge silhouette, a diagonal corner wedge, top/bottom bars, two grain/
+// noise textures, a bottom gradient, a corner vignette) rather than a
+// brand-colored ink, so they read fine over any background regardless of
+// light or dark. pickMarkOverlay in SlideMaker.jsx always mixes this
+// pool in alongside whichever of the two above fits the slide's
+// background.
 export const MARK_OVERLAYS_UNIVERSAL = [
   "/slide-marks/mark-ridge.png",
   "/slide-marks/mark-wedge.png",
   "/slide-marks/mark-bars.png",
   "/slide-marks/mark-grain.png",
   "/slide-marks/mark-lowerthird.png",
+  "/slide-marks/mark-vignette.png",
+  "/slide-marks/mark-noise.png",
 ];
 
 // A thin rounded-rectangle border, inset from the slide's edge - drawn
