@@ -49,7 +49,7 @@ export const BACKGROUNDS = [
     { id: "white", name: "White", color: "#FFFFFF" },
     { id: "yellow", name: "Yellow", color: "#FFD944" },
   ] },
-  { id: "mint", name: "Mint", bg: "#C9E8D7", textOptions: [
+  { id: "mint", name: "Mint", bg: "#D3E5DB", textOptions: [
     { id: "black", name: "Black", color: "#000000" },
     { id: "charcoal", name: "#1E2522", color: "#1E2522" },
   ] },
