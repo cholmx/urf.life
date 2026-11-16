@@ -24,11 +24,11 @@ export const BODY_WEIGHT = 400;
 // Editor's own default above (Inter Tight Bold headline, Playfair
 // Display italic subhead); Pairing 1 flips the roles with Playfair
 // Display Black (900 - its heaviest real static weight, not a
-// synthesized bold) for the headline, which also randomizes between its
-// upright and italic faces (hItalicRandom) rather than being fixed
-// either way.
+// synthesized bold) for the headline. Playfair Display is only ever used
+// italic, headline role or body role alike - never hItalicRandom, never
+// hItalic/bItalic: false.
 export const AUTO_FONT_PAIRINGS = [
-  { hFont: "'Playfair Display',serif", hWeight: 900, hItalicRandom: true, bFont: "'Inter Tight',sans-serif", bWeight: 700, bItalic: false },
+  { hFont: "'Playfair Display',serif", hWeight: 900, hItalicRandom: false, hItalic: true, bFont: "'Inter Tight',sans-serif", bWeight: 700, bItalic: false },
   { hFont: HEADLINE_FONT, hWeight: HEADLINE_WEIGHT, hItalicRandom: false, hItalic: false, bFont: BODY_FONT, bWeight: BODY_WEIGHT, bItalic: true },
 ];
 
