@@ -4,6 +4,7 @@ import ColorsTab from './tabs/ColorsTab';
 import TemplatesTab from './tabs/TemplatesTab';
 import ContentTab from './tabs/ContentTab';
 import PhotosTab from './tabs/PhotosTab';
+import MarksTab from './tabs/MarksTab';
 import PresetsTab from './tabs/PresetsTab';
 
 const TABS = [
@@ -11,6 +12,7 @@ const TABS = [
   {key: "templates", label: "⬜ Layout"},
   {key: "palettes", label: "🎨 Colors"},
   {key: "photos", label: "🖼 Photos"},
+  {key: "marks", label: "💧 Marks"},
   {key: "presets", label: "💾 Presets"},
 ];
 
@@ -22,6 +24,7 @@ export default function Sidebar(props) {
     tmplId, setTmplId,
     data, ds,
     photos, setPhotos,
+    marks, setMarks,
     activePhoto, setActivePhoto,
     ov, setOv,
     blur, setBlur,
@@ -106,6 +109,9 @@ export default function Sidebar(props) {
             blur={blur} setBlur={setBlur}
             overlayColor={overlayColor} setOverlayColor={setOverlayColor}
           />
+        )}
+        {tab === "marks" && (
+          <MarksTab marks={marks} setMarks={setMarks} />
         )}
         {tab === "presets" && (
           <PresetsTab

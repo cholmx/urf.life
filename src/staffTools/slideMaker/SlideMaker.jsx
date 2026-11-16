@@ -2,11 +2,12 @@ import React, {useState, useRef, useEffect, useCallback, useMemo} from 'react';
 import useGoogleFonts from './hooks/useGoogleFonts';
 import {ToastProvider, useToast} from './hooks/useToast.jsx';
 import {useUndoHistory} from './hooks/useUndoHistory';
-import {BACKGROUNDS, HEADLINE_FONT, HEADLINE_WEIGHT, BODY_FONT, BODY_WEIGHT, AUTO_FONT_PAIRINGS, ASPECT_RATIOS, MARK_OVERLAYS, MARK_OVERLAYS_LIGHT, MARK_OVERLAYS_UNIVERSAL, FRAME_STYLES} from './constants/data';
+import {BACKGROUNDS, HEADLINE_FONT, HEADLINE_WEIGHT, BODY_FONT, BODY_WEIGHT, AUTO_FONT_PAIRINGS, ASPECT_RATIOS, FRAME_STYLES} from './constants/data';
 import {C, ui} from './constants/styles';
 import {sharpenCanvas, loadImage, averageBrightness} from './utils/canvasUtils';
 import {render} from './utils/renderEngine';
 import {getPhotos} from './services/photoService';
+import {getMarks} from './services/markService';
 import {isSlideActive, formatDateNice, stripLeadingTitle} from '../../staffComms/lib/helpers';
 import SlideCanvas from './components/SlideCanvas';
 import Sidebar from './components/Sidebar';
@@ -177,36 +178,39 @@ const FRAME_OPACITY_MAX = 0.5;
 const MARK_SHOW_CHANCE = 0.8;
 
 // Resolves the watermark for one automatic slide: an 80% chance of one
-// entry from the combined pool - MARK_OVERLAYS (white ink, for every
-// background except Light/Mint) or MARK_OVERLAYS_LIGHT (black ink, for
-// those two pale ones), MARK_OVERLAYS_UNIVERSAL (grayscale darkening
-// treatments that aren't a brand-colored ink, so no light/dark split of
-// their own), and FRAME_STYLES (a native rounded-rectangle border, not
+// entry from the combined pool - staff-managed marks from the Marks tab
+// (see markService's getMarks) whose own `pool` column is 'dark' (brand
+// ink, for every background except Light/Mint), 'light' (ink for those
+// two pale ones), or 'universal' (reads fine on anything, mixed in
+// either way) - plus FRAME_STYLES (a native rounded-rectangle border, not
 // an image - see drawMarkFrame in renderEngine.js). A frame pick returns
 // markImg/markOpacity null and markFrame set instead; an image pick is
-// the other way around - never both from one pick. A failed image load
-// (slow connection, one bad file) shouldn't take down the whole slide -
-// better a plain background than a card stuck forever on "Building
-// preview..." because of a decorative extra, so a load failure resolves
-// to no watermark rather than throwing.
-async function pickMarkOverlay(isLight) {
+// the other way around - never both from one pick. Marks arrive already
+// decoded (getMarks awaits each Image before resolving), so picking one
+// needs no async load of its own; the try/catch is only for the
+// vanishingly unlikely case its img never finished decoding - better a
+// plain background than a card stuck forever on "Building preview..."
+// because of a decorative extra.
+async function pickMarkOverlay(isLight, marks) {
   if (Math.random() >= MARK_SHOW_CHANCE) return {markImg: null, markOpacity: 0, markFrame: null};
+  const wantedPool = isLight ? "light" : "dark";
+  const imagePool = (marks || []).filter(m => m && (m.pool === wantedPool || m.pool === "universal"));
   const pool = [
-    ...(isLight ? MARK_OVERLAYS_LIGHT : MARK_OVERLAYS).map(src => ({kind: "image", src})),
-    ...MARK_OVERLAYS_UNIVERSAL.map(src => ({kind: "image", src})),
+    ...imagePool.map(m => ({kind: "image", img: m.img})),
     ...FRAME_STYLES.map(style => ({kind: "frame", style})),
   ];
+  if (pool.length === 0) return {markImg: null, markOpacity: 0, markFrame: null};
   const pick = pool[Math.floor(Math.random() * pool.length)];
   if (pick.kind === "frame") {
     const opacity = FRAME_OPACITY_MIN + Math.random() * (FRAME_OPACITY_MAX - FRAME_OPACITY_MIN);
     return {markImg: null, markOpacity: 0, markFrame: {style: pick.style, color: isLight ? "#000000" : "#FFFFFF", opacity}};
   }
   try {
+    if (!pick.img) throw new Error('Mark image not loaded');
     const markOpacity = MARK_OPACITY_MIN + Math.random() * (MARK_OPACITY_MAX - MARK_OPACITY_MIN);
-    const markImg = await loadImage(pick.src);
-    return {markImg, markOpacity, markFrame: null};
+    return {markImg: pick.img, markOpacity, markFrame: null};
   } catch (error) {
-    console.error('Could not load the slide watermark:', error);
+    console.error('Could not use the slide watermark:', error);
     return {markImg: null, markOpacity: 0, markFrame: null};
   }
 }
@@ -221,19 +225,19 @@ async function pickMarkOverlay(isLight) {
 // entirely - no image, just that color and one of its own allowed text
 // colors. The watermark applies either way (see pickMarkOverlay) - drawn
 // over the photo's own texture/color wash, not instead of it.
-async function computeAutoSlide(entry, avoidOverlayColors = []) {
+async function computeAutoSlide(entry, avoidOverlayColors = [], marks = []) {
   const font = pickAutoFontPairing();
   const tmpl = pickAutoTemplate();
   if (entry.solid) {
     const bg = entry.solid;
     const textColor = bg.textOptions[Math.floor(Math.random() * bg.textOptions.length)].color;
-    const mark = await pickMarkOverlay(bg.id === "light" || bg.id === "mint");
+    const mark = await pickMarkOverlay(bg.id === "light" || bg.id === "mint", marks);
     return {img: null, bgColor: bg.bg, textColor, overlayColor: null, ov: 0, blur: 0, tmpl, ...mark, ...font};
   }
   const img = entry.img || await loadImage(entry.src);
   const brightness = averageBrightness(img);
   const auto = autoBrandForBrightness(brightness, avoidOverlayColors);
-  const mark = await pickMarkOverlay(brightness >= 0.5);
+  const mark = await pickMarkOverlay(brightness >= 0.5, marks);
   return {
     img,
     bgColor: auto.bgColor,
@@ -278,8 +282,8 @@ const QUEUE_PREVIEW_RATIO = ASPECT_RATIOS.find(r => r.id === "16:10") || ASPECT_
 // queue loads so there's a PNG sitting there to grab without opening
 // anything. Returns the overlay color alongside the image so the caller
 // can feed it forward as the next item's avoidOverlayColors.
-async function generateQueueThumbnailFromEntry(a, entry, avoidOverlayColors = []) {
-  const auto = await computeAutoSlide(entry, avoidOverlayColors);
+async function generateQueueThumbnailFromEntry(a, entry, avoidOverlayColors = [], marks = []) {
+  const auto = await computeAutoSlide(entry, avoidOverlayColors, marks);
   const data = {...DEFAULT_DATA, ...buildAutoSlideData(a)};
   const brand = {...DEFAULT_BRAND, bgColor: auto.bgColor, textColor: auto.textColor, hFont: auto.hFont, hWeight: auto.hWeight, hItalic: auto.hItalic, bFont: auto.bFont, bWeight: auto.bWeight, bItalic: auto.bItalic, markImg: auto.markImg, markOpacity: auto.markOpacity, markFrame: auto.markFrame};
   const canvas = document.createElement('canvas');
@@ -318,6 +322,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
   const [data, setData] = useState({...DEFAULT_DATA});
   const [brand, setBrand] = useState({...DEFAULT_BRAND});
   const [photos, setPhotos] = useState([]);
+  const [marks, setMarks] = useState([]);
   const [activePhoto, setActivePhoto] = useState(null);
   const [ov, setOv] = useState(86);
   const [blur, setBlur] = useState(0);
@@ -348,6 +353,27 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     }).catch((error) => {
       console.error('Could not load the photo library:', error);
       if (!cancelled) toast.show(`Could not load your photo library: ${error?.message || 'unknown error'}`, 'error');
+    });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Same incremental-load shape as the photos effect above, for the
+  // Marks tab's library - loaded here (not inside MarksTab) so a
+  // staff-uploaded mark is already part of pickMarkOverlay's pool the
+  // moment the queue is opened, not only after visiting that tab.
+  useEffect(() => {
+    let cancelled = false;
+    getMarks((mark, index, total) => {
+      if (cancelled) return;
+      setMarks(prev => {
+        const next = prev.length === total ? [...prev] : new Array(total);
+        next[index] = mark;
+        return next;
+      });
+    }).catch((error) => {
+      console.error('Could not load the mark library:', error);
+      if (!cancelled) toast.show(`Could not load your mark library: ${error?.message || 'unknown error'}`, 'error');
     });
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -396,7 +422,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
           const prevId = idx > 0 ? queueItems[idx - 1].id : null;
           const avoid = prevId && queuePreviewOverlayRef.current[prevId] ? [queuePreviewOverlayRef.current[prevId]] : [];
           const entry = pickTextureForId(pool, a.id);
-          const result = await generateQueueThumbnailFromEntry(a, entry, avoid);
+          const result = await generateQueueThumbnailFromEntry(a, entry, avoid, marks);
           queuePreviewOverlayRef.current[a.id] = result.overlayColor;
           if (isMountedRef.current) setQueuePreviews(prev => ({...prev, [a.id]: result}));
         } catch (error) {
@@ -408,7 +434,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queueItems, photos]);
+  }, [queueItems, photos, marks]);
 
   // "Try a different background" on a queue card - a fresh random texture
   // (not the deterministic per-event pick) and an overlay steered away
@@ -424,7 +450,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
       const prevId = idx > 0 ? queueItems[idx - 1].id : null;
       const avoid = [queuePreviewOverlayRef.current[a.id], prevId && queuePreviewOverlayRef.current[prevId]].filter(Boolean);
       const entry = pickRandomTexture(pool);
-      const result = await generateQueueThumbnailFromEntry(a, entry, avoid);
+      const result = await generateQueueThumbnailFromEntry(a, entry, avoid, marks);
       queuePreviewOverlayRef.current[a.id] = result.overlayColor;
       if (isMountedRef.current) setQueuePreviews(prev => ({...prev, [a.id]: result}));
     } catch (error) {
@@ -433,7 +459,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     } finally {
       generatingQueuePreviewsRef.current.delete(a.id);
     }
-  }, [photos, queueItems, toast]);
+  }, [photos, marks, queueItems, toast]);
 
   const undoHistory = useUndoHistory(50);
 
@@ -602,7 +628,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
   // loadQueueItem.
   const applyAutoBackground = useCallback(async (entry, avoidOverlayColors = []) => {
     try {
-      const auto = await computeAutoSlide(entry, avoidOverlayColors);
+      const auto = await computeAutoSlide(entry, avoidOverlayColors, marks);
       setActivePhoto(auto.img);
       setBrand(b => ({...b, bgColor: auto.bgColor, textColor: auto.textColor, hFont: auto.hFont, hWeight: auto.hWeight, hItalic: auto.hItalic, bFont: auto.bFont, bWeight: auto.bWeight, bItalic: auto.bItalic, markImg: auto.markImg, markOpacity: auto.markOpacity, markFrame: auto.markFrame}));
       setOverlayColor(auto.overlayColor);
@@ -613,7 +639,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
       console.error('Could not load an automatic background:', error);
       toast.show(`Could not load an automatic background: ${error?.message || 'unknown error'}`, 'error');
     }
-  }, [toast]);
+  }, [toast, marks]);
 
   const loadQueueItem = useCallback((a) => {
     pushUndo();
@@ -812,6 +838,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
             tmplId={tmplId} setTmplId={handleSetTmplId}
             data={data} ds={ds}
             photos={photos} setPhotos={setPhotos}
+            marks={marks} setMarks={setMarks}
             activePhoto={activePhoto} setActivePhoto={setActivePhoto}
             ov={ov} setOv={handleSetOv}
             blur={blur} setBlur={handleSetBlur}
@@ -856,6 +883,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
               tmplId={tmplId} setTmplId={handleSetTmplId}
               data={data} ds={ds}
               photos={photos} setPhotos={setPhotos}
+              marks={marks} setMarks={setMarks}
               activePhoto={activePhoto} setActivePhoto={setActivePhoto}
               ov={ov} setOv={handleSetOv}
               blur={blur} setBlur={handleSetBlur}

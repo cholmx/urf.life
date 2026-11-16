@@ -87,6 +87,17 @@ export const TEMPLATES = [
   { id: "left_block", name: "Left Aligned" },
 ];
 
+// These three arrays are now only the seed list for the Marks tab's
+// one-time "Import built-in marks" action (see MarksTab.jsx /
+// markService.js's importBuiltInMark) - the same role TEXTURES above
+// plays for the Photos tab's textures. Once imported, each becomes an
+// ordinary row in staff_slide_marks_portal123 with its own pool column
+// (dark/light/universal), toggleable and deletable from that tab like
+// anything staff upload themselves. pickMarkOverlay in SlideMaker.jsx
+// reads the live `marks` state (loaded via markService's getMarks), never
+// these arrays directly - they only matter the one time a mark gets
+// imported.
+//
 // Subtle branded watermark images the automatic slide maker layers over a
 // solid-color background (one picked at random, at a random low opacity -
 // see pickMarkOverlay in SlideMaker.jsx), between the flat color fill and
@@ -135,6 +146,16 @@ export const MARK_OVERLAYS_UNIVERSAL = [
   "/slide-marks/mark-vignette.png",
   "/slide-marks/mark-noise.png",
   "/slide-marks/mark-ridgeline.png",
+];
+
+// The flat {src, pool} list MarksTab.jsx's one-time import action walks -
+// built from the three arrays above so there's exactly one place (not
+// three, kept in sync by hand) that pairs each seed mark with the pool it
+// ought to land in.
+export const BUILT_IN_MARKS = [
+  ...MARK_OVERLAYS.map(src => ({src, pool: "dark"})),
+  ...MARK_OVERLAYS_LIGHT.map(src => ({src, pool: "light"})),
+  ...MARK_OVERLAYS_UNIVERSAL.map(src => ({src, pool: "universal"})),
 ];
 
 // A thin rounded-rectangle border, inset from the slide's edge - drawn
