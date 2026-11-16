@@ -11,18 +11,6 @@ export function render(canvas, tmplId, data, brand, bgImg, overlayColor, ov, blu
   ctx.clip();
   ctx.fillStyle = brand.bgColor; ctx.fillRect(0, 0, canvasW, canvasH);
 
-  // The automatic slide maker's faint branded watermark (see
-  // pickMarkOverlay in SlideMaker.jsx) - drawn over the flat color fill
-  // but under everything else, so a photo background (which already has
-  // its own texture) and the headline/subhead text both still sit on top
-  // of it untouched.
-  if (brand.markImg && brand.markOpacity > 0) {
-    ctx.save();
-    ctx.globalAlpha = brand.markOpacity;
-    ctx.drawImage(brand.markImg, 0, 0, canvasW, canvasH);
-    ctx.restore();
-  }
-
   if (bgImg) {
     if (blur > 0) {
       ctx.filter = `blur(${blur}px)`;
@@ -32,6 +20,17 @@ export function render(canvas, tmplId, data, brand, bgImg, overlayColor, ov, blu
     ctx.drawImage(bgImg, (canvasW-w)/2, (canvasH-h)/2, w, h);
     ctx.filter = 'none';
     drawOverlay(ctx, canvasW, canvasH, overlayColor, ov);
+  }
+
+  // The automatic slide maker's faint branded watermark (see
+  // pickMarkOverlay in SlideMaker.jsx) - drawn over the flat color fill,
+  // or over the photo and its own color wash, but always under the
+  // headline/subhead text.
+  if (brand.markImg && brand.markOpacity > 0) {
+    ctx.save();
+    ctx.globalAlpha = brand.markOpacity;
+    ctx.drawImage(brand.markImg, 0, 0, canvasW, canvasH);
+    ctx.restore();
   }
 
   const margin = 250;

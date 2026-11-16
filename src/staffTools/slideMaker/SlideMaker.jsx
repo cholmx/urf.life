@@ -148,19 +148,35 @@ function pickAutoTemplate() {
 }
 
 // How faint the branded chevron-mark watermark (see MARK_OVERLAYS) reads
-// on a solid-color automatic slide - low enough to stay a texture, not a
-// second graphic competing with the headline.
+// on an automatic slide - low enough to stay a texture, not a second
+// graphic competing with the headline.
 const MARK_OPACITY_MIN = 0.06;
 const MARK_OPACITY_MAX = 0.16;
 
-// Light and Mint are pale enough that the white-ink marks above would be
-// invisible on them - pulls from the black-ink MARK_OVERLAYS_LIGHT pool
-// instead for just those two swatches.
-function pickMarkOverlay(bgId) {
-  const pool = (bgId === "light" || bgId === "mint") ? MARK_OVERLAYS_LIGHT : MARK_OVERLAYS;
-  const src = pool[Math.floor(Math.random() * pool.length)];
-  const opacity = MARK_OPACITY_MIN + Math.random() * (MARK_OPACITY_MAX - MARK_OPACITY_MIN);
-  return {src, opacity};
+// How often an automatic slide gets a watermark at all, solid-color or
+// photo-backed alike - the rest come back plain so it reads as an
+// occasional accent rather than something on literally every slide.
+const MARK_SHOW_CHANCE = 0.8;
+
+// Resolves the watermark for one automatic slide: an 80% chance of one of
+// MARK_OVERLAYS (white ink, for every background except Light/Mint) or
+// MARK_OVERLAYS_LIGHT (black ink, for those two pale ones), at a random
+// low opacity. A failed image load (slow connection, one bad file)
+// shouldn't take down the whole slide - better a plain background than a
+// card stuck forever on "Building preview..." because of a decorative
+// extra, so a load failure resolves to no watermark rather than throwing.
+async function pickMarkOverlay(isLight) {
+  if (Math.random() >= MARK_SHOW_CHANCE) return {markImg: null, markOpacity: 0};
+  try {
+    const pool = isLight ? MARK_OVERLAYS_LIGHT : MARK_OVERLAYS;
+    const src = pool[Math.floor(Math.random() * pool.length)];
+    const markOpacity = MARK_OPACITY_MIN + Math.random() * (MARK_OPACITY_MAX - MARK_OPACITY_MIN);
+    const markImg = await loadImage(src);
+    return {markImg, markOpacity};
+  } catch (error) {
+    console.error('Could not load the slide watermark:', error);
+    return {markImg: null, markOpacity: 0};
+  }
 }
 
 // Loads a pool entry and works out the full automatic look for it
@@ -170,30 +186,22 @@ function pickMarkOverlay(bgId) {
 // (applyAutoBackground) and the off-screen queue-thumbnail generator
 // below, so both produce the same kind of result from the same inputs.
 // A {solid} entry (one of the Colors-tab backgrounds) skips the photo
-// entirely - no image, no overlay, just that color, one of its own
-// allowed text colors, and the watermark (a photo already has its own
-// texture, so it skips the mark rather than layering a second one on).
+// entirely - no image, just that color and one of its own allowed text
+// colors. The watermark applies either way (see pickMarkOverlay) - drawn
+// over the photo's own texture/color wash, not instead of it.
 async function computeAutoSlide(entry, avoidOverlayColors = []) {
   const font = pickAutoFontPairing();
   const tmpl = pickAutoTemplate();
   if (entry.solid) {
     const bg = entry.solid;
     const textColor = bg.textOptions[Math.floor(Math.random() * bg.textOptions.length)].color;
-    // A failed watermark load (slow connection, one bad file) shouldn't
-    // take down the whole slide - better a plain color than a card stuck
-    // forever on "Building preview..." because of a decorative extra.
-    let markImg = null, markOpacity = 0;
-    try {
-      const mark = pickMarkOverlay(bg.id);
-      markImg = await loadImage(mark.src);
-      markOpacity = mark.opacity;
-    } catch (error) {
-      console.error('Could not load the slide watermark:', error);
-    }
-    return {img: null, bgColor: bg.bg, textColor, overlayColor: null, ov: 0, blur: 0, tmpl, markImg, markOpacity, ...font};
+    const mark = await pickMarkOverlay(bg.id === "light" || bg.id === "mint");
+    return {img: null, bgColor: bg.bg, textColor, overlayColor: null, ov: 0, blur: 0, tmpl, ...mark, ...font};
   }
   const img = entry.img || await loadImage(entry.src);
-  const auto = autoBrandForBrightness(averageBrightness(img), avoidOverlayColors);
+  const brightness = averageBrightness(img);
+  const auto = autoBrandForBrightness(brightness, avoidOverlayColors);
+  const mark = await pickMarkOverlay(brightness >= 0.5);
   return {
     img,
     bgColor: auto.bgColor,
@@ -201,8 +209,7 @@ async function computeAutoSlide(entry, avoidOverlayColors = []) {
     overlayColor: auto.overlayColor,
     ov: auto.ov,
     tmpl,
-    markImg: null,
-    markOpacity: 0,
+    ...mark,
     ...font,
     blur: Math.round(Math.random() * 5),
   };

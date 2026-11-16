@@ -47,7 +47,8 @@ export const BACKGROUNDS = [
   ] },
   { id: "pine", name: "Pine", bg: "#04443F", textOptions: [
     { id: "white", name: "White", color: "#FFFFFF" },
-    { id: "yellow", name: "Yellow", color: "#FFD944" },
+    { id: "yellow", name: "Yellow", color: "#FFEAB7" },
+    { id: "mint", name: "Mint", color: "#D3E5DB" },
   ] },
   { id: "mint", name: "Mint", bg: "#D3E5DB", textOptions: [
     { id: "black", name: "Black", color: "#000000" },
@@ -55,19 +56,23 @@ export const BACKGROUNDS = [
   ] },
   { id: "green", name: "Green", bg: "#2a3834", textOptions: [
     { id: "white", name: "White", color: "#FFFFFF" },
-    { id: "yellow", name: "Yellow", color: "#FFD944" },
+    { id: "yellow", name: "Yellow", color: "#FFEAB7" },
+    { id: "mint", name: "Mint", color: "#D3E5DB" },
   ] },
   { id: "red", name: "Red", bg: "#C74F2F", textOptions: [
     { id: "white", name: "White", color: "#FFFFFF" },
-    { id: "yellow", name: "Yellow", color: "#FFD944" },
+    { id: "yellow", name: "Yellow", color: "#FFEAB7" },
+    { id: "mint", name: "Mint", color: "#D3E5DB" },
   ] },
   { id: "gold", name: "Gold", bg: "#EAA235", textOptions: [
     { id: "white", name: "White", color: "#FFFFFF" },
     { id: "charcoal", name: "#1E2522", color: "#1E2522" },
+    { id: "mint", name: "Mint", color: "#D3E5DB" },
   ] },
   { id: "sage", name: "Sage", bg: "#597F5C", textOptions: [
     { id: "white", name: "White", color: "#FFFFFF" },
-    { id: "yellow", name: "Yellow", color: "#FFD944" },
+    { id: "yellow", name: "Yellow", color: "#FFEAB7" },
+    { id: "mint", name: "Mint", color: "#D3E5DB" },
   ] },
 ];
 
