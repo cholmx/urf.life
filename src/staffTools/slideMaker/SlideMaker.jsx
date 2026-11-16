@@ -66,13 +66,16 @@ const DEFAULT_BRAND = {
 // the library flagged as a texture with the ✨ toggle in the Photos tab
 // (built-in or staff-uploaded, no distinction - see PhotosTab's "Import
 // built-in textures" action for how the original set gets in there), plus
-// the 7 solid Colors-tab backgrounds themselves ({solid: bgOption}) - so a
-// plain Jet Black/White/Rosy Copper/Sandy Brown/etc. slide with no photo
-// at all is a real, regularly-occurring possible outcome, not just a
-// texture tinted to look dark or light.
+// 6 of the 7 solid Colors-tab backgrounds themselves ({solid: bgOption}) -
+// so a plain Jet Black/Rosy Copper/Sandy Brown/etc. slide with no photo at
+// all is a real, regularly-occurring possible outcome, not just a texture
+// tinted to look dark or light. White is excluded here (too many
+// plain-white auto slides) but stays a normal manual choice in the
+// Custom Editor's own Colors tab - this only narrows what gets picked
+// for you.
 function getAutoBackgroundPool(photos) {
   const textures = (photos || []).filter(p => p && p.isTexture).map(p => ({img: p.img}));
-  const solids = BACKGROUNDS.map(bg => ({solid: bg}));
+  const solids = BACKGROUNDS.filter(bg => bg.id !== "light").map(bg => ({solid: bg}));
   return [...textures, ...solids];
 }
 
