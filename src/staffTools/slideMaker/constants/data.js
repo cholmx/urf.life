@@ -9,27 +9,37 @@ export const ASPECT_RATIOS = [
 
 // Fixed brand typography for the Custom Editor - Inter Tight Bold for the
 // headline, Playfair Display for the subhead. No font picker: this is
-// the only combo a manually-built slide gets. Inter Tight and Playfair
-// Display are the only two fonts the Slide Maker uses anywhere, in
-// either role depending on which pairing below gets picked.
+// the only combo a manually-built slide gets.
 export const HEADLINE_FONT = "'Inter Tight',sans-serif";
 export const HEADLINE_WEIGHT = 700;
 export const BODY_FONT = "'Playfair Display',serif";
 export const BODY_WEIGHT = 400;
 
 // The automatic slide maker (random backgrounds/colors/blur) also
-// randomly picks one of these two headline/subhead font pairings per
+// randomly picks one of these headline/subhead font pairings per
 // generated slide, alongside its other random choices - see
-// computeAutoSlide in SlideMaker.jsx. Pairing 2 is exactly the Custom
+// computeAutoSlide in SlideMaker.jsx. Pairing 1 is exactly the Custom
 // Editor's own default above (Inter Tight Bold headline, Playfair
-// Display italic subhead); Pairing 1 flips the roles with Playfair
-// Display Black (900 - its heaviest real static weight, not a
-// synthesized bold) for the headline. Playfair Display is only ever used
-// italic, headline role or body role alike - never hItalicRandom, never
-// hItalic/bItalic: false.
+// Display italic subhead); every pairing after it brings in a font the
+// Custom Editor never uses at all (see useGoogleFonts.js for exactly
+// which weight/style of each gets loaded). None of these italicize -
+// hItalicRandom stays unused by every entry (true nowhere), only
+// Pairing 1 sets hItalic/bItalic at all. hUppercase renders the
+// headline in caps (Google Sans Flex, Montserrat, and Outfit - each a
+// naturally all-caps display face) without touching the announcement's
+// own title text (data.line1) - see computeHeadline in
+// templateRenderers.js.
 export const AUTO_FONT_PAIRINGS = [
-  { hFont: "'Playfair Display',serif", hWeight: 900, hItalicRandom: false, hItalic: true, bFont: "'Inter Tight',sans-serif", bWeight: 700, bItalic: false },
   { hFont: HEADLINE_FONT, hWeight: HEADLINE_WEIGHT, hItalicRandom: false, hItalic: false, bFont: BODY_FONT, bWeight: BODY_WEIGHT, bItalic: true },
+  { hFont: "'Google Sans Flex',sans-serif", hWeight: 900, hUppercase: true, bFont: "'Newsreader',serif", bWeight: 400 },
+  { hFont: "'Archivo Black',sans-serif", hWeight: 400, bFont: "'Source Serif 4',serif", bWeight: 400 },
+  { hFont: "'Montserrat',sans-serif", hWeight: 900, hUppercase: true, bFont: "'Lora',serif", bWeight: 400 },
+  { hFont: "'Anton',sans-serif", hWeight: 400, bFont: "'Merriweather',serif", bWeight: 300 },
+  { hFont: "'Fraunces',serif", hWeight: 900, bFont: "'Spectral',serif", bWeight: 400 },
+  { hFont: "'Rubik',sans-serif", hWeight: 900, bFont: "'PT Serif',serif", bWeight: 400 },
+  { hFont: "'Work Sans',sans-serif", hWeight: 900, bFont: "'Libre Baskerville',serif", bWeight: 400 },
+  { hFont: "'Outfit',sans-serif", hWeight: 900, hUppercase: true, bFont: "'Petrona',serif", bWeight: 400 },
+  { hFont: "'Poppins',sans-serif", hWeight: 900, bFont: "'Cormorant Garamond',serif", bWeight: 500 },
 ];
 
 // Fixed background swatches - no custom color picker. Each has its own set

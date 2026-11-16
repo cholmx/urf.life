@@ -53,6 +53,7 @@ const DEFAULT_BRAND = {
   bWeight: BODY_WEIGHT,
   hItalic: false,
   bItalic: true,
+  hUppercase: false,
   churchName: "UPPER ROOM FELLOWSHIP",
   hLetterSpacing: 0,
   markImg: null,
@@ -98,7 +99,7 @@ function pickRandomTexture(pool) {
 // random white/yellow pick.
 //
 // ov is each color's own overlay strength - copper and sandy brown are
-// the two the texture shows through the most at the standard 55%,
+// the two the texture shows through the most at the teals' own 65%,
 // washing them out toward a muddy brown instead of a clean brand color,
 // so they get a stronger wash to stay recognizably on-brand. Black needs
 // a heavier wash than the teals for the same reason white does below -
@@ -106,11 +107,11 @@ function pickRandomTexture(pool) {
 // shows through as "barely tinted photo" rather than "black slide" at
 // the same strength that works for an actual brand color.
 const DARK_OVERLAY_OPTIONS = [
-  {color: "#000000", textColor: null, ov: 70},
-  {color: "#172B2C", textColor: null, ov: 55},
-  {color: "#C65D3B", textColor: "#FFFFFF", ov: 80},
-  {color: "#F9AB55", textColor: "#FFFFFF", ov: 80},
-  {color: "#5B8B75", textColor: "#FFFFFF", ov: 55},
+  {color: "#000000", textColor: null, ov: 80},
+  {color: "#172B2C", textColor: null, ov: 65},
+  {color: "#C65D3B", textColor: "#FFFFFF", ov: 88},
+  {color: "#F9AB55", textColor: "#FFFFFF", ov: 88},
+  {color: "#5B8B75", textColor: "#FFFFFF", ov: 65},
 ];
 
 // Buckets the texture's average brightness into the dark/light background
@@ -139,18 +140,17 @@ function autoBrandForBrightness(brightness, avoidOverlayColors = []) {
   // Light bucket always washes white by design - nothing random to avoid.
   // Same heavier wash as black above and for the same reason (white has
   // no hue of its own to read as intentional at a lighter strength).
-  return {bgColor: bucket.bg, textColor: randomBucketTextColor(), overlayColor: "#FFFFFF", ov: 70};
+  return {bgColor: bucket.bg, textColor: randomBucketTextColor(), overlayColor: "#FFFFFF", ov: 80};
 }
 
 // Picks one of AUTO_FONT_PAIRINGS and resolves its headline italic style -
-// either fixed (hItalic) or a coin flip (hItalicRandom, unused by either
-// current pairing - Playfair Display is always italic, never randomized
-// upright) - into the concrete hFont/bFont/weight/italic values
-// computeTextBlock actually reads off brand.
+// either fixed (hItalic) or a coin flip (hItalicRandom, unused by every
+// current pairing) - into the concrete hFont/bFont/weight/italic/
+// uppercase values computeTextBlock actually reads off brand.
 function pickAutoFontPairing() {
   const pairing = AUTO_FONT_PAIRINGS[Math.floor(Math.random() * AUTO_FONT_PAIRINGS.length)];
   const hItalic = pairing.hItalicRandom ? Math.random() < 0.5 : !!pairing.hItalic;
-  return {hFont: pairing.hFont, hWeight: pairing.hWeight, hItalic, bFont: pairing.bFont, bWeight: pairing.bWeight, bItalic: pairing.bItalic};
+  return {hFont: pairing.hFont, hWeight: pairing.hWeight, hItalic, hUppercase: !!pairing.hUppercase, bFont: pairing.bFont, bWeight: pairing.bWeight, bItalic: !!pairing.bItalic};
 }
 
 // Coin flip between the two template renderers (see renderEngine.js) so an
@@ -285,7 +285,7 @@ const QUEUE_PREVIEW_RATIO = ASPECT_RATIOS.find(r => r.id === "16:10") || ASPECT_
 async function generateQueueThumbnailFromEntry(a, entry, avoidOverlayColors = [], marks = []) {
   const auto = await computeAutoSlide(entry, avoidOverlayColors, marks);
   const data = {...DEFAULT_DATA, ...buildAutoSlideData(a)};
-  const brand = {...DEFAULT_BRAND, bgColor: auto.bgColor, textColor: auto.textColor, hFont: auto.hFont, hWeight: auto.hWeight, hItalic: auto.hItalic, bFont: auto.bFont, bWeight: auto.bWeight, bItalic: auto.bItalic, markImg: auto.markImg, markOpacity: auto.markOpacity, markFrame: auto.markFrame};
+  const brand = {...DEFAULT_BRAND, bgColor: auto.bgColor, textColor: auto.textColor, hFont: auto.hFont, hWeight: auto.hWeight, hItalic: auto.hItalic, hUppercase: auto.hUppercase, bFont: auto.bFont, bWeight: auto.bWeight, bItalic: auto.bItalic, markImg: auto.markImg, markOpacity: auto.markOpacity, markFrame: auto.markFrame};
   const canvas = document.createElement('canvas');
   render(canvas, auto.tmpl, data, brand, auto.img, auto.overlayColor, auto.ov, auto.blur, QUEUE_PREVIEW_RATIO.w, QUEUE_PREVIEW_RATIO.h, 0);
   // A solid entry has no overlay color (auto.overlayColor is null) - its
@@ -630,7 +630,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     try {
       const auto = await computeAutoSlide(entry, avoidOverlayColors, marks);
       setActivePhoto(auto.img);
-      setBrand(b => ({...b, bgColor: auto.bgColor, textColor: auto.textColor, hFont: auto.hFont, hWeight: auto.hWeight, hItalic: auto.hItalic, bFont: auto.bFont, bWeight: auto.bWeight, bItalic: auto.bItalic, markImg: auto.markImg, markOpacity: auto.markOpacity, markFrame: auto.markFrame}));
+      setBrand(b => ({...b, bgColor: auto.bgColor, textColor: auto.textColor, hFont: auto.hFont, hWeight: auto.hWeight, hItalic: auto.hItalic, hUppercase: auto.hUppercase, bFont: auto.bFont, bWeight: auto.bWeight, bItalic: auto.bItalic, markImg: auto.markImg, markOpacity: auto.markOpacity, markFrame: auto.markFrame}));
       setOverlayColor(auto.overlayColor);
       setOv(auto.ov);
       setBlur(auto.blur);

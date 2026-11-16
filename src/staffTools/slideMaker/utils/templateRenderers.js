@@ -11,7 +11,13 @@ const bw = (brand, fallback) => brand.bWeight ?? fallback;
 function computeHeadline(ctx, data, brand, maxW, weight, fallbackSize) {
   const baseSize = data.s1 || fallbackSize;
   const lineSpacing = data.headLineHeight ?? 1.12;
-  const headText = data.line1 || "YOUR TEXT HERE";
+  const rawHeadText = data.line1 || "YOUR TEXT HERE";
+  // hUppercase is purely a render-time transform for display faces that
+  // read as all-caps by design (see AUTO_FONT_PAIRINGS) - it never
+  // touches data.line1 itself, so the announcement's actual title stays
+  // normal-case everywhere else (the editor's own text field, the queue
+  // list, etc).
+  const headText = brand.hUppercase ? rawHeadText.toUpperCase() : rawHeadText;
   const fontFamily = brand.hFont;
   // The automatic slide maker's font pairing decides this per slide (see
   // computeAutoSlide); the Custom Editor's own default is upright.
