@@ -202,7 +202,7 @@ const Home=()=> {
                 <motion.a
                   key={social.name} href={social.url} target="_blank" rel="noopener noreferrer"
                   initial={{opacity: 0, scale: 0.8}} animate={{opacity: 1, scale: 1}} transition={{duration: 0.25, delay: 0.65 + i * 0.1}}
-                  className="p-3 rounded-full bg-[#5B8B75] hover:bg-[#172B2C] text-white transition-all duration-300 hover:scale-110"
+                  className="p-3 rounded-full bg-[#264647] hover:bg-[#172B2C] text-white transition-all duration-300 hover:scale-110"
                 >
                   <SafeIcon icon={social.icon} className="h-5 w-5" />
                 </motion.a>
@@ -254,7 +254,7 @@ const HomeButton = ({ title, description, icon, path, isFeatured = false, isInte
         </div>
       ) : (
         <div className="relative z-10 flex flex-col items-center">
-          <div className="p-2.5 rounded-xl bg-[#5B8B75] mb-2.5 md:mb-3 transition-all duration-300 group-hover:scale-110">
+          <div className="p-2.5 rounded-xl bg-[#264647] mb-2.5 md:mb-3 transition-all duration-300 group-hover:scale-110">
             <SafeIcon icon={icon} className="h-5 w-5 md:h-6 md:w-6 text-white" />
           </div>
           <h3 className="text-sm md:text-base font-bold font-gsans leading-tight text-white">{title}</h3>
