@@ -355,7 +355,7 @@
    there; this just sizes/colors it smaller and lighter than the title. */
 .happenings-script h3 .happening-when {
   font-family: 'Inter Tight', sans-serif;
-  font-size: 0.5em;
+  font-size: 0.62em;
   color: #597F5C;
   font-weight: 700;
   letter-spacing: 0;
