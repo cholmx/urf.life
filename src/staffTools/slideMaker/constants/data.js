@@ -20,11 +20,12 @@ export const BODY_WEIGHT = 400;
 // generated slide, alongside its other random choices - see
 // computeAutoSlide in SlideMaker.jsx. Pairing 2 is exactly the Custom
 // Editor's own default above (Inter Tight Bold headline, Bitter italic
-// subhead); Pairing 1 flips the roles with Bitter Bold for the headline,
+// subhead); Pairing 1 flips the roles with Bitter Black (900 - Bitter's
+// heaviest real static weight, not a synthesized bold) for the headline,
 // which also randomizes between its upright and italic faces
 // (hItalicRandom) rather than being fixed either way.
 export const AUTO_FONT_PAIRINGS = [
-  { hFont: "'Bitter',serif", hWeight: 700, hItalicRandom: true, bFont: "'Inter Tight',sans-serif", bWeight: 700, bItalic: false },
+  { hFont: "'Bitter',serif", hWeight: 900, hItalicRandom: true, bFont: "'Inter Tight',sans-serif", bWeight: 700, bItalic: false },
   { hFont: HEADLINE_FONT, hWeight: HEADLINE_WEIGHT, hItalicRandom: false, hItalic: false, bFont: BODY_FONT, bWeight: BODY_WEIGHT, bItalic: true },
 ];
 

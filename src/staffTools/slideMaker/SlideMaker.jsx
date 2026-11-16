@@ -130,20 +130,28 @@ function pickAutoFontPairing() {
   return {hFont: pairing.hFont, hWeight: pairing.hWeight, hItalic, bFont: pairing.bFont, bWeight: pairing.bWeight, bItalic: pairing.bItalic};
 }
 
+// Coin flip between the two template renderers (see renderEngine.js) so an
+// automatic slide sometimes comes out centered instead of always
+// left-aligned.
+function pickAutoTemplate() {
+  return Math.random() < 0.5 ? "left_block" : "minimal";
+}
+
 // Loads a pool entry and works out the full automatic look for it
-// (background/text/overlay colors, a light random blur, a font pairing)
-// without touching any component state - shared by the live editor
-// (applyAutoBackground) and the off-screen queue-thumbnail generator
-// below, so both produce the same kind of result from the same inputs.
-// A {solid} entry (one of the Colors-tab backgrounds) skips the photo
-// entirely - no image, no overlay, just that color and one of its own
-// allowed text colors.
+// (background/text/overlay colors, a light random blur, a font pairing,
+// a left-aligned-or-centered template) without touching any component
+// state - shared by the live editor (applyAutoBackground) and the
+// off-screen queue-thumbnail generator below, so both produce the same
+// kind of result from the same inputs. A {solid} entry (one of the
+// Colors-tab backgrounds) skips the photo entirely - no image, no
+// overlay, just that color and one of its own allowed text colors.
 async function computeAutoSlide(entry, avoidOverlayColors = []) {
   const font = pickAutoFontPairing();
+  const tmpl = pickAutoTemplate();
   if (entry.solid) {
     const bg = entry.solid;
     const textColor = bg.textOptions[Math.floor(Math.random() * bg.textOptions.length)].color;
-    return {img: null, bgColor: bg.bg, textColor, overlayColor: null, ov: 0, blur: 0, ...font};
+    return {img: null, bgColor: bg.bg, textColor, overlayColor: null, ov: 0, blur: 0, tmpl, ...font};
   }
   const img = entry.img || await loadImage(entry.src);
   const auto = autoBrandForBrightness(averageBrightness(img), avoidOverlayColors);
@@ -153,6 +161,7 @@ async function computeAutoSlide(entry, avoidOverlayColors = []) {
     textColor: auto.textColor,
     overlayColor: auto.overlayColor,
     ov: auto.ov,
+    tmpl,
     ...font,
     blur: Math.round(Math.random() * 5),
   };
@@ -194,7 +203,7 @@ async function generateQueueThumbnailFromEntry(a, entry, avoidOverlayColors = []
   const data = {...DEFAULT_DATA, ...buildAutoSlideData(a)};
   const brand = {...DEFAULT_BRAND, bgColor: auto.bgColor, textColor: auto.textColor, hFont: auto.hFont, hWeight: auto.hWeight, hItalic: auto.hItalic, bFont: auto.bFont, bWeight: auto.bWeight, bItalic: auto.bItalic};
   const canvas = document.createElement('canvas');
-  render(canvas, "left_block", data, brand, auto.img, auto.overlayColor, auto.ov, auto.blur, QUEUE_PREVIEW_RATIO.w, QUEUE_PREVIEW_RATIO.h, 0);
+  render(canvas, auto.tmpl, data, brand, auto.img, auto.overlayColor, auto.ov, auto.blur, QUEUE_PREVIEW_RATIO.w, QUEUE_PREVIEW_RATIO.h, 0);
   // A solid entry has no overlay color (auto.overlayColor is null) - its
   // own background color is the thing adjacent slides should steer away
   // from repeating instead.
@@ -519,6 +528,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
       setOverlayColor(auto.overlayColor);
       setOv(auto.ov);
       setBlur(auto.blur);
+      setTmplId(auto.tmpl);
     } catch (error) {
       console.error('Could not load an automatic background:', error);
       toast.show(`Could not load an automatic background: ${error?.message || 'unknown error'}`, 'error');
