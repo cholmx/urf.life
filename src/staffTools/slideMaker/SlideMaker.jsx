@@ -163,14 +163,14 @@ function pickAutoTemplate() {
 // How faint the branded chevron-mark watermark (see MARK_OVERLAYS) reads
 // on an automatic slide - low enough to stay a texture, not a second
 // graphic competing with the headline.
-const MARK_OPACITY_MIN = 0.06;
-const MARK_OPACITY_MAX = 0.16;
+const MARK_OPACITY_MIN = 0.1;
+const MARK_OPACITY_MAX = 0.24;
 
 // A frame's single thin stroke needs far more opacity than an image mark
 // to read as an intentional border at all - nowhere near as much ink on
 // the slide as a filled graphic, even before its own low opacity.
-const FRAME_OPACITY_MIN = 0.3;
-const FRAME_OPACITY_MAX = 0.5;
+const FRAME_OPACITY_MIN = 0.4;
+const FRAME_OPACITY_MAX = 0.6;
 
 // How often an automatic slide gets a watermark at all, solid-color or
 // photo-backed alike - the rest come back plain so it reads as an
