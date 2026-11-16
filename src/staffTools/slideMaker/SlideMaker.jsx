@@ -2,12 +2,13 @@ import React, {useState, useRef, useEffect, useCallback, useMemo} from 'react';
 import useGoogleFonts from './hooks/useGoogleFonts';
 import {ToastProvider, useToast} from './hooks/useToast.jsx';
 import {useUndoHistory} from './hooks/useUndoHistory';
-import {BACKGROUNDS, HEADLINE_FONT, HEADLINE_WEIGHT, BODY_FONT, BODY_WEIGHT, AUTO_FONT_PAIRINGS, ASPECT_RATIOS, FRAME_STYLES} from './constants/data';
+import {BACKGROUNDS, HEADLINE_FONT, HEADLINE_WEIGHT, BODY_FONT, BODY_WEIGHT, ASPECT_RATIOS, FRAME_STYLES} from './constants/data';
 import {C, ui} from './constants/styles';
 import {sharpenCanvas, loadImage, averageBrightness} from './utils/canvasUtils';
 import {render} from './utils/renderEngine';
 import {getPhotos} from './services/photoService';
 import {getMarks} from './services/markService';
+import {getFontPairings} from './services/fontPairingService';
 import {isSlideActive, formatDateNice, stripLeadingTitle} from '../../staffComms/lib/helpers';
 import SlideCanvas from './components/SlideCanvas';
 import Sidebar from './components/Sidebar';
@@ -143,14 +144,23 @@ function autoBrandForBrightness(brightness, avoidOverlayColors = []) {
   return {bgColor: bucket.bg, textColor: randomBucketTextColor(), overlayColor: "#FFFFFF", ov: 80};
 }
 
-// Picks one of AUTO_FONT_PAIRINGS and resolves its headline italic style -
-// either fixed (hItalic) or a coin flip (hItalicRandom, unused by every
-// current pairing) - into the concrete hFont/bFont/weight/italic/
-// uppercase values computeTextBlock actually reads off brand.
-function pickAutoFontPairing() {
-  const pairing = AUTO_FONT_PAIRINGS[Math.floor(Math.random() * AUTO_FONT_PAIRINGS.length)];
-  const hItalic = pairing.hItalicRandom ? Math.random() < 0.5 : !!pairing.hItalic;
-  return {hFont: pairing.hFont, hWeight: pairing.hWeight, hItalic, hUppercase: !!pairing.hUppercase, bFont: pairing.bFont, bWeight: pairing.bWeight, bItalic: !!pairing.bItalic};
+// Picks one of the Fonts tab's staff-managed pairings (fontPairings -
+// see getFontPairings in fontPairingService.js) at random and resolves
+// it into the concrete hFont/bFont/weight/italic/uppercase values
+// computeTextBlock actually reads off brand - hFont/bFont become real
+// CSS font-family stacks here ('Name',generic), since the pairing itself
+// only stores the plain Google Fonts name. Falls back to the Custom
+// Editor's own fixed pairing if the library is empty (nothing imported
+// yet, or still loading) rather than crashing on an empty array.
+function pickAutoFontPairing(fontPairings) {
+  if (!fontPairings || fontPairings.length === 0) {
+    return {hFont: HEADLINE_FONT, hWeight: HEADLINE_WEIGHT, hItalic: false, hUppercase: false, bFont: BODY_FONT, bWeight: BODY_WEIGHT, bItalic: true};
+  }
+  const pairing = fontPairings[Math.floor(Math.random() * fontPairings.length)];
+  return {
+    hFont: `'${pairing.hFont}',${pairing.hGeneric}`, hWeight: pairing.hWeight, hItalic: !!pairing.hItalic, hUppercase: !!pairing.hUppercase,
+    bFont: `'${pairing.bFont}',${pairing.bGeneric}`, bWeight: pairing.bWeight, bItalic: !!pairing.bItalic,
+  };
 }
 
 // Coin flip between the two template renderers (see renderEngine.js) so an
@@ -225,8 +235,8 @@ async function pickMarkOverlay(isLight, marks) {
 // entirely - no image, just that color and one of its own allowed text
 // colors. The watermark applies either way (see pickMarkOverlay) - drawn
 // over the photo's own texture/color wash, not instead of it.
-async function computeAutoSlide(entry, avoidOverlayColors = [], marks = []) {
-  const font = pickAutoFontPairing();
+async function computeAutoSlide(entry, avoidOverlayColors = [], marks = [], fontPairings = []) {
+  const font = pickAutoFontPairing(fontPairings);
   const tmpl = pickAutoTemplate();
   if (entry.solid) {
     const bg = entry.solid;
@@ -282,8 +292,8 @@ const QUEUE_PREVIEW_RATIO = ASPECT_RATIOS.find(r => r.id === "16:10") || ASPECT_
 // queue loads so there's a PNG sitting there to grab without opening
 // anything. Returns the overlay color alongside the image so the caller
 // can feed it forward as the next item's avoidOverlayColors.
-async function generateQueueThumbnailFromEntry(a, entry, avoidOverlayColors = [], marks = []) {
-  const auto = await computeAutoSlide(entry, avoidOverlayColors, marks);
+async function generateQueueThumbnailFromEntry(a, entry, avoidOverlayColors = [], marks = [], fontPairings = []) {
+  const auto = await computeAutoSlide(entry, avoidOverlayColors, marks, fontPairings);
   const data = {...DEFAULT_DATA, ...buildAutoSlideData(a)};
   const brand = {...DEFAULT_BRAND, bgColor: auto.bgColor, textColor: auto.textColor, hFont: auto.hFont, hWeight: auto.hWeight, hItalic: auto.hItalic, hUppercase: auto.hUppercase, bFont: auto.bFont, bWeight: auto.bWeight, bItalic: auto.bItalic, markImg: auto.markImg, markOpacity: auto.markOpacity, markFrame: auto.markFrame};
   const canvas = document.createElement('canvas');
@@ -303,7 +313,6 @@ export default function SlideMaker({announcements, today, onToggleSlideMade}) {
 }
 
 function SlideMakerInner({announcements, today, onToggleSlideMade}) {
-  useGoogleFonts();
   const toast = useToast();
 
   // What still needs a slide made, pulled straight from the Communication
@@ -323,6 +332,8 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
   const [brand, setBrand] = useState({...DEFAULT_BRAND});
   const [photos, setPhotos] = useState([]);
   const [marks, setMarks] = useState([]);
+  const [fontPairings, setFontPairings] = useState([]);
+  useGoogleFonts(fontPairings);
   const [activePhoto, setActivePhoto] = useState(null);
   const [ov, setOv] = useState(86);
   const [blur, setBlur] = useState(0);
@@ -378,6 +389,24 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // The Fonts tab's library, loaded here (not inside FontsTab) so a
+  // staff-added pairing is already part of pickAutoFontPairing's pool
+  // the moment the queue is opened - same reasoning as the photos/marks
+  // effects above. No images to decode here (a pairing is just font
+  // names/weights/flags), so a single fetch is enough - no incremental,
+  // per-row loading needed.
+  useEffect(() => {
+    let cancelled = false;
+    getFontPairings().then((pairings) => {
+      if (!cancelled) setFontPairings(pairings);
+    }).catch((error) => {
+      console.error('Could not load the font pairing library:', error);
+      if (!cancelled) toast.show(`Could not load your font pairings: ${error?.message || 'unknown error'}`, 'error');
+    });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeQueueItem, setActiveQueueItem] = useState(null);
   const canvasRef = useRef(null);
@@ -422,7 +451,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
           const prevId = idx > 0 ? queueItems[idx - 1].id : null;
           const avoid = prevId && queuePreviewOverlayRef.current[prevId] ? [queuePreviewOverlayRef.current[prevId]] : [];
           const entry = pickTextureForId(pool, a.id);
-          const result = await generateQueueThumbnailFromEntry(a, entry, avoid, marks);
+          const result = await generateQueueThumbnailFromEntry(a, entry, avoid, marks, fontPairings);
           queuePreviewOverlayRef.current[a.id] = result.overlayColor;
           if (isMountedRef.current) setQueuePreviews(prev => ({...prev, [a.id]: result}));
         } catch (error) {
@@ -434,7 +463,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queueItems, photos, marks]);
+  }, [queueItems, photos, marks, fontPairings]);
 
   // "Try a different background" on a queue card - a fresh random texture
   // (not the deterministic per-event pick) and an overlay steered away
@@ -450,7 +479,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
       const prevId = idx > 0 ? queueItems[idx - 1].id : null;
       const avoid = [queuePreviewOverlayRef.current[a.id], prevId && queuePreviewOverlayRef.current[prevId]].filter(Boolean);
       const entry = pickRandomTexture(pool);
-      const result = await generateQueueThumbnailFromEntry(a, entry, avoid, marks);
+      const result = await generateQueueThumbnailFromEntry(a, entry, avoid, marks, fontPairings);
       queuePreviewOverlayRef.current[a.id] = result.overlayColor;
       if (isMountedRef.current) setQueuePreviews(prev => ({...prev, [a.id]: result}));
     } catch (error) {
@@ -459,7 +488,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     } finally {
       generatingQueuePreviewsRef.current.delete(a.id);
     }
-  }, [photos, marks, queueItems, toast]);
+  }, [photos, marks, fontPairings, queueItems, toast]);
 
   const undoHistory = useUndoHistory(50);
 
@@ -628,7 +657,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
   // loadQueueItem.
   const applyAutoBackground = useCallback(async (entry, avoidOverlayColors = []) => {
     try {
-      const auto = await computeAutoSlide(entry, avoidOverlayColors, marks);
+      const auto = await computeAutoSlide(entry, avoidOverlayColors, marks, fontPairings);
       setActivePhoto(auto.img);
       setBrand(b => ({...b, bgColor: auto.bgColor, textColor: auto.textColor, hFont: auto.hFont, hWeight: auto.hWeight, hItalic: auto.hItalic, hUppercase: auto.hUppercase, bFont: auto.bFont, bWeight: auto.bWeight, bItalic: auto.bItalic, markImg: auto.markImg, markOpacity: auto.markOpacity, markFrame: auto.markFrame}));
       setOverlayColor(auto.overlayColor);
@@ -639,7 +668,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
       console.error('Could not load an automatic background:', error);
       toast.show(`Could not load an automatic background: ${error?.message || 'unknown error'}`, 'error');
     }
-  }, [toast, marks]);
+  }, [toast, marks, fontPairings]);
 
   const loadQueueItem = useCallback((a) => {
     pushUndo();
@@ -839,6 +868,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
             data={data} ds={ds}
             photos={photos} setPhotos={setPhotos}
             marks={marks} setMarks={setMarks}
+            fontPairings={fontPairings} setFontPairings={setFontPairings}
             activePhoto={activePhoto} setActivePhoto={setActivePhoto}
             ov={ov} setOv={handleSetOv}
             blur={blur} setBlur={handleSetBlur}
@@ -884,6 +914,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
               data={data} ds={ds}
               photos={photos} setPhotos={setPhotos}
               marks={marks} setMarks={setMarks}
+              fontPairings={fontPairings} setFontPairings={setFontPairings}
               activePhoto={activePhoto} setActivePhoto={setActivePhoto}
               ov={ov} setOv={handleSetOv}
               blur={blur} setBlur={handleSetBlur}

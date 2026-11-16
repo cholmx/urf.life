@@ -1,44 +1,55 @@
 import { useEffect } from 'react';
 
-// Every font the Slide Maker ever draws onto a slide, loaded at exactly
-// the one weight/style each is actually used at - no font picker, so
-// there's no reason to pull in a whole family's weight range the way
-// this hook used to. Inter Tight (700, upright) and Playfair Display
-// (400, italic) are the Custom Editor's own fixed pairing (see
-// HEADLINE_FONT/BODY_FONT in constants/data.js); the rest are only used
-// by the automatic slide maker's AUTO_FONT_PAIRINGS, one weight/style
-// each - see that array for which font plays which role in which
-// pairing.
-export default function useGoogleFonts() {
+// Always needed regardless of what's in the Fonts tab's library - the
+// Custom Editor's own fixed pairing (see HEADLINE_FONT/BODY_FONT in
+// constants/data.js), since every manually-built slide uses it.
+const FIXED_FONTS = [
+  { font: 'Inter Tight', weight: 700, italic: false },
+  { font: 'Playfair Display', weight: 400, italic: true },
+];
+
+function fontKey(font, weight, italic) {
+  return `${font}__${weight}__${italic ? 1 : 0}`;
+}
+
+// Loads exactly the Google Fonts weight/style combos this session
+// actually needs: the two fixed fonts above, plus every headline/
+// subhead font any pairing in `fontPairings` (the Fonts tab's live,
+// staff-managed library - see fontPairingService's getFontPairings)
+// currently uses, each at its own one weight/style - no font picker,
+// so there's no reason to pull in a whole family's weight range. Reacts
+// to the library growing or shrinking (importing built-ins, adding or
+// deleting a pairing) by re-injecting the stylesheet link with the new
+// combined set.
+export default function useGoogleFonts(fontPairings = []) {
+  const combos = [...FIXED_FONTS];
+  for (const p of fontPairings) {
+    combos.push({ font: p.hFont, weight: p.hWeight, italic: p.hItalic });
+    combos.push({ font: p.bFont, weight: p.bWeight, italic: p.bItalic });
+  }
+  const seen = new Set();
+  const unique = combos.filter(c => {
+    const key = fontKey(c.font, c.weight, c.italic);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  const depKey = unique.map(c => fontKey(c.font, c.weight, c.italic)).sort().join('|');
+
   useEffect(() => {
     const link = document.createElement("link");
-    link.href = "https://fonts.googleapis.com/css2?"
-      + "family=Inter+Tight:wght@700"
-      + "&family=Playfair+Display:ital,wght@1,400"
-      + "&family=Google+Sans+Flex:wght@900"
-      + "&family=Newsreader:wght@400"
-      + "&family=Archivo+Black"
-      + "&family=Source+Serif+4:wght@400"
-      + "&family=Montserrat:wght@900"
-      + "&family=Lora:wght@400"
-      + "&family=Anton"
-      + "&family=Merriweather:wght@300"
-      + "&family=Fraunces:wght@900"
-      + "&family=Spectral:wght@400"
-      + "&family=Rubik:wght@900"
-      + "&family=PT+Serif:wght@400"
-      + "&family=Work+Sans:wght@900"
-      + "&family=Libre+Baskerville:wght@400"
-      + "&family=Outfit:wght@900"
-      + "&family=Petrona:wght@400"
-      + "&family=Poppins:wght@900"
-      + "&family=Cormorant+Garamond:wght@500"
-      + "&display=swap";
+    const params = unique.map(c => {
+      const fam = encodeURIComponent(c.font).replace(/%20/g, '+');
+      const axis = c.italic ? `ital,wght@1,${c.weight}` : `wght@${c.weight}`;
+      return `family=${fam}:${axis}`;
+    });
+    link.href = `https://fonts.googleapis.com/css2?${params.join('&')}&display=swap`;
     link.rel = "stylesheet";
     document.head.appendChild(link);
 
     return () => {
       document.head.removeChild(link);
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [depKey]);
 }

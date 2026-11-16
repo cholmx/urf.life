@@ -15,31 +15,33 @@ export const HEADLINE_WEIGHT = 700;
 export const BODY_FONT = "'Playfair Display',serif";
 export const BODY_WEIGHT = 400;
 
-// The automatic slide maker (random backgrounds/colors/blur) also
-// randomly picks one of these headline/subhead font pairings per
-// generated slide, alongside its other random choices - see
-// computeAutoSlide in SlideMaker.jsx. Pairing 1 is exactly the Custom
-// Editor's own default above (Inter Tight Bold headline, Playfair
-// Display italic subhead); every pairing after it brings in a font the
-// Custom Editor never uses at all (see useGoogleFonts.js for exactly
-// which weight/style of each gets loaded). None of these italicize -
-// hItalicRandom stays unused by every entry (true nowhere), only
-// Pairing 1 sets hItalic/bItalic at all. hUppercase renders the
-// headline in caps (Google Sans Flex, Montserrat, and Outfit - each a
-// naturally all-caps display face) without touching the announcement's
-// own title text (data.line1) - see computeHeadline in
-// templateRenderers.js.
-export const AUTO_FONT_PAIRINGS = [
-  { hFont: HEADLINE_FONT, hWeight: HEADLINE_WEIGHT, hItalicRandom: false, hItalic: false, bFont: BODY_FONT, bWeight: BODY_WEIGHT, bItalic: true },
-  { hFont: "'Google Sans Flex',sans-serif", hWeight: 900, hUppercase: true, bFont: "'Newsreader',serif", bWeight: 400 },
-  { hFont: "'Archivo Black',sans-serif", hWeight: 400, bFont: "'Source Serif 4',serif", bWeight: 400 },
-  { hFont: "'Montserrat',sans-serif", hWeight: 900, hUppercase: true, bFont: "'Lora',serif", bWeight: 400 },
-  { hFont: "'Anton',sans-serif", hWeight: 400, bFont: "'Merriweather',serif", bWeight: 300 },
-  { hFont: "'Fraunces',serif", hWeight: 900, bFont: "'Spectral',serif", bWeight: 400 },
-  { hFont: "'Rubik',sans-serif", hWeight: 900, bFont: "'PT Serif',serif", bWeight: 400 },
-  { hFont: "'Work Sans',sans-serif", hWeight: 900, bFont: "'Libre Baskerville',serif", bWeight: 400 },
-  { hFont: "'Outfit',sans-serif", hWeight: 900, hUppercase: true, bFont: "'Petrona',serif", bWeight: 400 },
-  { hFont: "'Poppins',sans-serif", hWeight: 900, bFont: "'Cormorant Garamond',serif", bWeight: 500 },
+// Seed list for the Fonts tab's one-time "Import built-in pairings"
+// action (see FontsTab.jsx / fontPairingService.js's
+// importBuiltInFontPairings) - the same role TEXTURES/BUILT_IN_MARKS
+// play for their own tabs. Once imported, each becomes an ordinary row
+// in staff_slide_font_pairings_portal123, editable/deletable from that
+// tab; the live automatic generator reads that DB-backed state (see
+// pickAutoFontPairing in SlideMaker.jsx), never this array directly -
+// it only matters the one time a pairing gets imported. Pairing 1
+// mirrors the Custom Editor's own fixed pairing above exactly (Inter
+// Tight Bold headline, Playfair Display italic subhead); every pairing
+// after it brings in a font the Custom Editor never uses at all.
+// hUppercase renders the headline in caps (Google Sans Flex, Montserrat,
+// and Outfit - each a naturally all-caps display face) without touching
+// the announcement's own title text (data.line1) - see computeHeadline
+// in templateRenderers.js. hGeneric/bGeneric is each font's CSS fallback
+// family (serif or sans-serif).
+export const BUILT_IN_FONT_PAIRINGS = [
+  { hFont: "Inter Tight", hGeneric: "sans-serif", hWeight: HEADLINE_WEIGHT, hItalic: false, hUppercase: false, bFont: "Playfair Display", bGeneric: "serif", bWeight: BODY_WEIGHT, bItalic: true },
+  { hFont: "Google Sans Flex", hGeneric: "sans-serif", hWeight: 900, hItalic: false, hUppercase: true, bFont: "Newsreader", bGeneric: "serif", bWeight: 400, bItalic: false },
+  { hFont: "Archivo Black", hGeneric: "sans-serif", hWeight: 400, hItalic: false, hUppercase: false, bFont: "Source Serif 4", bGeneric: "serif", bWeight: 400, bItalic: false },
+  { hFont: "Montserrat", hGeneric: "sans-serif", hWeight: 900, hItalic: false, hUppercase: true, bFont: "Lora", bGeneric: "serif", bWeight: 400, bItalic: false },
+  { hFont: "Anton", hGeneric: "sans-serif", hWeight: 400, hItalic: false, hUppercase: false, bFont: "Merriweather", bGeneric: "serif", bWeight: 300, bItalic: false },
+  { hFont: "Fraunces", hGeneric: "serif", hWeight: 900, hItalic: false, hUppercase: false, bFont: "Spectral", bGeneric: "serif", bWeight: 400, bItalic: false },
+  { hFont: "Rubik", hGeneric: "sans-serif", hWeight: 900, hItalic: false, hUppercase: false, bFont: "PT Serif", bGeneric: "serif", bWeight: 400, bItalic: false },
+  { hFont: "Work Sans", hGeneric: "sans-serif", hWeight: 900, hItalic: false, hUppercase: false, bFont: "Libre Baskerville", bGeneric: "serif", bWeight: 400, bItalic: false },
+  { hFont: "Outfit", hGeneric: "sans-serif", hWeight: 900, hItalic: false, hUppercase: true, bFont: "Petrona", bGeneric: "serif", bWeight: 400, bItalic: false },
+  { hFont: "Poppins", hGeneric: "sans-serif", hWeight: 900, hItalic: false, hUppercase: false, bFont: "Cormorant Garamond", bGeneric: "serif", bWeight: 500, bItalic: false },
 ];
 
 // Fixed background swatches - no custom color picker. Each has its own set
