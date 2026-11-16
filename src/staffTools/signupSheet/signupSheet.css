@@ -57,7 +57,7 @@
 .signup-sheet-tool .sheet-header-row {
   display: flex;
   border-bottom: 2px solid #000;
-  background-color: #EDE9DC;
+  background-color: #5D947B;
 }
 
 .signup-sheet-tool .resize-handle {
@@ -74,7 +74,7 @@
 
 .signup-sheet-tool .resize-handle:hover,
 .signup-sheet-tool .resize-handle.resizing {
-  background: var(--resize-color, #1E2522);
+  background: var(--resize-color, #1C2A2B);
   opacity: 0.6;
 }
 

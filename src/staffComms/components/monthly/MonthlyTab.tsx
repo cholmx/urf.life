@@ -16,9 +16,9 @@ const BATHROOM_NOTE_LINES = [
   'Thank you!',
 ];
 
-const TEAL = '#1E2522';
-const ACCENT = '#597F5C';
-const GOLD = '#EAA235';
+const TEAL = '#1C2A2B';
+const ACCENT = '#5D947B';
+const GOLD = '#F9AB55';
 // Its own constant rather than font.display (currently the same Inter
 // Tight value, but this is printed material representing the public
 // site, independent of whatever the admin UI's own display font happens
@@ -244,25 +244,25 @@ function buildFlyerHTML(items: Announcement[], today: string, bathroomVariant: b
         const contactHTML = contactInfo
           ? `<div style="font-family:${font.body};font-size:${s.contactFontSize}pt;color:#777;margin-top:${s.contactMarginTop}pt;">${contactName ? `${contactName}, ` : ''}${contactInfo}</div>`
           : '';
-        const border = i < active.length - 1 ? `border-bottom:1pt solid #2a3834;` : '';
+        const border = i < active.length - 1 ? `border-bottom:1pt solid #003235;` : '';
         return `
           <div style="display:flex;gap:${s.gap}in;padding:${s.itemPadV}in 0;${border}align-items:flex-start;">
             <div style="flex:1;min-width:0;">
               <div style="margin-bottom:${s.titleMarginBottom}pt;">
-                <div style="font-family:${FLYER_FONT};font-size:${s.titleFontSize}pt;font-weight:700;color:#2a3834;letter-spacing:-0.01em;line-height:1.1;">${title}</div>
+                <div style="font-family:${FLYER_FONT};font-size:${s.titleFontSize}pt;font-weight:700;color:#003235;letter-spacing:-0.01em;line-height:1.1;">${title}</div>
                 <div style="margin-top:1pt;line-height:1.1;display:flex;gap:4pt;align-items:center;flex-wrap:wrap;">
                   ${dateSpan}
                   ${ministryTag}
                 </div>
               </div>
-              <div style="font-family:${font.body};font-size:${s.bodyFontSize}pt;color:#1E2522;line-height:1.4;">${text}</div>
+              <div style="font-family:${font.body};font-size:${s.bodyFontSize}pt;color:#1C2A2B;line-height:1.4;">${text}</div>
               ${contactHTML}
             </div>
           </div>`;
       }).join('');
 
   const bathroomHTML = bathroomVariant ? `
-    <div style="border-top:2pt solid #2a3834;padding:0.3in ${s.bodyPadH}in 0.45in;flex-shrink:0;text-align:center;">
+    <div style="border-top:2pt solid #003235;padding:0.3in ${s.bodyPadH}in 0.45in;flex-shrink:0;text-align:center;">
       <div style="font-size:${s.bodyFontSize + 1}pt;color:#444;line-height:1.5;">${BATHROOM_NOTE_LINES[0]}</div>
       <div style="font-size:${s.bodyFontSize + 1}pt;color:#444;line-height:1.5;">${BATHROOM_NOTE_LINES[1]}</div>
       <div style="font-size:${s.bodyFontSize + 1.5}pt;font-weight:700;color:${TEAL};line-height:1.5;">${BATHROOM_NOTE_LINES[2]}</div>
@@ -272,7 +272,7 @@ function buildFlyerHTML(items: Announcement[], today: string, bathroomVariant: b
     <div style="width:8.5in;min-height:11in;background:#fff;font-family:${font.body};display:flex;flex-direction:column;box-sizing:border-box;padding:0.5in;">
       <div style="padding:${s.headerPadV}in 0 ${s.headerPadV * 0.54}in;flex-shrink:0;text-align:center;border-bottom:3pt solid ${GOLD};">
         <div style="font-family:${font.body};font-size:${s.orgFontSize}pt;font-weight:700;letter-spacing:0.04em;color:${TEAL};margin-bottom:8pt;">Upper Room Fellowship &nbsp;·&nbsp; urf.life</div>
-        <div style="font-family:${FLYER_FONT};font-size:${s.monthFontSize}pt;font-weight:900;color:#2a3834;letter-spacing:-0.01em;line-height:0.95;margin-bottom:8pt;">${monthLabel}</div>
+        <div style="font-family:${FLYER_FONT};font-size:${s.monthFontSize}pt;font-weight:900;color:#003235;letter-spacing:-0.01em;line-height:0.95;margin-bottom:8pt;">${monthLabel}</div>
         <div style="font-family:${FLYER_FONT};font-size:${s.subtitleFontSize}pt;font-weight:600;color:${ACCENT};letter-spacing:0.04em;">Events &amp; Announcements</div>
       </div>
       <div style="flex:1;padding:${s.bodyPadV}in ${s.bodyPadH}in ${s.bodyPadV * 0.67}in;background:#fff;display:flex;flex-direction:column;">
@@ -298,7 +298,7 @@ function FlyerPagePreview({ announcements, today, bathroomVariant }: {
         <div style={{ fontFamily: font.body, fontSize: `${s.orgFontSize}pt`, fontWeight: 700, letterSpacing: '0.04em', color: TEAL, marginBottom: '8pt' }}>
           Upper Room Fellowship &nbsp;·&nbsp; urf.life
         </div>
-        <div style={{ fontFamily: FLYER_FONT, fontSize: `${s.monthFontSize}pt`, fontWeight: 900, color: '#2a3834', letterSpacing: '-0.01em', lineHeight: 0.95, marginBottom: '8pt' }}>
+        <div style={{ fontFamily: FLYER_FONT, fontSize: `${s.monthFontSize}pt`, fontWeight: 900, color: '#003235', letterSpacing: '-0.01em', lineHeight: 0.95, marginBottom: '8pt' }}>
           {monthLabel}
         </div>
         <div style={{ fontFamily: FLYER_FONT, fontSize: `${s.subtitleFontSize}pt`, fontWeight: 600, color: ACCENT, letterSpacing: '0.04em' }}>
@@ -316,10 +316,10 @@ function FlyerPagePreview({ announcements, today, bathroomVariant }: {
           const rawText = a.flyer_text || a.month_override || a.short_version || '';
           const text = stripLeadingTitle(rawText, a.title);
           return (
-            <div key={a.id} style={{ display: 'flex', gap: `${s.gap}in`, padding: `${s.itemPadV}in 0`, borderBottom: i < active.length - 1 ? `1pt solid #2a3834` : 'none', alignItems: 'flex-start' }}>
+            <div key={a.id} style={{ display: 'flex', gap: `${s.gap}in`, padding: `${s.itemPadV}in 0`, borderBottom: i < active.length - 1 ? `1pt solid #003235` : 'none', alignItems: 'flex-start' }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ marginBottom: `${s.titleMarginBottom}pt` }}>
-                  <div style={{ fontFamily: FLYER_FONT, fontSize: `${s.titleFontSize}pt`, fontWeight: 700, color: '#2a3834', letterSpacing: '-0.01em', lineHeight: 1.1 }}>
+                  <div style={{ fontFamily: FLYER_FONT, fontSize: `${s.titleFontSize}pt`, fontWeight: 700, color: '#003235', letterSpacing: '-0.01em', lineHeight: 1.1 }}>
                     {a.title}
                   </div>
                   {(formatDateTimeList(a, today) || a.ministry) && (
@@ -347,7 +347,7 @@ function FlyerPagePreview({ announcements, today, bathroomVariant }: {
                     </div>
                   )}
                 </div>
-                <div style={{ fontFamily: font.body, fontSize: `${s.bodyFontSize}pt`, color: '#1E2522', lineHeight: 1.4 }}>{text}</div>
+                <div style={{ fontFamily: font.body, fontSize: `${s.bodyFontSize}pt`, color: '#1C2A2B', lineHeight: 1.4 }}>{text}</div>
                 {a.contact_info && (
                   <div style={{ fontFamily: font.body, fontSize: `${s.contactFontSize}pt`, color: '#777', marginTop: `${s.contactMarginTop}pt` }}>
                     {a.contact_name ? `${a.contact_name}, ` : ''}{a.contact_info}
@@ -360,7 +360,7 @@ function FlyerPagePreview({ announcements, today, bathroomVariant }: {
       </div>
 
       {bathroomVariant && (
-        <div style={{ borderTop: `2pt solid #2a3834`, padding: `0.3in ${s.bodyPadH}in 0.45in`, flexShrink: 0, textAlign: 'center' }}>
+        <div style={{ borderTop: `2pt solid #003235`, padding: `0.3in ${s.bodyPadH}in 0.45in`, flexShrink: 0, textAlign: 'center' }}>
           <div style={{ fontFamily: font.body, fontSize: `${s.bodyFontSize + 1}pt`, color: '#444', lineHeight: 1.5 }}>{BATHROOM_NOTE_LINES[0]}</div>
           <div style={{ fontFamily: font.body, fontSize: `${s.bodyFontSize + 1}pt`, color: '#444', lineHeight: 1.5 }}>{BATHROOM_NOTE_LINES[1]}</div>
           <div style={{ fontFamily: font.body, fontSize: `${s.bodyFontSize + 1.5}pt`, fontWeight: 700, color: TEAL, lineHeight: 1.5 }}>{BATHROOM_NOTE_LINES[2]}</div>
@@ -427,7 +427,7 @@ export function MonthlyTab({ announcements, today }: MonthlyTabProps) {
       {printReminder.show && (
         <div style={{
           background: C.cardAlt,
-          border: '1px solid #EAA235',
+          border: '1px solid #F9AB55',
           borderRadius: 8,
           padding: '10px 16px',
           marginBottom: 18,
@@ -439,13 +439,13 @@ export function MonthlyTab({ announcements, today }: MonthlyTabProps) {
             width: 6,
             height: 6,
             borderRadius: '50%',
-            background: '#EAA235',
+            background: '#F9AB55',
             flexShrink: 0,
           }} />
           <span style={{
             fontFamily: font.body,
             fontSize: 13,
-            color: '#1E2522',
+            color: '#1C2A2B',
             fontWeight: 600,
           }}>
             Time to print the {printReminder.nextMonth} flyer, first Sunday is {printReminder.firstSunday}.
@@ -467,10 +467,10 @@ export function MonthlyTab({ announcements, today }: MonthlyTabProps) {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
-        <div style={{ boxShadow: '0 4px 32px rgba(0,0,0,0.10)', border: `1px solid #2a3834` }}>
+        <div style={{ boxShadow: '0 4px 32px rgba(0,0,0,0.10)', border: `1px solid #003235` }}>
           <FlyerPagePreview announcements={announcements} today={today} bathroomVariant={false} />
         </div>
-        <div style={{ boxShadow: '0 4px 32px rgba(0,0,0,0.10)', border: `1px solid #2a3834` }}>
+        <div style={{ boxShadow: '0 4px 32px rgba(0,0,0,0.10)', border: `1px solid #003235` }}>
           <FlyerPagePreview announcements={announcements} today={today} bathroomVariant={true} />
         </div>
       </div>

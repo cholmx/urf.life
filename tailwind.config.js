@@ -48,11 +48,11 @@ export default {
 
         // Tailwind's stock scales, collapsed onto the five colors (see
         // fiveColorRamp above) instead of staying their default hues -
-        // red/orange as the red accent, green as the green primary,
-        // yellow/amber/purple as the gold accent (no purple in this
-        // palette), blue also as the green primary (no blue either),
-        // gray and neutral both as the same white/green/near-black
-        // ramp as each other.
+        // red/orange as the red accent, green/blue/gray/neutral all as
+        // the primary accent (no literal green or blue in this palette,
+        // and gray/neutral read as the same white/primary/near-black
+        // ramp as each other), yellow/amber/purple as the gold accent
+        // (no purple in this palette either).
         gray:    fiveColorRamp(colors.primary),
         neutral: fiveColorRamp(colors.primary),
         red:     fiveColorRamp(colors.red),
@@ -80,8 +80,8 @@ export default {
         '4xl': '3rem',
       },
       boxShadow: {
-        'soft': '8px 8px 16px #1E2522, -8px -8px 16px #FFFFFF',
-        'soft-inset': 'inset 8px 8px 16px #1E2522, inset -8px -8px 16px #FFFFFF',
+        'soft': '8px 8px 16px #1C2A2B, -8px -8px 16px #FFFFFF',
+        'soft-inset': 'inset 8px 8px 16px #1C2A2B, inset -8px -8px 16px #FFFFFF',
         'modern': '0 2px 8px rgba(0,0,0,0.06), 0 8px 20px -4px rgba(0,0,0,0.07)',
         'modern-lg': '0 4px 16px rgba(0,0,0,0.08), 0 16px 32px -8px rgba(0,0,0,0.10)',
       },

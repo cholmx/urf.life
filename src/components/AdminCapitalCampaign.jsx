@@ -74,7 +74,7 @@ const AdminCapitalCampaign = () => {
             <SafeIcon icon={FiCamera} className="h-4 w-4" />
             <span>Living Stones</span>
             {pendingCount > 0 && (
-              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold text-white" style={{ backgroundColor: '#EAA235' }}>
+              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold text-white" style={{ backgroundColor: '#F9AB55' }}>
                 {pendingCount}
               </span>
             )}

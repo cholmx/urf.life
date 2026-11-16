@@ -49,8 +49,8 @@ export function EditModal({ announcement, defaultDate, today, onSave, onDelete, 
                 <button
                   onClick={onDelete}
                   style={{
-                    padding: '4px 12px', border: '1px solid #C74F2F', borderRadius: 5,
-                    background: '#FFFFFF', color: '#C74F2F', fontSize: 11, fontFamily: font.body,
+                    padding: '4px 12px', border: '1px solid #C65D3B', borderRadius: 5,
+                    background: '#FFFFFF', color: '#C65D3B', fontSize: 11, fontFamily: font.body,
                     cursor: 'pointer', fontWeight: 600,
                   }}
                 >
@@ -71,8 +71,8 @@ export function EditModal({ announcement, defaultDate, today, onSave, onDelete, 
               <button
                 onClick={() => setConfirmDelete(true)}
                 style={{
-                  padding: '4px 12px', border: '1px solid #C74F2F', borderRadius: 5,
-                  background: 'transparent', color: '#C74F2F', fontSize: 11, fontFamily: font.body,
+                  padding: '4px 12px', border: '1px solid #C65D3B', borderRadius: 5,
+                  background: 'transparent', color: '#C65D3B', fontSize: 11, fontFamily: font.body,
                   cursor: 'pointer', fontWeight: 500,
                 }}
               >

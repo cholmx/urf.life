@@ -274,7 +274,7 @@ const Resources=()=> {
                         group.isPriority ? 'p-4 rounded-lg' : ''
                       }`}
                       style={
-                        group.isPriority ? {backgroundColor: '#EAA235'} : {}
+                        group.isPriority ? {backgroundColor: '#F9AB55'} : {}
                       }
                     >
                       <SafeIcon

@@ -8,7 +8,7 @@ export default function Yellow() {
       service={yellowPodcastRSSService}
       titleFallback="Yellow Podcast"
       subtitleFallback="Listen to our latest episodes"
-      accentColor="#EAA235"
+      accentColor="#F9AB55"
       emptyStateText="Check back soon for new episodes!"
     />
   );

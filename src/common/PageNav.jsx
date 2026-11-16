@@ -49,11 +49,11 @@ export default function PageNav({ hideSearch = false }) {
           type="button"
           onClick={() => setOpen((v) => !v)}
           className="inline-flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 active:scale-95"
-          style={{ backgroundColor: '#EAA235' }}
+          style={{ backgroundColor: '#F9AB55' }}
           title="Menu"
           aria-label="Site navigation"
         >
-          <SafeIcon icon={FiMenu} className="h-5 w-5" style={{ color: '#1E2522' }} />
+          <SafeIcon icon={FiMenu} className="h-5 w-5" style={{ color: '#1C2A2B' }} />
         </button>
 
         {open && (
@@ -92,7 +92,7 @@ export default function PageNav({ hideSearch = false }) {
       <Link
         to="/"
         className="inline-flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 active:scale-95"
-        style={{ backgroundColor: '#c74f2f' }}
+        style={{ backgroundColor: '#C65D3B' }}
         title="Back to Home"
       >
         <SafeIcon icon={FiHome} className="h-5 w-5 text-white" />

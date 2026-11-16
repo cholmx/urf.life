@@ -18,8 +18,8 @@
        subtitle/paragraph with no explicit color class could render in a
        near-invisible light tone against the light page background).
        Literal properties sidestep that cache. */
-    color: #1E2522;
-    background-color: #F8F6F1;
+    color: #1C2A2B;
+    background-color: #F4ECDD;
     background-image: url('/background-texture.png');
     background-repeat: repeat;
     font-family: 'Aleo', serif;
@@ -32,7 +32,7 @@
     /* Literal, not @apply text-text-primary/font-heading - see the body
        rule's comment. font-weight matches designTokens.js's
        fontWeights.heading - Inter Tight Bold. */
-    color: #1E2522;
+    color: #1C2A2B;
     font-family: 'Inter Tight', sans-serif;
     font-weight: 700;
     line-height: 1.1;
@@ -58,12 +58,12 @@
    only catch an element actually wearing that class or an h1-h6 tag. */
 .prose {
   @apply text-base leading-normal;
-  color: #1E2522;
+  color: #1C2A2B;
 }
 .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
   @apply mt-4 mb-2;
   font-family: 'Inter Tight', sans-serif;
-  color: #1E2522;
+  color: #1C2A2B;
 }
 .prose h1 {
   @apply text-2xl font-bold;
@@ -79,7 +79,7 @@
 }
 .prose strong {
   @apply font-bold;
-  color: #1E2522;
+  color: #1C2A2B;
 }
 .prose em {
   @apply italic;
@@ -221,7 +221,7 @@
    background is correct regardless of whether Tailwind's own utility
    output for .bg-accent is current. */
 [class~="bg-accent"] {
-  background-color: #F8F6F1;
+  background-color: #F4ECDD;
   background-image: url('/background-texture.png');
   background-repeat: repeat;
 }
@@ -240,25 +240,25 @@
    background can pick up a stale, low-contrast cached color. */
 [class~="text-text-primary"],
 [class~="text-text-secondary"] {
-  color: #1E2522;
+  color: #1C2A2B;
 }
 [class~="text-text-light"] {
-  color: #2a3834;
+  color: #003235;
 }
 :is(.card-clay, .form-section, [class~="bg-white"], [class~="bg-accent-dark"], [class~="bg-accent-light"], .admin-shell) {
-  color: #1E2522;
+  color: #1C2A2B;
 }
 :is(.card-clay, .form-section, [class~="bg-white"], [class~="bg-accent-dark"], [class~="bg-accent-light"], .admin-shell)
   :is(h1, h2, h3, h4, h5, h6, [class~="text-text-primary"], [class~="text-text-secondary"]) {
-  color: #1E2522;
+  color: #1C2A2B;
 }
 /* .text-text-light is the muted/secondary tone (now a light gray-teal
    tuned for the dark page background) - inside a light surface it needs
-   its own muted-dark color, not the same #1E2522 as headings/body text,
+   its own muted-dark color, not the same #1C2A2B as headings/body text,
    or it loses the "this is secondary text" contrast it's there for. */
 :is(.card-clay, .form-section, [class~="bg-white"], [class~="bg-accent-dark"], [class~="bg-accent-light"], .admin-shell)
   [class~="text-text-light"] {
-  color: #2a3834;
+  color: #003235;
 }
 
 /* Specific overrides for rich text editor fields */
@@ -301,7 +301,7 @@
 
 /* Discussion questions background */
 .discussion-questions-section {
-  background-color: #EDE9DC;
+  background-color: #5D947B;
   @apply border border-primary/20;
 }
 
@@ -339,7 +339,7 @@
      than a plain ".happenings-script h3" rule (0,1,1), so without
      !important here a future change to either rule's color can silently
      win over the other. */
-  color: #1E2522 !important;
+  color: #1C2A2B !important;
   margin: 0 0 0.2em;
   display: flex;
   align-items: baseline;
@@ -356,7 +356,7 @@
 .happenings-script h3 .happening-when {
   font-family: 'Inter Tight', sans-serif;
   font-size: 0.62em;
-  color: #597F5C;
+  color: #5D947B;
   font-weight: 700;
   letter-spacing: 0;
 }
@@ -367,17 +367,17 @@
   font-style: italic;
 }
 .happenings-script a {
-  color: #2a3834;
+  color: #003235;
   font-weight: 700;
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 .happenings-script a:hover {
-  color: #1E2522;
+  color: #1C2A2B;
 }
 
 /* Admin dashboard: Aleo Regular for body text (headings already inherit
-   Inter Tight Bold from the base h1-h6 rule above). Same green/cream/near-black
+   Inter Tight Bold from the base h1-h6 rule above). Same teal/cream/near-black
    palette as the public site - admin-input/admin-card/admin-btn-* below
    use Tailwind's neutral-* scale, which tailwind.config.js overrides
    end to end to match that palette instead of staying plain gray. */
@@ -421,11 +421,11 @@
 }
 
 /* The individual admin panels (AdminAnnouncements, AdminEvents, etc.) used
-   to have their green `primary`/cream `accent` Tailwind utilities forced
+   to have their teal `primary`/cream `accent` Tailwind utilities forced
    to dark gray/white here, so admin read as a visually distinct dashboard
    from the public site's own branding. The site now uses one palette
    everywhere, admin included, so primary/accent/accent-dark resolve to
-   the same green/cream values in both places and this override block is
+   the same teal/cream values in both places and this override block is
    gone - nothing left to fight. */
 
 /* Global input focus ring */
@@ -448,7 +448,7 @@ input:focus, textarea:focus, select:focus {
     background-color: #F7F5EE;
     border: none;
     box-shadow: none;
-    color: #1E2522;
+    color: #1C2A2B;
   }
   .form-input-error {
     @apply focus:ring-red-300;
@@ -459,12 +459,12 @@ input:focus, textarea:focus, select:focus {
   }
   .form-error-text {
     @apply text-xs mt-1 font-medium;
-    color: #C74F2F;
+    color: #C65D3B;
   }
   .form-label {
     @apply block text-sm font-bold mb-1.5;
     font-family: 'Inter Tight', sans-serif;
-    color: #1E2522;
+    color: #1C2A2B;
   }
   /* form-section is always nested inside a .card-clay container - both
      are plain white now, with no shadow or border between them, relying

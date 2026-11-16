@@ -14,18 +14,18 @@
 // (theme.ts, with allowJs on) can import it directly.
 
 export const colors = {
-  primary: '#2a3834',    // green
-  secondary: '#1E2522',  // near-black charcoal
-  gold: '#EAA235',       // accent - hover states, highlights
-  red: '#C74F2F',        // solid call-to-action buttons
+  primary: '#003235',    // dark teal
+  secondary: '#1C2A2B',  // jet black
+  gold: '#F9AB55',       // sandy brown - accent, hover states, highlights
+  red: '#C65D3B',        // rosy copper - solid call-to-action buttons
 
   // Neutral surface system:
-  page: '#F8F6F1',       // the page itself - body, every page's root wrapper
+  page: '#F4ECDD',       // cream - the page itself, body, every page's root wrapper
   white: '#FFFFFF',      // cards/panels sitting on the page - these "pop"
-  section: '#EDE9DC',    // a sub-area inside a card that needs to read as
-                         // its own group (a form section, a status/notice
-                         // box, a selected/active state) without looking
-                         // like a separate card of its own
+  section: '#5D947B',    // jungle teal - a sub-area inside a card that
+                         // needs to read as its own group (a form section,
+                         // a status/notice box, a selected/active state)
+                         // without looking like a separate card of its own
 };
 
 // A deliberately separate, small set from the five core colors above -
