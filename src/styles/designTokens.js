@@ -22,10 +22,15 @@ export const colors = {
   // Neutral surface system:
   page: '#F4ECDD',       // cream - the page itself, body, every page's root wrapper
   white: '#FFFFFF',      // cards/panels sitting on the page - these "pop"
-  section: '#5B8B75',    // jungle teal - a sub-area inside a card that
-                         // needs to read as its own group (a form section,
-                         // a status/notice box, a selected/active state)
-                         // without looking like a separate card of its own
+  section: '#EADFC7',    // sand - a sub-area inside a card that needs to
+                         // read as its own group (a form section, a
+                         // status/notice box, a selected/active state)
+                         // without looking like a separate card of its own.
+                         // Was jungle teal (#5B8B75) - too bold/saturated
+                         // for how often this token is used as a plain
+                         // background fill; sand stays warm and neutral
+                         // like the page itself but still reads as a
+                         // distinct surface against white cards.
 };
 
 // A deliberately separate, small set from the five core colors above -
