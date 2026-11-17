@@ -33,6 +33,24 @@ function TextColorChip({bg, textColor, onDelete}) {
   );
 }
 
+// An existing text color, editable in place (not just deletable) - the
+// swatch/chip preview above stays the quick "how does this read" view;
+// this row is where a color actually gets changed.
+function TextColorRow({textColor, onChange, onDelete}) {
+  return (
+    <div style={{display: "flex", gap: 4, alignItems: "center"}}>
+      <input type="color" value={textColor.hex} onChange={e => onChange({...textColor, hex: e.target.value})}
+        style={{width: 24, height: 24, padding: 0, border: `1px solid ${C.border}`, borderRadius: 4, cursor: "pointer", flexShrink: 0}} />
+      <input type="text" value={textColor.name} onChange={e => onChange({...textColor, name: e.target.value})}
+        style={{flex: 1, padding: "4px 6px", border: `1px solid ${C.border}`, borderRadius: 5, fontFamily: ui.body, fontSize: 11}} />
+      <button onClick={onDelete} title={`Remove ${textColor.name}`} style={{
+        width: 20, height: 20, borderRadius: 10, border: "none", background: "rgba(0,0,0,0.65)", color: "#fff",
+        fontSize: 11, cursor: "pointer", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1,
+      }}>×</button>
+    </div>
+  );
+}
+
 function AddTextColorForm({onAdd}) {
   const [name, setName] = useState('');
   const [hex, setHex] = useState('#FFFFFF');
@@ -64,6 +82,10 @@ function BackgroundCard({bg, onUpdate, onDelete}) {
 
   const handleRemoveTextColor = (idx) => {
     const next = bg.textColors.filter((_, i) => i !== idx);
+    onUpdate(bg.id, {textColors: next});
+  };
+  const handleEditTextColor = (idx, nextTc) => {
+    const next = bg.textColors.map((tc, i) => (i === idx ? nextTc : tc));
     onUpdate(bg.id, {textColors: next});
   };
   const handleAddTextColor = (tc) => {
@@ -109,6 +131,11 @@ function BackgroundCard({bg, onUpdate, onDelete}) {
           In automatic rotation
         </label>
 
+        {bg.textColors.map((tc, i) => (
+          <TextColorRow key={`${tc.name}-${i}`} textColor={tc}
+            onChange={next => handleEditTextColor(i, next)}
+            onDelete={() => handleRemoveTextColor(i)} />
+        ))}
         <AddTextColorForm onAdd={handleAddTextColor} />
       </div>
     </div>
@@ -179,6 +206,7 @@ export default function PaletteTab({backgroundColors, setBackgroundColors}) {
 
   const handleAddFormTextColor = (tc) => setForm(f => ({...f, textColors: [...f.textColors, tc]}));
   const handleRemoveFormTextColor = (idx) => setForm(f => ({...f, textColors: f.textColors.filter((_, i) => i !== idx)}));
+  const handleEditFormTextColor = (idx, next) => setForm(f => ({...f, textColors: f.textColors.map((tc, i) => (i === idx ? next : tc))}));
 
   const handleAdd = async () => {
     if (!form.name.trim()) {
@@ -261,6 +289,11 @@ export default function PaletteTab({backgroundColors, setBackgroundColors}) {
               style={{flex: 1, padding: "6px 8px", border: `1px solid ${C.border}`, borderRadius: 6, fontFamily: ui.body, fontSize: 12}} />
           </div>
 
+          {form.textColors.map((tc, i) => (
+            <TextColorRow key={`${tc.name}-${i}`} textColor={tc}
+              onChange={next => handleEditFormTextColor(i, next)}
+              onDelete={() => handleRemoveFormTextColor(i)} />
+          ))}
           <AddTextColorForm onAdd={handleAddFormTextColor} />
 
           <label style={{display: "flex", alignItems: "center", gap: 6, fontFamily: ui.body, fontSize: 11, color: C.text, cursor: "pointer"}}>
