@@ -65,11 +65,16 @@ function computeTextBlock(ctx, data, brand, {
     // fitSubtextToTwoLines/splitIntoTwoLines in canvasUtils.js) - italic/
     // weight/family come from the brand's font pairing (DEFAULT_BRAND's
     // own fallback is always italic Playfair Display). Capped relative
-    // to the headline's own resolved size (never more than a bit over
-    // half of it) rather than a fixed pixel ceiling - a short subtext
-    // paired with a short, large headline still scales up with it
-    // instead of hitting an arbitrary cap well under the 55% target.
-    const subMaxSize = Math.max(28, Math.round(headFontSize * 0.55));
+    // to the headline's own resolved size, not a fixed pixel ceiling, so
+    // a short subtext paired with a short, large headline still scales
+    // up with it - but at 0.9, not the much tighter ratio this used to
+    // use: the search below already stops growing the instant the text
+    // reaches targetW on its own (it doesn't just grab the biggest size
+    // under the cap - see fitSubtextToTwoLines/fitSingleLine), so a
+    // generous cap here only matters for text that genuinely needs it to
+    // reach 55%, not a reason it'd ever overshoot toward the headline's
+    // own size.
+    const subMaxSize = Math.max(28, Math.round(headFontSize * 0.9));
     const sub = fitSubtextToTwoLines(ctx, data.line2, brand.bFont, bw(brand, 600), !!brand.bItalic, targetW, {maxSize: subMaxSize});
     subLines = sub.lines;
     subFont = sub.font;
