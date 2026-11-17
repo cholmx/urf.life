@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {C, ui} from '../../constants/styles';
 import {BUILT_IN_BACKGROUND_COLORS} from '../../constants/data';
 import {addBackgroundColor, updateBackgroundColor, deleteBackgroundColor, importBuiltInBackgroundColor} from '../../services/backgroundColorService';
@@ -6,9 +6,43 @@ import {useToast} from '../../hooks/useToast';
 import ConfirmDialog from '../ConfirmDialog';
 
 const ROLE_LABEL = {
-  dark_bucket: 'Needed for dark photos',
-  light_bucket: 'Needed for light photos',
+  dark_bucket: 'Currently used for dark-background photos',
+  light_bucket: 'Currently used for light-background photos',
 };
+
+const HEX_RE = /^#[0-9A-Fa-f]{6}$/;
+
+// A color swatch (native picker, for a quick/rough pick) plus a text
+// field next to it so a precise or pasted-in hex code actually works -
+// a bare <input type="color"> has no way to type or paste one. Reverts
+// to the last valid value on blur/Enter if what's typed isn't a real
+// 6-digit hex.
+function ColorPicker({value, onChange, size = 24}) {
+  const [text, setText] = useState(value);
+  useEffect(() => { setText(value); }, [value]);
+
+  const commit = (raw) => {
+    const v = raw.trim();
+    const normalized = v.startsWith('#') ? v : `#${v}`;
+    if (HEX_RE.test(normalized)) {
+      onChange(normalized.toUpperCase());
+    } else {
+      setText(value);
+    }
+  };
+
+  return (
+    <div style={{display: "flex", alignItems: "center", gap: 4, flexShrink: 0}}>
+      <input type="color" value={value} onChange={e => onChange(e.target.value)}
+        style={{width: size, height: size, padding: 0, border: `1px solid ${C.border}`, borderRadius: 4, cursor: "pointer", flexShrink: 0}} />
+      <input type="text" value={text} onChange={e => setText(e.target.value)}
+        onBlur={e => commit(e.target.value)}
+        onKeyDown={e => { if (e.key === 'Enter') { commit(e.target.value); e.target.blur(); } }}
+        placeholder="#000000"
+        style={{width: 72, padding: "4px 6px", border: `1px solid ${C.border}`, borderRadius: 5, fontFamily: ui.body, fontSize: 11, flexShrink: 0}} />
+    </div>
+  );
+}
 
 // Readable contrast swatch for a text color sample - renders each text
 // color as a small sample word directly on the background color, the
@@ -39,10 +73,9 @@ function TextColorChip({bg, textColor, onDelete}) {
 function TextColorRow({textColor, onChange, onDelete}) {
   return (
     <div style={{display: "flex", gap: 4, alignItems: "center"}}>
-      <input type="color" value={textColor.hex} onChange={e => onChange({...textColor, hex: e.target.value})}
-        style={{width: 24, height: 24, padding: 0, border: `1px solid ${C.border}`, borderRadius: 4, cursor: "pointer", flexShrink: 0}} />
+      <ColorPicker value={textColor.hex} onChange={hex => onChange({...textColor, hex})} />
       <input type="text" value={textColor.name} onChange={e => onChange({...textColor, name: e.target.value})}
-        style={{flex: 1, padding: "4px 6px", border: `1px solid ${C.border}`, borderRadius: 5, fontFamily: ui.body, fontSize: 11}} />
+        style={{flex: 1, minWidth: 0, padding: "4px 6px", border: `1px solid ${C.border}`, borderRadius: 5, fontFamily: ui.body, fontSize: 11}} />
       <button onClick={onDelete} title={`Remove ${textColor.name}`} style={{
         width: 20, height: 20, borderRadius: 10, border: "none", background: "rgba(0,0,0,0.65)", color: "#fff",
         fontSize: 11, cursor: "pointer", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1,
@@ -64,14 +97,13 @@ function AddTextColorForm({onAdd}) {
 
   return (
     <div style={{display: "flex", gap: 4, alignItems: "center"}}>
-      <input type="color" value={hex} onChange={e => setHex(e.target.value)}
-        style={{width: 24, height: 24, padding: 0, border: `1px solid ${C.border}`, borderRadius: 4, cursor: "pointer"}} />
+      <ColorPicker value={hex} onChange={setHex} />
       <input type="text" value={name} placeholder="Text color name" onChange={e => setName(e.target.value)}
         onKeyDown={e => { if (e.key === 'Enter') submit(); }}
-        style={{flex: 1, padding: "4px 6px", border: `1px solid ${C.border}`, borderRadius: 5, fontFamily: ui.body, fontSize: 11}} />
+        style={{flex: 1, minWidth: 0, padding: "4px 6px", border: `1px solid ${C.border}`, borderRadius: 5, fontFamily: ui.body, fontSize: 11}} />
       <button onClick={submit} style={{
         padding: "4px 8px", border: "none", borderRadius: 5, background: C.accentDark, color: "#fff",
-        fontFamily: ui.display, fontSize: 10, fontWeight: 700, cursor: "pointer",
+        fontFamily: ui.display, fontSize: 10, fontWeight: 700, cursor: "pointer", flexShrink: 0,
       }}>+</button>
     </div>
   );
@@ -106,25 +138,27 @@ function BackgroundCard({bg, onUpdate, onDelete}) {
       </div>
       <div style={{padding: "8px 10px", background: C.cardAlt, display: "flex", flexDirection: "column", gap: 8}}>
         <div style={{display: "flex", alignItems: "center", gap: 8}}>
-          <input type="color" value={bg.hex} onChange={e => handleHexChange(e.target.value)}
-            style={{width: 24, height: 24, padding: 0, border: `1px solid ${C.border}`, borderRadius: 4, cursor: "pointer", flexShrink: 0}} />
+          <ColorPicker value={bg.hex} onChange={handleHexChange} />
           <input type="text" value={bg.name} onChange={e => handleNameChange(e.target.value)}
-            style={{flex: 1, padding: "4px 6px", border: `1px solid ${C.border}`, borderRadius: 5, fontFamily: ui.display, fontSize: 11, fontWeight: 700}} />
+            style={{flex: 1, minWidth: 0, padding: "4px 6px", border: `1px solid ${C.border}`, borderRadius: 5, fontFamily: ui.display, fontSize: 11, fontWeight: 700}} />
           <button
-            onClick={() => !protectedRow && onDelete(bg)}
-            disabled={protectedRow}
-            title={protectedRow ? ROLE_LABEL[bg.role] : 'Delete this background'}
+            onClick={() => onDelete(bg)}
+            title="Delete this background"
             style={{
               width: 22, height: 22, borderRadius: 11, border: "none",
-              background: protectedRow ? C.border : "rgba(0,0,0,0.65)",
-              color: protectedRow ? C.textTer : "#fff",
-              fontSize: 12, cursor: protectedRow ? "not-allowed" : "pointer", flexShrink: 0,
+              background: "rgba(0,0,0,0.65)", color: "#fff",
+              fontSize: 12, cursor: "pointer", flexShrink: 0,
               display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1,
             }}
           >
-            {protectedRow ? '🔒' : '×'}
+            ×
           </button>
         </div>
+        {protectedRow && (
+          <div style={{fontFamily: ui.body, fontSize: 10, color: C.textTer, fontStyle: "italic"}}>
+            ⓘ {ROLE_LABEL[bg.role]} - deleting it is fine, a fallback color is used instead.
+          </div>
+        )}
 
         <label style={{display: "flex", alignItems: "center", gap: 6, fontFamily: ui.body, fontSize: 11, color: C.text, cursor: "pointer"}}>
           <input type="checkbox" checked={bg.inAutoRotation} onChange={handleToggleRotation} />
@@ -196,7 +230,7 @@ export default function PaletteTab({backgroundColors, setBackgroundColors}) {
     const bg = confirmDelete;
     setConfirmDelete(null);
     try {
-      await deleteBackgroundColor(bg.id, bg.role);
+      await deleteBackgroundColor(bg.id);
       setBackgroundColors(prev => prev.filter(b => b.id !== bg.id));
       toast.show('Background deleted.', 'success');
     } catch (error) {
@@ -282,8 +316,7 @@ export default function PaletteTab({backgroundColors, setBackgroundColors}) {
 
         <div style={{display: "flex", flexDirection: "column", gap: 10}}>
           <div style={{display: "flex", gap: 8, alignItems: "center"}}>
-            <input type="color" value={form.hex} onChange={e => setForm(f => ({...f, hex: e.target.value}))}
-              style={{width: 28, height: 28, padding: 0, border: `1px solid ${C.border}`, borderRadius: 4, cursor: "pointer", flexShrink: 0}} />
+            <ColorPicker value={form.hex} onChange={hex => setForm(f => ({...f, hex}))} size={28} />
             <input type="text" value={form.name} placeholder="Background name"
               onChange={e => setForm(f => ({...f, name: e.target.value}))}
               style={{flex: 1, padding: "6px 8px", border: `1px solid ${C.border}`, borderRadius: 6, fontFamily: ui.body, fontSize: 12}} />
@@ -318,7 +351,11 @@ export default function PaletteTab({backgroundColors, setBackgroundColors}) {
 
       {confirmDelete && (
         <ConfirmDialog
-          message={`Delete the "${confirmDelete.name}" background?`}
+          message={
+            confirmDelete.role
+              ? `Delete the "${confirmDelete.name}" background? ${ROLE_LABEL[confirmDelete.role]} - a fallback color will take over that job instead.`
+              : `Delete the "${confirmDelete.name}" background?`
+          }
           confirmLabel="Delete"
           onConfirm={confirmDeleteBg}
           onCancel={() => setConfirmDelete(null)}

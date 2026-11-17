@@ -59,15 +59,14 @@ export async function updateBackgroundColor(id, patch) {
   return rowToBackground(data);
 }
 
-// A background carrying a bucket role (dark_bucket/light_bucket) is
-// structural - the automatic generator always needs exactly one of
-// each to sort a photo's brightness into (see autoBrandForBrightness in
-// SlideMaker.jsx) - so deleting one is refused here, not just hidden in
-// the UI, in case anything else ever calls this directly.
-export async function deleteBackgroundColor(id, role) {
-  if (role) {
-    throw new Error("This background is needed for photo-based automatic slides and can't be deleted - edit its color or text options instead.");
-  }
+// Deletable even if it carries a bucket role (dark_bucket/light_bucket) -
+// staff asked for full control over the palette, including the two
+// starter backgrounds. findBucket in SlideMaker.jsx falls back to a
+// hardcoded dark/light pair when no row holds a given role, so the
+// automatic generator keeps working with photo backgrounds either way;
+// the Palette tab just warns about that fallback before confirming the
+// delete (see PaletteTab.jsx's confirmDeleteBg).
+export async function deleteBackgroundColor(id) {
   const { error } = await supabase
     .from('staff_slide_background_colors_portal123')
     .delete()
