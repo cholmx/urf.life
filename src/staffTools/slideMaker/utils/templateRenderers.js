@@ -1,4 +1,4 @@
-import {wrapText,drawLines,blockHeight,autoFitText} from './canvasUtils';
+import {wrapText,wrapSubtext,drawLines,blockHeight,autoFitText} from './canvasUtils';
 
 const hw = (brand, fallback) => brand.hWeight ?? fallback;
 const bw = (brand, fallback) => brand.bWeight ?? fallback;
@@ -66,7 +66,10 @@ function computeTextBlock(ctx, data, brand, {
     // this slide.
     const subStyledWeight = brand.bItalic ? `italic ${bw(brand, 600)}` : `${bw(brand, 600)}`;
     subFont = `${subStyledWeight} ${subSize}px ${brand.bFont}`;
-    subLines = wrapText(ctx, data.line2, subFont, textW, true);
+    // Prefers breaking at a comma (a whole clause per line) over an
+    // arbitrary mid-phrase word wrap when this needs two lines - see
+    // wrapSubtext in canvasUtils.js.
+    subLines = wrapSubtext(ctx, data.line2, subFont, textW);
     subLH = subSize * 1.35;
     totalH += subGap + blockHeight(subLines, subLH);
   }

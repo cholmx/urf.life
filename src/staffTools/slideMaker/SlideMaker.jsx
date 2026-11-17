@@ -24,7 +24,7 @@ const DEFAULT_DATA = {
   dateNum: "5",
   dateMo: "APRIL",
   label: "JOIN US",
-  s1: 155, s2: 65,
+  s1: 155, s2: 75,
   autoFit: true,
   headLineHeight: 1.12,
 };
@@ -98,6 +98,15 @@ const DEFAULT_BRAND = {
 function getAutoBackgroundPool(photos, backgroundColors) {
   const textures = (photos || []).filter(p => p && p.isTexture).map(p => ({img: p.img}));
   const solids = (backgroundColors || []).filter(bg => bg.inAutoRotation).map(bg => ({solid: bg}));
+  if (textures.length === 0 && solids.length === 0) {
+    // backgroundColors hasn't loaded yet, or nothing's been imported
+    // into the Palette tab yet, or everything in it currently has
+    // rotation switched off - pickTextureForId/pickRandomTexture index
+    // into this pool with a modulo, so an empty array divides by zero
+    // and crashes rather than just failing gracefully. One safe solid
+    // keeps every caller working (if plainly) until a real pool exists.
+    return [{solid: FALLBACK_DARK_BUCKET}];
+  }
   return [...textures, ...solids];
 }
 

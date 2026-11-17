@@ -69,6 +69,56 @@ export function wrapText(ctx,text,font,maxW,allowLineBreaks=false) {
   return lines;
 }
 
+function wordWrap(ctx, text, maxW) {
+  const words = text.split(" ");
+  const lines = [];
+  let cur = "";
+  for (const w of words) {
+    const test = cur ? `${cur} ${w}` : w;
+    if (ctx.measureText(test).width > maxW && cur) {
+      lines.push(cur);
+      cur = w;
+    } else cur = test;
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}
+
+// Wraps subhead/body text preferring a break at a natural clause
+// boundary (a comma) over an arbitrary mid-phrase word wrap - a line
+// break mid-clause ("Upper Room / Fellowship kitchen") reads far worse
+// than one between whole clauses ("Drop-off November 21, / 8 to 10 AM,
+// Upper Room Fellowship kitchen"). A literal \n in the text (a manual
+// break, same as wrapText's allowLineBreaks) is honored first and takes
+// priority over this - each resulting segment gets its own clause pass.
+export function wrapSubtext(ctx, text, font, maxW) {
+  ctx.font = font;
+  if (text.includes('\n')) {
+    return text.split('\n').flatMap(line => (line.trim() ? wrapSubtext(ctx, line, font, maxW) : ['']));
+  }
+
+  const clauses = text.split(',').map((c, i, arr) => (i < arr.length - 1 ? `${c.trim()},` : c.trim())).filter(Boolean);
+  if (clauses.length <= 1) return wordWrap(ctx, text, maxW);
+
+  const lines = [];
+  let cur = "";
+  for (const clause of clauses) {
+    const test = cur ? `${cur} ${clause}` : clause;
+    if (!cur || ctx.measureText(test).width <= maxW) {
+      cur = test;
+    } else {
+      lines.push(cur);
+      cur = clause;
+    }
+  }
+  if (cur) lines.push(cur);
+
+  // A clause-packed line can still itself be too wide (one very long
+  // clause with no commas of its own) - word-wrap just that line rather
+  // than the whole text, so short clauses elsewhere stay un-split.
+  return lines.flatMap(line => (ctx.measureText(line).width > maxW ? wordWrap(ctx, line, maxW) : [line]));
+}
+
 /**
  * Auto-fit text: wraps text at maxW, then shrinks font size until all lines
  * fit within maxH (or minimum font size reached). Returns { lines, fontSize, lineHeightPx }.

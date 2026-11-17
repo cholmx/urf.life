@@ -75,7 +75,7 @@ export default function ContentTab({ tmplId, data, ds, brand, setBrand }) {
           onChange={e => ds("line2", e.target.value)}
         />
       </Field>
-      <Slider label="Subtext Size" value={data.s2 || 65} min={20} max={160} onChange={v => ds("s2", v)} />
+      <Slider label="Subtext Size" value={data.s2 || 75} min={20} max={160} onChange={v => ds("s2", v)} />
     </div>
   );
 }
