@@ -119,35 +119,96 @@ export function wrapSubtext(ctx, text, font, maxW) {
   return lines.flatMap(line => (ctx.measureText(line).width > maxW ? wordWrap(ctx, line, maxW) : [line]));
 }
 
-/**
- * Auto-fit text: wraps text at maxW, then shrinks font size until all lines
- * fit within maxH (or minimum font size reached). Returns { lines, fontSize, lineHeightPx }.
- * @param {object} ctx - canvas 2d context
- * @param {string} text - text to fit
- * @param {number} baseSize - starting font size in px
- * @param {string} fontFamily - CSS font-family string
- * @param {number} weight - font weight number
- * @param {number} maxW - max width in px
- * @param {number} maxH - max height in px
- * @param {number} lineSpacing - line height multiplier (e.g. 1.12)
- * @returns {{lines: string[], fontSize: number, lineHeightPx: number}}
- */
-export function autoFitText(ctx, text, baseSize, weight, fontFamily, maxW, maxH, lineSpacing) {
-  let size = baseSize;
-  const minSize = Math.max(24, Math.floor(baseSize * 0.3));
-  let lines = [];
-  let lineHeightPx = size * lineSpacing;
+// Finds the largest font size at which `text`, greedily word-wrapped at
+// `targetW`, keeps every line's rendered width within targetW (wrapText
+// never breaks a single overlong first word, so that case is caught here
+// by measuring the actual widest line rather than trusting the wrap
+// alone) while its total height still fits maxH.
+//
+// More lines means less width to fill per line, so simply maximizing
+// font size over every possible line count would often prefer MORE
+// lines even for short text (e.g. splitting a two-word title onto two
+// single-word lines lets each word individually grow bigger than the
+// two-word phrase could as one line) - a layout mistake, not a bigger,
+// bolder headline. Capping how many lines get tried at roughly one per
+// two words rules that out; within that cap, every line count from 1
+// up is still tried and the biggest font size found at any of them
+// wins, so a genuinely long title still wraps into as many lines as it
+// takes to stay reasonably large rather than shrinking to fit on one.
+export function fitTextToWidth(ctx, text, fontFamily, weight, targetW, maxH, lineSpacing, {minSize = 24, maxSize = 800, step = 2} = {}) {
+  const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
+  const maxLineCount = Math.max(1, Math.floor(wordCount / 2));
 
-  while (size >= minSize) {
-    const font = `${weight} ${size}px ${fontFamily}`;
-    lines = wrapText(ctx, text, font, maxW);
-    lineHeightPx = size * lineSpacing;
-    const totalH = lines.length * lineHeightPx;
-    if (totalH <= maxH) break;
-    size -= 2;
+  let best = null;
+  for (let allowedLines = 1; allowedLines <= maxLineCount; allowedLines++) {
+    for (let size = maxSize; size >= minSize; size -= step) {
+      const font = `${weight} ${size}px ${fontFamily}`;
+      const lines = wrapText(ctx, text, font, targetW);
+      if (lines.length > allowedLines) continue;
+      const lineHeightPx = size * lineSpacing;
+      const totalH = lines.length * lineHeightPx;
+      const widest = Math.max(...lines.map(l => ctx.measureText(l).width));
+      if (widest <= targetW + 0.5 && totalH <= maxH) {
+        if (!best || size > best.fontSize) best = {lines, fontSize: size, lineHeightPx};
+        break; // largest size at this line count found - try the next count
+      }
+    }
   }
+  if (best) return best;
+  // Nothing fit at any line count up to the cap, even at minSize (an
+  // extreme edge case, e.g. a single very long word) - render at
+  // minSize anyway rather than show nothing.
+  const font = `${weight} ${minSize}px ${fontFamily}`;
+  return {lines: wrapText(ctx, text, font, targetW), fontSize: minSize, lineHeightPx: minSize * lineSpacing};
+}
 
-  return { lines, fontSize: size, lineHeightPx };
+// Splits `text` into exactly two lines, preferring a split between whole
+// clauses (comma-separated) closest to the midpoint - the same "whole
+// clause per line" preference as wrapSubtext, just always exactly two
+// groups instead of however many a width constraint happens to produce.
+// Falls back to a word-boundary split closest to the midpoint when the
+// text has no comma; a single word can't be split into two lines at all
+// and comes back as one.
+function splitIntoTwoLines(text) {
+  const pickBestSplit = (parts) => {
+    if (parts.length < 2) return null;
+    let bestIdx = 1, bestDiff = Infinity;
+    for (let i = 1; i < parts.length; i++) {
+      const a = parts.slice(0, i).join(' ');
+      const b = parts.slice(i).join(' ');
+      const diff = Math.abs(a.length - b.length);
+      if (diff < bestDiff) { bestDiff = diff; bestIdx = i; }
+    }
+    return [parts.slice(0, bestIdx).join(' '), parts.slice(bestIdx).join(' ')];
+  };
+
+  const clauses = text.split(',').map((c, i, arr) => (i < arr.length - 1 ? `${c.trim()},` : c.trim())).filter(Boolean);
+  const clauseSplit = clauses.length >= 2 ? pickBestSplit(clauses) : null;
+  if (clauseSplit) return clauseSplit;
+
+  const wordSplit = pickBestSplit(text.split(' ').filter(Boolean));
+  return wordSplit || [text];
+}
+
+// Sizes the subtext to always render as exactly two lines (see
+// splitIntoTwoLines) at the largest font size whose wider line still
+// fits within targetW - so it reads big and consistently fills close to
+// the same fraction of the slide's width no matter how long the actual
+// text is. Falls back to a single line only when the text has too few
+// words to split into two at all.
+export function fitSubtextToTwoLines(ctx, text, fontFamily, weight, italic, targetW, {minSize = 20, maxSize = 160, step = 2} = {}) {
+  const lines = splitIntoTwoLines(text);
+  const styledWeight = italic ? `italic ${weight}` : `${weight}`;
+
+  for (let size = maxSize; size >= minSize; size -= step) {
+    const font = `${styledWeight} ${size}px ${fontFamily}`;
+    ctx.font = font;
+    const widest = Math.max(...lines.map(l => ctx.measureText(l).width));
+    if (widest <= targetW + 0.5) {
+      return {lines, fontSize: size, font};
+    }
+  }
+  return {lines, fontSize: minSize, font: `${styledWeight} ${minSize}px ${fontFamily}`};
 }
 
 export function drawLines(ctx,lines,x,y,font,fill,align,lineH,letterSpacing=0) {

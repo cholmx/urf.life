@@ -1,16 +1,19 @@
-import {wrapText,wrapSubtext,drawLines,blockHeight,autoFitText} from './canvasUtils';
+import {wrapText,fitTextToWidth,fitSubtextToTwoLines,drawLines,blockHeight} from './canvasUtils';
 
 const hw = (brand, fallback) => brand.hWeight ?? fallback;
 const bw = (brand, fallback) => brand.bWeight ?? fallback;
 
-/**
- * Compute headline lines, line height, and effective font size.
- * Uses autoFitText when data.autoFit is true, otherwise uses wrapText with manual size.
- * Uses data.headLineHeight (default 1.12) for line spacing.
- */
-function computeHeadline(ctx, data, brand, maxW, weight, fallbackSize) {
-  const baseSize = data.s1 || fallbackSize;
-  const lineSpacing = data.headLineHeight ?? 1.12;
+// Headline target/cap width as a fraction of the slide's own width (not
+// the margin box maxW) - the automatic generator always sizes the
+// headline to fill close to this fraction, however short or long the
+// title is (see fitTextToWidth), rather than starting from a fixed size
+// and only shrinking when it overflows. maxW stays as a hard ceiling in
+// case this fraction ever exceeds the margin box on some future aspect
+// ratio.
+const HEADLINE_WIDTH_FRACTION = 0.75;
+
+function computeHeadline(ctx, data, brand, maxW, weight) {
+  const lineSpacing = 1.12;
   const rawHeadText = data.line1 || "YOUR TEXT HERE";
   // hUppercase is purely a render-time transform for display faces that
   // read as all-caps by design (set per pairing in the Fonts tab - see
@@ -23,23 +26,25 @@ function computeHeadline(ctx, data, brand, maxW, weight, fallbackSize) {
   // computeAutoSlide); DEFAULT_BRAND's own fallback is upright.
   const styledWeight = brand.hItalic ? `italic ${weight}` : `${weight}`;
 
-  if (data.autoFit) {
-    // maxH: roughly 60% of canvas height for headline
-    const ch = ctx.canvas.height;
-    const maxH = ch * 0.55;
-    const result = autoFitText(ctx, headText, baseSize, styledWeight, fontFamily, maxW, maxH, lineSpacing);
-    return {
-      lines: result.lines,
-      headLH: result.lineHeightPx,
-      headFont: `${styledWeight} ${result.fontSize}px ${fontFamily}`,
-    };
-  }
-
-  const headFont = `${styledWeight} ${baseSize}px ${fontFamily}`;
-  const lines = wrapText(ctx, headText, headFont, maxW);
-  const headLH = baseSize * lineSpacing;
-  return { lines, headLH, headFont };
+  const ch = ctx.canvas.height;
+  const targetW = Math.min(ctx.canvas.width * HEADLINE_WIDTH_FRACTION, maxW);
+  // maxH: roughly 55% of canvas height for headline
+  const maxH = ch * 0.55;
+  const result = fitTextToWidth(ctx, headText, fontFamily, styledWeight, targetW, maxH, lineSpacing);
+  return {
+    lines: result.lines,
+    headLH: result.lineHeightPx,
+    headFont: `${styledWeight} ${result.fontSize}px ${fontFamily}`,
+    headFontSize: result.fontSize,
+  };
 }
+
+// Subtext target/cap width, same idea as HEADLINE_WIDTH_FRACTION above
+// but narrower and paired with always-exactly-two-lines (see
+// fitSubtextToTwoLines) rather than a flexible line count - a smaller,
+// secondary block that still reads as deliberately sized relative to
+// the slide, not just "whatever's left over" at a fixed pixel size.
+const SUBTEXT_WIDTH_FRACTION = 0.55;
 
 // Shared layout math for every template below: measure the headline,
 // optionally measure a subtitle (line2), and sum their heights into one
@@ -49,27 +54,27 @@ function computeHeadline(ctx, data, brand, maxW, weight, fallbackSize) {
 function computeTextBlock(ctx, data, brand, {
   textW,
   headlineWeight,
-  headlineFallbackSize,
   subGap = 32,
-  subFallbackSize = 40,
 }) {
-  const { lines: headLines, headLH, headFont } = computeHeadline(ctx, data, brand, textW, headlineWeight, headlineFallbackSize);
+  const { lines: headLines, headLH, headFont, headFontSize } = computeHeadline(ctx, data, brand, textW, headlineWeight);
   let totalH = blockHeight(headLines, headLH);
 
   let subLines = [], subLH = 0, subFont = '';
   if (data.line2) {
-    const subSize = data.s2 || subFallbackSize;
-    // Italic/weight/family now come from the brand's font pairing
-    // (DEFAULT_BRAND's own fallback is always italic Playfair Display,
-    // same as before this was configurable) rather than being fixed
-    // here regardless of what's actually been picked for this slide.
-    const subStyledWeight = brand.bItalic ? `italic ${bw(brand, 600)}` : `${bw(brand, 600)}`;
-    subFont = `${subStyledWeight} ${subSize}px ${brand.bFont}`;
-    // Prefers breaking at a comma (a whole clause per line) over an
-    // arbitrary mid-phrase word wrap when this needs two lines - see
-    // wrapSubtext in canvasUtils.js.
-    subLines = wrapSubtext(ctx, data.line2, subFont, textW);
-    subLH = subSize * 1.35;
+    const targetW = Math.min(ctx.canvas.width * SUBTEXT_WIDTH_FRACTION, textW);
+    // Always exactly two lines, preferring a natural clause break (see
+    // fitSubtextToTwoLines/splitIntoTwoLines in canvasUtils.js) - italic/
+    // weight/family come from the brand's font pairing (DEFAULT_BRAND's
+    // own fallback is always italic Playfair Display). Capped relative
+    // to the headline's own resolved size (never more than a bit over
+    // half of it) rather than a fixed pixel ceiling - a short subtext
+    // paired with a short, large headline still scales up with it
+    // instead of hitting an arbitrary cap well under the 55% target.
+    const subMaxSize = Math.max(28, Math.round(headFontSize * 0.55));
+    const sub = fitSubtextToTwoLines(ctx, data.line2, brand.bFont, bw(brand, 600), !!brand.bItalic, targetW, {maxSize: subMaxSize});
+    subLines = sub.lines;
+    subFont = sub.font;
+    subLH = sub.fontSize * 1.35;
     totalH += subGap + blockHeight(subLines, subLH);
   }
 
@@ -97,8 +102,7 @@ export const renderLeftBlock=(ctx,data,brand,contentW,margin,cw,ch)=> {
 
 export const renderMinimal=(ctx,data,brand,contentW,cw,ch)=> {
   const block = computeTextBlock(ctx, data, brand, {
-    textW: contentW, headlineWeight: hw(brand, 900), headlineFallbackSize: 128,
-    subGap: 40, subFallbackSize: 45,
+    textW: contentW, headlineWeight: hw(brand, 900), subGap: 40,
   });
   drawTextBlock(ctx, block, brand, cw / 2, centerY(block.totalH, 0, ch), "center");
 };

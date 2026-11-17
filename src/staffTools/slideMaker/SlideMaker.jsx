@@ -21,9 +21,6 @@ const DEFAULT_DATA = {
   dateNum: "5",
   dateMo: "APRIL",
   label: "JOIN US",
-  s1: 155, s2: 85,
-  autoFit: true,
-  headLineHeight: 1.12,
 };
 
 // Dark/light buckets a photo's own average brightness is sorted into for
