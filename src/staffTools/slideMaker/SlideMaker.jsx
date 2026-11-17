@@ -163,7 +163,7 @@ const DARK_OVERLAY_OPTIONS = [
 // darkBucket/lightBucket come from the Palette tab's staff-managed
 // backgroundColors (see findBucket) - whatever two backgrounds carry
 // the dark_bucket/light_bucket role right now, not a fixed pair.
-function autoBrandForBrightness(brightness, avoidOverlayColors = [], darkBucket, lightBucket) {
+function autoBrandForBrightness(brightness, avoidOverlayColors = [], darkBucket, lightBucket, backgroundColors = []) {
   const bucket = brightness < 0.5 ? darkBucket : lightBucket;
   const randomBucketTextColor = () => bucket.textColors[Math.floor(Math.random() * bucket.textColors.length)].hex;
 
@@ -173,10 +173,20 @@ function autoBrandForBrightness(brightness, avoidOverlayColors = [], darkBucket,
     const overlay = pool[Math.floor(Math.random() * pool.length)];
     return {bgColor: bucket.hex, textColor: overlay.textColor || randomBucketTextColor(), overlayColor: overlay.color, ov: overlay.ov};
   }
-  // Light bucket always washes white by design - nothing random to avoid.
-  // Same heavier wash as black above and for the same reason (white has
-  // no hue of its own to read as intentional at a lighter strength).
-  return {bgColor: bucket.hex, textColor: randomBucketTextColor(), overlayColor: "#FFFFFF", ov: 80};
+  // Light bucket wash now draws from whatever's currently in the Palette
+  // tab's auto-rotation pool (the same backgrounds solid slides pick
+  // from) instead of a fixed white - so deleting a color there, White
+  // included, removes it from this wash too. Falls back to the light
+  // bucket's own color only if nothing's in rotation at all.
+  const rotation = (backgroundColors || []).filter(bg => bg.inAutoRotation);
+  const choices = rotation.filter(bg => !avoidOverlayColors.includes(bg.hex));
+  const pool = choices.length > 0 ? choices : rotation;
+  if (pool.length > 0) {
+    const choice = pool[Math.floor(Math.random() * pool.length)];
+    const textColor = choice.textColors[Math.floor(Math.random() * choice.textColors.length)].hex;
+    return {bgColor: bucket.hex, textColor, overlayColor: choice.hex, ov: 80};
+  }
+  return {bgColor: bucket.hex, textColor: randomBucketTextColor(), overlayColor: bucket.hex, ov: 80};
 }
 
 // Picks one of the Fonts tab's staff-managed pairings (fontPairings -
@@ -283,7 +293,7 @@ async function computeAutoSlide(entry, avoidOverlayColors = [], marks = [], font
   const brightness = averageBrightness(img);
   const darkBucket = findBucket(backgroundColors, "dark_bucket", FALLBACK_DARK_BUCKET);
   const lightBucket = findBucket(backgroundColors, "light_bucket", FALLBACK_LIGHT_BUCKET);
-  const auto = autoBrandForBrightness(brightness, avoidOverlayColors, darkBucket, lightBucket);
+  const auto = autoBrandForBrightness(brightness, avoidOverlayColors, darkBucket, lightBucket, backgroundColors);
   const mark = await pickMarkOverlay(brightness >= 0.5, marks);
   return {
     img,
