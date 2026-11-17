@@ -1,21 +1,11 @@
-import React, {useRef, useState} from 'react';
+import React, {useMemo, useRef, useState} from 'react';
 import {C, ui} from '../../constants/styles';
 import {TEXTURES} from '../../constants/data';
-import Slider from '../Slider';
 import {uploadPhoto, deletePhoto, isDuplicatePhoto, setPhotoIsTexture, importBuiltInTexture} from '../../services/photoService';
 import {useToast} from '../../hooks/useToast';
 import ConfirmDialog from '../ConfirmDialog';
 
-const OVERLAY_COLORS = [
-  { id: "black", name: "Black", color: "#000000" },
-  { id: "white", name: "White", color: "#FFFFFF" },
-  { id: "green", name: "Dark Teal", color: "#172B2C" },
-  { id: "red", name: "Rosy Copper", color: "#C65D3B" },
-  { id: "gold", name: "Sandy Brown", color: "#F9AB55" },
-  { id: "sage", name: "Jungle Teal", color: "#5B8B75" },
-];
-
-export default function PhotosTab({photos, setPhotos, activePhoto, setActivePhoto, ov, setOv, blur, setBlur, overlayColor, setOverlayColor}) {
+export default function PhotosTab({photos, setPhotos}) {
   const fileRef = useRef(null);
   const [dragging, setDragging] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(null);
@@ -23,11 +13,15 @@ export default function PhotosTab({photos, setPhotos, activePhoto, setActivePhot
   const [importing, setImporting] = useState(false);
   const toast = useToast();
 
-  // One-time action: pulls the app's bundled seed textures into this same
-  // library (as real, deletable, toggleable photos) instead of them living
-  // as a separate hardcoded pool - once any of them (or anything else) is
-  // flagged as a texture, there's no need to keep offering this.
-  const hasAnyTexture = photos.some(p => p && p.isTexture);
+  // Mirrors FontsTab's alreadyImported check - hides the button once
+  // every built-in texture's filename is already present, not just once
+  // any photo is flagged as a texture (a staff-uploaded texture used to
+  // hide this permanently, even with none of the built-ins ever
+  // imported).
+  const alreadyImported = useMemo(() => {
+    const names = new Set(photos.filter(Boolean).map(p => p.name));
+    return TEXTURES.every(path => names.has(path.split('/').pop()));
+  }, [photos]);
 
   const handleImportBuiltIns = async () => {
     setImporting(true);
@@ -118,7 +112,6 @@ export default function PhotosTab({photos, setPhotos, activePhoto, setActivePhot
     const photo = confirmDelete;
     setConfirmDelete(null);
     try {
-      if (activePhoto === photo.img) setActivePhoto(null);
       if (photo.dbId && photo.storagePath) {
         await deletePhoto(photo.dbId, photo.storagePath);
       }
@@ -135,55 +128,12 @@ export default function PhotosTab({photos, setPhotos, activePhoto, setActivePhot
       : `Uploading ${uploadProgress.current + 1} of ${uploadProgress.total}: ${uploadProgress.name}`
     : null;
 
-  const PhotoGrid = ({selectedImg, onSelect}) => (
-    <div style={{display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8}}>
-      {photos.filter(Boolean).map(p => (
-        <div key={p.id} style={{position: "relative"}}>
-          <div onClick={() => onSelect(p.img)} style={{
-            borderRadius: 6, overflow: "hidden", cursor: "pointer", aspectRatio: "16/10",
-            border: `2px solid ${selectedImg === p.img ? C.accent : C.border}`,
-            boxShadow: selectedImg === p.img ? `0 0 0 3px ${C.accentBg}` : "none",
-          }}>
-            <canvas ref={el => {
-              if (el) {
-                el.width = 240; el.height = 150;
-                const ctx = el.getContext("2d");
-                const sc = Math.max(240 / p.img.width, 150 / p.img.height);
-                const w = p.img.width * sc, h = p.img.height * sc;
-                ctx.drawImage(p.img, (240 - w) / 2, (150 - h) / 2, w, h);
-              }
-            }} style={{width: "100%", height: "100%", display: "block"}} />
-          </div>
-          <button onClick={() => handleDeletePhoto(p)}
-            style={{position: "absolute", top: 3, right: 3, width: 18, height: 18, borderRadius: 9, border: "none", background: "rgba(0,0,0,0.7)", color: "#fff", fontSize: 10, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1}}>
-            ×
-          </button>
-          <button
-            onClick={() => handleToggleTexture(p)}
-            title={p.isTexture ? "Remove from automatic backgrounds" : "Add to automatic backgrounds"}
-            style={{
-              position: "absolute", top: 3, left: 3, width: 18, height: 18, borderRadius: 9, border: "none",
-              background: p.isTexture ? C.accent : "rgba(0,0,0,0.6)", color: "#fff", fontSize: 10, cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1,
-            }}
-          >
-            ✨
-          </button>
-          {selectedImg === p.img && (
-            <div style={{position: "absolute", bottom: 3, left: 3, background: C.accent, color: "#fff", borderRadius: 3, padding: "1px 5px", fontSize: 8, fontFamily: ui.display, fontWeight: 700}}>ACTIVE</div>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-
   return (
     <div>
       <input type="file" ref={fileRef} accept="image/*" multiple onChange={handlePhotos} style={{display: "none"}} />
 
-      {/* Background section */}
       <div style={{fontFamily: ui.display, fontSize: 10, fontWeight: 700, color: C.textSec, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 8}}>
-        Background Photo
+        Background Photos
       </div>
 
       <div
@@ -218,19 +168,7 @@ export default function PhotosTab({photos, setPhotos, activePhoto, setActivePhot
         )}
       </div>
 
-      <div style={{display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10}}>
-        <div onClick={() => setActivePhoto(null)} style={{
-          padding: "5px 12px", borderRadius: 6, cursor: "pointer", fontFamily: ui.display,
-          fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em",
-          border: `2px solid ${!activePhoto ? C.accent : C.border}`,
-          background: !activePhoto ? C.accentBg : "transparent",
-          color: !activePhoto ? C.accentDark : C.textTer,
-        }}>
-          No Photo
-        </div>
-      </div>
-
-      {!hasAnyTexture && (
+      {!alreadyImported && (
         <button
           onClick={handleImportBuiltIns}
           disabled={importing}
@@ -250,39 +188,42 @@ export default function PhotosTab({photos, setPhotos, activePhoto, setActivePhot
           <div style={{fontFamily: ui.body, fontSize: 10, color: C.textTer, marginBottom: 6}}>
             ✨ on a photo adds it to the pool of automatic backgrounds used when building a slide from the queue.
           </div>
-          <PhotoGrid selectedImg={activePhoto} onSelect={setActivePhoto} />
-        </>
-      )}
-
-      {activePhoto && (
-        <div style={{marginTop: 12, background: C.cardAlt, borderRadius: 8, padding: 12, display: "flex", flexDirection: "column", gap: 12}}>
-          <div>
-            <div style={{fontFamily: ui.display, fontSize: 10, fontWeight: 700, color: C.textSec, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6}}>
-              Overlay Color
-            </div>
-            <div style={{display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8}}>
-              {OVERLAY_COLORS.map(o => (
-                <div key={o.id} onClick={() => setOverlayColor(o.color)} style={{
-                  display: "flex", alignItems: "center", gap: 6, padding: "6px 10px", cursor: "pointer",
-                  border: `2px solid ${overlayColor === o.color ? C.accent : C.border}`,
-                  borderRadius: 6,
-                  background: overlayColor === o.color ? C.accentBg : "transparent",
+          <div style={{display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8}}>
+            {photos.filter(Boolean).map(p => (
+              <div key={p.id} style={{position: "relative"}}>
+                <div style={{
+                  borderRadius: 6, overflow: "hidden", aspectRatio: "16/10",
+                  border: `2px solid ${C.border}`,
                 }}>
-                  <div style={{width: 14, height: 14, borderRadius: "50%", background: o.color, border: `1px solid ${C.border}`, flexShrink: 0}} />
-                  <span style={{fontFamily: ui.display, fontSize: 10, fontWeight: 700, color: C.text}}>{o.name}</span>
+                  <canvas ref={el => {
+                    if (el) {
+                      el.width = 240; el.height = 150;
+                      const ctx = el.getContext("2d");
+                      const sc = Math.max(240 / p.img.width, 150 / p.img.height);
+                      const w = p.img.width * sc, h = p.img.height * sc;
+                      ctx.drawImage(p.img, (240 - w) / 2, (150 - h) / 2, w, h);
+                    }
+                  }} style={{width: "100%", height: "100%", display: "block"}} />
                 </div>
-              ))}
-            </div>
+                <button onClick={() => handleDeletePhoto(p)}
+                  style={{position: "absolute", top: 3, right: 3, width: 18, height: 18, borderRadius: 9, border: "none", background: "rgba(0,0,0,0.7)", color: "#fff", fontSize: 10, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1}}>
+                  ×
+                </button>
+                <button
+                  onClick={() => handleToggleTexture(p)}
+                  title={p.isTexture ? "Remove from automatic backgrounds" : "Add to automatic backgrounds"}
+                  style={{
+                    position: "absolute", top: 3, left: 3, width: 18, height: 18, borderRadius: 9, border: "none",
+                    background: p.isTexture ? C.accent : "rgba(0,0,0,0.6)", color: "#fff", fontSize: 10, cursor: "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1,
+                  }}
+                >
+                  ✨
+                </button>
+              </div>
+            ))}
           </div>
-          <Slider
-            label={`Overlay Opacity (${ov}%)`}
-            value={ov}
-            min={0}
-            max={100}
-            onChange={setOv}
-          />
-          <Slider label={`Blur (${blur}px)`} value={blur} min={0} max={60} onChange={setBlur} />
-        </div>
+        </>
       )}
 
       {confirmDelete && (

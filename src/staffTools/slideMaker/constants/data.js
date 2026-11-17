@@ -7,9 +7,9 @@ export const ASPECT_RATIOS = [
   { id: "16:9",  label: "16:9",  w: 2560, h: 1440 },
 ];
 
-// Fixed brand typography for the Custom Editor - Inter Tight Bold for the
-// headline, Playfair Display for the subhead. No font picker: this is
-// the only combo a manually-built slide gets.
+// Fallback brand typography - Inter Tight Bold for the headline, Playfair
+// Display for the subhead. Used by DEFAULT_BRAND and pickAutoFontPairing's
+// empty-library fallback when the Fonts tab has no pairings imported yet.
 export const HEADLINE_FONT = "'Inter Tight',sans-serif";
 export const HEADLINE_WEIGHT = 700;
 export const BODY_FONT = "'Playfair Display',serif";
@@ -23,9 +23,9 @@ export const BODY_WEIGHT = 400;
 // tab; the live automatic generator reads that DB-backed state (see
 // pickAutoFontPairing in SlideMaker.jsx), never this array directly -
 // it only matters the one time a pairing gets imported. Pairing 1
-// mirrors the Custom Editor's own fixed pairing above exactly (Inter
-// Tight Bold headline, Playfair Display italic subhead); every pairing
-// after it brings in a font the Custom Editor never uses at all.
+// mirrors the fallback pairing above exactly (Inter Tight Bold headline,
+// Playfair Display italic subhead); every pairing after it brings in a
+// font not used anywhere else in this tool.
 // hUppercase renders the headline in caps (Google Sans Flex, Montserrat,
 // and Outfit - each a naturally all-caps display face) without touching
 // the announcement's own title text (data.line1) - see computeHeadline
@@ -49,15 +49,16 @@ export const BUILT_IN_FONT_PAIRINGS = [
 // importBuiltInBackgroundColor) - the same role TEXTURES/BUILT_IN_MARKS/
 // BUILT_IN_FONT_PAIRINGS play for their own tabs. Once imported, each
 // becomes an ordinary row in staff_slide_background_colors_portal123,
-// editable/deletable (except the two bucket roles below) from that tab;
-// the live Custom Editor and automatic generator read that DB-backed
-// state (see backgroundColors in SlideMaker.jsx), never this array
-// directly - it only matters the one time a background gets imported.
+// editable/deletable from that tab; the live automatic generator reads
+// that DB-backed state (see backgroundColors in SlideMaker.jsx), never
+// this array directly - it only matters the one time a background gets
+// imported.
 //
 // role marks White and Jet Black as the two structural buckets every
-// photo/texture gets brightness-sorted into (see autoBrandForBrightness
-// in SlideMaker.jsx) - they can be retinted/renamed but never deleted
-// (see deleteBackgroundColor's guard). White also starts with
+// photo/texture gets brightness-sorted into (see autoBrandForBrightness/
+// findBucket in SlideMaker.jsx) - either can be retinted, renamed, or
+// even deleted; findBucket falls back to a hardcoded dark/light pair
+// when no row currently holds a given role. White also starts with
 // inAutoRotation: false (too many plain-white auto slides - see the
 // commit that excluded it) even though it still anchors the light
 // bucket; the other five are purely decorative and fully staff-editable.
@@ -95,11 +96,6 @@ export const BUILT_IN_BACKGROUND_COLORS = [
     { name: "Yellow", hex: "#FFEAB7" },
     { name: "Cream", hex: "#F4ECDD" },
   ] },
-];
-
-export const TEMPLATES = [
-  { id: "minimal", name: "Centered" },
-  { id: "left_block", name: "Left Aligned" },
 ];
 
 // These three arrays are now only the seed list for the Marks tab's

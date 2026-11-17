@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {C, ui} from '../../constants/styles';
 import {BUILT_IN_BACKGROUND_COLORS} from '../../constants/data';
 import {addBackgroundColor, updateBackgroundColor, deleteBackgroundColor, importBuiltInBackgroundColor} from '../../services/backgroundColorService';
@@ -185,7 +185,15 @@ export default function PaletteTab({backgroundColors, setBackgroundColors}) {
   const [confirmDelete, setConfirmDelete] = useState(null);
   const toast = useToast();
 
-  const hasAnyBuiltIn = backgroundColors.length > 0;
+  // Mirrors FontsTab's alreadyImported check - hides the button once
+  // every built-in background's name is already present, not just once
+  // the library is non-empty (a single staff-added background used to
+  // hide this permanently, even with none of the built-ins ever
+  // imported).
+  const alreadyImported = useMemo(() => {
+    const names = new Set(backgroundColors.map(b => b.name));
+    return BUILT_IN_BACKGROUND_COLORS.every(b => names.has(b.name));
+  }, [backgroundColors]);
 
   const handleImportBuiltIns = async () => {
     setImporting(true);
@@ -273,7 +281,7 @@ export default function PaletteTab({backgroundColors, setBackgroundColors}) {
         The solid backgrounds in the Colors tab and the automatic generator's rotation, plus which text colors read on each one.
       </div>
 
-      {!hasAnyBuiltIn && !importing && (
+      {!alreadyImported && !importing && (
         <button
           onClick={handleImportBuiltIns}
           style={{

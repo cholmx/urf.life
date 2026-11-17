@@ -10,7 +10,7 @@ function downloadPreview(dataUrl, title) {
   a.click();
 }
 
-export default function QueueTab({ items, previews, onRegenerate, onUseItem, onToggleSlideMade }) {
+export default function QueueTab({ items, previews, onRegenerate, onToggleSlideMade }) {
   const [regeneratingIds, setRegeneratingIds] = useState(() => new Set());
 
   const handleRegenerate = async (a) => {
@@ -37,9 +37,9 @@ export default function QueueTab({ items, previews, onRegenerate, onUseItem, onT
   return (
     <div>
       <div style={{ fontFamily: ui.body, fontSize: 13, color: C.textTer, marginBottom: 16 }}>
-        {items.length} still need{items.length === 1 ? 's' : ''} a slide — a ready-made one is building for each below; download it directly, or open it to tweak.
+        {items.length} still need{items.length === 1 ? 's' : ''} a slide — a ready-made one is building for each below; download it directly, or shuffle for a different look.
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(420px, 1fr))', gap: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(620px, 1fr))', gap: 24 }}>
         {items.map(a => {
           const dates = (a.event_dates && a.event_dates.length > 0)
             ? [...a.event_dates].filter(Boolean).sort()
@@ -106,40 +106,24 @@ export default function QueueTab({ items, previews, onRegenerate, onUseItem, onT
                 </div>
               )}
               <div style={{ display: 'flex', gap: 8 }}>
-                <button
-                  onClick={() => onUseItem(a)}
-                  style={{
-                    flex: 1,
-                    padding: '8px 10px',
-                    border: `1px solid ${C.border}`,
-                    borderRadius: 6,
-                    background: C.accentBg,
-                    color: C.accentDark,
-                    fontFamily: ui.body,
-                    fontSize: 13,
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                  }}
-                >
-                  Use This
-                </button>
                 {previewUrl && (
                   <button
                     onClick={() => downloadPreview(previewUrl, a.title)}
-                    title="Download this slide now, no editing needed"
+                    title="Download this slide"
                     style={{
-                      flex: '0 0 auto',
-                      width: 40,
-                      padding: '8px 0',
+                      flex: 1,
+                      padding: '8px 10px',
                       border: `1px solid ${C.border}`,
                       borderRadius: 6,
-                      background: 'transparent',
-                      color: C.textSec,
-                      fontSize: 15,
+                      background: C.accentBg,
+                      color: C.accentDark,
+                      fontFamily: ui.body,
+                      fontSize: 13,
+                      fontWeight: 600,
                       cursor: 'pointer',
                     }}
                   >
-                    ⬇
+                    ⬇ Download
                   </button>
                 )}
                 <button

@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, {useMemo, useRef, useState} from 'react';
 import {C, ui} from '../../constants/styles';
 import {BUILT_IN_MARKS} from '../../constants/data';
 import {uploadMark, deleteMark, isDuplicateMark, setMarkPool, importBuiltInMark} from '../../services/markService';
@@ -44,6 +44,15 @@ export default function MarksTab({marks, setMarks}) {
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [importing, setImporting] = useState(false);
   const toast = useToast();
+
+  // Mirrors FontsTab's alreadyImported check - hides the button once
+  // every built-in mark's name is already present, not just once the
+  // library is non-empty (a single staff-uploaded mark used to hide this
+  // permanently, even with none of the built-ins ever imported).
+  const alreadyImported = useMemo(() => {
+    const names = new Set(marks.filter(Boolean).map(m => m.name));
+    return BUILT_IN_MARKS.every(({src}) => names.has(src.split('/').pop()));
+  }, [marks]);
 
   const handleImportBuiltIns = async () => {
     setImporting(true);
@@ -193,7 +202,7 @@ export default function MarksTab({marks, setMarks}) {
         )}
       </div>
 
-      {marks.length === 0 && !uploadProgress && (
+      {!alreadyImported && !uploadProgress && (
         <button
           onClick={handleImportBuiltIns}
           disabled={importing}

@@ -20,7 +20,7 @@ function computeHeadline(ctx, data, brand, maxW, weight, fallbackSize) {
   const headText = brand.hUppercase ? rawHeadText.toUpperCase() : rawHeadText;
   const fontFamily = brand.hFont;
   // The automatic slide maker's font pairing decides this per slide (see
-  // computeAutoSlide); the Custom Editor's own default is upright.
+  // computeAutoSlide); DEFAULT_BRAND's own fallback is upright.
   const styledWeight = brand.hItalic ? `italic ${weight}` : `${weight}`;
 
   if (data.autoFit) {
@@ -59,11 +59,10 @@ function computeTextBlock(ctx, data, brand, {
   let subLines = [], subLH = 0, subFont = '';
   if (data.line2) {
     const subSize = data.s2 || subFallbackSize;
-    // Italic/weight/family now come from the brand's font pairing (the
-    // Custom Editor's own default is always italic Playfair Display, same
-    // as before this was configurable - see DEFAULT_BRAND) rather than
-    // being fixed here regardless of what's actually been picked for
-    // this slide.
+    // Italic/weight/family now come from the brand's font pairing
+    // (DEFAULT_BRAND's own fallback is always italic Playfair Display,
+    // same as before this was configurable) rather than being fixed
+    // here regardless of what's actually been picked for this slide.
     const subStyledWeight = brand.bItalic ? `italic ${bw(brand, 600)}` : `${bw(brand, 600)}`;
     subFont = `${subStyledWeight} ${subSize}px ${brand.bFont}`;
     // Prefers breaking at a comma (a whole clause per line) over an

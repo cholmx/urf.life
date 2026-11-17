@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
 
 // Always needed regardless of what's in the Fonts tab's library - the
-// Custom Editor's own fixed pairing (see HEADLINE_FONT/BODY_FONT in
-// constants/data.js), since every manually-built slide uses it.
+// fallback pairing (see HEADLINE_FONT/BODY_FONT in constants/data.js)
+// every automatic slide falls back to when no pairing has been imported
+// yet.
 const FIXED_FONTS = [
   { font: 'Inter Tight', weight: 700, italic: false },
   { font: 'Playfair Display', weight: 400, italic: true },
