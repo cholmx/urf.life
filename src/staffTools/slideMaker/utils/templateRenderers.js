@@ -13,7 +13,6 @@ const bw = (brand, fallback) => brand.bWeight ?? fallback;
 const HEADLINE_WIDTH_FRACTION = 0.75;
 
 function computeHeadline(ctx, data, brand, maxW, weight) {
-  const lineSpacing = 1.12;
   const rawHeadText = data.line1 || "YOUR TEXT HERE";
   // hUppercase is purely a render-time transform for display faces that
   // read as all-caps by design (set per pairing in the Fonts tab - see
@@ -30,7 +29,7 @@ function computeHeadline(ctx, data, brand, maxW, weight) {
   const targetW = Math.min(ctx.canvas.width * HEADLINE_WIDTH_FRACTION, maxW);
   // maxH: roughly 55% of canvas height for headline
   const maxH = ch * 0.55;
-  const result = fitTextToWidth(ctx, headText, fontFamily, styledWeight, targetW, maxH, lineSpacing);
+  const result = fitTextToWidth(ctx, headText, fontFamily, styledWeight, targetW, maxH);
   return {
     lines: result.lines,
     headLH: result.lineHeightPx,

@@ -119,47 +119,63 @@ export function wrapSubtext(ctx, text, font, maxW) {
   return lines.flatMap(line => (ctx.measureText(line).width > maxW ? wordWrap(ctx, line, maxW) : [line]));
 }
 
-// Finds the largest font size at which `text`, greedily word-wrapped at
-// `targetW`, keeps every line's rendered width within targetW (wrapText
-// never breaks a single overlong first word, so that case is caught here
-// by measuring the actual widest line rather than trusting the wrap
-// alone) while its total height still fits maxH.
-//
-// More lines means less width to fill per line, so simply maximizing
-// font size over every possible line count would often prefer MORE
-// lines even for short text (e.g. splitting a two-word title onto two
-// single-word lines lets each word individually grow bigger than the
-// two-word phrase could as one line) - a layout mistake, not a bigger,
-// bolder headline. Capping how many lines get tried at roughly one per
-// two words rules that out; within that cap, every line count from 1
-// up is still tried and the biggest font size found at any of them
-// wins, so a genuinely long title still wraps into as many lines as it
-// takes to stay reasonably large rather than shrinking to fit on one.
-export function fitTextToWidth(ctx, text, fontFamily, weight, targetW, maxH, lineSpacing, {minSize = 24, maxSize = 800, step = 2} = {}) {
-  const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
-  const maxLineCount = Math.max(1, Math.floor(wordCount / 2));
+// A headline on one line uses the normal, slightly airy line-height
+// multiplier below (it barely matters with nothing to space out from) -
+// wrapping to two or more lines switches to a visibly tighter one, to
+// read as one deliberate block instead of looking like it has extra
+// gaps between lines.
+const HEADLINE_LINE_SPACING_SINGLE = 1.12;
+const HEADLINE_LINE_SPACING_MULTI = 0.98;
 
+// Below this size, a single line is considered to be shrinking past the
+// point of looking like a confident, bold headline - worth trading for
+// more (smaller, since each line has less width to fill) lines instead.
+const HEADLINE_MIN_READABLE_SIZE = 110;
+
+// Finds the font size and line count for `text` that keeps every line's
+// rendered width within targetW (wrapText never breaks a single
+// overlong first word, so that case is caught here by measuring the
+// actual widest line rather than trusting the wrap alone) and the whole
+// block's height within maxH.
+//
+// Always prefers the fewest lines the text can be rendered in - one, if
+// at all possible - over whatever line count happens to allow the
+// numerically biggest font (letting that float free would often prefer
+// MORE lines even for short text, since splitting it gives each line
+// less width to fill and so room for a bigger font per line, which
+// reads as a layout mistake, not a bolder headline). Only escalates to
+// more lines when the previous count's best size comes out smaller than
+// HEADLINE_MIN_READABLE_SIZE - i.e. only when staying on fewer lines
+// would otherwise shrink the whole headline down to something that no
+// longer reads as a confident title.
+export function fitTextToWidth(ctx, text, fontFamily, weight, targetW, maxH, {minSize = 24, maxSize = 800, step = 2, maxLineCount = 6} = {}) {
   let best = null;
   for (let allowedLines = 1; allowedLines <= maxLineCount; allowedLines++) {
     for (let size = maxSize; size >= minSize; size -= step) {
       const font = `${weight} ${size}px ${fontFamily}`;
       const lines = wrapText(ctx, text, font, targetW);
       if (lines.length > allowedLines) continue;
+      const lineSpacing = lines.length > 1 ? HEADLINE_LINE_SPACING_MULTI : HEADLINE_LINE_SPACING_SINGLE;
       const lineHeightPx = size * lineSpacing;
       const totalH = lines.length * lineHeightPx;
       const widest = Math.max(...lines.map(l => ctx.measureText(l).width));
       if (widest <= targetW + 0.5 && totalH <= maxH) {
-        if (!best || size > best.fontSize) best = {lines, fontSize: size, lineHeightPx};
-        break; // largest size at this line count found - try the next count
+        best = {lines, fontSize: size, lineHeightPx};
+        break; // largest size at this line count found
       }
     }
+    if (best && (best.fontSize >= HEADLINE_MIN_READABLE_SIZE || allowedLines === maxLineCount)) {
+      return best;
+    }
+    // Still too small even at this line count (or no fit at all) - try
+    // one more line before settling.
   }
   if (best) return best;
   // Nothing fit at any line count up to the cap, even at minSize (an
   // extreme edge case, e.g. a single very long word) - render at
   // minSize anyway rather than show nothing.
   const font = `${weight} ${minSize}px ${fontFamily}`;
-  return {lines: wrapText(ctx, text, font, targetW), fontSize: minSize, lineHeightPx: minSize * lineSpacing};
+  return {lines: wrapText(ctx, text, font, targetW), fontSize: minSize, lineHeightPx: minSize * HEADLINE_LINE_SPACING_SINGLE};
 }
 
 // Splits `text` into exactly two lines, preferring a split between whole
