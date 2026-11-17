@@ -190,25 +190,50 @@ function splitIntoTwoLines(text) {
   return wordSplit || [text];
 }
 
-// Sizes the subtext to always render as exactly two lines (see
-// splitIntoTwoLines) at the largest font size whose wider line still
-// fits within targetW - so it reads big and consistently fills close to
-// the same fraction of the slide's width no matter how long the actual
-// text is. Falls back to a single line only when the text has too few
+// Sizes `text` as a single line at the largest size (up to maxSize) that
+// keeps it within targetW - fitSubtextToTwoLines' fallback for whenever
+// splitting into two lines wouldn't actually get any closer to the
+// width target than one line already does.
+function fitSingleLine(ctx, text, styledWeight, fontFamily, targetW, {minSize, maxSize, step}) {
+  for (let size = maxSize; size >= minSize; size -= step) {
+    const font = `${styledWeight} ${size}px ${fontFamily}`;
+    ctx.font = font;
+    if (ctx.measureText(text).width <= targetW + 0.5) {
+      return {lines: [text], fontSize: size, font};
+    }
+  }
+  return {lines: [text], fontSize: minSize, font: `${styledWeight} ${minSize}px ${fontFamily}`};
+}
+
+// Sizes the subtext at the largest font size whose wider line still fits
+// within targetW - so it reads big and consistently fills close to the
+// same fraction of the slide's width no matter how long the actual text
+// is. Prefers exactly two lines (see splitIntoTwoLines), but only when
+// splitting actually buys something: if even the very first (largest)
+// size tried already fits comfortably under targetW as two lines, the
+// text was short enough that it never needed to shrink to get there -
+// meaning the split isn't reaching toward the width target at all, just
+// sitting under it, and one full-width line (fewer, longer lines need a
+// smaller size to cover the same width) gets closer to - or reaches -
+// that target than two half-width lines capped at the same size ever
+// could. Also falls back to one line outright when the text has too few
 // words to split into two at all.
 export function fitSubtextToTwoLines(ctx, text, fontFamily, weight, italic, targetW, {minSize = 20, maxSize = 160, step = 2} = {}) {
   const lines = splitIntoTwoLines(text);
   const styledWeight = italic ? `italic ${weight}` : `${weight}`;
 
-  for (let size = maxSize; size >= minSize; size -= step) {
-    const font = `${styledWeight} ${size}px ${fontFamily}`;
-    ctx.font = font;
-    const widest = Math.max(...lines.map(l => ctx.measureText(l).width));
-    if (widest <= targetW + 0.5) {
-      return {lines, fontSize: size, font};
+  if (lines.length === 2) {
+    for (let size = maxSize; size >= minSize; size -= step) {
+      const font = `${styledWeight} ${size}px ${fontFamily}`;
+      ctx.font = font;
+      const widest = Math.max(...lines.map(l => ctx.measureText(l).width));
+      if (widest <= targetW + 0.5) {
+        if (size === maxSize) break; // never had to shrink - the split isn't earning its keep
+        return {lines, fontSize: size, font};
+      }
     }
   }
-  return {lines, fontSize: minSize, font: `${styledWeight} ${minSize}px ${fontFamily}`};
+  return fitSingleLine(ctx, text, styledWeight, fontFamily, targetW, {minSize, maxSize, step});
 }
 
 export function drawLines(ctx,lines,x,y,font,fill,align,lineH,letterSpacing=0) {
