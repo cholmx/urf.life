@@ -322,6 +322,7 @@
 .happenings-script p {
   margin: 0 0 1.6em;
   line-height: 1.45;
+  font-size: 15px;
 }
 .happenings-script p:last-child {
   margin-bottom: 0;
