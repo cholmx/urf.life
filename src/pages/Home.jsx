@@ -227,7 +227,7 @@ const HomeButton = ({ title, description, icon, path, isFeatured = false, isInte
     : `relative overflow-hidden p-5 rounded-2xl clay-shadow transition-all duration-300 hover:-translate-y-1 active:scale-[0.97] block text-center group flex flex-col justify-center items-center w-full${stretch ? ' h-full' : ' min-h-[160px] md:min-h-[200px]'}`;
 
   const featuredClasses = gradient ? "" : "text-white";
-  const mainClasses = "bg-gradient-to-br from-[#45585A] to-[#172B2C] hover:from-[#7CA291] hover:to-[#5B8B75] text-white";
+  const mainClasses = "bg-gradient-to-br from-[#2E4041] to-[#172B2C] hover:from-[#6B9783] hover:to-[#5B8B75] text-white";
 
   const iconColor = (isYellow || isOrange) ? 'text-text-primary' : 'text-white';
   const textColor = (isYellow || isOrange) ? 'text-text-primary' : 'text-white';
@@ -271,13 +271,13 @@ const HomeButton = ({ title, description, icon, path, isFeatured = false, isInte
   // of the dark-teal-to-near-black pairing it used before, which read
   // as barely a gradient at all.
   const gradientStyle = gradient
-    ? {background: 'linear-gradient(135deg, #7CA291 0%, #5B8B75 100%)'}
+    ? {background: 'linear-gradient(135deg, #6B9783 0%, #5B8B75 100%)'}
     : isOrange
-      ? {background: 'linear-gradient(135deg, #FABC77 0%, #F9AB55 100%)'}
+      ? {background: 'linear-gradient(135deg, #FAB366 0%, #F9AB55 100%)'}
       : isYellow
-        ? {background: 'linear-gradient(135deg, #FABC77 0%, #F9AB55 100%)'}
+        ? {background: 'linear-gradient(135deg, #FAB366 0%, #F9AB55 100%)'}
         : isFeatured
-          ? {background: 'linear-gradient(135deg, #D17D62 0%, #C65D3B 100%)'}
+          ? {background: 'linear-gradient(135deg, #CC6D4F 0%, #C65D3B 100%)'}
           : {};
 
   return (
