@@ -167,15 +167,49 @@ const DARK_OVERLAY_OPTIONS = [
   {color: "#5B8B75", textColor: "#FFFFFF", ov: 65},
 ];
 
+// How far apart (on the 0-1 hexBrightness scale) a text color and its
+// background need to read before they're trusted to actually contrast -
+// below this, both sides are "medium" enough that reading them is a
+// strain no matter which of a swatch's curated text options got picked.
+// See pickContrastingTextColor.
+const MIN_CONTRAST_DIFF = 0.5;
+
+// What a photo-overlay wash actually looks like once rendered: the
+// overlay color at its own strength (ov, 0-100) blended over the photo's
+// own average brightness underneath. A medium-brightness overlay (e.g.
+// the brand's Rosy Copper or Jungle Teal, both near 0.5) lands close to
+// its own brightness pretty much regardless of the photo, since ov is
+// always a strong wash (65-88) - this is what lets that combination come
+// out "medium" even when the curated text options were picked with a
+// clearly light or dark backdrop in mind.
+function blendedBrightness(overlayHex, ov, baseBrightness) {
+  const strength = (ov || 0) / 100;
+  return strength * hexBrightness(overlayHex) + (1 - strength) * baseBrightness;
+}
+
+// Picks a text color that actually contrasts against a background of the
+// given (already-blended, where relevant) brightness, instead of trusting
+// a swatch's own curated text-color list - or a single forced color - to
+// always be safe. A swatch that's itself medium-brightness (see above)
+// can have every one of its "intended" text options read as medium-on-
+// medium once blended in, which is exactly the "two mediums" failure this
+// guards against. Falls back to pure white or pure black, whichever side
+// of the midpoint the background sits on, when nothing given clears the
+// bar - that pairing has enough contrast against literally any background.
+function pickContrastingTextColor(options, bgBrightness) {
+  const withDiff = (options || []).map(o => ({hex: o.hex, diff: Math.abs(hexBrightness(o.hex) - bgBrightness)}));
+  const safe = withDiff.filter(o => o.diff >= MIN_CONTRAST_DIFF);
+  const pool = safe.length > 0 ? safe : [{hex: bgBrightness < 0.5 ? "#FFFFFF" : "#000000"}];
+  return pool[Math.floor(Math.random() * pool.length)].hex;
+}
+
 // Buckets the texture's average brightness into the dark/light background
 // it reads best against, picks an overlay (dark bucket: one of the five
 // options above; light bucket: whatever's currently in the Palette tab's
-// rotation), and a text color - the overlay's own forced color when it
-// has one, otherwise a random pick from the bucket's two allowed text
-// colors (so a dark-bucket slide sometimes lands on yellow instead of
-// always white). The overlay nudges the texture toward a flatter, more
-// even tone so text stays readable over its own internal light/dark
-// variation.
+// rotation), and a text color that actually contrasts against how that
+// overlay renders once blended with the photo underneath (see
+// blendedBrightness/pickContrastingTextColor) - not just whichever of the
+// bucket's or overlay's curated options random happens to land on.
 //
 // avoidOverlayColors excludes colors from the random pick entirely (not
 // just a reroll-and-hope) - used to keep adjacent queue slides from
@@ -186,13 +220,15 @@ const DARK_OVERLAY_OPTIONS = [
 // the dark_bucket/light_bucket role right now, not a fixed pair.
 function autoBrandForBrightness(brightness, avoidOverlayColors = [], darkBucket, lightBucket, backgroundColors = []) {
   const bucket = brightness < 0.5 ? darkBucket : lightBucket;
-  const randomBucketTextColor = () => bucket.textColors[Math.floor(Math.random() * bucket.textColors.length)].hex;
 
   if (brightness < 0.5) {
     const choices = DARK_OVERLAY_OPTIONS.filter(o => !avoidOverlayColors.includes(o.color));
     const pool = choices.length > 0 ? choices : DARK_OVERLAY_OPTIONS;
     const overlay = pool[Math.floor(Math.random() * pool.length)];
-    return {bgColor: bucket.hex, textColor: overlay.textColor || randomBucketTextColor(), overlayColor: overlay.color, ov: overlay.ov};
+    const effectiveBg = blendedBrightness(overlay.color, overlay.ov, brightness);
+    const candidates = overlay.textColor ? [{hex: overlay.textColor}] : bucket.textColors;
+    const textColor = pickContrastingTextColor(candidates, effectiveBg);
+    return {bgColor: bucket.hex, textColor, overlayColor: overlay.color, ov: overlay.ov};
   }
   // Light bucket wash draws from whatever's currently in the Palette
   // tab's auto-rotation pool (the same backgrounds solid slides pick
@@ -204,10 +240,12 @@ function autoBrandForBrightness(brightness, avoidOverlayColors = [], darkBucket,
   const pool = choices.length > 0 ? choices : rotation;
   if (pool.length > 0) {
     const choice = pool[Math.floor(Math.random() * pool.length)];
-    const textColor = choice.textColors[Math.floor(Math.random() * choice.textColors.length)].hex;
+    const effectiveBg = blendedBrightness(choice.hex, 80, brightness);
+    const textColor = pickContrastingTextColor(choice.textColors, effectiveBg);
     return {bgColor: bucket.hex, textColor, overlayColor: choice.hex, ov: 80};
   }
-  return {bgColor: bucket.hex, textColor: randomBucketTextColor(), overlayColor: bucket.hex, ov: 80};
+  const effectiveBg = blendedBrightness(bucket.hex, 80, brightness);
+  return {bgColor: bucket.hex, textColor: pickContrastingTextColor(bucket.textColors, effectiveBg), overlayColor: bucket.hex, ov: 80};
 }
 
 // Picks one of the Fonts tab's staff-managed pairings (fontPairings -
@@ -305,7 +343,7 @@ async function computeAutoSlide(entry, avoidOverlayColors = [], marks = [], font
   const tmpl = pickAutoTemplate();
   if (entry.solid) {
     const bg = entry.solid;
-    const textColor = bg.textColors[Math.floor(Math.random() * bg.textColors.length)].hex;
+    const textColor = pickContrastingTextColor(bg.textColors, hexBrightness(bg.hex));
     const mark = await pickMarkOverlay(hexBrightness(bg.hex) >= 0.5, marks);
     return {img: null, bgColor: bg.hex, textColor, overlayColor: null, ov: 0, blur: 0, tmpl, ...mark, ...font};
   }
