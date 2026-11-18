@@ -103,19 +103,46 @@ function getAutoBackgroundPool(photos, backgroundColors) {
   return [...textures, ...solids];
 }
 
+// Identifies a pool entry for repeat-avoidance purposes - a texture by
+// its image src (stable across pool rebuilds, unlike object identity),
+// a solid by its Palette tab row id.
+function entryKey(entry) {
+  if (!entry) return null;
+  if (entry.img) return `img:${entry.img.src}`;
+  if (entry.solid) return `solid:${entry.solid.id}`;
+  return null;
+}
+
 // Deterministic per-event pick (same event always lands on the same
 // texture) so reopening an already-built slide doesn't shuffle its look.
-function pickTextureForId(pool, id) {
+// avoidEntry - the adjacent queue slide's own resolved pick - nudges it
+// off that exact background (same idea as avoidOverlayColors for the
+// overlay wash) so two neighboring slides don't show up with the
+// identical texture/solid under otherwise-different colors; only tried
+// once, since forcing it further would break the "same event, same
+// background" determinism this function exists for.
+function pickTextureForId(pool, id, avoidEntry) {
   const str = String(id ?? "");
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     hash = (hash * 31 + str.charCodeAt(i)) >>> 0;
   }
-  return pool[hash % pool.length];
+  const idx = hash % pool.length;
+  if (pool.length > 1 && avoidEntry && entryKey(pool[idx]) === entryKey(avoidEntry)) {
+    return pool[(idx + 1) % pool.length];
+  }
+  return pool[idx];
 }
 
-function pickRandomTexture(pool) {
-  return pool[Math.floor(Math.random() * pool.length)];
+function pickRandomTexture(pool, avoidEntry) {
+  if (pool.length <= 1) return pool[0];
+  let pick = pool[Math.floor(Math.random() * pool.length)];
+  let attempts = 0;
+  while (avoidEntry && entryKey(pick) === entryKey(avoidEntry) && attempts < 10) {
+    pick = pool[Math.floor(Math.random() * pool.length)];
+    attempts += 1;
+  }
+  return pick;
 }
 
 // Overlay choices for a dark-bucket texture, picked at random for some
@@ -325,15 +352,16 @@ function buildAutoSlideData(a) {
 
 const QUEUE_PREVIEW_RATIO = ASPECT_RATIOS.find(r => r.id === "16:10") || ASPECT_RATIOS[0];
 
-// Renders a finished, ready-to-download slide for a queue item entirely
-// off-screen - the same automatic texture/color/overlay pick a staffer
-// would get by opening it in the editor, but produced the moment the
-// queue loads so there's a PNG sitting there to grab without opening
-// anything. Returns the overlay color alongside the image so the caller
-// can feed it forward as the next item's avoidOverlayColors.
-async function generateQueueThumbnailFromEntry(a, entry, avoidOverlayColors = [], marks = [], fontPairings = [], backgroundColors = []) {
-  const auto = await computeAutoSlide(entry, avoidOverlayColors, marks, fontPairings, backgroundColors);
-  const data = {...DEFAULT_DATA, ...buildAutoSlideData(a)};
+// Draws a queue thumbnail from an already-resolved `auto` look (see
+// computeAutoSlide) - split out of generateQueueThumbnailFromEntry below
+// so a text-only edit (see updateQueueItemText in SlideMakerInner) can
+// redraw with new wording using the SAME cached background/font/mark
+// pick, instead of calling computeAutoSlide again and re-rolling all of
+// it just to change a line of text. textOverride, when given, replaces
+// the announcement's own derived line1/line2 for this render only - it
+// never touches the announcement record itself.
+function renderQueueThumbnail(a, auto, textOverride) {
+  const data = {...DEFAULT_DATA, ...buildAutoSlideData(a), ...(textOverride || {})};
   const brand = {...DEFAULT_BRAND, bgColor: auto.bgColor, textColor: auto.textColor, hFont: auto.hFont, hWeight: auto.hWeight, hItalic: auto.hItalic, hUppercase: auto.hUppercase, bFont: auto.bFont, bWeight: auto.bWeight, bItalic: auto.bItalic, markImg: auto.markImg, markOpacity: auto.markOpacity, markFrame: auto.markFrame};
   const canvas = document.createElement('canvas');
   render(canvas, auto.tmpl, data, brand, auto.img, auto.overlayColor, auto.ov, auto.blur, QUEUE_PREVIEW_RATIO.w, QUEUE_PREVIEW_RATIO.h, 0);
@@ -341,6 +369,19 @@ async function generateQueueThumbnailFromEntry(a, entry, avoidOverlayColors = []
   // own background color is the thing adjacent slides should steer away
   // from repeating instead.
   return {dataUrl: sharpenCanvas(canvas).toDataURL("image/png"), overlayColor: auto.overlayColor || auto.bgColor};
+}
+
+// Renders a finished, ready-to-download slide for a queue item entirely
+// off-screen - the same automatic texture/color/overlay pick a staffer
+// would get by opening it in the editor, but produced the moment the
+// queue loads so there's a PNG sitting there to grab without opening
+// anything. Returns the resolved `auto` look alongside the image so the
+// caller can cache it (for a later text-only redraw - see
+// renderQueueThumbnail above) and feed its overlay color forward as the
+// next item's avoidOverlayColors.
+async function generateQueueThumbnailFromEntry(a, entry, avoidOverlayColors = [], marks = [], fontPairings = [], backgroundColors = [], textOverride = null) {
+  const auto = await computeAutoSlide(entry, avoidOverlayColors, marks, fontPairings, backgroundColors);
+  return {...renderQueueThumbnail(a, auto, textOverride), auto};
 }
 
 export default function SlideMaker({announcements, today, onToggleSlideMade}) {
@@ -366,17 +407,47 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
       .sort((a, b) => (SCOPE_ORDER[a.scope] ?? 2) - (SCOPE_ORDER[b.scope] ?? 2));
   }, [announcements, today]);
 
+  // The headline/subtext each queue item would get with no edit applied
+  // - prefill for the text editor below (see updateQueueItemText), so
+  // opening it shows the real current wording rather than a blank form.
+  const defaultSlideTexts = useMemo(() => {
+    const map = {};
+    for (const a of queueItems) map[a.id] = buildAutoSlideData(a);
+    return map;
+  }, [queueItems]);
+
   const [photos, setPhotos] = useState([]);
   const [marks, setMarks] = useState([]);
   const [fontPairings, setFontPairings] = useState([]);
   const [backgroundColors, setBackgroundColors] = useState([]);
   const [libraryOpen, setLibraryOpen] = useState(false);
+  // Staff-edited headline/subtext for a specific queue item, keyed by
+  // announcement id - a slide-only wording tweak (a line that reads
+  // awkwardly once auto-wrapped, say) that never touches the
+  // announcement record itself, so it has nowhere to live but here.
+  // Cleared automatically once the item leaves the queue (nothing
+  // prunes it, but it's ephemeral component state - gone on refresh).
+  const [textOverrides, setTextOverrides] = useState({});
   useGoogleFonts(fontPairings);
 
   // Loaded once here (not inside PhotosTab) so a staff-flagged texture is
   // already part of the automatic-background pool the moment the queue is
   // opened, rather than only after the Photos tab happens to have been
   // visited this session.
+  // Set once each library's first fetch settles (loaded or failed) -
+  // gates the queue-preview generation effect below so it never builds
+  // a slide off an empty/stale library just because its own fetch
+  // hadn't resolved yet. Without this, a slide generated in that window
+  // locks in whatever fallback that empty state produced (e.g. every
+  // early slide landing on the same hardcoded dark backup color) for
+  // good - the effect only ever builds a PENDING item once, so it never
+  // retries once backgroundColors/photos/etc. actually arrive.
+  const [photosLoaded, setPhotosLoaded] = useState(false);
+  const [marksLoaded, setMarksLoaded] = useState(false);
+  const [fontPairingsLoaded, setFontPairingsLoaded] = useState(false);
+  const [backgroundColorsLoaded, setBackgroundColorsLoaded] = useState(false);
+  const librariesLoaded = photosLoaded && marksLoaded && fontPairingsLoaded && backgroundColorsLoaded;
+
   useEffect(() => {
     let cancelled = false;
     getPhotos((photo, index, total) => {
@@ -389,7 +460,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     }).catch((error) => {
       console.error('Could not load the photo library:', error);
       if (!cancelled) toast.show(`Could not load your photo library: ${error?.message || 'unknown error'}`, 'error');
-    });
+    }).finally(() => { if (!cancelled) setPhotosLoaded(true); });
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -410,7 +481,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     }).catch((error) => {
       console.error('Could not load the mark library:', error);
       if (!cancelled) toast.show(`Could not load your mark library: ${error?.message || 'unknown error'}`, 'error');
-    });
+    }).finally(() => { if (!cancelled) setMarksLoaded(true); });
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -428,7 +499,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     }).catch((error) => {
       console.error('Could not load the font pairing library:', error);
       if (!cancelled) toast.show(`Could not load your font pairings: ${error?.message || 'unknown error'}`, 'error');
-    });
+    }).finally(() => { if (!cancelled) setFontPairingsLoaded(true); });
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -444,7 +515,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     }).catch((error) => {
       console.error('Could not load the background color library:', error);
       if (!cancelled) toast.show(`Could not load your background colors: ${error?.message || 'unknown error'}`, 'error');
-    });
+    }).finally(() => { if (!cancelled) setBackgroundColorsLoaded(true); });
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -461,6 +532,17 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
   // truth read while generating.
   const [queuePreviews, setQueuePreviews] = useState({});
   const queuePreviewOverlayRef = useRef({});
+  // The actual pool entry (texture or solid) each item landed on - kept
+  // alongside the overlay color above so the NEXT item's pick can steer
+  // away from repeating the same background image/color outright, not
+  // just the same overlay tint on top of a possibly-identical one.
+  const queuePreviewEntryRef = useRef({});
+  // The full resolved look (background/font/mark/etc - see
+  // computeAutoSlide) each item landed on, so a text-only edit (see
+  // updateQueueItemText below) can redraw with new wording via
+  // renderQueueThumbnail alone, without calling computeAutoSlide again
+  // and re-rolling everything else just to fix a line.
+  const queuePreviewAutoRef = useRef({});
   const generatingQueuePreviewsRef = useRef(new Set());
   // A plain "cancelled" flag closed over per effect run doesn't survive
   // React StrictMode's dev-only double-invoke (mount, cleanup, mount
@@ -475,6 +557,11 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
   }, []);
 
   useEffect(() => {
+    // Wait for every library's first fetch to settle - see
+    // librariesLoaded above - so a queue item never gets generated off
+    // an empty/stale pool just because backgroundColors (or any of the
+    // others) hasn't finished loading yet.
+    if (!librariesLoaded) return;
     const pool = getAutoBackgroundPool(photos, backgroundColors);
     if (pool.length === 0) return;
     const pending = queueItems.filter(a => !queuePreviews[a.id] && !generatingQueuePreviewsRef.current.has(a.id));
@@ -488,9 +575,12 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
           const idx = queueItems.findIndex(q => q.id === a.id);
           const prevId = idx > 0 ? queueItems[idx - 1].id : null;
           const avoid = prevId && queuePreviewOverlayRef.current[prevId] ? [queuePreviewOverlayRef.current[prevId]] : [];
-          const entry = pickTextureForId(pool, a.id);
-          const result = await generateQueueThumbnailFromEntry(a, entry, avoid, marks, fontPairings, backgroundColors);
+          const avoidEntry = prevId ? queuePreviewEntryRef.current[prevId] : null;
+          const entry = pickTextureForId(pool, a.id, avoidEntry);
+          const result = await generateQueueThumbnailFromEntry(a, entry, avoid, marks, fontPairings, backgroundColors, textOverrides[a.id]);
           queuePreviewOverlayRef.current[a.id] = result.overlayColor;
+          queuePreviewEntryRef.current[a.id] = entry;
+          queuePreviewAutoRef.current[a.id] = result.auto;
           if (isMountedRef.current) setQueuePreviews(prev => ({...prev, [a.id]: result}));
         } catch (error) {
           // Leave it unset - the queue just won't offer a direct download
@@ -501,7 +591,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queueItems, photos, marks, fontPairings, backgroundColors]);
+  }, [queueItems, photos, marks, fontPairings, backgroundColors, librariesLoaded]);
 
   // "Try a different background" on a queue card - a fresh random texture
   // (not the deterministic per-event pick) and an overlay steered away
@@ -516,9 +606,15 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
       const idx = queueItems.findIndex(q => q.id === a.id);
       const prevId = idx > 0 ? queueItems[idx - 1].id : null;
       const avoid = [queuePreviewOverlayRef.current[a.id], prevId && queuePreviewOverlayRef.current[prevId]].filter(Boolean);
-      const entry = pickRandomTexture(pool);
-      const result = await generateQueueThumbnailFromEntry(a, entry, avoid, marks, fontPairings, backgroundColors);
+      const avoidEntry = queuePreviewEntryRef.current[a.id] || (prevId && queuePreviewEntryRef.current[prevId]) || null;
+      const entry = pickRandomTexture(pool, avoidEntry);
+      // A reshuffled background/font/mark keeps whatever wording staff
+      // already edited for this slide (see updateQueueItemText) - only
+      // the look rerolls, not text they specifically fixed.
+      const result = await generateQueueThumbnailFromEntry(a, entry, avoid, marks, fontPairings, backgroundColors, textOverrides[a.id]);
       queuePreviewOverlayRef.current[a.id] = result.overlayColor;
+      queuePreviewEntryRef.current[a.id] = entry;
+      queuePreviewAutoRef.current[a.id] = result.auto;
       if (isMountedRef.current) setQueuePreviews(prev => ({...prev, [a.id]: result}));
     } catch (error) {
       console.error('Could not rebuild that slide:', error);
@@ -526,7 +622,27 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     } finally {
       generatingQueuePreviewsRef.current.delete(a.id);
     }
-  }, [photos, marks, fontPairings, backgroundColors, queueItems, toast]);
+  }, [photos, marks, fontPairings, backgroundColors, queueItems, textOverrides, toast]);
+
+  // Redraws a queue item's cached look (same background/font/mark pick -
+  // see queuePreviewAutoRef) with new headline/subtext wording, without
+  // re-rolling anything else. textOverride of null/undefined clears the
+  // override and reverts to the announcement's own derived text. Falls
+  // through to a no-op redraw (just stores the override) if the item's
+  // preview hasn't finished its first generation yet - the pending-items
+  // effect above will pick the override up once it does.
+  const updateQueueItemText = useCallback((a, textOverride) => {
+    setTextOverrides(prev => {
+      if (textOverride) return {...prev, [a.id]: textOverride};
+      const next = {...prev};
+      delete next[a.id];
+      return next;
+    });
+    const auto = queuePreviewAutoRef.current[a.id];
+    if (!auto) return;
+    const result = renderQueueThumbnail(a, auto, textOverride);
+    setQueuePreviews(prev => ({...prev, [a.id]: {...prev[a.id], dataUrl: result.dataUrl}}));
+  }, []);
 
   return (
     <div className="slide-maker" style={{fontFamily: ui.body, background: C.bg, minHeight: "100vh"}}>
@@ -576,6 +692,9 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
           previews={queuePreviews}
           onRegenerate={regenerateQueuePreview}
           onToggleSlideMade={onToggleSlideMade}
+          defaultSlideTexts={defaultSlideTexts}
+          textOverrides={textOverrides}
+          onUpdateText={updateQueueItemText}
         />
       </div>
     </div>
