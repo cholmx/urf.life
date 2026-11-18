@@ -227,7 +227,7 @@ const HomeButton = ({ title, description, icon, path, isFeatured = false, isInte
     : `relative overflow-hidden p-5 rounded-2xl clay-shadow transition-all duration-300 hover:-translate-y-1 active:scale-[0.97] block text-center group flex flex-col justify-center items-center w-full${stretch ? ' h-full' : ' min-h-[160px] md:min-h-[200px]'}`;
 
   const featuredClasses = gradient ? "" : "text-white";
-  const mainClasses = "bg-gradient-to-br from-[#2E4041] to-[#172B2C] hover:from-[#6B9783] hover:to-[#5B8B75] text-white";
+  const mainClasses = "bg-gradient-to-b from-[#253839] to-[#172B2C] hover:from-[#65927D] hover:to-[#5B8B75] text-white";
 
   const iconColor = (isYellow || isOrange) ? 'text-text-primary' : 'text-white';
   const textColor = (isYellow || isOrange) ? 'text-text-primary' : 'text-white';
@@ -265,19 +265,23 @@ const HomeButton = ({ title, description, icon, path, isFeatured = false, isInte
   );
 
   // Every featured-button color gets the same soft treatment: a lighter
-  // tint of its own color fading into the true color (135deg), rather
-  // than a flat fill - gradient:true (the Growth Campaign button) now
-  // anchors on the brand's lighter teal (jungle teal, #5B8B75) instead
-  // of the dark-teal-to-near-black pairing it used before, which read
-  // as barely a gradient at all.
+  // tint of its own color fading into the true color top-to-bottom,
+  // rather than a flat fill - vertical (not diagonal) specifically so
+  // the transition stays confined to the button's short dimension; on
+  // a wide, short bar like these, a diagonal sweep stretches the same
+  // color difference across the full width and reads as a much
+  // stronger gradient than intended. gradient:true (the Growth
+  // Campaign button) anchors on the brand's lighter teal (jungle teal,
+  // #5B8B75) instead of the dark-teal-to-near-black pairing it used
+  // before, which read as barely a gradient at all.
   const gradientStyle = gradient
-    ? {background: 'linear-gradient(135deg, #6B9783 0%, #5B8B75 100%)'}
+    ? {background: 'linear-gradient(180deg, #65927D 0%, #5B8B75 100%)'}
     : isOrange
-      ? {background: 'linear-gradient(135deg, #FAB366 0%, #F9AB55 100%)'}
+      ? {background: 'linear-gradient(180deg, #F9B05F 0%, #F9AB55 100%)'}
       : isYellow
-        ? {background: 'linear-gradient(135deg, #FAB366 0%, #F9AB55 100%)'}
+        ? {background: 'linear-gradient(180deg, #F9B05F 0%, #F9AB55 100%)'}
         : isFeatured
-          ? {background: 'linear-gradient(135deg, #CC6D4F 0%, #C65D3B 100%)'}
+          ? {background: 'linear-gradient(180deg, #C96747 0%, #C65D3B 100%)'}
           : {};
 
   return (
