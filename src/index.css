@@ -299,10 +299,11 @@
   font-family: 'Aleo', serif;
 }
 
-/* Discussion questions background */
+/* Discussion questions background - sand (the `section` token), not the
+   old jungle teal: teal is too bold/saturated as a fill behind body text
+   and doesn't contrast reliably with the dark text on top of it. */
 .discussion-questions-section {
-  background-color: #5B8B75;
-  @apply border border-primary/20;
+  @apply bg-section border border-primary/20;
 }
 
 /* Rich text editor formatting */
