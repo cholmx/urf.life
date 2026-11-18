@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FiPlus, FiEdit, FiTrash2, FiSave, FiX, FiLayers, FiAlertTriangle, FiCheckCircle, FiTag } from 'react-icons/fi';
+import { FiPlus, FiEdit, FiTrash2, FiSave, FiX, FiLayers, FiAlertTriangle, FiCheckCircle, FiTag, FiYoutube } from 'react-icons/fi';
 import SafeIcon from '../../common/SafeIcon';
 import RichTextEditor from '../RichTextEditor';
 import { LoadingSpinner } from '../LoadingSpinner';
@@ -26,7 +26,7 @@ const emptyForm = {
 // comment there for why this can't just call the hook itself.
 const SermonsManager = ({ sermonSeries }) => {
   const confirm = useConfirm();
-  const { items: sermons, loading, insertItem, updateItem, deleteItem } = useSupabaseCrud(
+  const { items: sermons, loading, insertItem, updateItem, deleteItem, fetchItems } = useSupabaseCrud(
     'sermons_portal123',
     { orderBy: 'sermon_date', ascending: false }
   );
@@ -38,6 +38,7 @@ const SermonsManager = ({ sermonSeries }) => {
   const [success, setSuccess] = useState('');
   const [formData, setFormData] = useState(emptyForm);
   const [tagging, setTagging] = useState(false);
+  const [checkingYoutube, setCheckingYoutube] = useState(false);
   const formRef = useRef(null);
 
   // Edit opens this same form at the top of the list - for a sermon far
@@ -137,6 +138,38 @@ const SermonsManager = ({ sermonSeries }) => {
     }
   };
 
+  // Forces the same fetch-then-import the hourly cron does (feed fetch
+  // at :10, import at :17), instead of waiting for it - queues a fresh
+  // feed request and waits (server-side, bounded to ~8s) for the
+  // response before importing, since the fetch itself is asynchronous.
+  // A timeout/error status comes back as its own message rather than a
+  // thrown error, so a slow YouTube response reads as "try again" and
+  // not as a real failure.
+  const handleCheckYoutube = async () => {
+    setCheckingYoutube(true);
+    setError(null);
+    setSuccess('');
+    try {
+      const { data, error: rpcError } = await supabase.rpc('request_youtube_feed_check');
+      if (rpcError) throw rpcError;
+      if (data?.status === 'timeout' || data?.status === 'error') {
+        setError(data.message || 'Could not check YouTube right now.');
+        return;
+      }
+      const parts = [];
+      if (data?.imported) parts.push(`${data.imported} new sermon${data.imported === 1 ? '' : 's'} imported`);
+      if (data?.backfilled) parts.push(`${data.backfilled} existing sermon${data.backfilled === 1 ? '' : 's'} linked`);
+      if (data?.unmatched) parts.push(`${data.unmatched} skipped (title didn't match the expected format)`);
+      setSuccess(parts.length > 0 ? `Checked YouTube: ${parts.join(', ')}.` : 'Checked YouTube - nothing new.');
+      await fetchItems();
+    } catch (err) {
+      console.error('Error checking YouTube:', err);
+      setError('Error checking YouTube: ' + err.message);
+    } finally {
+      setCheckingYoutube(false);
+    }
+  };
+
   const getSeriesName = (seriesId) => {
     const series = sermonSeries.find(s => s.id === seriesId);
     return series ? series.name : 'Standalone Sermon';
@@ -162,6 +195,10 @@ const SermonsManager = ({ sermonSeries }) => {
       )}
 
       <div className="flex justify-end space-x-3 mb-6">
+        <button onClick={handleCheckYoutube} disabled={checkingYoutube} className="admin-btn-secondary">
+          <SafeIcon icon={FiYoutube} className="h-4 w-4" />
+          <span>{checkingYoutube ? 'Checking...' : 'Check YouTube Now'}</span>
+        </button>
         <button onClick={handleTagUntagged} disabled={tagging} className="admin-btn-secondary">
           <SafeIcon icon={FiTag} className="h-4 w-4" />
           <span>{tagging ? 'Tagging...' : 'Tag Untagged Sermons'}</span>
