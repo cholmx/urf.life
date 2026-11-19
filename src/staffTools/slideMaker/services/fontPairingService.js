@@ -83,6 +83,23 @@ export async function addFontPairing(pairing) {
   return rowToPairing(data);
 }
 
+// Updates only a saved pairing's size (not its fonts/weights/style -
+// those are set once at creation and would need re-validating against
+// Google Fonts to change, same as addFontPairing). Lets the Fonts tab
+// offer a lightweight "resize this pairing" edit after the fact instead
+// of delete-and-re-add just to change how big it reads.
+export async function updateFontPairingSize(id, {hSizeScale, bSizeScale}) {
+  const { data, error } = await supabase
+    .from('staff_slide_font_pairings_portal123')
+    .update({ h_size_scale: hSizeScale, b_size_scale: bSizeScale })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return rowToPairing(data);
+}
+
 export async function deleteFontPairing(id) {
   const { error } = await supabase
     .from('staff_slide_font_pairings_portal123')

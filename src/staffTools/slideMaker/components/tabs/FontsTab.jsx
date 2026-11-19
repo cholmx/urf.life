@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {C, ui} from '../../constants/styles';
-import {addFontPairing, deleteFontPairing} from '../../services/fontPairingService';
+import {addFontPairing, updateFontPairingSize, deleteFontPairing} from '../../services/fontPairingService';
 import {useToast} from '../../hooks/useToast';
 import ConfirmDialog from '../ConfirmDialog';
 
@@ -101,9 +101,33 @@ export default function FontsTab({fontPairings, setFontPairings}) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [adding, setAdding] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [editingSizeId, setEditingSizeId] = useState(null);
+  const [sizeDraft, setSizeDraft] = useState({hSizeScale: 1, bSizeScale: 1});
+  const [savingSize, setSavingSize] = useState(false);
   const toast = useToast();
 
   useLivePreviewFonts(form);
+
+  const startEditingSize = (pairing) => {
+    setEditingSizeId(pairing.id);
+    setSizeDraft({hSizeScale: pairing.hSizeScale ?? 1, bSizeScale: pairing.bSizeScale ?? 1});
+  };
+
+  const cancelEditingSize = () => setEditingSizeId(null);
+
+  const saveSize = async (pairing) => {
+    setSavingSize(true);
+    try {
+      const updated = await updateFontPairingSize(pairing.id, sizeDraft);
+      setFontPairings(prev => prev.map(p => (p.id === updated.id ? updated : p)));
+      setEditingSizeId(null);
+      toast.show('Size updated.', 'success');
+    } catch (error) {
+      toast.show(error?.message || 'Could not update that pairing\'s size.', 'error');
+    } finally {
+      setSavingSize(false);
+    }
+  };
 
   const handleAdd = async () => {
     if (!form.hFont.trim() || !form.bFont.trim()) {
@@ -152,20 +176,52 @@ export default function FontsTab({fontPairings, setFontPairings}) {
 
       {fontPairings.length > 0 && (
         <div style={{display: "flex", flexDirection: "column", gap: 8, marginBottom: 16}}>
-          {fontPairings.map(p => (
-            <div key={p.id} style={{border: `1px solid ${C.border}`, borderRadius: 8, overflow: "hidden"}}>
-              <PairingPreview pairing={p} />
-              <div style={{display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "6px 10px", background: C.card}}>
-                <span style={{fontFamily: ui.body, fontSize: 10, color: C.textTer, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1}}>
-                  {p.hFont} {p.hWeight}{p.hItalic ? ' italic' : ''}{p.hUppercase ? ' (caps)' : ''} / {p.bFont} {p.bWeight}{p.bItalic ? ' italic' : ''}
-                </span>
-                <button onClick={() => handleDelete(p)}
-                  style={{width: 20, height: 20, borderRadius: 10, border: "none", background: "rgba(0,0,0,0.65)", color: "#fff", fontSize: 11, cursor: "pointer", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1}}>
-                  ×
-                </button>
+          {fontPairings.map(p => {
+            const editing = editingSizeId === p.id;
+            return (
+              <div key={p.id} style={{border: `1px solid ${C.border}`, borderRadius: 8, overflow: "hidden"}}>
+                <PairingPreview pairing={editing ? {...p, ...sizeDraft} : p} />
+                <div style={{display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "6px 10px", background: C.card}}>
+                  <span style={{fontFamily: ui.body, fontSize: 10, color: C.textTer, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1}}>
+                    {p.hFont} {p.hWeight}{p.hItalic ? ' italic' : ''}{p.hUppercase ? ' (caps)' : ''} / {p.bFont} {p.bWeight}{p.bItalic ? ' italic' : ''}
+                  </span>
+                  <div style={{display: "flex", gap: 6, flexShrink: 0}}>
+                    <button onClick={() => (editing ? cancelEditingSize() : startEditingSize(p))}
+                      title={editing ? "Cancel" : "Edit this pairing's size"}
+                      style={{width: 20, height: 20, borderRadius: 10, border: "none", background: editing ? C.accent : "rgba(0,0,0,0.5)", color: "#fff", fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1}}>
+                      {editing ? "✕" : "✎"}
+                    </button>
+                    <button onClick={() => handleDelete(p)}
+                      style={{width: 20, height: 20, borderRadius: 10, border: "none", background: "rgba(0,0,0,0.65)", color: "#fff", fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1}}>
+                      ×
+                    </button>
+                  </div>
+                </div>
+                {editing && (
+                  <div style={{display: "flex", flexDirection: "column", gap: 10, padding: "10px", background: C.cardAlt, borderTop: `1px solid ${C.border}`}}>
+                    <SizeScaleSlider id={`font-${p.id}-head-size`} label="Headline Size" value={sizeDraft.hSizeScale} onChange={v => setSizeDraft(d => ({...d, hSizeScale: v}))} />
+                    <SizeScaleSlider id={`font-${p.id}-body-size`} label="Subhead Size" value={sizeDraft.bSizeScale} onChange={v => setSizeDraft(d => ({...d, bSizeScale: v}))} />
+                    <div style={{display: "flex", gap: 8}}>
+                      <button
+                        onClick={() => saveSize(p)}
+                        disabled={savingSize}
+                        style={{flex: 1, padding: "6px 12px", border: "none", borderRadius: 6, background: C.accentDark, color: "#fff", fontFamily: ui.display, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", cursor: savingSize ? "wait" : "pointer"}}
+                      >
+                        {savingSize ? "Saving…" : "Save Size"}
+                      </button>
+                      <button
+                        onClick={cancelEditingSize}
+                        disabled={savingSize}
+                        style={{padding: "6px 12px", border: `1px solid ${C.border}`, borderRadius: 6, background: "transparent", color: C.textSec, fontFamily: ui.body, fontSize: 12, cursor: savingSize ? "wait" : "pointer"}}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
