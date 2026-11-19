@@ -9,7 +9,10 @@ const bw = (brand, fallback) => brand.bWeight ?? fallback;
 // title is (see fitTextToWidth), rather than starting from a fixed size
 // and only shrinking when it overflows. maxW stays as a hard ceiling in
 // case this fraction ever exceeds the margin box on some future aspect
-// ratio.
+// ratio. brand.hSizeScale (set per font pairing in the Fonts tab, 1 =
+// unchanged) multiplies this fraction, so one pairing can read
+// deliberately bigger or smaller than another - still capped by maxW and
+// by computeHeadline's own maxH, same as the unscaled fraction always was.
 const HEADLINE_WIDTH_FRACTION = 0.68;
 
 function computeHeadline(ctx, data, brand, maxW, weight) {
@@ -26,7 +29,7 @@ function computeHeadline(ctx, data, brand, maxW, weight) {
   const styledWeight = brand.hItalic ? `italic ${weight}` : `${weight}`;
 
   const ch = ctx.canvas.height;
-  const targetW = Math.min(ctx.canvas.width * HEADLINE_WIDTH_FRACTION, maxW);
+  const targetW = Math.min(ctx.canvas.width * HEADLINE_WIDTH_FRACTION * (brand.hSizeScale ?? 1), maxW);
   // maxH: roughly 55% of canvas height for headline
   const maxH = ch * 0.55;
   const result = fitTextToWidth(ctx, headText, fontFamily, styledWeight, targetW, maxH);
@@ -60,7 +63,13 @@ function computeTextBlock(ctx, data, brand, {
 
   let subLines = [], subLH = 0, subFont = '';
   if (data.line2) {
-    const targetW = Math.min(ctx.canvas.width * SUBTEXT_WIDTH_FRACTION, textW);
+    // brand.bSizeScale (set per font pairing, 1 = unchanged) multiplies
+    // both the subtext's target width and its size cap below, together -
+    // raising just one of the two wouldn't actually grow the rendered
+    // text, since fitSubtextToTwoLines/fitSingleLine stop at whichever
+    // one binds first (see the comment on subMaxSize).
+    const bScale = brand.bSizeScale ?? 1;
+    const targetW = Math.min(ctx.canvas.width * SUBTEXT_WIDTH_FRACTION * bScale, textW);
     // Always exactly two lines, preferring a natural clause break (see
     // fitSubtextToTwoLines/splitIntoTwoLines in canvasUtils.js) - italic/
     // weight/family come from the brand's font pairing (DEFAULT_BRAND's
@@ -74,7 +83,7 @@ function computeTextBlock(ctx, data, brand, {
     // generous cap here only matters for text that genuinely needs it to
     // reach 55%, not a reason it'd ever overshoot toward the headline's
     // own size.
-    const subMaxSize = Math.max(28, Math.round(headFontSize * 1.05));
+    const subMaxSize = Math.max(28, Math.round(headFontSize * 1.05 * bScale));
     const sub = fitSubtextToTwoLines(ctx, data.line2, brand.bFont, bw(brand, 600), !!brand.bItalic, targetW, {maxSize: subMaxSize});
     subLines = sub.lines;
     subFont = sub.font;

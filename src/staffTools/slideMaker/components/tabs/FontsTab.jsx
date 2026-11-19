@@ -8,8 +8,8 @@ import ConfirmDialog from '../ConfirmDialog';
 const WEIGHTS = [100, 200, 300, 400, 500, 600, 700, 800, 900];
 
 const EMPTY_FORM = {
-  hFont: '', hGeneric: 'sans-serif', hWeight: 700, hItalic: false, hUppercase: false,
-  bFont: '', bGeneric: 'serif', bWeight: 400, bItalic: false,
+  hFont: '', hGeneric: 'sans-serif', hWeight: 700, hItalic: false, hUppercase: false, hSizeScale: 1,
+  bFont: '', bGeneric: 'serif', bWeight: 400, bItalic: false, bSizeScale: 1,
 };
 
 // One shared stylesheet link covering every font any pairing in `form`
@@ -38,15 +38,17 @@ function useLivePreviewFonts(form) {
   }, [form.hFont, form.hWeight, form.hItalic, form.bFont, form.bWeight, form.bItalic]);
 }
 
-// headScale/bodyScale (1 = the original fixed 26px/15px) let the Font
-// Pairings list above preview its headline and subhead noticeably bigger
-// or smaller than their defaults - independently, so a pairing's actual
-// headline/subhead size relationship can be judged at something closer
-// to how large each reads on a real slide, not just at this card's own
-// small, fixed-ratio default. Purely a display setting (see the two
-// Preview Size sliders in FontsTab below) - never saved, never touches
-// an actual slide.
-function PairingPreview({pairing, headScale = 1, bodyScale = 1}) {
+// Renders a pairing at its own hSizeScale/bSizeScale (1 = the base fixed
+// 26px/15px) - each pairing carries its own size now (see SIZE_SCALE_MIN/
+// MAX below and the sliders in the Add a Pairing form), the same
+// multiplier the automatic slide maker applies to the headline/subhead's
+// target width when that pairing gets picked (see HEADLINE_WIDTH_FRACTION/
+// SUBTEXT_WIDTH_FRACTION in templateRenderers.js), so this preview is a
+// true read of how the pairing will actually render, not a separate
+// display-only estimate.
+function PairingPreview({pairing}) {
+  const headScale = pairing.hSizeScale ?? 1;
+  const bodyScale = pairing.bSizeScale ?? 1;
   return (
     <div style={{padding: '16px 18px', background: C.cardAlt, borderRadius: 8}}>
       <div style={{
@@ -70,36 +72,34 @@ function PairingPreview({pairing, headScale = 1, bodyScale = 1}) {
   );
 }
 
-const PREVIEW_SCALE_MIN = 0.75;
-const PREVIEW_SCALE_MAX = 2.5;
+const SIZE_SCALE_MIN = 0.5;
+const SIZE_SCALE_MAX = 2.5;
 
-function PreviewScaleSlider({id, label, value, onChange}) {
+function SizeScaleSlider({id, label, value, onChange}) {
   return (
-    <div style={{display: "flex", alignItems: "center", gap: 10}}>
-      <label htmlFor={id} style={{fontFamily: ui.display, fontSize: 9, fontWeight: 700, color: C.textTer, textTransform: "uppercase", letterSpacing: "0.05em", flexShrink: 0, width: 80}}>
-        {label}
-      </label>
+    <div>
+      <div style={{display: "flex", justifyContent: "space-between", marginBottom: 3}}>
+        <label htmlFor={id} style={labelStyleShared}>{label}</label>
+        <span style={{fontFamily: ui.body, fontSize: 11, color: C.textSec}}>{Math.round(value * 100)}%</span>
+      </div>
       <input
         id={id}
         type="range"
-        min={PREVIEW_SCALE_MIN}
-        max={PREVIEW_SCALE_MAX}
+        min={SIZE_SCALE_MIN}
+        max={SIZE_SCALE_MAX}
         step={0.05}
         value={value}
         onChange={e => onChange(Number(e.target.value))}
-        style={{flex: 1, cursor: "pointer"}}
+        style={{width: "100%", cursor: "pointer"}}
       />
-      <span style={{fontFamily: ui.body, fontSize: 11, color: C.textSec, width: 40, textAlign: "right", flexShrink: 0}}>
-        {Math.round(value * 100)}%
-      </span>
     </div>
   );
 }
 
+const labelStyleShared = {fontFamily: ui.display, fontSize: 9, fontWeight: 700, color: C.textTer, textTransform: "uppercase", letterSpacing: "0.05em"};
+
 export default function FontsTab({fontPairings, setFontPairings}) {
   const [form, setForm] = useState(EMPTY_FORM);
-  const [headPreviewScale, setHeadPreviewScale] = useState(1);
-  const [bodyPreviewScale, setBodyPreviewScale] = useState(1);
   const [adding, setAdding] = useState(false);
   const [importing, setImporting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
@@ -170,7 +170,7 @@ export default function FontsTab({fontPairings, setFontPairings}) {
     }
   };
 
-  const labelStyle = {fontFamily: ui.display, fontSize: 9, fontWeight: 700, color: C.textTer, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 3, display: "block"};
+  const labelStyle = {...labelStyleShared, marginBottom: 3, display: "block"};
   const inputStyle = {width: "100%", padding: "6px 8px", border: `1px solid ${C.border}`, borderRadius: 6, fontFamily: ui.body, fontSize: 12, color: C.text, boxSizing: "border-box"};
   const selectStyle = {...inputStyle, cursor: "pointer"};
 
@@ -181,11 +181,6 @@ export default function FontsTab({fontPairings, setFontPairings}) {
       </div>
       <div style={{fontFamily: ui.body, fontSize: 11, color: C.textTer, marginBottom: 10, lineHeight: 1.4}}>
         The headline/subhead combo the automatic slide maker randomly picks between. Each is checked against Google Fonts before it's saved.
-      </div>
-
-      <div style={{display: "flex", flexDirection: "column", gap: 8, marginBottom: 12, padding: "8px 10px", border: `1px solid ${C.border}`, borderRadius: 8, background: C.cardAlt}}>
-        <PreviewScaleSlider id="font-preview-head-scale" label="Heading Size" value={headPreviewScale} onChange={setHeadPreviewScale} />
-        <PreviewScaleSlider id="font-preview-body-scale" label="Body Size" value={bodyPreviewScale} onChange={setBodyPreviewScale} />
       </div>
 
       {!alreadyImported && !importing && (
@@ -212,7 +207,7 @@ export default function FontsTab({fontPairings, setFontPairings}) {
         <div style={{display: "flex", flexDirection: "column", gap: 8, marginBottom: 16}}>
           {fontPairings.map(p => (
             <div key={p.id} style={{border: `1px solid ${C.border}`, borderRadius: 8, overflow: "hidden"}}>
-              <PairingPreview pairing={p} headScale={headPreviewScale} bodyScale={bodyPreviewScale} />
+              <PairingPreview pairing={p} />
               <div style={{display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "6px 10px", background: C.card}}>
                 <span style={{fontFamily: ui.body, fontSize: 10, color: C.textTer, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1}}>
                   {p.hFont} {p.hWeight}{p.hItalic ? ' italic' : ''}{p.hUppercase ? ' (caps)' : ''} / {p.bFont} {p.bWeight}{p.bItalic ? ' italic' : ''}
@@ -233,9 +228,9 @@ export default function FontsTab({fontPairings, setFontPairings}) {
         </div>
 
         <PairingPreview pairing={{
-          hFont: form.hFont.trim() || 'Inter', hGeneric: form.hGeneric, hWeight: form.hWeight, hItalic: form.hItalic, hUppercase: form.hUppercase,
-          bFont: form.bFont.trim() || 'Georgia', bGeneric: form.bGeneric, bWeight: form.bWeight, bItalic: form.bItalic,
-        }} headScale={headPreviewScale} bodyScale={bodyPreviewScale} />
+          hFont: form.hFont.trim() || 'Inter', hGeneric: form.hGeneric, hWeight: form.hWeight, hItalic: form.hItalic, hUppercase: form.hUppercase, hSizeScale: form.hSizeScale,
+          bFont: form.bFont.trim() || 'Georgia', bGeneric: form.bGeneric, bWeight: form.bWeight, bItalic: form.bItalic, bSizeScale: form.bSizeScale,
+        }} />
 
         <div style={{marginTop: 12, display: "flex", flexDirection: "column", gap: 10}}>
           <div>
@@ -268,6 +263,7 @@ export default function FontsTab({fontPairings, setFontPairings}) {
               Uppercase headline
             </label>
           </div>
+          <SizeScaleSlider id="font-head-size-scale" label="Headline Size" value={form.hSizeScale} onChange={v => setForm(f => ({...f, hSizeScale: v}))} />
 
           <div style={{borderTop: `1px solid ${C.border}`, marginTop: 2, paddingTop: 10}}>
             <label style={labelStyle}>Subhead Font (Google Fonts name)</label>
@@ -293,6 +289,7 @@ export default function FontsTab({fontPairings, setFontPairings}) {
             <input type="checkbox" checked={form.bItalic} onChange={e => setForm(f => ({...f, bItalic: e.target.checked}))} />
             Italic
           </label>
+          <SizeScaleSlider id="font-body-size-scale" label="Subhead Size" value={form.bSizeScale} onChange={v => setForm(f => ({...f, bSizeScale: v}))} />
 
           <button
             onClick={handleAdd}

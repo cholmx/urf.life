@@ -70,6 +70,8 @@ const DEFAULT_BRAND = {
   hItalic: false,
   bItalic: true,
   hUppercase: false,
+  hSizeScale: 1,
+  bSizeScale: 1,
   churchName: "UPPER ROOM FELLOWSHIP",
   hLetterSpacing: 0,
   markImg: null,
@@ -262,12 +264,12 @@ function autoBrandForBrightness(brightness, avoidOverlayColors = [], darkBucket,
 // loading) rather than crashing on an empty array.
 function pickAutoFontPairing(fontPairings) {
   if (!fontPairings || fontPairings.length === 0) {
-    return {hFont: HEADLINE_FONT, hWeight: HEADLINE_WEIGHT, hItalic: false, hUppercase: false, bFont: BODY_FONT, bWeight: BODY_WEIGHT, bItalic: true};
+    return {hFont: HEADLINE_FONT, hWeight: HEADLINE_WEIGHT, hItalic: false, hUppercase: false, hSizeScale: 1, bFont: BODY_FONT, bWeight: BODY_WEIGHT, bItalic: true, bSizeScale: 1};
   }
   const pairing = fontPairings[Math.floor(Math.random() * fontPairings.length)];
   return {
-    hFont: `'${pairing.hFont}',${pairing.hGeneric}`, hWeight: pairing.hWeight, hItalic: !!pairing.hItalic, hUppercase: !!pairing.hUppercase,
-    bFont: `'${pairing.bFont}',${pairing.bGeneric}`, bWeight: pairing.bWeight, bItalic: !!pairing.bItalic,
+    hFont: `'${pairing.hFont}',${pairing.hGeneric}`, hWeight: pairing.hWeight, hItalic: !!pairing.hItalic, hUppercase: !!pairing.hUppercase, hSizeScale: pairing.hSizeScale ?? 1,
+    bFont: `'${pairing.bFont}',${pairing.bGeneric}`, bWeight: pairing.bWeight, bItalic: !!pairing.bItalic, bSizeScale: pairing.bSizeScale ?? 1,
   };
 }
 
@@ -406,7 +408,7 @@ const QUEUE_PREVIEW_RATIO = ASPECT_RATIOS.find(r => r.id === "16:10") || ASPECT_
 // never touches the announcement record itself.
 function renderQueueThumbnail(a, auto, textOverride) {
   const data = {...DEFAULT_DATA, ...buildAutoSlideData(a), ...(textOverride || {})};
-  const brand = {...DEFAULT_BRAND, bgColor: auto.bgColor, textColor: auto.textColor, hFont: auto.hFont, hWeight: auto.hWeight, hItalic: auto.hItalic, hUppercase: auto.hUppercase, bFont: auto.bFont, bWeight: auto.bWeight, bItalic: auto.bItalic, markImg: auto.markImg, markOpacity: auto.markOpacity, markFrame: auto.markFrame};
+  const brand = {...DEFAULT_BRAND, bgColor: auto.bgColor, textColor: auto.textColor, hFont: auto.hFont, hWeight: auto.hWeight, hItalic: auto.hItalic, hUppercase: auto.hUppercase, hSizeScale: auto.hSizeScale, bFont: auto.bFont, bWeight: auto.bWeight, bItalic: auto.bItalic, bSizeScale: auto.bSizeScale, markImg: auto.markImg, markOpacity: auto.markOpacity, markFrame: auto.markFrame};
   const canvas = document.createElement('canvas');
   render(canvas, auto.tmpl, data, brand, auto.img, auto.overlayColor, auto.ov, auto.blur, QUEUE_PREVIEW_RATIO.w, QUEUE_PREVIEW_RATIO.h, 0);
   // A solid entry has no overlay color (auto.overlayColor is null) - its

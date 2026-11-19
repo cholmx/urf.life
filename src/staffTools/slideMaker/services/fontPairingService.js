@@ -30,10 +30,12 @@ function rowToPairing(row) {
     hWeight: row.h_weight,
     hItalic: row.h_italic,
     hUppercase: row.h_uppercase,
+    hSizeScale: row.h_size_scale ?? 1,
     bFont: row.b_font,
     bGeneric: row.b_generic,
     bWeight: row.b_weight,
     bItalic: row.b_italic,
+    bSizeScale: row.b_size_scale ?? 1,
   };
 }
 
@@ -67,10 +69,12 @@ export async function addFontPairing(pairing) {
       h_weight: pairing.hWeight,
       h_italic: pairing.hItalic,
       h_uppercase: pairing.hUppercase,
+      h_size_scale: pairing.hSizeScale ?? 1,
       b_font: pairing.bFont,
       b_generic: pairing.bGeneric,
       b_weight: pairing.bWeight,
       b_italic: pairing.bItalic,
+      b_size_scale: pairing.bSizeScale ?? 1,
     })
     .select()
     .single();
