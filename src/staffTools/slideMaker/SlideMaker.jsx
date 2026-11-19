@@ -266,19 +266,22 @@ function fontFieldsFromPairing(pairing) {
   };
 }
 
-// Picks one of the Fonts tab's staff-managed pairings at random, unless
-// forcedId names one (a slide-specific font override - see
-// updateQueueItemFont in SlideMakerInner and the per-slide picker in
-// QueueTab.jsx), in which case that exact pairing is used instead of a
-// random one. Falls back to a fixed pairing if the library is empty
-// (nothing imported yet, or still loading) rather than crashing on an
-// empty array - also the fallback if forcedId no longer matches
-// anything (the staff-chosen pairing was deleted since).
-function pickAutoFontPairing(fontPairings, forcedId) {
-  if (forcedId) {
-    const forced = (fontPairings || []).find(p => p.id === forcedId);
-    if (forced) return fontFieldsFromPairing(forced);
-  }
+// Picks one of the Fonts tab's staff-managed pairings at random. Falls
+// back to a fixed pairing if the library is empty (nothing imported yet,
+// or still loading) rather than crashing on an empty array.
+//
+// Deliberately never takes a "forced pairing" argument - a slide-
+// specific font/size override (see updateQueueItemFont/
+// updateQueueItemSize and resolveSlideBrandOverride below) is applied only at
+// render time, on top of whatever this function actually picked, and is
+// never fed back into this pick itself. Letting an override influence
+// the pick here once corrupted the very thing "reset" needs to revert
+// to: computeAutoSlide's result gets cached verbatim in
+// queuePreviewAutoRef for reuse by later redraws, so a forced value
+// baked in at pick time became indistinguishable from a genuine random
+// pick after the very next background reshuffle - "reset" had nothing
+// left to revert to.
+function pickAutoFontPairing(fontPairings) {
   if (!fontPairings || fontPairings.length === 0) {
     return {hFont: HEADLINE_FONT, hWeight: HEADLINE_WEIGHT, hItalic: false, hUppercase: false, hSizeScale: 1, bFont: BODY_FONT, bWeight: BODY_WEIGHT, bItalic: true, bSizeScale: 1};
   }
@@ -359,8 +362,8 @@ async function pickMarkOverlay(isLight, marks) {
 // entirely - no image, just that color and one of its own allowed text
 // colors. The watermark applies either way (see pickMarkOverlay) - drawn
 // over the photo's own texture/color wash, not instead of it.
-async function computeAutoSlide(entry, avoidOverlayColors = [], marks = [], fontPairings = [], backgroundColors = [], forcedFontPairingId = null) {
-  const font = pickAutoFontPairing(fontPairings, forcedFontPairingId);
+async function computeAutoSlide(entry, avoidOverlayColors = [], marks = [], fontPairings = [], backgroundColors = []) {
+  const font = pickAutoFontPairing(fontPairings);
   const tmpl = pickAutoTemplate();
   if (entry.solid) {
     const bg = entry.solid;
@@ -430,6 +433,20 @@ function renderQueueThumbnail(a, auto, textOverride) {
   return {dataUrl: sharpenCanvas(canvas).toDataURL("image/png"), overlayColor: auto.overlayColor || auto.bgColor};
 }
 
+// Resolves the merged font-field override a slide should render with,
+// from a staff-picked font pairing id (updateQueueItemFont) and/or a
+// staff-picked size ({hSizeScale, bSizeScale} - updateQueueItemSize),
+// or null if neither is set right now. Pure and stateless - every
+// caller re-derives it fresh from current fontPairings/fontOverrides/
+// sizeOverrides rather than it ever being stored anywhere itself, which
+// is what keeps the cached automatic pick (queuePreviewAutoRef) safe to
+// treat as the real default (see generateQueueThumbnailFromEntry).
+function resolveSlideBrandOverride(fontPairings, fontPairingId, sizeOverride) {
+  const pairing = fontPairingId ? (fontPairings || []).find(p => p.id === fontPairingId) : null;
+  if (!pairing && !sizeOverride) return null;
+  return {...(pairing ? fontFieldsFromPairing(pairing) : {}), ...(sizeOverride || {})};
+}
+
 // Renders a finished, ready-to-download slide for a queue item entirely
 // off-screen - the same automatic texture/color/overlay pick a staffer
 // would get by opening it in the editor, but produced the moment the
@@ -437,13 +454,22 @@ function renderQueueThumbnail(a, auto, textOverride) {
 // anything. Returns the resolved `auto` look alongside the image so the
 // caller can cache it (for a later text-only redraw - see
 // renderQueueThumbnail above) and feed its overlay color forward as the
-// next item's avoidOverlayColors. forcedFontPairingId, when given (a
-// slide-specific font override - see updateQueueItemFont below), is
-// passed straight through to pickAutoFontPairing so a staff-picked font
-// survives a background reshuffle the same way an edited headline does.
-async function generateQueueThumbnailFromEntry(a, entry, avoidOverlayColors = [], marks = [], fontPairings = [], backgroundColors = [], textOverride = null, forcedFontPairingId = null) {
-  const auto = await computeAutoSlide(entry, avoidOverlayColors, marks, fontPairings, backgroundColors, forcedFontPairingId);
-  return {...renderQueueThumbnail(a, auto, textOverride), auto};
+// next item's avoidOverlayColors.
+//
+// slideBrandOverride (see resolveSlideBrandOverride above), when given,
+// is applied only to this one render - never merged into the `auto`
+// this returns, which callers cache (queuePreviewAutoRef) and reuse for
+// every later redraw of this slide. Baking a staff override into that
+// cached value once made it indistinguishable from a genuine automatic
+// pick the moment a later redraw reused it, which broke "reset" -
+// keeping `auto` always the untouched automatic pick, and re-applying
+// the override fresh on every redraw instead, keeps a real default
+// around to revert to no matter how many redraws happen while an
+// override is active.
+async function generateQueueThumbnailFromEntry(a, entry, avoidOverlayColors = [], marks = [], fontPairings = [], backgroundColors = [], textOverride = null, slideBrandOverride = null) {
+  const auto = await computeAutoSlide(entry, avoidOverlayColors, marks, fontPairings, backgroundColors);
+  const renderAuto = slideBrandOverride ? {...auto, ...slideBrandOverride} : auto;
+  return {...renderQueueThumbnail(a, renderAuto, textOverride), auto};
 }
 
 export default function SlideMaker({announcements, today, onToggleSlideMade}) {
@@ -497,6 +523,11 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
   // background reshuffle" shape as textOverrides above. Same ephemeral
   // lifetime too - component state only, gone on refresh.
   const [fontOverrides, setFontOverrides] = useState({});
+  // Staff-picked {hSizeScale, bSizeScale} for a specific queue item (the
+  // per-slide Headline/Subhead Size sliders in QueueTab.jsx) - layers on
+  // top of whatever pairing is in effect for that slide (the auto pick,
+  // or a fontOverrides entry), same ephemeral shape as the two above.
+  const [sizeOverrides, setSizeOverrides] = useState({});
   const fontsReady = useGoogleFonts(fontPairings);
 
   // Loaded once here (not inside PhotosTab) so a staff-flagged texture is
@@ -651,7 +682,8 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
           const avoid = prevId && queuePreviewOverlayRef.current[prevId] ? [queuePreviewOverlayRef.current[prevId]] : [];
           const avoidEntry = prevId ? queuePreviewEntryRef.current[prevId] : null;
           const entry = pickTextureForId(pool, a.id, avoidEntry);
-          const result = await generateQueueThumbnailFromEntry(a, entry, avoid, marks, fontPairings, backgroundColors, textOverrides[a.id], fontOverrides[a.id]);
+          const brandOverride = resolveSlideBrandOverride(fontPairings, fontOverrides[a.id], sizeOverrides[a.id]);
+          const result = await generateQueueThumbnailFromEntry(a, entry, avoid, marks, fontPairings, backgroundColors, textOverrides[a.id], brandOverride);
           queuePreviewOverlayRef.current[a.id] = result.overlayColor;
           queuePreviewEntryRef.current[a.id] = entry;
           queuePreviewAutoRef.current[a.id] = result.auto;
@@ -686,7 +718,8 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
       // edited for this slide (see updateQueueItemText) and whatever font
       // they picked for it (see updateQueueItemFont) - only the
       // background/mark reroll, not anything staff specifically fixed.
-      const result = await generateQueueThumbnailFromEntry(a, entry, avoid, marks, fontPairings, backgroundColors, textOverrides[a.id], fontOverrides[a.id]);
+      const brandOverride = resolveSlideBrandOverride(fontPairings, fontOverrides[a.id], sizeOverrides[a.id]);
+      const result = await generateQueueThumbnailFromEntry(a, entry, avoid, marks, fontPairings, backgroundColors, textOverrides[a.id], brandOverride);
       queuePreviewOverlayRef.current[a.id] = result.overlayColor;
       queuePreviewEntryRef.current[a.id] = entry;
       queuePreviewAutoRef.current[a.id] = result.auto;
@@ -697,7 +730,7 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     } finally {
       generatingQueuePreviewsRef.current.delete(a.id);
     }
-  }, [photos, marks, fontPairings, backgroundColors, queueItems, textOverrides, fontOverrides, toast]);
+  }, [photos, marks, fontPairings, backgroundColors, queueItems, textOverrides, fontOverrides, sizeOverrides, toast]);
 
   // Redraws a queue item's cached look (same background/font/mark pick -
   // see queuePreviewAutoRef) with new headline/subtext wording, without
@@ -738,11 +771,32 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
     });
     const auto = queuePreviewAutoRef.current[a.id];
     if (!auto) return;
-    const pairing = fontPairingId ? fontPairings.find(p => p.id === fontPairingId) : null;
-    const effectiveAuto = pairing ? {...auto, ...fontFieldsFromPairing(pairing)} : auto;
+    const brandOverride = resolveSlideBrandOverride(fontPairings, fontPairingId, sizeOverrides[a.id]);
+    const effectiveAuto = brandOverride ? {...auto, ...brandOverride} : auto;
     const result = renderQueueThumbnail(a, effectiveAuto, textOverrides[a.id]);
     setQueuePreviews(prev => ({...prev, [a.id]: {...prev[a.id], dataUrl: result.dataUrl}}));
-  }, [fontPairings, textOverrides]);
+  }, [fontPairings, textOverrides, sizeOverrides]);
+
+  // Redraws a queue item's cached look with a staff-picked headline/
+  // subhead size swapped in - same shape as updateQueueItemFont above,
+  // layered the other way around (font override first, then size on
+  // top of that). sizeOverride of null/undefined clears it and reverts
+  // to whatever size the currently-active pairing (auto-picked or
+  // font-overridden) already specifies.
+  const updateQueueItemSize = useCallback((a, sizeOverride) => {
+    setSizeOverrides(prev => {
+      if (sizeOverride) return {...prev, [a.id]: sizeOverride};
+      const next = {...prev};
+      delete next[a.id];
+      return next;
+    });
+    const auto = queuePreviewAutoRef.current[a.id];
+    if (!auto) return;
+    const brandOverride = resolveSlideBrandOverride(fontPairings, fontOverrides[a.id], sizeOverride);
+    const effectiveAuto = brandOverride ? {...auto, ...brandOverride} : auto;
+    const result = renderQueueThumbnail(a, effectiveAuto, textOverrides[a.id]);
+    setQueuePreviews(prev => ({...prev, [a.id]: {...prev[a.id], dataUrl: result.dataUrl}}));
+  }, [fontPairings, fontOverrides, textOverrides]);
 
   return (
     <div className="slide-maker" style={{fontFamily: ui.body, background: C.bg, minHeight: "100vh"}}>
@@ -798,6 +852,8 @@ function SlideMakerInner({announcements, today, onToggleSlideMade}) {
           fontPairings={fontPairings}
           fontOverrides={fontOverrides}
           onUpdateFont={updateQueueItemFont}
+          sizeOverrides={sizeOverrides}
+          onUpdateSize={updateQueueItemSize}
         />
       </div>
     </div>

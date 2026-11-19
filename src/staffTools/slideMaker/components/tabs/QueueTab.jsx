@@ -69,7 +69,37 @@ function TextEditForm({ initial, hasOverride, onSave, onReset, onCancel }) {
   );
 }
 
-export default function QueueTab({ items, previews, onRegenerate, onToggleSlideMade, defaultSlideTexts, textOverrides, onUpdateText, fontPairings, fontOverrides, onUpdateFont }) {
+const SIZE_SCALE_MIN = 0.5;
+const SIZE_SCALE_MAX = 2.5;
+
+// A single Headline/Subhead Size slider for one queue card - same range
+// as the Fonts tab's own size sliders (see SizeScaleSlider in
+// FontsTab.jsx), kept as its own small copy here rather than imported
+// across tab files, since each tab stays self-contained in this app.
+function SizeSlider({ id, label, value, onChange }) {
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+        <label htmlFor={id} style={{ fontFamily: ui.display, fontSize: 9, fontWeight: 700, color: C.textTer, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          {label}
+        </label>
+        <span style={{ fontFamily: ui.body, fontSize: 11, color: C.textSec }}>{Math.round(value * 100)}%</span>
+      </div>
+      <input
+        id={id}
+        type="range"
+        min={SIZE_SCALE_MIN}
+        max={SIZE_SCALE_MAX}
+        step={0.05}
+        value={value}
+        onChange={e => onChange(Number(e.target.value))}
+        style={{ width: '100%', cursor: 'pointer' }}
+      />
+    </div>
+  );
+}
+
+export default function QueueTab({ items, previews, onRegenerate, onToggleSlideMade, defaultSlideTexts, textOverrides, onUpdateText, fontPairings, fontOverrides, onUpdateFont, sizeOverrides, onUpdateSize }) {
   const [regeneratingIds, setRegeneratingIds] = useState(() => new Set());
   const [editingId, setEditingId] = useState(null);
 
@@ -112,6 +142,18 @@ export default function QueueTab({ items, previews, onRegenerate, onToggleSlideM
           const editing = editingId === a.id;
           const currentText = (textOverrides && textOverrides[a.id]) || (defaultSlideTexts && defaultSlideTexts[a.id]) || { line1: a.title || '', line2: '' };
           const fontOverride = (fontOverrides && fontOverrides[a.id]) || '';
+          // The size a fresh "Reset" should fall back to, and what the
+          // sliders show before staff have touched them for this slide:
+          // a size override if one's set, else whatever size the
+          // currently-active pairing (the font override above, or
+          // whatever the automatic generator actually picked - see
+          // preview.auto) already specifies.
+          const activePairing = fontOverride ? (fontPairings || []).find(p => p.id === fontOverride) : null;
+          const hasSizeOverride = !!(sizeOverrides && sizeOverrides[a.id]);
+          const effectiveSize = (sizeOverrides && sizeOverrides[a.id]) || {
+            hSizeScale: activePairing?.hSizeScale ?? preview?.auto?.hSizeScale ?? 1,
+            bSizeScale: activePairing?.bSizeScale ?? preview?.auto?.bSizeScale ?? 1,
+          };
 
           return (
             <div
@@ -210,6 +252,31 @@ export default function QueueTab({ items, previews, onRegenerate, onToggleSlideM
                       <option key={p.id} value={p.id}>{p.hFont} / {p.bFont}</option>
                     ))}
                   </select>
+                </div>
+              )}
+              {!editing && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 12, padding: '8px 10px', border: `1px solid ${C.border}`, borderRadius: 8, background: C.cardAlt }}>
+                  <SizeSlider
+                    id={`queue-${a.id}-head-size`}
+                    label="Headline Size"
+                    value={effectiveSize.hSizeScale}
+                    onChange={v => onUpdateSize(a, { ...effectiveSize, hSizeScale: v })}
+                  />
+                  <SizeSlider
+                    id={`queue-${a.id}-body-size`}
+                    label="Subhead Size"
+                    value={effectiveSize.bSizeScale}
+                    onChange={v => onUpdateSize(a, { ...effectiveSize, bSizeScale: v })}
+                  />
+                  {hasSizeOverride && (
+                    <button
+                      onClick={() => onUpdateSize(a, null)}
+                      title="Go back to this slide's current font's own size"
+                      style={{ alignSelf: 'flex-start', padding: '4px 10px', border: `1px solid ${C.border}`, borderRadius: 6, background: 'transparent', color: C.textTer, fontFamily: ui.body, fontSize: 11, cursor: 'pointer' }}
+                    >
+                      Reset size
+                    </button>
+                  )}
                 </div>
               )}
               <div style={{ display: 'flex', gap: 8 }}>
