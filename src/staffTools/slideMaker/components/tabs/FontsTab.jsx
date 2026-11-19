@@ -1,7 +1,6 @@
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {C, ui} from '../../constants/styles';
-import {BUILT_IN_FONT_PAIRINGS} from '../../constants/data';
-import {addFontPairing, deleteFontPairing, importBuiltInFontPairing} from '../../services/fontPairingService';
+import {addFontPairing, deleteFontPairing} from '../../services/fontPairingService';
 import {useToast} from '../../hooks/useToast';
 import ConfirmDialog from '../ConfirmDialog';
 
@@ -101,42 +100,10 @@ const labelStyleShared = {fontFamily: ui.display, fontSize: 9, fontWeight: 700, 
 export default function FontsTab({fontPairings, setFontPairings}) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [adding, setAdding] = useState(false);
-  const [importing, setImporting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const toast = useToast();
 
   useLivePreviewFonts(form);
-
-  const alreadyImported = useMemo(() => {
-    const keys = new Set(fontPairings.map(p => `${p.hFont}|${p.bFont}`));
-    return BUILT_IN_FONT_PAIRINGS.every(p => keys.has(`${p.hFont}|${p.bFont}`));
-  }, [fontPairings]);
-
-  const handleImportBuiltIns = async () => {
-    setImporting(true);
-    const existingKeys = new Set(fontPairings.map(p => `${p.hFont}|${p.bFont}`));
-    let succeeded = 0;
-    let failed = 0;
-    for (const seed of BUILT_IN_FONT_PAIRINGS) {
-      if (existingKeys.has(`${seed.hFont}|${seed.bFont}`)) continue;
-      try {
-        const pairing = await importBuiltInFontPairing(seed);
-        setFontPairings(prev => [...prev, pairing]);
-        succeeded += 1;
-      } catch (error) {
-        failed += 1;
-        console.error(`Could not import built-in pairing "${seed.hFont}/${seed.bFont}":`, error);
-      }
-    }
-    setImporting(false);
-    if (failed === 0) {
-      toast.show(succeeded > 0 ? 'Built-in font pairings added to your library.' : 'Already imported.', 'success');
-    } else if (succeeded > 0) {
-      toast.show(`Imported ${succeeded}, but ${failed} failed. Check the browser console for details.`, 'warning');
-    } else {
-      toast.show('Could not import the built-in pairings. Check the browser console for details.', 'error');
-    }
-  };
 
   const handleAdd = async () => {
     if (!form.hFont.trim() || !form.bFont.trim()) {
@@ -182,26 +149,6 @@ export default function FontsTab({fontPairings, setFontPairings}) {
       <div style={{fontFamily: ui.body, fontSize: 11, color: C.textTer, marginBottom: 10, lineHeight: 1.4}}>
         The headline/subhead combo the automatic slide maker randomly picks between. Each is checked against Google Fonts before it's saved.
       </div>
-
-      {!alreadyImported && !importing && (
-        <button
-          onClick={handleImportBuiltIns}
-          disabled={importing}
-          style={{
-            width: "100%", marginBottom: 10, padding: "8px 12px", border: `1px solid ${C.border}`,
-            borderRadius: 8, background: C.cardAlt, color: C.accentDark,
-            fontFamily: ui.display, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em",
-            cursor: "pointer",
-          }}
-        >
-          ⬇ Import the {BUILT_IN_FONT_PAIRINGS.length} Built-in Pairings
-        </button>
-      )}
-      {importing && (
-        <div style={{textAlign: "center", padding: "8px 12px", marginBottom: 10, fontFamily: ui.body, fontSize: 11, color: C.textTer}}>
-          Importing…
-        </div>
-      )}
 
       {fontPairings.length > 0 && (
         <div style={{display: "flex", flexDirection: "column", gap: 8, marginBottom: 16}}>

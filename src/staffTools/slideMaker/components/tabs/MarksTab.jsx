@@ -1,7 +1,6 @@
-import React, {useMemo, useRef, useState} from 'react';
+import React, {useRef, useState} from 'react';
 import {C, ui} from '../../constants/styles';
-import {BUILT_IN_MARKS} from '../../constants/data';
-import {uploadMark, deleteMark, isDuplicateMark, setMarkPool, importBuiltInMark} from '../../services/markService';
+import {uploadMark, deleteMark, isDuplicateMark, setMarkPool} from '../../services/markService';
 import {useToast} from '../../hooks/useToast';
 import ConfirmDialog from '../ConfirmDialog';
 
@@ -42,44 +41,7 @@ export default function MarksTab({marks, setMarks}) {
   const [dragging, setDragging] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
-  const [importing, setImporting] = useState(false);
   const toast = useToast();
-
-  // Mirrors FontsTab's alreadyImported check - hides the button once
-  // every built-in mark's name is already present, not just once the
-  // library is non-empty (a single staff-uploaded mark used to hide this
-  // permanently, even with none of the built-ins ever imported).
-  const alreadyImported = useMemo(() => {
-    const names = new Set(marks.filter(Boolean).map(m => m.name));
-    return BUILT_IN_MARKS.every(({src}) => names.has(src.split('/').pop()));
-  }, [marks]);
-
-  const handleImportBuiltIns = async () => {
-    setImporting(true);
-    const existingNames = new Set(marks.filter(Boolean).map(m => m.name));
-    let succeeded = 0;
-    let failed = 0;
-    for (const {src, pool} of BUILT_IN_MARKS) {
-      const name = src.split('/').pop();
-      if (existingNames.has(name)) continue;
-      try {
-        const mark = await importBuiltInMark(src, pool);
-        setMarks(prev => [...prev, mark]);
-        succeeded += 1;
-      } catch (error) {
-        failed += 1;
-        console.error(`Could not import built-in mark "${name}":`, error);
-      }
-    }
-    setImporting(false);
-    if (failed === 0) {
-      toast.show(succeeded > 0 ? 'Built-in marks added to your library.' : 'Already imported.', 'success');
-    } else if (succeeded > 0) {
-      toast.show(`Imported ${succeeded}, but ${failed} failed. Check the browser console for details.`, 'warning');
-    } else {
-      toast.show('Could not import the built-in marks. Check the browser console for details.', 'error');
-    }
-  };
 
   const handleSetPool = async (mark, pool) => {
     if (mark.pool === pool) return;
@@ -201,21 +163,6 @@ export default function MarksTab({marks, setMarks}) {
           </div>
         )}
       </div>
-
-      {!alreadyImported && !uploadProgress && (
-        <button
-          onClick={handleImportBuiltIns}
-          disabled={importing}
-          style={{
-            width: "100%", marginBottom: 10, padding: "8px 12px", border: `1px solid ${C.border}`,
-            borderRadius: 8, background: C.cardAlt, color: C.accentDark,
-            fontFamily: ui.display, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em",
-            cursor: importing ? "wait" : "pointer",
-          }}
-        >
-          {importing ? "Importing…" : `⬇ Import the ${BUILT_IN_MARKS.length} Built-in Marks`}
-        </button>
-      )}
 
       {marks.length > 0 && (
         <div style={{display: "flex", flexDirection: "column", gap: 10}}>

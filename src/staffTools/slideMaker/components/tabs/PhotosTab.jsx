@@ -1,7 +1,6 @@
-import React, {useMemo, useRef, useState} from 'react';
+import React, {useRef, useState} from 'react';
 import {C, ui} from '../../constants/styles';
-import {TEXTURES} from '../../constants/data';
-import {uploadPhoto, deletePhoto, isDuplicatePhoto, setPhotoIsTexture, importBuiltInTexture} from '../../services/photoService';
+import {uploadPhoto, deletePhoto, isDuplicatePhoto, setPhotoIsTexture} from '../../services/photoService';
 import {useToast} from '../../hooks/useToast';
 import ConfirmDialog from '../ConfirmDialog';
 
@@ -10,48 +9,7 @@ export default function PhotosTab({photos, setPhotos}) {
   const [dragging, setDragging] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
-  const [importing, setImporting] = useState(false);
   const toast = useToast();
-
-  // Mirrors FontsTab's alreadyImported check - hides the button once
-  // every built-in texture's filename is already present, not just once
-  // any photo is flagged as a texture (a staff-uploaded texture used to
-  // hide this permanently, even with none of the built-ins ever
-  // imported).
-  const alreadyImported = useMemo(() => {
-    const names = new Set(photos.filter(Boolean).map(p => p.name));
-    return TEXTURES.every(path => names.has(path.split('/').pop()));
-  }, [photos]);
-
-  const handleImportBuiltIns = async () => {
-    setImporting(true);
-    const existingNames = new Set(photos.filter(Boolean).map(p => p.name));
-    let succeeded = 0;
-    let failed = 0;
-    // Each file gets its own try/catch - one bad file (a one-off network
-    // blip, a duplicate name) shouldn't abort the whole batch and leave
-    // every other texture unimported too.
-    for (const path of TEXTURES) {
-      const name = path.split('/').pop();
-      if (existingNames.has(name)) continue;
-      try {
-        const photo = await importBuiltInTexture(path);
-        setPhotos(prev => [...prev, photo]);
-        succeeded += 1;
-      } catch (error) {
-        failed += 1;
-        console.error(`Could not import built-in texture "${name}":`, error);
-      }
-    }
-    setImporting(false);
-    if (failed === 0) {
-      toast.show(succeeded > 0 ? 'Built-in textures added to your library.' : 'Already imported.', 'success');
-    } else if (succeeded > 0) {
-      toast.show(`Imported ${succeeded}, but ${failed} failed. Check the browser console for details.`, 'warning');
-    } else {
-      toast.show('Could not import the built-in textures. Check the browser console for details.', 'error');
-    }
-  };
 
   const handleToggleTexture = async (photo) => {
     const next = !photo.isTexture;
@@ -167,21 +125,6 @@ export default function PhotosTab({photos, setPhotos}) {
           </div>
         )}
       </div>
-
-      {!alreadyImported && (
-        <button
-          onClick={handleImportBuiltIns}
-          disabled={importing}
-          style={{
-            width: "100%", marginBottom: 10, padding: "8px 12px", border: `1px solid ${C.border}`,
-            borderRadius: 8, background: C.cardAlt, color: C.accentDark,
-            fontFamily: ui.display, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em",
-            cursor: importing ? "wait" : "pointer",
-          }}
-        >
-          {importing ? "Importing…" : "⬇ Import the 15 Built-in Textures"}
-        </button>
-      )}
 
       {photos.length > 0 && (
         <>
