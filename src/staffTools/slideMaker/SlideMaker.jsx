@@ -154,18 +154,22 @@ function pickRandomTexture(pool, avoidEntry) {
 // random white/yellow pick.
 //
 // ov is each color's own overlay strength - copper and sandy brown are
-// the two the texture shows through the most at the teals' own 65%,
+// the two the texture shows through the most at the teals' own 60%,
 // washing them out toward a muddy brown instead of a clean brand color,
 // so they get a stronger wash to stay recognizably on-brand. No plain
 // black wash option here (removed on request) - black stays available
 // as a text color (see the Palette tab's White/Cream text-color options),
 // just not as a photo-overlay tint.
 const DARK_OVERLAY_OPTIONS = [
-  {color: "#172B2C", textColor: null, ov: 65},
-  {color: "#C65D3B", textColor: "#FFFFFF", ov: 88},
-  {color: "#F9AB55", textColor: "#FFFFFF", ov: 88},
-  {color: "#5B8B75", textColor: "#FFFFFF", ov: 65},
+  {color: "#172B2C", textColor: null, ov: 60},
+  {color: "#C65D3B", textColor: "#FFFFFF", ov: 81},
+  {color: "#F9AB55", textColor: "#FFFFFF", ov: 81},
+  {color: "#5B8B75", textColor: "#FFFFFF", ov: 60},
 ];
+
+// Strength of the light-bucket wash (see autoBrandForBrightness below) -
+// was a flat 80, now 8% lighter.
+const LIGHT_WASH_OV = 74;
 
 // How far apart (on the 0-1 hexBrightness scale) a text color and its
 // background need to read before they're trusted to actually contrast -
@@ -240,12 +244,12 @@ function autoBrandForBrightness(brightness, avoidOverlayColors = [], darkBucket,
   const pool = choices.length > 0 ? choices : rotation;
   if (pool.length > 0) {
     const choice = pool[Math.floor(Math.random() * pool.length)];
-    const effectiveBg = blendedBrightness(choice.hex, 80, brightness);
+    const effectiveBg = blendedBrightness(choice.hex, LIGHT_WASH_OV, brightness);
     const textColor = pickContrastingTextColor(choice.textColors, effectiveBg);
-    return {bgColor: bucket.hex, textColor, overlayColor: choice.hex, ov: 80};
+    return {bgColor: bucket.hex, textColor, overlayColor: choice.hex, ov: LIGHT_WASH_OV};
   }
-  const effectiveBg = blendedBrightness(bucket.hex, 80, brightness);
-  return {bgColor: bucket.hex, textColor: pickContrastingTextColor(bucket.textColors, effectiveBg), overlayColor: bucket.hex, ov: 80};
+  const effectiveBg = blendedBrightness(bucket.hex, LIGHT_WASH_OV, brightness);
+  return {bgColor: bucket.hex, textColor: pickContrastingTextColor(bucket.textColors, effectiveBg), overlayColor: bucket.hex, ov: LIGHT_WASH_OV};
 }
 
 // Picks one of the Fonts tab's staff-managed pairings (fontPairings -
@@ -276,15 +280,17 @@ function pickAutoTemplate() {
 
 // How faint the branded chevron-mark watermark (see MARK_OVERLAYS) reads
 // on an automatic slide - low enough to stay a texture, not a second
-// graphic competing with the headline.
-const MARK_OPACITY_MIN = 0.1;
-const MARK_OPACITY_MAX = 0.24;
+// graphic competing with the headline. 8% lighter than the original
+// 0.1-0.24 range.
+const MARK_OPACITY_MIN = 0.09;
+const MARK_OPACITY_MAX = 0.22;
 
 // A frame's single thin stroke needs far more opacity than an image mark
 // to read as an intentional border at all - nowhere near as much ink on
-// the slide as a filled graphic, even before its own low opacity.
-const FRAME_OPACITY_MIN = 0.4;
-const FRAME_OPACITY_MAX = 0.6;
+// the slide as a filled graphic, even before its own low opacity. 8%
+// lighter than the original 0.4-0.6 range.
+const FRAME_OPACITY_MIN = 0.37;
+const FRAME_OPACITY_MAX = 0.55;
 
 // How often an automatic slide gets a watermark at all, solid-color or
 // photo-backed alike - the rest come back plain so it reads as an
