@@ -53,7 +53,7 @@ const SUBTEXT_WIDTH_FRACTION = 0.55;
 function computeTextBlock(ctx, data, brand, {
   textW,
   headlineWeight,
-  subGap = 32,
+  subGap = 48,
 }) {
   const { lines: headLines, headLH, headFont, headFontSize } = computeHeadline(ctx, data, brand, textW, headlineWeight);
   let totalH = blockHeight(headLines, headLH);
@@ -78,7 +78,7 @@ function computeTextBlock(ctx, data, brand, {
     const sub = fitSubtextToTwoLines(ctx, data.line2, brand.bFont, bw(brand, 600), !!brand.bItalic, targetW, {maxSize: subMaxSize});
     subLines = sub.lines;
     subFont = sub.font;
-    subLH = sub.fontSize * 1.35;
+    subLH = sub.fontSize * 1.15;
     totalH += subGap + blockHeight(subLines, subLH);
   }
 
@@ -106,7 +106,7 @@ export const renderLeftBlock=(ctx,data,brand,contentW,margin,cw,ch)=> {
 
 export const renderMinimal=(ctx,data,brand,contentW,cw,ch)=> {
   const block = computeTextBlock(ctx, data, brand, {
-    textW: contentW, headlineWeight: hw(brand, 900), subGap: 40,
+    textW: contentW, headlineWeight: hw(brand, 900), subGap: 56,
   });
   drawTextBlock(ctx, block, brand, cw / 2, centerY(block.totalH, 0, ch), "center");
 };
