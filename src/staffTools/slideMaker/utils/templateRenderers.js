@@ -10,7 +10,7 @@ const bw = (brand, fallback) => brand.bWeight ?? fallback;
 // and only shrinking when it overflows. maxW stays as a hard ceiling in
 // case this fraction ever exceeds the margin box on some future aspect
 // ratio.
-const HEADLINE_WIDTH_FRACTION = 0.75;
+const HEADLINE_WIDTH_FRACTION = 0.68;
 
 function computeHeadline(ctx, data, brand, maxW, weight) {
   const rawHeadText = data.line1 || "YOUR TEXT HERE";
@@ -67,14 +67,14 @@ function computeTextBlock(ctx, data, brand, {
     // own fallback is always italic Playfair Display). Capped relative
     // to the headline's own resolved size, not a fixed pixel ceiling, so
     // a short subtext paired with a short, large headline still scales
-    // up with it - but at 0.9, not the much tighter ratio this used to
+    // up with it - but at 1.05, not the much tighter ratio this used to
     // use: the search below already stops growing the instant the text
     // reaches targetW on its own (it doesn't just grab the biggest size
     // under the cap - see fitSubtextToTwoLines/fitSingleLine), so a
     // generous cap here only matters for text that genuinely needs it to
     // reach 55%, not a reason it'd ever overshoot toward the headline's
     // own size.
-    const subMaxSize = Math.max(28, Math.round(headFontSize * 0.9));
+    const subMaxSize = Math.max(28, Math.round(headFontSize * 1.05));
     const sub = fitSubtextToTwoLines(ctx, data.line2, brand.bFont, bw(brand, 600), !!brand.bItalic, targetW, {maxSize: subMaxSize});
     subLines = sub.lines;
     subFont = sub.font;
