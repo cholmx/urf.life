@@ -69,7 +69,7 @@ function TextEditForm({ initial, hasOverride, onSave, onReset, onCancel }) {
   );
 }
 
-export default function QueueTab({ items, previews, onRegenerate, onToggleSlideMade, defaultSlideTexts, textOverrides, onUpdateText }) {
+export default function QueueTab({ items, previews, onRegenerate, onToggleSlideMade, defaultSlideTexts, textOverrides, onUpdateText, fontPairings, fontOverrides, onUpdateFont }) {
   const [regeneratingIds, setRegeneratingIds] = useState(() => new Set());
   const [editingId, setEditingId] = useState(null);
 
@@ -111,6 +111,7 @@ export default function QueueTab({ items, previews, onRegenerate, onToggleSlideM
           const hasOverride = !!(textOverrides && textOverrides[a.id]);
           const editing = editingId === a.id;
           const currentText = (textOverrides && textOverrides[a.id]) || (defaultSlideTexts && defaultSlideTexts[a.id]) || { line1: a.title || '', line2: '' };
+          const fontOverride = (fontOverrides && fontOverrides[a.id]) || '';
 
           return (
             <div
@@ -192,6 +193,23 @@ export default function QueueTab({ items, previews, onRegenerate, onToggleSlideM
               {!editing && dateStr && (
                 <div style={{ fontFamily: ui.body, fontSize: 13, color: C.textTer, marginBottom: 12 }}>
                   {dateStr}
+                </div>
+              )}
+              {!editing && fontPairings && fontPairings.length > 0 && (
+                <div style={{ marginBottom: 12 }}>
+                  <label style={{ display: 'block', fontFamily: ui.display, fontSize: 9, fontWeight: 700, color: C.textTer, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 3 }}>
+                    Font
+                  </label>
+                  <select
+                    value={fontOverride}
+                    onChange={e => onUpdateFont(a, e.target.value || null)}
+                    style={{ width: '100%', boxSizing: 'border-box', padding: '6px 8px', border: `1px solid ${C.border}`, borderRadius: 6, fontFamily: ui.body, fontSize: 12, color: C.text, cursor: 'pointer' }}
+                  >
+                    <option value="">Default (Automatic)</option>
+                    {fontPairings.map(p => (
+                      <option key={p.id} value={p.id}>{p.hFont} / {p.bFont}</option>
+                    ))}
+                  </select>
                 </div>
               )}
               <div style={{ display: 'flex', gap: 8 }}>
