@@ -38,13 +38,15 @@ function useLivePreviewFonts(form) {
   }, [form.hFont, form.hWeight, form.hItalic, form.bFont, form.bWeight, form.bItalic]);
 }
 
-// scale (1 = the original fixed 26px/15px) lets the Font Pairings list
-// above preview noticeably bigger or smaller than its default, fixed
-// size - useful for judging a typeface at something closer to how large
-// it'll actually read on a slide, not just at this card's own small
-// default. Purely a display setting (see the PREVIEW_SCALE slider in
-// FontsTab below) - never saved, never touches an actual slide.
-function PairingPreview({pairing, scale = 1}) {
+// headScale/bodyScale (1 = the original fixed 26px/15px) let the Font
+// Pairings list above preview its headline and subhead noticeably bigger
+// or smaller than their defaults - independently, so a pairing's actual
+// headline/subhead size relationship can be judged at something closer
+// to how large each reads on a real slide, not just at this card's own
+// small, fixed-ratio default. Purely a display setting (see the two
+// Preview Size sliders in FontsTab below) - never saved, never touches
+// an actual slide.
+function PairingPreview({pairing, headScale = 1, bodyScale = 1}) {
   return (
     <div style={{padding: '16px 18px', background: C.cardAlt, borderRadius: 8}}>
       <div style={{
@@ -52,7 +54,7 @@ function PairingPreview({pairing, scale = 1}) {
         fontWeight: pairing.hWeight,
         fontStyle: pairing.hItalic ? 'italic' : 'normal',
         textTransform: pairing.hUppercase ? 'uppercase' : 'none',
-        fontSize: 26 * scale, color: C.text, lineHeight: 1.15,
+        fontSize: 26 * headScale, color: C.text, lineHeight: 1.15,
       }}>
         Sunday Service
       </div>
@@ -60,7 +62,7 @@ function PairingPreview({pairing, scale = 1}) {
         fontFamily: `'${pairing.bFont}',${pairing.bGeneric}`,
         fontWeight: pairing.bWeight,
         fontStyle: pairing.bItalic ? 'italic' : 'normal',
-        fontSize: 15 * scale, color: C.textSec, marginTop: 4,
+        fontSize: 15 * bodyScale, color: C.textSec, marginTop: 4,
       }}>
         Join us this week
       </div>
@@ -71,9 +73,33 @@ function PairingPreview({pairing, scale = 1}) {
 const PREVIEW_SCALE_MIN = 0.75;
 const PREVIEW_SCALE_MAX = 2.5;
 
+function PreviewScaleSlider({id, label, value, onChange}) {
+  return (
+    <div style={{display: "flex", alignItems: "center", gap: 10}}>
+      <label htmlFor={id} style={{fontFamily: ui.display, fontSize: 9, fontWeight: 700, color: C.textTer, textTransform: "uppercase", letterSpacing: "0.05em", flexShrink: 0, width: 80}}>
+        {label}
+      </label>
+      <input
+        id={id}
+        type="range"
+        min={PREVIEW_SCALE_MIN}
+        max={PREVIEW_SCALE_MAX}
+        step={0.05}
+        value={value}
+        onChange={e => onChange(Number(e.target.value))}
+        style={{flex: 1, cursor: "pointer"}}
+      />
+      <span style={{fontFamily: ui.body, fontSize: 11, color: C.textSec, width: 40, textAlign: "right", flexShrink: 0}}>
+        {Math.round(value * 100)}%
+      </span>
+    </div>
+  );
+}
+
 export default function FontsTab({fontPairings, setFontPairings}) {
   const [form, setForm] = useState(EMPTY_FORM);
-  const [previewScale, setPreviewScale] = useState(1);
+  const [headPreviewScale, setHeadPreviewScale] = useState(1);
+  const [bodyPreviewScale, setBodyPreviewScale] = useState(1);
   const [adding, setAdding] = useState(false);
   const [importing, setImporting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
@@ -157,23 +183,9 @@ export default function FontsTab({fontPairings, setFontPairings}) {
         The headline/subhead combo the automatic slide maker randomly picks between. Each is checked against Google Fonts before it's saved.
       </div>
 
-      <div style={{display: "flex", alignItems: "center", gap: 10, marginBottom: 12, padding: "8px 10px", border: `1px solid ${C.border}`, borderRadius: 8, background: C.cardAlt}}>
-        <label htmlFor="font-preview-scale" style={{fontFamily: ui.display, fontSize: 9, fontWeight: 700, color: C.textTer, textTransform: "uppercase", letterSpacing: "0.05em", flexShrink: 0}}>
-          Preview Size
-        </label>
-        <input
-          id="font-preview-scale"
-          type="range"
-          min={PREVIEW_SCALE_MIN}
-          max={PREVIEW_SCALE_MAX}
-          step={0.05}
-          value={previewScale}
-          onChange={e => setPreviewScale(Number(e.target.value))}
-          style={{flex: 1, cursor: "pointer"}}
-        />
-        <span style={{fontFamily: ui.body, fontSize: 11, color: C.textSec, width: 40, textAlign: "right", flexShrink: 0}}>
-          {Math.round(previewScale * 100)}%
-        </span>
+      <div style={{display: "flex", flexDirection: "column", gap: 8, marginBottom: 12, padding: "8px 10px", border: `1px solid ${C.border}`, borderRadius: 8, background: C.cardAlt}}>
+        <PreviewScaleSlider id="font-preview-head-scale" label="Heading Size" value={headPreviewScale} onChange={setHeadPreviewScale} />
+        <PreviewScaleSlider id="font-preview-body-scale" label="Body Size" value={bodyPreviewScale} onChange={setBodyPreviewScale} />
       </div>
 
       {!alreadyImported && !importing && (
@@ -200,7 +212,7 @@ export default function FontsTab({fontPairings, setFontPairings}) {
         <div style={{display: "flex", flexDirection: "column", gap: 8, marginBottom: 16}}>
           {fontPairings.map(p => (
             <div key={p.id} style={{border: `1px solid ${C.border}`, borderRadius: 8, overflow: "hidden"}}>
-              <PairingPreview pairing={p} scale={previewScale} />
+              <PairingPreview pairing={p} headScale={headPreviewScale} bodyScale={bodyPreviewScale} />
               <div style={{display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "6px 10px", background: C.card}}>
                 <span style={{fontFamily: ui.body, fontSize: 10, color: C.textTer, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1}}>
                   {p.hFont} {p.hWeight}{p.hItalic ? ' italic' : ''}{p.hUppercase ? ' (caps)' : ''} / {p.bFont} {p.bWeight}{p.bItalic ? ' italic' : ''}
@@ -223,7 +235,7 @@ export default function FontsTab({fontPairings, setFontPairings}) {
         <PairingPreview pairing={{
           hFont: form.hFont.trim() || 'Inter', hGeneric: form.hGeneric, hWeight: form.hWeight, hItalic: form.hItalic, hUppercase: form.hUppercase,
           bFont: form.bFont.trim() || 'Georgia', bGeneric: form.bGeneric, bWeight: form.bWeight, bItalic: form.bItalic,
-        }} scale={previewScale} />
+        }} headScale={headPreviewScale} bodyScale={bodyPreviewScale} />
 
         <div style={{marginTop: 12, display: "flex", flexDirection: "column", gap: 10}}>
           <div>
